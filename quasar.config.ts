@@ -99,7 +99,9 @@ export default defineConfig((ctx) => {
     devServer: {
       port: 7100,
       // https: true,
-      open: true, // opens browser window automatically
+      open: {
+        app: { name: 'chrome' },
+      },
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
