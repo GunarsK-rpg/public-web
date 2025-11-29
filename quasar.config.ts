@@ -97,13 +97,25 @@ export default defineConfig((ctx) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
     devServer: {
+      port: 7100,
       // https: true,
       open: true, // opens browser window automatically
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
     framework: {
-      config: {},
+      config: {
+        brand: {
+          primary: '#1976d2', // Darker blue for better contrast with white text
+          secondary: '#26a69a',
+          accent: '#9c27b0',
+          dark: '#1d1d1d',
+          positive: '#21ba45',
+          negative: '#c10015',
+          info: '#31ccec',
+          warning: '#f2c037',
+        },
+      },
 
       // iconSet: 'material-icons', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
