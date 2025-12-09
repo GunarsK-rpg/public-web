@@ -1,29 +1,46 @@
-/**
- * Expertise category types
- */
-export type ExpertiseCategory = 'cultural' | 'utility' | 'weapon' | 'specialist';
+import type { ExpertiseCategoryCode } from './expertise-types';
 
 /**
- * Expertise source
- */
-export type ExpertiseSource = 'origin' | 'talent' | 'reward' | 'advancement';
-
-/**
- * Expertise definition from classifiers
+ * Expertise classifier
  */
 export interface Expertise {
-  id: string;
+  id: number;
+  code: string;
   name: string;
-  category: ExpertiseCategory;
-  isRestricted: boolean;
+  expertiseTypeId?: number;
+  categoryId: number;
+  cultureId?: number;
+  isRestricted?: boolean;
   description?: string;
 }
 
 /**
- * Character's expertise
+ * Hero's expertise
  */
-export interface CharacterExpertise {
-  expertiseId: string;
-  source: ExpertiseSource;
+export interface HeroExpertise {
+  id: number;
+  heroId: number;
+  expertiseId: number;
   notes?: string;
+  source?: string;
+}
+
+/**
+ * Expertise category (alias for ExpertiseType)
+ */
+export interface ExpertiseCategory {
+  id: number;
+  code: ExpertiseCategoryCode;
+  name: string;
+  description?: string;
+}
+
+/**
+ * Expertise source classifier
+ */
+export interface ExpertiseSource {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
 }

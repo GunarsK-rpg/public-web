@@ -6,8 +6,12 @@
         <div class="text-h5">{{ character?.name }}</div>
         <div class="text-subtitle1 text-grey">
           Level {{ character?.level }}
-          {{ pathName }}
+          {{ ancestryName }}
+          {{ pathNames }}
           <span v-if="character?.radiantOrder">/ {{ orderName }}</span>
+        </div>
+        <div v-if="activeSingerFormName" class="text-caption text-purple">
+          {{ activeSingerFormName }}
         </div>
       </div>
 
@@ -86,16 +90,32 @@ const investiturePercent = computed(() => {
   return character.value.currentInvestiture / maxInvestiture.value;
 });
 
-const pathName = computed(() => {
-  if (!character.value) return '';
-  const path = classifierStore.getHeroicPathById(character.value.heroicPath);
-  return path?.name || character.value.heroicPath;
+const pathNames = computed(() => {
+  if (!character.value?.heroicPaths?.length) return '';
+  return character.value.heroicPaths
+    .map((pathCode) => {
+      const path = classifierStore.getHeroicPathByCode(pathCode);
+      return path?.name || pathCode;
+    })
+    .join(' / ');
 });
 
 const orderName = computed(() => {
   if (!character.value?.radiantOrder) return '';
-  const order = classifierStore.getRadiantOrderById(character.value.radiantOrder);
+  const order = classifierStore.getRadiantOrderByCode(character.value.radiantOrder);
   return order?.name || character.value.radiantOrder;
+});
+
+const ancestryName = computed(() => {
+  if (!character.value?.ancestry) return '';
+  const ancestry = classifierStore.getAncestryByCode(character.value.ancestry);
+  return ancestry?.name || character.value.ancestry;
+});
+
+const activeSingerFormName = computed(() => {
+  if (!character.value?.activeSingerForm) return '';
+  const form = classifierStore.getSingerFormByCode(character.value.activeSingerForm);
+  return form?.name || character.value.activeSingerForm;
 });
 </script>
 

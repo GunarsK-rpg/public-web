@@ -1,12 +1,11 @@
 /**
- * Condition identifiers
+ * Condition code identifiers
  */
-export type ConditionId =
+export type ConditionCode =
   | 'afflicted'
   | 'determined'
   | 'disoriented'
   | 'empowered'
-  | 'enhanced'
   | 'exhausted'
   | 'focused'
   | 'immobilized'
@@ -18,57 +17,44 @@ export type ConditionId =
   | 'unconscious';
 
 /**
- * Condition definition from classifiers
+ * Condition classifier
  */
 export interface Condition {
-  id: ConditionId;
+  id: number;
+  code: ConditionCode;
   name: string;
-  effect: string;
-  hasValue: boolean;
-  isPositive: boolean;
+  effect?: string;
+  hasValue?: boolean;
+  isPositive?: boolean;
+  description?: string;
 }
 
 /**
- * Character's active condition
+ * Hero's condition
  */
-export interface CharacterCondition {
-  id: string;
-  conditionId: ConditionId;
-  value?: number;
-  source?: string;
-  duration?: string;
+export interface HeroCondition {
+  id: number;
+  heroId: number;
+  conditionId: number;
   notes?: string;
 }
 
 /**
- * Injury duration types
- */
-export type InjuryDuration = 'flesh-wound' | 'shallow' | 'vicious' | 'permanent' | 'death';
-
-/**
- * Injury effect types
- */
-export type InjuryEffect = 'exhausted' | 'slowed' | 'disoriented' | 'surprised' | 'one-hand';
-
-/**
- * Injury definition
+ * Injury classifier
  */
 export interface Injury {
-  id: string;
+  id: number;
+  code: string;
   name: string;
-  duration: InjuryDuration;
-  effect: InjuryEffect;
-  value?: number;
-  description: string;
+  description?: string;
 }
 
 /**
- * Character's injury
+ * Hero's injury
  */
-export interface CharacterInjury {
-  id: string;
-  injuryId: string;
-  location?: string;
-  daysRemaining?: number;
+export interface HeroInjury {
+  id: number;
+  heroId: number;
+  injuryId: number;
   notes?: string;
 }

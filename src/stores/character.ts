@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Character } from 'src/types';
+import type { Character, GrantedAction } from 'src/types';
 import { useClassifierStore } from './classifiers';
 
 export const useCharacterStore = defineStore('character', () => {
@@ -81,31 +81,47 @@ export const useCharacterStore = defineStore('character', () => {
   const isRadiant = computed(() => !!character.value?.radiantOrder);
 
   /**
-   * Get skill rank by skill ID
+   * Get all actions granted to the character from talents, weapons, armor, and equipment
+   * TODO: Implement when action classifiers are added to the store
    */
-  function getSkillRank(skillId: string): number {
+  const grantedActions = computed((): GrantedAction[] => {
+    // Actions are now linked via actionId on classifier items
+    // This will need to be reimplemented when we add actions to the classifier store
+    return [];
+  });
+
+  /**
+   * Get skill rank by skill ID (numeric)
+   */
+  function getSkillRank(skillId: number): number {
     if (!character.value?.skills) return 0;
     const skill = character.value.skills.find((s) => s.skillId === skillId);
     return skill?.rank || 0;
   }
 
   /**
-   * Get skill modifier (attribute + rank)
+   * Get skill modifier (attribute + rank) by skill code
    */
-  function getSkillModifier(skillId: string): number {
+  function getSkillModifier(skillCode: string): number {
     const classifiers = useClassifierStore();
-    const skillData = classifiers.getSkillById(skillId);
+    const skillData = classifiers.getSkillByCode(
+      skillCode as Parameters<typeof classifiers.getSkillByCode>[0]
+    );
     if (!skillData || !character.value) return 0;
 
-    const attrValue = character.value[skillData.attributeId as keyof Character] || 0;
-    const rank = getSkillRank(skillId);
+    // Look up the attribute by ID to get its code
+    const attribute = classifiers.getAttributeById(skillData.attrId);
+    if (!attribute) return 0;
+
+    const attrValue = character.value[attribute.code as keyof Character] || 0;
+    const rank = getSkillRank(skillData.id);
     return (attrValue as number) + rank;
   }
 
   /**
    * Load character by ID
    */
-  async function loadCharacter(id: string): Promise<void> {
+  async function loadCharacter(id: number): Promise<void> {
     loading.value = true;
     error.value = null;
 
@@ -189,6 +205,7 @@ export const useCharacterStore = defineStore('character', () => {
     spiritualDefense,
     deflect,
     isRadiant,
+    grantedActions,
     getSkillRank,
     getSkillModifier,
     loadCharacter,

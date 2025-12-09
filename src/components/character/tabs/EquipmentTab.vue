@@ -91,32 +91,32 @@ const armor = computed(() => character.value?.armor);
 const equipment = computed(() => character.value?.equipment || []);
 const spheres = computed(() => character.value?.spheres || 0);
 
-function getWeaponName(id: string): string {
-  return classifierStore.getWeaponById(id)?.name || id;
+function getWeaponName(id: number): string {
+  return classifierStore.getWeaponById(id)?.name || String(id);
 }
 
-function getWeaponDamage(id: string): string {
+function getWeaponDamage(id: number): string {
   return classifierStore.getWeaponById(id)?.damage || '';
 }
 
-function getWeaponDamageType(id: string): string {
+function getWeaponDamageType(id: number): string {
   return classifierStore.getWeaponById(id)?.damageType || '';
 }
 
-function getWeaponTraits(id: string): string[] {
+function getWeaponTraits(id: number): string[] {
   return classifierStore.getWeaponById(id)?.traits || [];
 }
 
-function getArmorName(id: string): string {
-  return classifierStore.getArmorById(id)?.name || id;
+function getArmorName(id: number): string {
+  return classifierStore.getArmorById(id)?.name || String(id);
 }
 
-function getArmorDeflect(id: string): number {
+function getArmorDeflect(id: number): number {
   return classifierStore.getArmorById(id)?.deflect || 0;
 }
 
-function getEquipmentName(id: string): string {
-  return classifierStore.getEquipmentById(id)?.name || id;
+function getEquipmentName(id: number): string {
+  return classifierStore.getEquipmentById(id)?.name || String(id);
 }
 </script>
 

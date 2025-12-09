@@ -30,7 +30,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
     }
   }
 
-  async function selectCampaign(id: string): Promise<void> {
+  async function selectCampaign(id: number): Promise<void> {
     loading.value = true;
     error.value = null;
 

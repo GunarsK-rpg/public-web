@@ -118,7 +118,7 @@ onMounted(async () => {
   if (!classifierStore.initialized) {
     await classifierStore.initialize();
   }
-  await characterStore.loadCharacter(props.characterId);
+  await characterStore.loadCharacter(Number(props.characterId));
 });
 
 onUnmounted(() => {

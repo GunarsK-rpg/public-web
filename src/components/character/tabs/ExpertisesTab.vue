@@ -90,33 +90,33 @@ const expertises = computed(() => character.value?.expertises || []);
 const culturalExpertises = computed(() =>
   expertises.value.filter((e) => {
     const exp = classifierStore.getExpertiseById(e.expertiseId);
-    return exp?.category === 'cultural';
+    return classifierStore.getExpertiseCategoryCode(exp?.categoryId ?? 0) === 'cultural';
   })
 );
 
 const utilityExpertises = computed(() =>
   expertises.value.filter((e) => {
     const exp = classifierStore.getExpertiseById(e.expertiseId);
-    return exp?.category === 'utility';
+    return classifierStore.getExpertiseCategoryCode(exp?.categoryId ?? 0) === 'utility';
   })
 );
 
 const weaponExpertises = computed(() =>
   expertises.value.filter((e) => {
     const exp = classifierStore.getExpertiseById(e.expertiseId);
-    return exp?.category === 'weapon';
+    return classifierStore.getExpertiseCategoryCode(exp?.categoryId ?? 0) === 'weapon';
   })
 );
 
 const specialistExpertises = computed(() =>
   expertises.value.filter((e) => {
     const exp = classifierStore.getExpertiseById(e.expertiseId);
-    return exp?.category === 'specialist';
+    return classifierStore.getExpertiseCategoryCode(exp?.categoryId ?? 0) === 'specialist';
   })
 );
 
-function getExpertiseName(id: string): string {
-  return classifierStore.getExpertiseById(id)?.name || id;
+function getExpertiseName(id: number): string {
+  return classifierStore.getExpertiseById(id)?.name || String(id);
 }
 </script>
 

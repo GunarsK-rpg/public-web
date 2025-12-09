@@ -7,17 +7,17 @@
         <q-item v-for="skill in physicalSkills" :key="skill.id">
           <q-item-section avatar>
             <q-avatar
-              :color="getModifierColor(getSkillModifier(skill.id))"
+              :color="getModifierColor(getSkillModifier(skill.code))"
               text-color="white"
               size="md"
             >
-              {{ getSkillModifier(skill.id) }}
+              {{ getSkillModifier(skill.code) }}
             </q-avatar>
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ skill.name }}</q-item-label>
             <q-item-label caption>
-              {{ getAttributeName(skill.attributeId) }} + Rank {{ getSkillRank(skill.id) }}
+              {{ getAttributeName(skill.attrId) }} + Rank {{ getSkillRank(skill.id) }}
             </q-item-label>
           </q-item-section>
           <q-item-section side>
@@ -41,17 +41,17 @@
         <q-item v-for="skill in cognitiveSkills" :key="skill.id">
           <q-item-section avatar>
             <q-avatar
-              :color="getModifierColor(getSkillModifier(skill.id))"
+              :color="getModifierColor(getSkillModifier(skill.code))"
               text-color="white"
               size="md"
             >
-              {{ getSkillModifier(skill.id) }}
+              {{ getSkillModifier(skill.code) }}
             </q-avatar>
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ skill.name }}</q-item-label>
             <q-item-label caption>
-              {{ getAttributeName(skill.attributeId) }} + Rank {{ getSkillRank(skill.id) }}
+              {{ getAttributeName(skill.attrId) }} + Rank {{ getSkillRank(skill.id) }}
             </q-item-label>
           </q-item-section>
           <q-item-section side>
@@ -75,17 +75,17 @@
         <q-item v-for="skill in spiritualSkills" :key="skill.id">
           <q-item-section avatar>
             <q-avatar
-              :color="getModifierColor(getSkillModifier(skill.id))"
+              :color="getModifierColor(getSkillModifier(skill.code))"
               text-color="white"
               size="md"
             >
-              {{ getSkillModifier(skill.id) }}
+              {{ getSkillModifier(skill.code) }}
             </q-avatar>
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ skill.name }}</q-item-label>
             <q-item-label caption>
-              {{ getAttributeName(skill.attributeId) }} + Rank {{ getSkillRank(skill.id) }}
+              {{ getAttributeName(skill.attrId) }} + Rank {{ getSkillRank(skill.id) }}
             </q-item-label>
           </q-item-section>
           <q-item-section side>
@@ -108,30 +108,26 @@
 import { computed } from 'vue';
 import { useCharacterStore } from 'stores/character';
 import { useClassifierStore } from 'stores/classifiers';
-import type { SkillId, AttributeId } from 'src/types';
+import type { SkillCode } from 'src/types';
 
 const characterStore = useCharacterStore();
 const classifierStore = useClassifierStore();
 
-const skills = computed(() => classifierStore.skills);
+const physicalSkills = computed(() => classifierStore.getSkillsByAttributeType('physical'));
+const cognitiveSkills = computed(() => classifierStore.getSkillsByAttributeType('cognitive'));
+const spiritualSkills = computed(() => classifierStore.getSkillsByAttributeType('spiritual'));
 
-const physicalSkills = computed(() => skills.value.filter((s) => s.category === 'physical'));
-
-const cognitiveSkills = computed(() => skills.value.filter((s) => s.category === 'cognitive'));
-
-const spiritualSkills = computed(() => skills.value.filter((s) => s.category === 'spiritual'));
-
-function getSkillRank(skillId: SkillId): number {
+function getSkillRank(skillId: number): number {
   return characterStore.getSkillRank(skillId);
 }
 
-function getSkillModifier(skillId: SkillId): number {
-  return characterStore.getSkillModifier(skillId);
+function getSkillModifier(skillCode: SkillCode): number {
+  return characterStore.getSkillModifier(skillCode);
 }
 
-function getAttributeName(attrId: AttributeId): string {
-  const attr = classifierStore.attributes.find((a) => a.id === attrId);
-  return attr?.abbreviation || attrId.toUpperCase();
+function getAttributeName(attrId: number): string {
+  const attr = classifierStore.getAttributeById(attrId);
+  return attr?.abbreviation || 'UNK';
 }
 
 function getModifierColor(mod: number): string {

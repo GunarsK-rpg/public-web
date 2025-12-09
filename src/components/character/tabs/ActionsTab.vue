@@ -39,26 +39,153 @@
       </q-card>
     </q-expansion-item>
 
-    <!-- Talent Actions -->
-    <q-expansion-item icon="auto_awesome" label="Talent Actions" class="q-mb-sm">
+    <!-- Weapon Actions -->
+    <q-expansion-item
+      v-if="weaponActions.length > 0"
+      icon="gps_fixed"
+      label="Weapon Actions"
+      class="q-mb-sm"
+    >
       <q-card>
         <q-card-section>
-          <div v-if="talents.length === 0" class="text-grey text-center q-pa-md">
-            No talent actions available
-          </div>
-          <q-list v-else separator>
-            <q-item v-for="talent in talentActions" :key="talent.id">
+          <q-list separator>
+            <q-item v-for="action in weaponActions" :key="action.id">
               <q-item-section avatar>
-                <q-badge :color="getActivationColor(talent.activation)">
-                  {{ getActivationCost(talent.activation) }}
+                <q-badge :color="getActivationColor(action.activation)">
+                  {{ getActivationCost(action.activation) }}
                 </q-badge>
               </q-item-section>
               <q-item-section>
-                <q-item-label>{{ talent.name }}</q-item-label>
-                <q-item-label caption>{{ talent.effect }}</q-item-label>
+                <q-item-label>{{ action.name }}</q-item-label>
+                <q-item-label caption>{{ action.description }}</q-item-label>
+                <q-item-label v-if="action.effect" caption class="text-italic">
+                  {{ action.effect }}
+                </q-item-label>
               </q-item-section>
-              <q-item-section side v-if="talent.focusCost">
-                <q-badge color="teal" outline> {{ talent.focusCost }} Focus </q-badge>
+              <q-item-section side top>
+                <div class="column items-end q-gutter-xs">
+                  <q-badge color="grey" outline>{{ action.sourceName }}</q-badge>
+                  <q-badge v-if="action.focusCost" color="teal" outline>
+                    {{ action.focusCost }} Focus
+                  </q-badge>
+                  <q-badge v-if="action.investitureCost" color="purple" outline>
+                    {{ action.investitureCost }} Inv
+                  </q-badge>
+                </div>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+      </q-card>
+    </q-expansion-item>
+
+    <!-- Talent Actions -->
+    <q-expansion-item
+      v-if="talentActions.length > 0"
+      icon="auto_awesome"
+      label="Talent Actions"
+      class="q-mb-sm"
+    >
+      <q-card>
+        <q-card-section>
+          <q-list separator>
+            <q-item v-for="action in talentActions" :key="action.id">
+              <q-item-section avatar>
+                <q-badge :color="getActivationColor(action.activation)">
+                  {{ getActivationCost(action.activation) }}
+                </q-badge>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ action.name }}</q-item-label>
+                <q-item-label caption>{{ action.description }}</q-item-label>
+                <q-item-label v-if="action.effect" caption class="text-italic">
+                  {{ action.effect }}
+                </q-item-label>
+              </q-item-section>
+              <q-item-section side top>
+                <div class="column items-end q-gutter-xs">
+                  <q-badge color="grey" outline>{{ action.sourceName }}</q-badge>
+                  <q-badge v-if="action.focusCost" color="teal" outline>
+                    {{ action.focusCost }} Focus
+                  </q-badge>
+                  <q-badge v-if="action.investitureCost" color="purple" outline>
+                    {{ action.investitureCost }} Inv
+                  </q-badge>
+                </div>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+      </q-card>
+    </q-expansion-item>
+
+    <!-- Armor Actions -->
+    <q-expansion-item
+      v-if="armorActions.length > 0"
+      icon="shield"
+      label="Armor Actions"
+      class="q-mb-sm"
+    >
+      <q-card>
+        <q-card-section>
+          <q-list separator>
+            <q-item v-for="action in armorActions" :key="action.id">
+              <q-item-section avatar>
+                <q-badge :color="getActivationColor(action.activation)">
+                  {{ getActivationCost(action.activation) }}
+                </q-badge>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ action.name }}</q-item-label>
+                <q-item-label caption>{{ action.description }}</q-item-label>
+                <q-item-label v-if="action.effect" caption class="text-italic">
+                  {{ action.effect }}
+                </q-item-label>
+              </q-item-section>
+              <q-item-section side top>
+                <div class="column items-end q-gutter-xs">
+                  <q-badge color="grey" outline>{{ action.sourceName }}</q-badge>
+                  <q-badge v-if="action.charges" color="orange" outline>
+                    {{ action.charges }} Charges
+                  </q-badge>
+                </div>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+      </q-card>
+    </q-expansion-item>
+
+    <!-- Equipment Actions -->
+    <q-expansion-item
+      v-if="equipmentActions.length > 0"
+      icon="inventory_2"
+      label="Equipment Actions"
+      class="q-mb-sm"
+    >
+      <q-card>
+        <q-card-section>
+          <q-list separator>
+            <q-item v-for="action in equipmentActions" :key="action.id">
+              <q-item-section avatar>
+                <q-badge :color="getActivationColor(action.activation)">
+                  {{ getActivationCost(action.activation) }}
+                </q-badge>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ action.name }}</q-item-label>
+                <q-item-label caption>{{ action.description }}</q-item-label>
+                <q-item-label v-if="action.effect" caption class="text-italic">
+                  {{ action.effect }}
+                </q-item-label>
+              </q-item-section>
+              <q-item-section side top>
+                <div class="column items-end q-gutter-xs">
+                  <q-badge color="grey" outline>{{ action.sourceName }}</q-badge>
+                  <q-badge v-if="action.charges" color="orange" outline>
+                    {{ action.charges }} Charges
+                  </q-badge>
+                </div>
               </q-item-section>
             </q-item>
           </q-list>
@@ -70,62 +197,77 @@
     <q-expansion-item v-if="isRadiant" icon="whatshot" label="Surge Actions" class="q-mb-sm">
       <q-card>
         <q-card-section>
-          <div class="text-center text-grey q-pa-md">
+          <div class="text-center q-pa-md" style="opacity: 0.7">
             Surge actions will be implemented based on Radiant order
           </div>
         </q-card-section>
       </q-card>
     </q-expansion-item>
+
+    <!-- No Actions Message -->
+    <div
+      v-if="grantedActions.length === 0 && !isRadiant"
+      class="text-center q-pa-lg"
+      style="opacity: 0.7"
+    >
+      No special actions available. Acquire talents, weapons, or equipment to gain new actions.
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useCharacterStore } from 'stores/character';
-import { useClassifierStore } from 'stores/classifiers';
-import type { TalentActivation, Talent } from 'src/types';
+import type { ActionActivation, GrantedAction } from 'src/types';
 
 const characterStore = useCharacterStore();
-const classifierStore = useClassifierStore();
 
 const isRadiant = computed(() => characterStore.isRadiant);
+const grantedActions = computed(() => characterStore.grantedActions);
 
-const talents = computed((): Talent[] => {
-  const char = characterStore.character;
-  if (!char) return [];
-  return char.talents
-    .map((t) => classifierStore.getTalentById(t.talentId))
-    .filter((t): t is Talent => t !== undefined);
-});
-
-const talentActions = computed((): Talent[] =>
-  talents.value.filter((t) =>
-    ['action', 'double-action', 'triple-action', 'reaction'].includes(t.activation)
-  )
+// Filter actions by source
+const weaponActions = computed((): GrantedAction[] =>
+  grantedActions.value.filter((a) => a.source === 'weapon')
 );
 
-function getActivationColor(activation: TalentActivation): string {
-  const colors: Record<TalentActivation, string> = {
+const talentActions = computed((): GrantedAction[] =>
+  grantedActions.value.filter((a) => a.source === 'talent')
+);
+
+const armorActions = computed((): GrantedAction[] =>
+  grantedActions.value.filter((a) => a.source === 'armor')
+);
+
+const equipmentActions = computed((): GrantedAction[] =>
+  grantedActions.value.filter((a) => a.source === 'equipment')
+);
+
+function getActivationColor(activation: ActionActivation): string {
+  const colors: Record<ActionActivation, string> = {
     action: 'primary',
+    bonus: 'secondary',
     'double-action': 'secondary',
     'triple-action': 'accent',
+    free: 'positive',
     'free-action': 'positive',
     reaction: 'warning',
     special: 'info',
-    'always-active': 'grey',
+    passive: 'grey',
   };
   return colors[activation] || 'grey';
 }
 
-function getActivationCost(activation: TalentActivation): string {
-  const costs: Record<TalentActivation, string> = {
+function getActivationCost(activation: ActionActivation): string {
+  const costs: Record<ActionActivation, string> = {
     action: '1',
+    bonus: 'B',
     'double-action': '2',
     'triple-action': '3',
+    free: 'F',
     'free-action': 'F',
     reaction: 'R',
     special: 'S',
-    'always-active': '-',
+    passive: '-',
   };
   return costs[activation] || '?';
 }

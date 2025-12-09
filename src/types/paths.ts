@@ -1,47 +1,48 @@
-import type { SkillId } from './skills';
-
 /**
- * Heroic path identifiers
+ * Heroic path code identifiers
  */
-export type HeroicPathId = 'agent' | 'envoy' | 'hunter' | 'leader' | 'scholar' | 'warrior';
+export type HeroicPathCode = 'agent' | 'envoy' | 'hunter' | 'leader' | 'scholar' | 'warrior';
 
 /**
- * Specialty identifiers by heroic path
- */
-export type AgentSpecialty = 'investigator' | 'spy' | 'thief';
-export type EnvoySpecialty = 'diplomat' | 'faithful' | 'mentor';
-export type HunterSpecialty = 'archer' | 'assassin' | 'tracker';
-export type LeaderSpecialty = 'champion' | 'officer' | 'politico';
-export type ScholarSpecialty = 'artifabrian' | 'strategist' | 'surgeon';
-export type WarriorSpecialty = 'duelist' | 'shardbearer' | 'soldier';
-
-export type SpecialtyId =
-  | AgentSpecialty
-  | EnvoySpecialty
-  | HunterSpecialty
-  | LeaderSpecialty
-  | ScholarSpecialty
-  | WarriorSpecialty;
-
-/**
- * Heroic path definition
+ * Heroic path classifier
  */
 export interface HeroicPath {
-  id: HeroicPathId;
+  id: number;
+  code: HeroicPathCode;
   name: string;
-  description: string;
-  startingSkill: SkillId;
-  keyTalentId: string;
-  specialties: SpecialtyId[];
+  description?: string;
 }
 
 /**
- * Specialty definition
+ * Specialty code identifiers
+ */
+export type SpecialtyCode =
+  | 'investigator'
+  | 'spy'
+  | 'thief'
+  | 'diplomat'
+  | 'faithful'
+  | 'mentor'
+  | 'archer'
+  | 'assassin'
+  | 'tracker'
+  | 'champion'
+  | 'officer'
+  | 'politico'
+  | 'artifabrian'
+  | 'strategist'
+  | 'surgeon'
+  | 'duelist'
+  | 'shardbearer'
+  | 'soldier';
+
+/**
+ * Specialty classifier
  */
 export interface Specialty {
-  id: SpecialtyId;
+  id: number;
+  code: SpecialtyCode;
   name: string;
-  pathId: HeroicPathId;
-  description: string;
-  talentTreeId: string;
+  pathId: number;
+  description?: string;
 }

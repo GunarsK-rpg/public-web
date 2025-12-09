@@ -53,11 +53,12 @@ onMounted(async () => {
   await campaignStore.fetchCampaigns();
 });
 
-function selectCampaign(id: string): void {
-  void router.push({ name: 'campaign-detail', params: { campaignId: id } });
+function selectCampaign(id: number): void {
+  void router.push({ name: 'campaign-detail', params: { campaignId: String(id) } });
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string | undefined): string {
+  if (!dateString) return 'Unknown';
   return new Date(dateString).toLocaleDateString();
 }
 </script>

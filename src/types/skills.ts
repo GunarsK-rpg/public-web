@@ -1,24 +1,19 @@
-import type { AttributeId, AttributeCategory } from './attributes';
-
 /**
- * Base skill identifiers
+ * Skill code identifiers
  */
-export type SkillId =
-  // Physical skills
+export type SkillCode =
   | 'agility'
   | 'athletics'
   | 'heavy-weaponry'
   | 'light-weaponry'
   | 'stealth'
   | 'thievery'
-  // Cognitive skills
   | 'crafting'
   | 'deduction'
   | 'discipline'
   | 'intimidation'
   | 'lore'
   | 'medicine'
-  // Spiritual skills
   | 'deception'
   | 'insight'
   | 'leadership'
@@ -27,32 +22,22 @@ export type SkillId =
   | 'survival';
 
 /**
- * Skill definition from classifiers
+ * Skill classifier
  */
 export interface Skill {
-  id: SkillId;
+  id: number;
+  code: SkillCode;
   name: string;
-  attributeId: AttributeId;
-  category: AttributeCategory;
-  description: string;
+  attrId: number;
 }
 
 /**
- * Custom skill defined by player
+ * Hero's skill
  */
-export interface CustomSkill {
-  id: string;
-  name: string;
-  attributeId: AttributeId;
-  description?: string;
-}
-
-/**
- * Character's skill with rank
- * Note: skillId can be a SkillId for standard skills or a custom string for custom skills
- */
-export interface CharacterSkill {
-  skillId: string;
+export interface HeroSkill {
+  id: number;
+  heroId: number;
+  skillId: number;
   rank: number;
-  customModifier?: number;
+  modifier: number;
 }

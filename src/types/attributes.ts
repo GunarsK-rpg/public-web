@@ -1,53 +1,37 @@
 /**
- * Core attribute identifiers
+ * Attribute code identifiers
  */
-export type AttributeId =
-  | 'strength'
-  | 'speed'
-  | 'intellect'
-  | 'willpower'
-  | 'awareness'
-  | 'presence';
+export type AttributeCode = 'strength' | 'speed' | 'intellect' | 'willpower' | 'awareness' | 'presence';
 
 /**
- * Attribute category groupings
- */
-export type AttributeCategory = 'physical' | 'cognitive' | 'spiritual';
-
-/**
- * Attribute definition from classifiers
+ * Attribute classifier
  */
 export interface Attribute {
-  id: AttributeId;
+  id: number;
+  code: AttributeCode;
   name: string;
   abbreviation: string;
-  category: AttributeCategory;
-  description: string;
+  attrTypeId: number;
+  notes?: string;
 }
 
 /**
- * Defense type identifiers
+ * Hero's attribute value
  */
-export type DefenseId = 'physical' | 'cognitive' | 'spiritual';
-
-/**
- * Defense definition with contributing attributes
- */
-export interface Defense {
-  id: DefenseId;
-  name: string;
-  attribute1: AttributeId;
-  attribute2: AttributeId;
+export interface HeroAttribute {
+  id: number;
+  heroId: number;
+  attrId: number;
+  value: number;
 }
 
 /**
- * Derived stat lookup tables based on attribute values
+ * Hero's defense value
  */
-export interface DerivedStatTable {
-  movement: Record<number, number>;
-  liftingCapacity: Record<number, number>;
-  carryingCapacity: Record<number, number>;
-  sensesRange: Record<number, string>;
-  unarmedDamage: Record<number, string>;
-  recoveryDie: Record<number, string>;
+export interface HeroDefense {
+  id: number;
+  heroId: number;
+  attrTypeId: number;
+  value: number;
+  modifier: number;
 }

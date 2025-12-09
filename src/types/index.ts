@@ -1,19 +1,45 @@
-// Core types
+// Classifiers
+export * from './attribute-types';
 export * from './attributes';
+export * from './derived-stats';
 export * from './skills';
-export * from './paths';
-export * from './radiant';
-export * from './equipment';
-export * from './talents';
-export * from './conditions';
-export * from './companions';
-export * from './goals';
+export * from './expertise-types';
 export * from './expertises';
+export * from './activation-types';
+export * from './action-types';
+export * from './actions';
+export * from './paths';
+export * from './surges';
+export * from './radiant-orders';
+export * from './singer-forms';
+export * from './talents';
+export * from './units';
+export * from './equipment-types';
+export * from './equipment-attributes';
+export * from './equipments';
+export * from './currency';
+export * from './conditions';
+export * from './goal-status';
+export * from './connection-types';
+export * from './companion-types';
 export * from './origins';
-export * from './character';
+export * from './origin-skills';
+export * from './origin-expertises';
+export * from './origin-equipment';
+export * from './ancestry';
+export * from './culture';
+
+// Hero data
+export * from './heroes';
+export * from './goals';
+export * from './companions';
+export * from './hero-cultures';
 export * from './campaign';
 
-// API response types
+// Denormalized views
+export * from './character';
+
+// API types
 export interface ApiResponse<T> {
   data: T;
   message?: string;
@@ -34,7 +60,7 @@ export interface PaginatedResponse<T> {
 
 // Auth types
 export interface User {
-  id: string;
+  id: number;
   username: string;
   email: string;
 }

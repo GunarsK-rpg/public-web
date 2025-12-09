@@ -3,21 +3,22 @@ import type { Character } from 'src/types';
 export const characters: Character[] = [
   // Kaladin - Level 5 Windrunner Warrior
   {
-    id: 'char-001',
-    campaignId: 'campaign-001',
-    userId: 'user-001',
+    id: 1,
+    campaignId: 1,
+    userId: 1,
 
     name: 'Kaladin Stormblessed',
     ancestry: 'human',
+    cultures: ['alethi'],
     level: 5,
     experience: 1200,
 
-    heroicPath: 'warrior',
+    heroicPaths: ['warrior'],
     specialty: 'soldier',
     radiantOrder: 'windrunner',
     radiantIdeal: 3,
 
-    originId: 'soldier',
+    originId: 1, // soldier
 
     strength: 3,
     speed: 4,
@@ -37,55 +38,55 @@ export const characters: Character[] = [
     notes: 'Sworn three Ideals. Bonded to Syl.',
 
     skills: [
-      { skillId: 'athletics', rank: 3 },
-      { skillId: 'heavy-weaponry', rank: 4 },
-      { skillId: 'light-weaponry', rank: 2 },
-      { skillId: 'leadership', rank: 3 },
-      { skillId: 'medicine', rank: 2 },
-      { skillId: 'discipline', rank: 3 },
-      { skillId: 'perception', rank: 2 },
-      { skillId: 'survival', rank: 2 },
+      { skillId: 2, rank: 3 }, // athletics
+      { skillId: 3, rank: 4 }, // heavy-weaponry
+      { skillId: 4, rank: 2 }, // light-weaponry
+      { skillId: 15, rank: 3 }, // leadership
+      { skillId: 12, rank: 2 }, // medicine
+      { skillId: 9, rank: 3 }, // discipline
+      { skillId: 16, rank: 2 }, // perception
+      { skillId: 18, rank: 2 }, // survival
     ],
 
     talents: [
       {
-        id: 'talent-001',
-        talentId: 'vigilant-stance',
+        id: 1,
+        talentId: 1, // vigilant-stance
         notes: 'Key talent from Warrior path',
       },
-      { id: 'talent-002', talentId: 'combat-reflexes', notes: '' },
+      { id: 2, talentId: 2, notes: '' }, // combat-reflexes
       {
-        id: 'talent-003',
-        talentId: 'hold-the-line',
+        id: 3,
+        talentId: 3, // hold-the-line
         notes: 'Soldier specialty',
       },
     ],
 
     expertises: [
-      { expertiseId: 'alethi-culture', source: 'origin' },
-      { expertiseId: 'military-life', source: 'origin' },
-      { expertiseId: 'shardblades', source: 'talent' },
+      { expertiseId: 1, source: 'origin' }, // alethi
+      { expertiseId: 15, source: 'origin' }, // military-life
+      { expertiseId: 31, source: 'talent' }, // shardblades
     ],
 
     weapons: [
       {
-        weaponId: 'longspear',
+        weaponId: 3, // longspear
         isEquipped: true,
         isPrimary: true,
         notes: 'Standard infantry weapon',
       },
-      { weaponId: 'knife', isEquipped: true, isPrimary: false, notes: '' },
+      { weaponId: 1, isEquipped: true, isPrimary: false, notes: '' }, // knife
     ],
     armor: {
-      armorId: 'chain',
+      armorId: 2, // chain
       isEquipped: true,
       notes: 'Bridge Four uniform armor',
     },
     equipment: [
-      { itemId: 'backpack', quantity: 1 },
-      { itemId: 'rope', quantity: 1 },
-      { itemId: 'ration', quantity: 5 },
-      { itemId: 'waterskin', quantity: 1 },
+      { itemId: 1, quantity: 1 }, // backpack
+      { itemId: 2, quantity: 1 }, // rope
+      { itemId: 3, quantity: 5 }, // ration
+      { itemId: 4, quantity: 1 }, // waterskin
     ],
 
     conditions: [],
@@ -137,21 +138,22 @@ export const characters: Character[] = [
 
   // Shallan - Level 4 Lightweaver Scholar
   {
-    id: 'char-002',
-    campaignId: 'campaign-001',
-    userId: 'user-002',
+    id: 2,
+    campaignId: 1,
+    userId: 2,
 
     name: 'Shallan Davar',
     ancestry: 'human',
+    cultures: ['veden'],
     level: 4,
     experience: 900,
 
-    heroicPath: 'scholar',
+    heroicPaths: ['scholar'],
     specialty: 'artifabrian',
     radiantOrder: 'lightweaver',
     radiantIdeal: 2,
 
-    originId: 'noble',
+    originId: 2, // noble
 
     strength: 1,
     speed: 2,
@@ -171,37 +173,37 @@ export const characters: Character[] = [
     notes: 'Bonded to Pattern. Skilled artist.',
 
     skills: [
-      { skillId: 'crafting', rank: 3 },
-      { skillId: 'deception', rank: 4 },
-      { skillId: 'lore', rank: 4 },
-      { skillId: 'persuasion', rank: 3 },
-      { skillId: 'insight', rank: 2 },
-      { skillId: 'perception', rank: 2 },
-      { skillId: 'light-weaponry', rank: 1 },
+      { skillId: 7, rank: 3 }, // crafting
+      { skillId: 13, rank: 4 }, // deception
+      { skillId: 11, rank: 4 }, // lore
+      { skillId: 17, rank: 3 }, // persuasion
+      { skillId: 14, rank: 2 }, // insight
+      { skillId: 16, rank: 2 }, // perception
+      { skillId: 4, rank: 1 }, // light-weaponry
     ],
 
     talents: [
       {
-        id: 'talent-101',
-        talentId: 'erudition',
+        id: 101,
+        talentId: 4, // erudition
         notes: 'Key talent from Scholar path',
       },
       {
-        id: 'talent-102',
-        talentId: 'fabrial-attunement',
+        id: 102,
+        talentId: 5, // fabrial-attunement
         notes: 'Artifabrian specialty',
       },
     ],
 
     expertises: [
-      { expertiseId: 'veden-culture', source: 'origin' },
-      { expertiseId: 'high-society', source: 'origin' },
-      { expertiseId: 'fabrial-crafting', source: 'talent' },
+      { expertiseId: 2, source: 'origin' }, // veden
+      { expertiseId: 14, source: 'origin' }, // high-society
+      { expertiseId: 30, source: 'talent' }, // fabrial-crafting
     ],
 
     weapons: [
       {
-        weaponId: 'knife',
+        weaponId: 1, // knife
         isEquipped: true,
         isPrimary: true,
         notes: 'Hidden in sleeve',
@@ -209,8 +211,8 @@ export const characters: Character[] = [
     ],
     armor: null,
     equipment: [
-      { itemId: 'clothing-fine', quantity: 1 },
-      { itemId: 'backpack', quantity: 1 },
+      { itemId: 6, quantity: 1 }, // clothing-fine
+      { itemId: 1, quantity: 1 }, // backpack
     ],
 
     conditions: [],
@@ -256,21 +258,22 @@ export const characters: Character[] = [
 
   // Adolin - Level 6 Warrior (Non-Radiant)
   {
-    id: 'char-003',
-    campaignId: 'campaign-001',
-    userId: 'user-003',
+    id: 3,
+    campaignId: 1,
+    userId: 3,
 
     name: 'Adolin Kholin',
     ancestry: 'human',
+    cultures: ['alethi', 'high-society'],
     level: 6,
     experience: 1600,
 
-    heroicPath: 'warrior',
+    heroicPaths: ['warrior', 'leader'],
     specialty: 'duelist',
     radiantOrder: null,
     radiantIdeal: 0,
 
-    originId: 'noble',
+    originId: 2, // noble
 
     strength: 4,
     speed: 3,
@@ -290,58 +293,59 @@ export const characters: Character[] = [
     notes: 'One of the finest duelists in Alethkar. Owns Shardplate and Shardblade.',
 
     skills: [
-      { skillId: 'heavy-weaponry', rank: 5 },
-      { skillId: 'athletics', rank: 3 },
-      { skillId: 'persuasion', rank: 3 },
-      { skillId: 'leadership', rank: 2 },
-      { skillId: 'insight', rank: 2 },
-      { skillId: 'deception', rank: 1 },
+      { skillId: 3, rank: 5 }, // heavy-weaponry
+      { skillId: 2, rank: 3 }, // athletics
+      { skillId: 17, rank: 3 }, // persuasion
+      { skillId: 15, rank: 2 }, // leadership
+      { skillId: 14, rank: 2 }, // insight
+      { skillId: 13, rank: 1 }, // deception
     ],
 
     talents: [
-      { id: 'talent-201', talentId: 'vigilant-stance', notes: 'Key talent' },
+      { id: 201, talentId: 1, notes: 'Warrior key talent' }, // vigilant-stance
+      { id: 202, talentId: 17, notes: 'Leader key talent' }, // inspiring-presence
       {
-        id: 'talent-202',
-        talentId: 'practiced-kata',
+        id: 203,
+        talentId: 6, // practiced-kata
         notes: 'Duelist specialty',
       },
-      { id: 'talent-203', talentId: 'flamestance', notes: 'Duelist specialty' },
+      { id: 204, talentId: 7, notes: 'Duelist specialty' }, // flamestance
       {
-        id: 'talent-204',
-        talentId: 'signature-weapon',
+        id: 205,
+        talentId: 8, // signature-weapon
         notes: 'Shardblade mastery',
       },
     ],
 
     expertises: [
-      { expertiseId: 'alethi-culture', source: 'origin' },
-      { expertiseId: 'high-society', source: 'origin' },
-      { expertiseId: 'shardblades', source: 'reward' },
-      { expertiseId: 'shardplate', source: 'reward' },
+      { expertiseId: 1, source: 'origin' }, // alethi
+      { expertiseId: 14, source: 'origin' }, // high-society
+      { expertiseId: 31, source: 'reward' }, // shardblades
+      { expertiseId: 32, source: 'reward' }, // shardplate
     ],
 
     weapons: [
       {
-        weaponId: 'shardblade',
+        weaponId: 4, // shardblade
         customName: 'Sunblade',
         isEquipped: true,
         isPrimary: true,
         notes: 'Family Shardblade',
       },
       {
-        weaponId: 'longsword',
+        weaponId: 2, // longsword
         isEquipped: false,
         isPrimary: false,
         notes: 'Backup weapon',
       },
     ],
     armor: {
-      armorId: 'shardplate',
+      armorId: 4, // shardplate
       isEquipped: true,
       charges: 4,
       notes: 'Family Shardplate',
     },
-    equipment: [{ itemId: 'clothing-fine', quantity: 3 }],
+    equipment: [{ itemId: 6, quantity: 3 }], // clothing-fine
 
     conditions: [],
     injuries: [],
@@ -370,6 +374,130 @@ export const characters: Character[] = [
         description: 'Father and Highprince',
       },
       { name: 'Renarin Kholin', type: 'ally', description: 'Younger brother' },
+    ],
+
+    companions: [],
+  },
+
+  // Rlain - Level 4 Singer Warrior
+  {
+    id: 4,
+    campaignId: 1,
+    userId: 4,
+
+    name: 'Rlain',
+    ancestry: 'singer',
+    cultures: ['listener'],
+    activeSingerForm: 'warform',
+    level: 4,
+    experience: 900,
+
+    heroicPaths: ['warrior'],
+    specialty: 'soldier',
+    radiantOrder: null,
+    radiantIdeal: 0,
+
+    originId: 1, // soldier
+
+    strength: 3,
+    speed: 3,
+    intellect: 2,
+    willpower: 3,
+    awareness: 3,
+    presence: 2,
+
+    currentHealth: 12,
+    currentFocus: 4,
+    currentInvestiture: 0,
+
+    spheres: 50,
+
+    biography:
+      'A listener who served as a spy among the Alethi, Rlain is one of the few listeners who survived the betrayal of the Everstorm. He has chosen to reject Odium and stand with Bridge Four.',
+    appearance:
+      'In warform, Rlain has a large body covered with fierce carapace. His skin is marbled with black and red. Orange hairstrands frame his face.',
+    notes: 'Former spy. Currently in warform. Loyal member of Bridge Four.',
+
+    skills: [
+      { skillId: 2, rank: 2 }, // athletics
+      { skillId: 3, rank: 3 }, // heavy-weaponry
+      { skillId: 5, rank: 3 }, // stealth
+      { skillId: 13, rank: 2 }, // deception
+      { skillId: 9, rank: 2 }, // discipline
+      { skillId: 16, rank: 2 }, // perception
+      { skillId: 18, rank: 2 }, // survival
+    ],
+
+    talents: [
+      {
+        id: 301,
+        talentId: 9, // change-form
+        notes: 'Singer key talent - grants dullform and mateform',
+      },
+      {
+        id: 302,
+        talentId: 11, // forms-of-resolve
+        notes: 'Grants warform and workform',
+      },
+      {
+        id: 303,
+        talentId: 1, // vigilant-stance
+        notes: 'Key talent from Warrior path',
+      },
+    ],
+
+    expertises: [
+      { expertiseId: 10, source: 'culture' }, // listener
+      { expertiseId: 1, source: 'training' }, // alethi
+      { expertiseId: 15, source: 'origin' }, // military-life
+    ],
+
+    weapons: [
+      {
+        weaponId: 3, // longspear
+        isEquipped: true,
+        isPrimary: true,
+        notes: 'Bridge Four standard issue',
+      },
+    ],
+    armor: null,
+    equipment: [
+      { itemId: 1, quantity: 1 }, // backpack
+      { itemId: 3, quantity: 3 }, // ration
+    ],
+
+    conditions: [],
+    injuries: [],
+
+    goals: [
+      {
+        name: 'Find my place among humans',
+        type: 'long-term',
+        category: 'ambition',
+        status: 'active',
+        description: 'Prove that listeners can be trusted allies',
+      },
+      {
+        name: 'Protect Bridge Four',
+        type: 'personal',
+        category: 'connection',
+        status: 'active',
+        description: 'Stand with my brothers in Bridge Four',
+      },
+    ],
+
+    connections: [
+      {
+        name: 'Bridge Four',
+        type: 'ally',
+        organization: 'Bridge Four',
+        description: 'Fellow soldiers who accepted me despite being a singer',
+      },
+      {
+        name: 'Kaladin Stormblessed',
+        type: 'ally',
+        description: 'Captain of Bridge Four, trusted leader',
+      },
     ],
 
     companions: [],

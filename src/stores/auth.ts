@@ -52,7 +52,7 @@ export const useAuthStore = defineStore('auth', () => {
       // Mock login for development
       await Promise.resolve();
       const mockUser: User = {
-        id: 'user-001',
+        id: 1,
         username,
         email: `${username}@example.com`,
       };

@@ -1,48 +1,142 @@
-import type { AttributeId } from './attributes';
-import type { CharacterSkill, CustomSkill } from './skills';
-import type { HeroicPathId, SpecialtyId } from './paths';
-import type { RadiantOrderId, RadiantIdealLevel } from './radiant';
-import type { CharacterWeapon, CharacterArmor, CharacterEquipment } from './equipment';
-import type { CharacterTalent } from './talents';
-import type { CharacterCondition, CharacterInjury } from './conditions';
-import type { Companion } from './companions';
-import type { CharacterGoal, CharacterConnection } from './goals';
-import type { CharacterExpertise } from './expertises';
+import type { HeroicPathCode, SpecialtyCode } from './paths';
+import type { RadiantOrderCode, RadiantIdealLevel } from './radiant-orders';
+import type { AncestryCode } from './ancestry';
+import type { SingerFormCode } from './singer-forms';
+import type { CultureCode } from './culture';
+import type { GoalType, GoalStatusCode } from './goal-status';
+import type { ConnectionTypeCode } from './connection-types';
+import type { CompanionTypeCode } from './companion-types';
 
 /**
- * Ancestry types
+ * Character skill (denormalized)
  */
-export type Ancestry = 'human' | 'singer' | 'horneater' | 'herdazian' | 'iriali';
+export interface CharacterSkill {
+  skillId: number;
+  rank: number;
+}
 
 /**
- * Character attribute values
+ * Character talent (denormalized)
  */
-export type CharacterAttributes = Record<AttributeId, number>;
+export interface CharacterTalent {
+  id: number;
+  talentId: number;
+  notes?: string;
+}
 
 /**
- * Complete character data structure
+ * Character expertise (denormalized)
+ */
+export interface CharacterExpertise {
+  expertiseId: number;
+  source: string;
+}
+
+/**
+ * Character weapon (denormalized)
+ */
+export interface CharacterWeapon {
+  weaponId: number;
+  customName?: string;
+  isEquipped: boolean;
+  isPrimary: boolean;
+  notes?: string;
+}
+
+/**
+ * Character armor (denormalized)
+ */
+export interface CharacterArmor {
+  armorId: number;
+  isEquipped: boolean;
+  charges?: number;
+  notes?: string;
+}
+
+/**
+ * Character equipment (denormalized)
+ */
+export interface CharacterEquipment {
+  itemId: number;
+  quantity: number;
+}
+
+/**
+ * Character condition (denormalized)
+ */
+export interface CharacterCondition {
+  id: number;
+  conditionId: number;
+  value?: number;
+  notes?: string;
+}
+
+/**
+ * Character injury (denormalized)
+ */
+export interface CharacterInjury {
+  id: number;
+  injuryId: number;
+  daysRemaining?: number;
+  notes?: string;
+}
+
+/**
+ * Character goal (denormalized)
+ */
+export interface CharacterGoal {
+  name: string;
+  type: GoalType;
+  category: string;
+  status: GoalStatusCode;
+  description?: string;
+}
+
+/**
+ * Character connection (denormalized)
+ */
+export interface CharacterConnection {
+  name: string;
+  type: ConnectionTypeCode;
+  organization?: string;
+  description?: string;
+}
+
+/**
+ * Character companion (denormalized)
+ */
+export interface CharacterCompanion {
+  name: string;
+  type: CompanionTypeCode;
+  subtype?: string;
+  bondStrength?: number;
+  canManifestBlade?: boolean;
+  personality?: string;
+}
+
+/**
+ * Denormalized character for display
  */
 export interface Character {
-  id: string;
-  campaignId: string;
-  userId: string;
+  id: number;
+  campaignId: number;
+  userId: number;
 
-  // Basic info
   name: string;
-  ancestry: Ancestry;
+  ancestry: AncestryCode;
+  cultures: CultureCode[];
   level: number;
   experience: number;
 
-  // Paths
-  heroicPath: HeroicPathId;
-  specialty: SpecialtyId;
-  radiantOrder: RadiantOrderId | null;
+  activeSingerForm?: SingerFormCode;
+
+  heroicPaths: HeroicPathCode[];
+  specialty: SpecialtyCode;
+  radiantOrder: RadiantOrderCode | null;
   radiantIdeal: RadiantIdealLevel;
 
-  // Origin
-  originId: string;
+  originId: number;
 
-  // Attributes (0-10 scale)
   strength: number;
   speed: number;
   intellect: number;
@@ -50,55 +144,38 @@ export interface Character {
   awareness: number;
   presence: number;
 
-  // Current resources
   currentHealth: number;
   currentFocus: number;
   currentInvestiture: number;
 
-  // Currency
   spheres: number;
 
-  // Narrative
   biography?: string;
   appearance?: string;
   notes?: string;
 
-  // Skills
   skills: CharacterSkill[];
-  customSkills?: CustomSkill[];
-
-  // Talents
   talents: CharacterTalent[];
-
-  // Expertises
   expertises: CharacterExpertise[];
-
-  // Equipment
   weapons: CharacterWeapon[];
   armor: CharacterArmor | null;
   equipment: CharacterEquipment[];
-
-  // Status
   conditions: CharacterCondition[];
   injuries: CharacterInjury[];
-
-  // Goals and connections
   goals: CharacterGoal[];
   connections: CharacterConnection[];
-
-  // Companions
-  companions: Companion[];
+  companions: CharacterCompanion[];
 }
 
 /**
  * Character summary for lists
  */
 export interface CharacterSummary {
-  id: string;
+  id: number;
   name: string;
   level: number;
-  heroicPath: HeroicPathId;
-  radiantOrder: RadiantOrderId | null;
+  heroicPaths: HeroicPathCode[];
+  radiantOrder: RadiantOrderCode | null;
   currentHealth: number;
   maxHealth: number;
 }

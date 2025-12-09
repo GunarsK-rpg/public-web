@@ -1,48 +1,23 @@
 /**
- * Goal timeframe types
+ * Hero's goal
  */
-export type GoalType = 'short-term' | 'long-term' | 'personal';
-
-/**
- * Goal category types
- */
-export type GoalCategory =
-  | 'ambition'
-  | 'connection'
-  | 'discovery'
-  | 'justice'
-  | 'survival'
-  | 'redemption';
-
-/**
- * Goal status
- */
-export type GoalStatus = 'active' | 'completed' | 'failed' | 'abandoned';
-
-/**
- * Character's goal
- */
-export interface CharacterGoal {
-  id?: string;
+export interface HeroGoal {
+  id: number;
+  heroId: number;
   name: string;
-  type: GoalType;
-  category: GoalCategory;
-  status: GoalStatus;
   description?: string;
+  notes?: string;
+  value: number;
+  statusId: number;
 }
 
 /**
- * Connection type identifiers
+ * Hero's connection
  */
-export type ConnectionType = 'ally' | 'contact' | 'rival' | 'enemy' | 'patron' | 'follower';
-
-/**
- * Character's connection/relationship
- */
-export interface CharacterConnection {
-  id?: string;
-  name: string;
-  type: ConnectionType;
-  organization?: string;
+export interface HeroConnection {
+  id: number;
+  heroId: number;
+  connTypeId: number;
   description?: string;
+  notes?: string;
 }

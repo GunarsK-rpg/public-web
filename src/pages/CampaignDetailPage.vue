@@ -35,7 +35,7 @@
                 <div class="text-h6">{{ character.name }}</div>
                 <div class="text-subtitle2">
                   Level {{ character.level }}
-                  {{ formatPath(character.heroicPath) }}
+                  {{ formatPaths(character.heroicPaths) }}
                   <span v-if="character.radiantOrder">
                     / {{ formatOrder(character.radiantOrder) }}
                   </span>
@@ -66,7 +66,7 @@
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'stores/campaigns';
-import type { HeroicPathId, RadiantOrderId } from 'src/types';
+import type { HeroicPathCode, RadiantOrderCode } from 'src/types';
 
 const props = defineProps<{
   campaignId: string;
@@ -80,15 +80,15 @@ const loading = computed(() => campaignStore.loading);
 const error = computed(() => campaignStore.error);
 
 onMounted(async () => {
-  await campaignStore.selectCampaign(props.campaignId);
+  await campaignStore.selectCampaign(Number(props.campaignId));
 });
 
-function selectCharacter(characterId: string): void {
+function selectCharacter(characterId: number): void {
   void router.push({
     name: 'character-sheet',
     params: {
       campaignId: props.campaignId,
-      characterId,
+      characterId: String(characterId),
     },
   });
 }
@@ -97,8 +97,8 @@ function goBack(): void {
   void router.push({ name: 'campaigns' });
 }
 
-function formatPath(pathId: HeroicPathId): string {
-  const names: Record<HeroicPathId, string> = {
+function formatPaths(pathCodes: HeroicPathCode[]): string {
+  const names: Record<HeroicPathCode, string> = {
     agent: 'Agent',
     envoy: 'Envoy',
     hunter: 'Hunter',
@@ -106,11 +106,11 @@ function formatPath(pathId: HeroicPathId): string {
     scholar: 'Scholar',
     warrior: 'Warrior',
   };
-  return names[pathId] || pathId;
+  return pathCodes.map((code) => names[code] || code).join(' / ');
 }
 
-function formatOrder(orderId: RadiantOrderId): string {
-  const names: Record<RadiantOrderId, string> = {
+function formatOrder(orderCode: RadiantOrderCode): string {
+  const names: Record<RadiantOrderCode, string> = {
     windrunner: 'Windrunner',
     skybreaker: 'Skybreaker',
     dustbringer: 'Dustbringer',
@@ -122,7 +122,7 @@ function formatOrder(orderId: RadiantOrderId): string {
     stoneward: 'Stoneward',
     bondsmith: 'Bondsmith',
   };
-  return names[orderId] || orderId;
+  return names[orderCode] || orderCode;
 }
 </script>
 

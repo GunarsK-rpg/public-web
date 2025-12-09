@@ -4,10 +4,10 @@
     <div class="section-title">Attributes</div>
     <div class="row q-col-gutter-sm q-mb-md">
       <div v-for="attr in attributes" :key="attr.id" class="col-6 col-sm-4 col-md-2">
-        <q-card class="attribute-card" :class="attr.category">
+        <q-card class="attribute-card" :class="getAttributeTypeClass(attr.attrTypeId)">
           <q-card-section class="text-center q-pa-sm">
             <div class="attribute-abbr">{{ attr.abbreviation }}</div>
-            <div class="attribute-value">{{ getAttributeValue(attr.id) }}</div>
+            <div class="attribute-value">{{ getAttributeValue(attr.code) }}</div>
             <div class="attribute-name">{{ attr.name }}</div>
           </q-card-section>
         </q-card>
@@ -102,7 +102,7 @@
 import { computed } from 'vue';
 import { useCharacterStore } from 'stores/character';
 import { useClassifierStore } from 'stores/classifiers';
-import type { AttributeId } from 'src/types';
+import type { AttributeCode } from 'src/types';
 
 const characterStore = useCharacterStore();
 const classifierStore = useClassifierStore();
@@ -114,9 +114,14 @@ const cognitiveDefense = computed(() => characterStore.cognitiveDefense);
 const spiritualDefense = computed(() => characterStore.spiritualDefense);
 const deflect = computed(() => characterStore.deflect);
 
-function getAttributeValue(attrId: AttributeId): number {
+function getAttributeValue(attrCode: AttributeCode): number {
   if (!character.value) return 0;
-  return character.value[attrId] || 0;
+  return character.value[attrCode] || 0;
+}
+
+function getAttributeTypeClass(attrTypeId: number): string {
+  const typeCode = classifierStore.getAttributeTypeCode(attrTypeId);
+  return typeCode || '';
 }
 
 // Derived stat calculations

@@ -2,19 +2,36 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type {
   Attribute,
+  AttributeCode,
+  AttributeTypeCode,
   Skill,
+  SkillCode,
   Weapon,
   Armor,
   Equipment,
   Condition,
+  ConditionCode,
   Expertise,
+  ExpertiseCategoryCode,
   Origin,
   HeroicPath,
+  HeroicPathCode,
   Specialty,
+  SpecialtyCode,
   RadiantOrder,
+  RadiantOrderCode,
   Surge,
+  SurgeCode,
   Talent,
+  Ancestry,
+  AncestryCode,
+  SingerForm,
+  SingerFormCode,
+  Culture,
+  CultureCode,
 } from 'src/types';
+import { attributeTypes } from 'src/mock/attributes';
+import { expertiseCategories } from 'src/mock/expertises';
 
 interface Classifiers {
   attributes: Attribute[];
@@ -30,6 +47,9 @@ interface Classifiers {
   radiantOrders: RadiantOrder[];
   surges: Surge[];
   talents: Talent[];
+  ancestries: Ancestry[];
+  singerForms: SingerForm[];
+  cultures: Culture[];
 }
 
 export const useClassifierStore = defineStore('classifiers', () => {
@@ -51,53 +71,190 @@ export const useClassifierStore = defineStore('classifiers', () => {
   const radiantOrders = computed(() => data.value?.radiantOrders || []);
   const surges = computed(() => data.value?.surges || []);
   const talents = computed(() => data.value?.talents || []);
+  const ancestries = computed(() => data.value?.ancestries || []);
+  const singerForms = computed(() => data.value?.singerForms || []);
+  const cultures = computed(() => data.value?.cultures || []);
 
-  function getSkillById(id: string): Skill | undefined {
+  // Lookup by numeric ID
+  function getAttributeById(id: number): Attribute | undefined {
+    return attributes.value.find((a) => a.id === id);
+  }
+
+  function getSkillById(id: number): Skill | undefined {
     return skills.value.find((s) => s.id === id);
   }
 
-  function getWeaponById(id: string): Weapon | undefined {
+  function getWeaponById(id: number): Weapon | undefined {
     return weapons.value.find((w) => w.id === id);
   }
 
-  function getArmorById(id: string): Armor | undefined {
+  function getArmorById(id: number): Armor | undefined {
     return armor.value.find((a) => a.id === id);
   }
 
-  function getEquipmentById(id: string): Equipment | undefined {
+  function getEquipmentById(id: number): Equipment | undefined {
     return equipment.value.find((e) => e.id === id);
   }
 
-  function getConditionById(id: string): Condition | undefined {
+  function getConditionById(id: number): Condition | undefined {
     return conditions.value.find((c) => c.id === id);
   }
 
-  function getExpertiseById(id: string): Expertise | undefined {
+  function getExpertiseById(id: number): Expertise | undefined {
     return expertises.value.find((e) => e.id === id);
   }
 
-  function getOriginById(id: string): Origin | undefined {
+  function getOriginById(id: number): Origin | undefined {
     return origins.value.find((o) => o.id === id);
   }
 
-  function getHeroicPathById(id: string): HeroicPath | undefined {
+  function getHeroicPathById(id: number): HeroicPath | undefined {
     return heroicPaths.value.find((p) => p.id === id);
   }
 
-  function getSpecialtyById(id: string): Specialty | undefined {
+  function getSpecialtyById(id: number): Specialty | undefined {
     return specialties.value.find((s) => s.id === id);
   }
 
-  function getRadiantOrderById(id: string): RadiantOrder | undefined {
+  function getRadiantOrderById(id: number): RadiantOrder | undefined {
     return radiantOrders.value.find((o) => o.id === id);
   }
 
-  function getSurgeById(id: string): Surge | undefined {
+  function getSurgeById(id: number): Surge | undefined {
     return surges.value.find((s) => s.id === id);
   }
 
-  function getTalentById(id: string): Talent | undefined {
+  function getTalentById(id: number): Talent | undefined {
     return talents.value.find((t) => t.id === id);
+  }
+
+  function getAncestryById(id: number): Ancestry | undefined {
+    return ancestries.value.find((a) => a.id === id);
+  }
+
+  function getSingerFormById(id: number): SingerForm | undefined {
+    return singerForms.value.find((f) => f.id === id);
+  }
+
+  function getCultureById(id: number): Culture | undefined {
+    return cultures.value.find((c) => c.id === id);
+  }
+
+  // Lookup by code (for character references)
+  function getAttributeByCode(code: AttributeCode): Attribute | undefined {
+    return attributes.value.find((a) => a.code === code);
+  }
+
+  function getSkillByCode(code: SkillCode): Skill | undefined {
+    return skills.value.find((s) => s.code === code);
+  }
+
+  function getWeaponByCode(code: string): Weapon | undefined {
+    return weapons.value.find((w) => w.code === code);
+  }
+
+  function getArmorByCode(code: string): Armor | undefined {
+    return armor.value.find((a) => a.code === code);
+  }
+
+  function getEquipmentByCode(code: string): Equipment | undefined {
+    return equipment.value.find((e) => e.code === code);
+  }
+
+  function getConditionByCode(code: ConditionCode): Condition | undefined {
+    return conditions.value.find((c) => c.code === code);
+  }
+
+  function getExpertiseByCode(code: string): Expertise | undefined {
+    return expertises.value.find((e) => e.code === code);
+  }
+
+  function getOriginByCode(code: string): Origin | undefined {
+    return origins.value.find((o) => o.code === code);
+  }
+
+  function getHeroicPathByCode(code: HeroicPathCode): HeroicPath | undefined {
+    return heroicPaths.value.find((p) => p.code === code);
+  }
+
+  function getSpecialtyByCode(code: SpecialtyCode): Specialty | undefined {
+    return specialties.value.find((s) => s.code === code);
+  }
+
+  function getRadiantOrderByCode(code: RadiantOrderCode): RadiantOrder | undefined {
+    return radiantOrders.value.find((o) => o.code === code);
+  }
+
+  function getSurgeByCode(code: SurgeCode): Surge | undefined {
+    return surges.value.find((s) => s.code === code);
+  }
+
+  function getTalentByCode(code: string): Talent | undefined {
+    return talents.value.find((t) => t.code === code);
+  }
+
+  function getAncestryByCode(code: AncestryCode): Ancestry | undefined {
+    return ancestries.value.find((a) => a.code === code);
+  }
+
+  function getSingerFormByCode(code: SingerFormCode): SingerForm | undefined {
+    return singerForms.value.find((f) => f.code === code);
+  }
+
+  function getCultureByCode(code: CultureCode): Culture | undefined {
+    return cultures.value.find((c) => c.code === code);
+  }
+
+  // Helper to get attribute type code from attrTypeId
+  function getAttributeTypeCode(attrTypeId: number): AttributeTypeCode | undefined {
+    return attributeTypes.find((t) => t.id === attrTypeId)?.code;
+  }
+
+  // Helper to get skills by attribute type (physical/cognitive/spiritual)
+  function getSkillsByAttributeType(attrTypeCode: AttributeTypeCode): Skill[] {
+    const attrType = attributeTypes.find((t) => t.code === attrTypeCode);
+    if (!attrType) return [];
+    const attrIds = attributes.value
+      .filter((a) => a.attrTypeId === attrType.id)
+      .map((a) => a.id);
+    return skills.value.filter((s) => attrIds.includes(s.attrId));
+  }
+
+  // Helper to get expertise category code from categoryId
+  function getExpertiseCategoryCode(categoryId: number): ExpertiseCategoryCode | undefined {
+    return expertiseCategories.find((c) => c.id === categoryId)?.code;
+  }
+
+  // Helper to get expertises by category code
+  function getExpertisesByCategoryCode(categoryCode: ExpertiseCategoryCode): Expertise[] {
+    const category = expertiseCategories.find((c) => c.code === categoryCode);
+    if (!category) return [];
+    return expertises.value.filter((e) => e.categoryId === category.id);
+  }
+
+  // Helper to get specialties by path ID
+  function getSpecialtiesByPathId(pathId: number): Specialty[] {
+    return specialties.value.filter((s) => s.pathId === pathId);
+  }
+
+  // Helper to get talents by path ID
+  function getTalentsByPathId(pathId: number): Talent[] {
+    return talents.value.filter((t) => t.pathId === pathId);
+  }
+
+  // Helper to get talents by specialty ID
+  function getTalentsBySpecialtyId(specialtyId: number): Talent[] {
+    return talents.value.filter((t) => t.specialtyId === specialtyId);
+  }
+
+  // Helper to get talents by ancestry ID
+  function getTalentsByAncestryId(ancestryId: number): Talent[] {
+    return talents.value.filter((t) => t.ancestryId === ancestryId);
+  }
+
+  // Helper to get key talent for a path
+  function getKeyTalentForPath(pathId: number): Talent | undefined {
+    return talents.value.find((t) => t.pathId === pathId && t.isKey);
   }
 
   async function initialize(): Promise<void> {
@@ -148,6 +305,11 @@ export const useClassifierStore = defineStore('classifiers', () => {
     radiantOrders,
     surges,
     talents,
+    ancestries,
+    singerForms,
+    cultures,
+    // By ID (numeric)
+    getAttributeById,
     getSkillById,
     getWeaponById,
     getArmorById,
@@ -160,6 +322,36 @@ export const useClassifierStore = defineStore('classifiers', () => {
     getRadiantOrderById,
     getSurgeById,
     getTalentById,
+    getAncestryById,
+    getSingerFormById,
+    getCultureById,
+    // By code (string)
+    getAttributeByCode,
+    getSkillByCode,
+    getWeaponByCode,
+    getArmorByCode,
+    getEquipmentByCode,
+    getConditionByCode,
+    getExpertiseByCode,
+    getOriginByCode,
+    getHeroicPathByCode,
+    getSpecialtyByCode,
+    getRadiantOrderByCode,
+    getSurgeByCode,
+    getTalentByCode,
+    getAncestryByCode,
+    getSingerFormByCode,
+    getCultureByCode,
+    // New helpers
+    getAttributeTypeCode,
+    getSkillsByAttributeType,
+    getExpertiseCategoryCode,
+    getExpertisesByCategoryCode,
+    getSpecialtiesByPathId,
+    getTalentsByPathId,
+    getTalentsBySpecialtyId,
+    getTalentsByAncestryId,
+    getKeyTalentForPath,
     initialize,
     reset,
   };

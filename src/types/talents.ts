@@ -1,57 +1,38 @@
-import type { HeroicPathId, SpecialtyId } from './paths';
-import type { SkillId } from './skills';
-
-/**
- * Talent activation type
- */
-export type TalentActivation =
-  | 'action'
-  | 'double-action'
-  | 'triple-action'
-  | 'free-action'
-  | 'reaction'
-  | 'special'
-  | 'always-active';
-
-/**
- * Talent definition from classifiers
- */
-export interface Talent {
-  id: string;
-  name: string;
-  pathId?: HeroicPathId;
-  specialtyId?: SpecialtyId;
-  isKeyTalent: boolean;
-  activation: TalentActivation;
-  focusCost?: number;
-  investitureCost?: number;
-  prerequisites: TalentPrerequisite[];
-  effect: string;
-  description?: string;
-}
-
 /**
  * Talent prerequisite types
  */
-export type TalentPrerequisiteType = 'talent' | 'skill' | 'ideal' | 'narrative' | 'level';
-
-/**
- * Talent prerequisite definition
- */
 export interface TalentPrerequisite {
-  type: TalentPrerequisiteType;
-  talentId?: string;
-  skillId?: SkillId;
+  type: string;
+  talentId?: number;
+  skillId?: number;
   skillRank?: number;
-  idealLevel?: number;
   description?: string;
 }
 
 /**
- * Character's acquired talent
+ * Talent classifier
  */
-export interface CharacterTalent {
-  id: string;
-  talentId: string;
+export interface Talent {
+  id: number;
+  pathId?: number;
+  specialtyId?: number;
+  ancestryId?: number;
+  surgeId?: number;
+  code: string;
+  name: string;
+  description?: string;
+  descriptionShort?: string;
+  actionId?: number;
+  isKey: boolean;
+  prerequisites?: TalentPrerequisite[] | string;
+}
+
+/**
+ * Hero's talent
+ */
+export interface HeroTalent {
+  id: number;
+  heroId: number;
+  talentId: number;
   notes?: string;
 }

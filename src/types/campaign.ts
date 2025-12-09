@@ -1,15 +1,16 @@
 import type { CharacterSummary } from './character';
 
 /**
- * Campaign data
+ * Campaign data (campaigns table)
  */
 export interface Campaign {
-  id: string;
+  id: number;
+  userId: number;
+  code: string;
   name: string;
   description?: string;
-  gmUserId: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 /**
@@ -23,8 +24,8 @@ export interface CampaignWithCharacters extends Campaign {
  * Campaign member
  */
 export interface CampaignMember {
-  userId: string;
+  userId: number;
   username: string;
   role: 'gm' | 'player';
-  characterId?: string;
+  characterId?: number;
 }
