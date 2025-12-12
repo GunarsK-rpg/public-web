@@ -45,62 +45,77 @@
       Equipment from starting kit: {{ startingKitEquipmentNames.join(', ') }}
     </q-banner>
 
-    <!-- Equipment List -->
-    <div class="text-subtitle2 q-mb-sm">Your Equipment</div>
-    <q-list v-if="equipment.length > 0" bordered separator>
-      <q-item v-for="(item, index) in equipment" :key="index">
-        <q-item-section>
-          <q-item-label>{{ getEquipmentName(item.equipmentId) }}</q-item-label>
-          <q-item-label caption>Qty: {{ item.quantity }}</q-item-label>
-        </q-item-section>
-        <q-item-section side>
-          <q-btn
-            flat
-            round
-            icon="sym_o_delete"
-            color="negative"
-            size="sm"
-            @click="removeItem(item.equipmentId)"
-          />
-        </q-item-section>
-      </q-item>
-    </q-list>
-    <div v-else class="text-caption text-muted q-pa-md">
-      No equipment added yet. Add equipment below or it will be populated from your starting kit.
-    </div>
+    <!-- Equipment by Type -->
+    <div v-for="eqType in equipmentTypesList" :key="eqType.id" class="q-mb-lg">
+      <div class="text-subtitle2 q-mb-sm">{{ eqType.name }}</div>
 
-    <!-- Add Equipment -->
-    <div class="q-mt-md">
-      <q-select
-        v-model="newEquipmentId"
-        :options="availableEquipment"
-        label="Add Equipment"
-        outlined
-        emit-value
-        map-options
-        clearable
-      />
-      <q-btn
-        v-if="newEquipmentId"
-        color="primary"
-        label="Add"
-        icon="sym_o_add"
-        class="q-mt-sm"
-        @click="addItem"
-      />
+      <!-- Items of this type -->
+      <q-list v-if="getEquipmentByType(eqType.id).length > 0" bordered separator>
+        <q-item v-for="item in getEquipmentByType(eqType.id)" :key="item.equipmentId">
+          <q-item-section>
+            <q-item-label>{{ getEquipmentName(item.equipmentId) }}</q-item-label>
+            <q-item-label caption>Qty: {{ item.quantity }}</q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-btn
+              flat
+              round
+              icon="sym_o_delete"
+              color="negative"
+              size="sm"
+              @click="removeItem(item.equipmentId)"
+            />
+          </q-item-section>
+        </q-item>
+      </q-list>
+      <div v-else class="text-caption text-muted q-pa-sm">No {{ eqType.name.toLowerCase() }}</div>
+
+      <!-- Add item of this type -->
+      <div class="row items-center q-mt-sm q-gutter-sm">
+        <q-select
+          v-model="newEquipmentByType[eqType.id]"
+          :options="getAvailableByType(eqType.id)"
+          :label="`Add ${eqType.name}`"
+          outlined
+          dense
+          emit-value
+          map-options
+          clearable
+          class="col"
+          style="max-width: 300px"
+        />
+        <q-btn
+          v-if="newEquipmentByType[eqType.id]"
+          color="primary"
+          icon="sym_o_add"
+          dense
+          @click="addItemOfType(eqType.id)"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, reactive } from 'vue';
 import { useCharacterCreationStore } from 'stores/character-creation';
 import { useClassifierStore } from 'stores/classifiers';
+import { equipmentTypes } from 'src/mock/equipment';
 
 const store = useCharacterCreationStore();
 const classifiers = useClassifierStore();
 
-const newEquipmentId = ref<number | null>(null);
+// Equipment types list for iteration
+const equipmentTypesList = equipmentTypes;
+
+// Track new equipment selection per type
+const newEquipmentByType = reactive<Record<number, number | null>>({
+  1: null, // weapon
+  2: null, // armor
+  3: null, // fabrial
+  4: null, // consumable
+  5: null, // gear
+});
 
 // Get selected starting kit from the previous step
 const selectedStartingKit = computed(() =>
@@ -128,22 +143,34 @@ const startingKitEquipmentNames = computed(() => {
     .filter((name): name is string => name !== null);
 });
 
-const availableEquipment = computed(() =>
-  classifiers.equipment.map((e) => ({ value: e.id, label: e.name }))
-);
+// Get equipment items grouped by type
+function getEquipmentByType(typeId: number) {
+  return equipment.value.filter((item) => {
+    const eq = classifiers.getEquipmentById(item.equipmentId);
+    return eq?.equipTypeId === typeId;
+  });
+}
+
+// Get available equipment options for a specific type
+function getAvailableByType(typeId: number) {
+  return classifiers.equipment
+    .filter((e) => e.equipTypeId === typeId)
+    .map((e) => ({ value: e.id, label: e.name }));
+}
 
 function getEquipmentName(id: number): string {
   return classifiers.equipment.find((e) => e.id === id)?.name || 'Unknown';
 }
 
-function addItem() {
-  if (newEquipmentId.value) {
+function addItemOfType(typeId: number) {
+  const equipmentId = newEquipmentByType[typeId];
+  if (equipmentId) {
     store.addEquipmentItem({
-      equipmentId: newEquipmentId.value,
+      equipmentId,
       quantity: 1,
       isEquipped: false,
     });
-    newEquipmentId.value = null;
+    newEquipmentByType[typeId] = null;
   }
 }
 

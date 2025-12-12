@@ -170,10 +170,17 @@
             <div class="q-mb-sm">
               <span class="text-weight-medium">Spheres:</span> {{ spheres }}
             </div>
-            <div>
-              <q-chip v-for="item in equipmentDisplay" :key="item.equipmentId" outline>
-                {{ item.name }} x{{ item.quantity }}
-              </q-chip>
+            <div v-for="eqType in equipmentTypesList" :key="eqType.id" class="q-mb-sm">
+              <div v-if="getEquipmentByType(eqType.id).length > 0">
+                <div class="text-caption text-weight-medium">{{ eqType.name }}</div>
+                <q-chip
+                  v-for="item in getEquipmentByType(eqType.id)"
+                  :key="item.equipmentId"
+                  outline
+                >
+                  {{ item.name }} x{{ item.quantity }}
+                </q-chip>
+              </div>
             </div>
             <div v-if="equipmentDisplay.length === 0" class="text-caption text-muted">
               No equipment
@@ -190,6 +197,7 @@ import { computed } from 'vue';
 import { useCharacterCreationStore } from 'stores/character-creation';
 import { useClassifierStore } from 'stores/classifiers';
 import { getTalentById } from 'src/mock/talents';
+import { equipmentTypes } from 'src/mock/equipment';
 
 const store = useCharacterCreationStore();
 const classifiers = useClassifierStore();
@@ -286,11 +294,17 @@ const pathDisplay = computed(() =>
 
 // Equipment
 const spheres = computed(() => store.equipment.spheres);
+const equipmentTypesList = equipmentTypes;
 const equipmentDisplay = computed(() =>
   store.equipment.equipment.map((e) => ({
     equipmentId: e.equipmentId,
     name: classifiers.equipment.find((eq) => eq.id === e.equipmentId)?.name || 'Unknown',
     quantity: e.quantity,
+    equipTypeId: classifiers.equipment.find((eq) => eq.id === e.equipmentId)?.equipTypeId,
   }))
 );
+
+function getEquipmentByType(typeId: number) {
+  return equipmentDisplay.value.filter((item) => item.equipTypeId === typeId);
+}
 </script>
