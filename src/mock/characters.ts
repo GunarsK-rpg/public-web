@@ -18,7 +18,7 @@ export const characters: Character[] = [
     radiantOrder: 'windrunner',
     radiantIdeal: 3,
 
-    originId: 1, // soldier
+    startingKitId: 3, // military
 
     strength: 3,
     speed: 4,
@@ -63,8 +63,8 @@ export const characters: Character[] = [
     ],
 
     expertises: [
-      { expertiseId: 1, source: 'origin' }, // alethi
-      { expertiseId: 15, source: 'origin' }, // military-life
+      { expertiseId: 1, source: 'starting_kit' }, // alethi
+      { expertiseId: 15, source: 'starting_kit' }, // military-life
       { expertiseId: 31, source: 'talent' }, // shardblades
     ],
 
@@ -153,7 +153,7 @@ export const characters: Character[] = [
     radiantOrder: 'lightweaver',
     radiantIdeal: 2,
 
-    originId: 2, // noble
+    startingKitId: 4, // courtier
 
     strength: 1,
     speed: 2,
@@ -196,8 +196,8 @@ export const characters: Character[] = [
     ],
 
     expertises: [
-      { expertiseId: 2, source: 'origin' }, // veden
-      { expertiseId: 14, source: 'origin' }, // high-society
+      { expertiseId: 2, source: 'starting_kit' }, // veden
+      { expertiseId: 14, source: 'starting_kit' }, // high-society
       { expertiseId: 30, source: 'talent' }, // fabrial-crafting
     ],
 
@@ -273,7 +273,7 @@ export const characters: Character[] = [
     radiantOrder: null,
     radiantIdeal: 0,
 
-    originId: 2, // noble
+    startingKitId: 4, // courtier
 
     strength: 4,
     speed: 3,
@@ -318,8 +318,8 @@ export const characters: Character[] = [
     ],
 
     expertises: [
-      { expertiseId: 1, source: 'origin' }, // alethi
-      { expertiseId: 14, source: 'origin' }, // high-society
+      { expertiseId: 1, source: 'starting_kit' }, // alethi
+      { expertiseId: 14, source: 'starting_kit' }, // high-society
       { expertiseId: 31, source: 'reward' }, // shardblades
       { expertiseId: 32, source: 'reward' }, // shardplate
     ],
@@ -397,7 +397,7 @@ export const characters: Character[] = [
     radiantOrder: null,
     radiantIdeal: 0,
 
-    originId: 1, // soldier
+    startingKitId: 3, // military
 
     strength: 3,
     speed: 3,
@@ -449,7 +449,7 @@ export const characters: Character[] = [
     expertises: [
       { expertiseId: 10, source: 'culture' }, // listener
       { expertiseId: 1, source: 'training' }, // alethi
-      { expertiseId: 15, source: 'origin' }, // military-life
+      { expertiseId: 15, source: 'starting_kit' }, // military-life
     ],
 
     weapons: [

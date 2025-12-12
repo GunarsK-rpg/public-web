@@ -22,10 +22,7 @@ export * from './conditions';
 export * from './goal-status';
 export * from './connection-types';
 export * from './companion-types';
-export * from './origins';
-export * from './origin-skills';
-export * from './origin-expertises';
-export * from './origin-equipment';
+export * from './starting-kits';
 export * from './ancestry';
 export * from './culture';
 
@@ -38,6 +35,9 @@ export * from './campaign';
 
 // Denormalized views
 export * from './character';
+
+// Character creation wizard
+export * from './character-creation';
 
 // API types
 export interface ApiResponse<T> {

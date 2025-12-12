@@ -65,7 +65,7 @@
       <div class="col-6 col-sm-3">
         <q-card flat bordered>
           <q-card-section class="q-pa-sm">
-            <div class="text-caption text-grey">Movement</div>
+            <div class="text-caption text-muted">Movement</div>
             <div class="text-body1">{{ movementRate }} ft</div>
           </q-card-section>
         </q-card>
@@ -73,7 +73,7 @@
       <div class="col-6 col-sm-3">
         <q-card flat bordered>
           <q-card-section class="q-pa-sm">
-            <div class="text-caption text-grey">Recovery Die</div>
+            <div class="text-caption text-muted">Recovery Die</div>
             <div class="text-body1">{{ recoveryDie }}</div>
           </q-card-section>
         </q-card>
@@ -81,7 +81,7 @@
       <div class="col-6 col-sm-3">
         <q-card flat bordered>
           <q-card-section class="q-pa-sm">
-            <div class="text-caption text-grey">Lift Capacity</div>
+            <div class="text-caption text-muted">Lift Capacity</div>
             <div class="text-body1">{{ liftCapacity }} lb</div>
           </q-card-section>
         </q-card>
@@ -89,7 +89,7 @@
       <div class="col-6 col-sm-3">
         <q-card flat bordered>
           <q-card-section class="q-pa-sm">
-            <div class="text-caption text-grey">Senses Range</div>
+            <div class="text-caption text-muted">Senses Range</div>
             <div class="text-body1">{{ sensesRange }}</div>
           </q-card-section>
         </q-card>

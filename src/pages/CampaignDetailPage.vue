@@ -16,12 +16,27 @@
           {{ campaign.description }}
         </div>
 
-        <div class="text-h6 q-mb-md">Characters</div>
+        <div class="row items-center q-mb-md">
+          <div class="text-h6">Characters</div>
+          <q-space />
+          <q-btn
+            color="primary"
+            icon="sym_o_add"
+            label="Create Character"
+            @click="createCharacter"
+          />
+        </div>
 
         <div v-if="campaign.characters.length === 0" class="text-center q-pa-xl">
           <q-icon name="person_off" size="64px" color="grey-5" />
           <div class="text-h6 text-grey-7 q-mt-md">No characters</div>
-          <div class="text-body2 text-grey-6">No characters in this campaign yet.</div>
+          <div class="text-body2 text-grey-6 q-mb-md">No characters in this campaign yet.</div>
+          <q-btn
+            color="primary"
+            icon="sym_o_add"
+            label="Create Your First Character"
+            @click="createCharacter"
+          />
         </div>
 
         <div v-else class="row q-col-gutter-md">
@@ -95,6 +110,13 @@ function selectCharacter(characterId: number): void {
 
 function goBack(): void {
   void router.push({ name: 'campaigns' });
+}
+
+function createCharacter(): void {
+  void router.push({
+    name: 'character-create',
+    params: { campaignId: props.campaignId },
+  });
 }
 
 function formatPaths(pathCodes: HeroicPathCode[]): string {

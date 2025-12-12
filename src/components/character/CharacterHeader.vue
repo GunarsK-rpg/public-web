@@ -4,7 +4,7 @@
       <!-- Name and Level -->
       <div class="col-12 col-sm-6">
         <div class="text-h5">{{ character?.name }}</div>
-        <div class="text-subtitle1 text-grey">
+        <div class="text-subtitle1 text-muted">
           Level {{ character?.level }}
           {{ ancestryName }}
           {{ pathNames }}

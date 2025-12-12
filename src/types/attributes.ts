@@ -1,7 +1,13 @@
 /**
  * Attribute code identifiers
  */
-export type AttributeCode = 'strength' | 'speed' | 'intellect' | 'willpower' | 'awareness' | 'presence';
+export type AttributeCode =
+  | 'strength'
+  | 'speed'
+  | 'intellect'
+  | 'willpower'
+  | 'awareness'
+  | 'presence';
 
 /**
  * Attribute classifier

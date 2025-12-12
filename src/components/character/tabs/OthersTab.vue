@@ -15,7 +15,7 @@
             />
             <div>
               <div class="text-body1 text-weight-medium">{{ ancestry?.name || 'Unknown' }}</div>
-              <div class="text-caption text-grey">{{ ancestry?.description }}</div>
+              <div class="text-caption text-muted">{{ ancestry?.description }}</div>
             </div>
           </div>
 
@@ -42,7 +42,7 @@
 
           <!-- Cultures -->
           <div class="text-subtitle2 q-mb-sm">Cultures</div>
-          <div v-if="characterCultures.length === 0" class="text-grey q-mb-md">
+          <div v-if="characterCultures.length === 0" class="text-empty q-mb-md">
             No cultures selected
           </div>
           <q-list v-else separator class="q-mb-md">
@@ -69,7 +69,7 @@
     <q-expansion-item icon="school" label="Expertises" class="q-mb-sm">
       <q-card>
         <q-card-section>
-          <div v-if="expertisesByCategory.length === 0" class="text-grey">No expertises</div>
+          <div v-if="expertisesByCategory.length === 0" class="text-empty">No expertises</div>
           <template v-else>
             <div v-for="category in expertisesByCategory" :key="category.category" class="q-mb-md">
               <div class="text-subtitle2 q-mb-xs text-capitalize">
@@ -97,7 +97,7 @@
     <q-expansion-item icon="flag" label="Goals" class="q-mb-sm">
       <q-card>
         <q-card-section>
-          <div v-if="goals.length === 0" class="text-grey">No goals set</div>
+          <div v-if="goals.length === 0" class="text-empty">No goals set</div>
           <q-list v-else separator>
             <q-item v-for="goal in goals" :key="goal.name">
               <q-item-section avatar>
@@ -133,7 +133,7 @@
     <q-expansion-item icon="people" label="Connections" class="q-mb-sm">
       <q-card>
         <q-card-section>
-          <div v-if="connections.length === 0" class="text-grey">No connections</div>
+          <div v-if="connections.length === 0" class="text-empty">No connections</div>
           <q-list v-else separator>
             <q-item v-for="conn in connections" :key="conn.name">
               <q-item-section avatar>
@@ -164,7 +164,7 @@
     <q-expansion-item icon="pets" label="Companions" class="q-mb-sm">
       <q-card>
         <q-card-section>
-          <div v-if="companions.length === 0" class="text-grey">No companions</div>
+          <div v-if="companions.length === 0" class="text-empty">No companions</div>
           <q-list v-else separator>
             <q-item v-for="comp in companions" :key="comp.name">
               <q-item-section avatar>
@@ -210,7 +210,7 @@
       <q-card>
         <q-card-section>
           <div class="text-subtitle2 q-mb-sm">Active Conditions</div>
-          <div v-if="conditions.length === 0" class="text-grey q-mb-md">No active conditions</div>
+          <div v-if="conditions.length === 0" class="text-empty q-mb-md">No active conditions</div>
           <div v-else class="q-mb-md">
             <q-chip
               v-for="cond in conditions"
@@ -224,7 +224,7 @@
           </div>
 
           <div class="text-subtitle2 q-mb-sm">Injuries</div>
-          <div v-if="injuries.length === 0" class="text-grey">No injuries</div>
+          <div v-if="injuries.length === 0" class="text-empty">No injuries</div>
           <q-list v-else dense>
             <q-item v-for="injury in injuries" :key="injury.id">
               <q-item-section>
@@ -296,7 +296,8 @@ const expertisesByCategory = computed((): ExpertiseGroup[] => {
 
   for (const exp of expertises) {
     const expertise = classifierStore.getExpertiseById(exp.expertiseId);
-    const categoryCode = classifierStore.getExpertiseCategoryCode(expertise?.categoryId ?? 0) || 'utility';
+    const categoryCode =
+      classifierStore.getExpertiseCategoryCode(expertise?.categoryId ?? 0) || 'utility';
     if (!groups[categoryCode]) {
       groups[categoryCode] = [];
     }

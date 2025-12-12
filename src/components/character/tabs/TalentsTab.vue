@@ -66,7 +66,9 @@
         </q-item-section>
         <q-item-section>
           <q-item-label class="text-weight-bold">{{ radiantOrder.name }}</q-item-label>
-          <q-item-label caption>Radiant Order - Ideal {{ character?.radiantIdeal || 0 }}</q-item-label>
+          <q-item-label caption
+            >Radiant Order - Ideal {{ character?.radiantIdeal || 0 }}</q-item-label
+          >
         </q-item-section>
       </template>
 
@@ -75,7 +77,7 @@
           <!-- Spren Bond -->
           <div class="specialty-section">
             <div class="specialty-title">{{ getSprenTypeName(radiantOrder.sprenType) }} Bond</div>
-            <div v-if="getSprenBondTalents().length === 0" class="text-grey q-pa-sm">
+            <div v-if="getSprenBondTalents().length === 0" class="text-empty q-pa-sm">
               No spren bond talents acquired
             </div>
             <talent-item
@@ -86,9 +88,13 @@
           </div>
 
           <!-- Surges -->
-          <div v-for="surgeCode in radiantOrder.surgeCodes" :key="surgeCode" class="specialty-section">
+          <div
+            v-for="surgeCode in radiantOrder.surgeCodes"
+            :key="surgeCode"
+            class="specialty-section"
+          >
             <div class="specialty-title">{{ getSurgeName(surgeCode) }}</div>
-            <div v-if="getSurgeTalents(surgeCode).length === 0" class="text-grey q-pa-sm">
+            <div v-if="getSurgeTalents(surgeCode).length === 0" class="text-empty q-pa-sm">
               No {{ getSurgeName(surgeCode) }} talents acquired
             </div>
             <talent-item
@@ -114,7 +120,9 @@
           <q-icon name="music_note" color="purple" />
         </q-item-section>
         <q-item-section>
-          <q-item-label class="text-weight-bold">{{ getAncestryName(ancestryTalents[0]?.ancestryId || 0) }} Forms</q-item-label>
+          <q-item-label class="text-weight-bold"
+            >{{ getAncestryName(ancestryTalents[0]?.ancestryId || 0) }} Forms</q-item-label
+          >
           <q-item-label caption>Ancestry Talents</q-item-label>
         </q-item-section>
       </template>
@@ -151,11 +159,7 @@
 
       <q-card>
         <q-card-section class="q-pt-none">
-          <talent-item
-            v-for="talent in uncategorizedTalents"
-            :key="talent.id"
-            :talent="talent"
-          />
+          <talent-item v-for="talent in uncategorizedTalents" :key="talent.id" :talent="talent" />
         </q-card-section>
       </q-card>
     </q-expansion-item>
@@ -219,9 +223,7 @@ function getKeyTalentForPath(pathCode: HeroicPathCode): Talent | undefined {
 function getGeneralTalentsForPath(pathCode: HeroicPathCode): Talent[] {
   const path = classifierStore.getHeroicPathByCode(pathCode);
   if (!path) return [];
-  return characterTalents.value.filter(
-    (t) => t.pathId === path.id && !t.isKey && !t.specialtyId
-  );
+  return characterTalents.value.filter((t) => t.pathId === path.id && !t.isKey && !t.specialtyId);
 }
 
 function getSpecialtiesForPath(pathCode: HeroicPathCode): Specialty[] {

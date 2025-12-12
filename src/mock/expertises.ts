@@ -4,20 +4,50 @@ import type { Expertise, ExpertiseCategory, ExpertiseSource } from 'src/types';
  * Expertise category classifiers
  */
 export const expertiseCategories: ExpertiseCategory[] = [
-  { id: 1, code: 'armor', name: 'Armor', description: 'Expertise in wearing/maintaining specific armor types' },
-  { id: 2, code: 'cultural', name: 'Cultural', description: 'Knowledge of nations, cultures, and languages' },
-  { id: 3, code: 'utility', name: 'Utility', description: 'Tools, trades, and technical knowledge' },
-  { id: 4, code: 'weapon', name: 'Weapon', description: 'Expertise in wielding/maintaining specific weapon types' },
-  { id: 5, code: 'specialist', name: 'Specialist', description: 'Restricted knowledge (Shardblades, fabrials, etc.)' },
+  {
+    id: 1,
+    code: 'armor',
+    name: 'Armor',
+    description: 'Expertise in wearing/maintaining specific armor types',
+  },
+  {
+    id: 2,
+    code: 'cultural',
+    name: 'Cultural',
+    description: 'Knowledge of nations, cultures, and languages',
+  },
+  {
+    id: 3,
+    code: 'utility',
+    name: 'Utility',
+    description: 'Tools, trades, and technical knowledge',
+  },
+  {
+    id: 4,
+    code: 'weapon',
+    name: 'Weapon',
+    description: 'Expertise in wielding/maintaining specific weapon types',
+  },
+  {
+    id: 5,
+    code: 'specialist',
+    name: 'Specialist',
+    description: 'Restricted knowledge (Shardblades, fabrials, etc.)',
+  },
 ];
 
 /**
  * Expertise source classifiers
  */
 export const expertiseSources: ExpertiseSource[] = [
-  { id: 1, code: 'culture', name: 'Culture', description: 'From cultural background (2 cultural expertises at creation)' },
+  {
+    id: 1,
+    code: 'culture',
+    name: 'Culture',
+    description: 'From cultural background (2 cultural expertises at creation)',
+  },
   { id: 2, code: 'intellect', name: 'Intellect', description: 'From Intellect attribute' },
-  { id: 3, code: 'origin', name: 'Origin', description: 'From origin/background' },
+  { id: 3, code: 'starting_kit', name: 'Starting Kit', description: 'From starting kit selection' },
   { id: 4, code: 'talent', name: 'Talent', description: 'Granted by a talent' },
   { id: 5, code: 'reward', name: 'Reward', description: 'Earned through play' },
   { id: 6, code: 'training', name: 'Training', description: 'Learned during downtime' },
@@ -211,6 +241,14 @@ export const expertises: Expertise[] = [
     categoryId: 3,
     isRestricted: false,
     description: "Knowledge of criminal organizations, black markets, and thieves' guilds.",
+  },
+  {
+    id: 35,
+    code: 'literature',
+    name: 'Literature',
+    categoryId: 3,
+    isRestricted: false,
+    description: 'Knowledge of written works, poetry, and literary traditions.',
   },
   // Weapon expertises (categoryId 4)
   {

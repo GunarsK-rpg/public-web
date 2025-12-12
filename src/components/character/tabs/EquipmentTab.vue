@@ -2,7 +2,7 @@
   <div class="equipment-tab">
     <!-- Weapons -->
     <div class="section-title">Weapons</div>
-    <div v-if="weapons.length === 0" class="text-grey q-pa-md">No weapons equipped</div>
+    <div v-if="weapons.length === 0" class="text-empty q-pa-md">No weapons equipped</div>
     <q-list v-else separator class="q-mb-md">
       <q-item v-for="weapon in weapons" :key="weapon.weaponId">
         <q-item-section avatar>
@@ -37,13 +37,13 @@
 
     <!-- Armor -->
     <div class="section-title">Armor</div>
-    <div v-if="!armor" class="text-grey q-pa-md">No armor equipped</div>
+    <div v-if="!armor" class="text-empty q-pa-md">No armor equipped</div>
     <q-card v-else flat bordered class="q-mb-md">
       <q-card-section>
         <div class="row items-center">
           <div class="col">
             <div class="text-subtitle1">{{ getArmorName(armor.armorId) }}</div>
-            <div class="text-caption text-grey">Deflect: {{ getArmorDeflect(armor.armorId) }}</div>
+            <div class="text-caption text-muted">Deflect: {{ getArmorDeflect(armor.armorId) }}</div>
           </div>
           <div class="col-auto" v-if="armor.charges !== undefined">
             <q-badge color="primary"> {{ armor.charges }} charges </q-badge>
@@ -54,7 +54,7 @@
 
     <!-- Equipment -->
     <div class="section-title">Equipment</div>
-    <div v-if="equipment.length === 0" class="text-grey q-pa-md">No equipment</div>
+    <div v-if="equipment.length === 0" class="text-empty q-pa-md">No equipment</div>
     <q-list v-else separator>
       <q-item v-for="item in equipment" :key="item.itemId">
         <q-item-section>
@@ -71,7 +71,7 @@
     <q-card flat bordered>
       <q-card-section>
         <div class="text-h6">{{ spheres }} marks</div>
-        <div class="text-caption text-grey">Spheres and currency</div>
+        <div class="text-caption text-muted">Spheres and currency</div>
       </q-card-section>
     </q-card>
   </div>

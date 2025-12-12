@@ -1,7 +1,16 @@
 <template>
   <q-page padding>
     <div class="q-pa-md">
-      <div class="text-h5 q-mb-md">My Campaigns</div>
+      <div class="row items-center q-mb-md">
+        <div class="text-h5">My Campaigns</div>
+        <q-space />
+        <q-btn
+          color="primary"
+          icon="sym_o_person_add"
+          label="Create Character"
+          @click="createStandaloneCharacter"
+        />
+      </div>
 
       <q-spinner-dots v-if="loading" size="50px" color="primary" />
 
@@ -55,6 +64,10 @@ onMounted(async () => {
 
 function selectCampaign(id: number): void {
   void router.push({ name: 'campaign-detail', params: { campaignId: String(id) } });
+}
+
+function createStandaloneCharacter(): void {
+  void router.push({ name: 'character-create-standalone' });
 }
 
 function formatDate(dateString: string | undefined): string {

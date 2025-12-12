@@ -13,7 +13,8 @@ import type {
   ConditionCode,
   Expertise,
   ExpertiseCategoryCode,
-  Origin,
+  StartingKit,
+  StartingKitCode,
   HeroicPath,
   HeroicPathCode,
   Specialty,
@@ -41,7 +42,7 @@ interface Classifiers {
   equipment: Equipment[];
   conditions: Condition[];
   expertises: Expertise[];
-  origins: Origin[];
+  startingKits: StartingKit[];
   heroicPaths: HeroicPath[];
   specialties: Specialty[];
   radiantOrders: RadiantOrder[];
@@ -65,7 +66,7 @@ export const useClassifierStore = defineStore('classifiers', () => {
   const equipment = computed(() => data.value?.equipment || []);
   const conditions = computed(() => data.value?.conditions || []);
   const expertises = computed(() => data.value?.expertises || []);
-  const origins = computed(() => data.value?.origins || []);
+  const startingKits = computed(() => data.value?.startingKits || []);
   const heroicPaths = computed(() => data.value?.heroicPaths || []);
   const specialties = computed(() => data.value?.specialties || []);
   const radiantOrders = computed(() => data.value?.radiantOrders || []);
@@ -104,8 +105,8 @@ export const useClassifierStore = defineStore('classifiers', () => {
     return expertises.value.find((e) => e.id === id);
   }
 
-  function getOriginById(id: number): Origin | undefined {
-    return origins.value.find((o) => o.id === id);
+  function getStartingKitById(id: number): StartingKit | undefined {
+    return startingKits.value.find((k) => k.id === id);
   }
 
   function getHeroicPathById(id: number): HeroicPath | undefined {
@@ -169,8 +170,8 @@ export const useClassifierStore = defineStore('classifiers', () => {
     return expertises.value.find((e) => e.code === code);
   }
 
-  function getOriginByCode(code: string): Origin | undefined {
-    return origins.value.find((o) => o.code === code);
+  function getStartingKitByCode(code: StartingKitCode): StartingKit | undefined {
+    return startingKits.value.find((k) => k.code === code);
   }
 
   function getHeroicPathByCode(code: HeroicPathCode): HeroicPath | undefined {
@@ -214,9 +215,7 @@ export const useClassifierStore = defineStore('classifiers', () => {
   function getSkillsByAttributeType(attrTypeCode: AttributeTypeCode): Skill[] {
     const attrType = attributeTypes.find((t) => t.code === attrTypeCode);
     if (!attrType) return [];
-    const attrIds = attributes.value
-      .filter((a) => a.attrTypeId === attrType.id)
-      .map((a) => a.id);
+    const attrIds = attributes.value.filter((a) => a.attrTypeId === attrType.id).map((a) => a.id);
     return skills.value.filter((s) => attrIds.includes(s.attrId));
   }
 
@@ -299,7 +298,7 @@ export const useClassifierStore = defineStore('classifiers', () => {
     equipment,
     conditions,
     expertises,
-    origins,
+    startingKits,
     heroicPaths,
     specialties,
     radiantOrders,
@@ -316,7 +315,7 @@ export const useClassifierStore = defineStore('classifiers', () => {
     getEquipmentById,
     getConditionById,
     getExpertiseById,
-    getOriginById,
+    getStartingKitById,
     getHeroicPathById,
     getSpecialtyById,
     getRadiantOrderById,
@@ -333,7 +332,7 @@ export const useClassifierStore = defineStore('classifiers', () => {
     getEquipmentByCode,
     getConditionByCode,
     getExpertiseByCode,
-    getOriginByCode,
+    getStartingKitByCode,
     getHeroicPathByCode,
     getSpecialtyByCode,
     getRadiantOrderByCode,

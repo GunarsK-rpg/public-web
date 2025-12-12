@@ -1,10 +1,7 @@
 <template>
   <q-item class="talent-item">
     <q-item-section avatar>
-      <q-icon
-        :name="isKey ? 'star' : 'auto_awesome'"
-        :color="isKey ? 'amber' : 'primary'"
-      />
+      <q-icon :name="isKey ? 'star' : 'auto_awesome'" :color="isKey ? 'amber' : 'primary'" />
     </q-item-section>
     <q-item-section>
       <q-item-label>{{ talent.name }}</q-item-label>

@@ -17,6 +17,7 @@ export interface Talent {
   pathId?: number;
   specialtyId?: number;
   ancestryId?: number;
+  radiantOrderId?: number;
   surgeId?: number;
   code: string;
   name: string;

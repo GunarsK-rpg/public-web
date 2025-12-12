@@ -135,7 +135,7 @@ export interface Character {
   radiantOrder: RadiantOrderCode | null;
   radiantIdeal: RadiantIdealLevel;
 
-  originId: number;
+  startingKitId: number;
 
   strength: number;
   speed: number;

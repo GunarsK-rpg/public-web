@@ -1,13 +1,13 @@
 <template>
   <div class="expertises-tab">
-    <div class="text-body2 text-grey q-mb-md">
+    <div class="text-body2 text-muted q-mb-md">
       Expertises grant advantage on related skill tests and unlock special options.
     </div>
 
     <!-- Cultural Expertises -->
     <div class="category-section">
       <div class="category-title">Cultural</div>
-      <div v-if="culturalExpertises.length === 0" class="text-grey q-pa-sm">
+      <div v-if="culturalExpertises.length === 0" class="text-empty q-pa-sm">
         No cultural expertises
       </div>
       <q-chip
@@ -25,7 +25,7 @@
     <!-- Utility Expertises -->
     <div class="category-section">
       <div class="category-title">Utility</div>
-      <div v-if="utilityExpertises.length === 0" class="text-grey q-pa-sm">
+      <div v-if="utilityExpertises.length === 0" class="text-empty q-pa-sm">
         No utility expertises
       </div>
       <q-chip
@@ -43,7 +43,9 @@
     <!-- Weapon Expertises -->
     <div class="category-section">
       <div class="category-title">Weapon</div>
-      <div v-if="weaponExpertises.length === 0" class="text-grey q-pa-sm">No weapon expertises</div>
+      <div v-if="weaponExpertises.length === 0" class="text-empty q-pa-sm">
+        No weapon expertises
+      </div>
       <q-chip
         v-for="exp in weaponExpertises"
         :key="exp.expertiseId"
@@ -59,7 +61,7 @@
     <!-- Specialist Expertises -->
     <div class="category-section">
       <div class="category-title">Specialist</div>
-      <div v-if="specialistExpertises.length === 0" class="text-grey q-pa-sm">
+      <div v-if="specialistExpertises.length === 0" class="text-empty q-pa-sm">
         No specialist expertises
       </div>
       <q-chip

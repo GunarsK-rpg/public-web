@@ -197,7 +197,7 @@
     <q-expansion-item v-if="isRadiant" icon="whatshot" label="Surge Actions" class="q-mb-sm">
       <q-card>
         <q-card-section>
-          <div class="text-center q-pa-md" style="opacity: 0.7">
+          <div class="text-center text-muted q-pa-md">
             Surge actions will be implemented based on Radiant order
           </div>
         </q-card-section>
@@ -205,11 +205,7 @@
     </q-expansion-item>
 
     <!-- No Actions Message -->
-    <div
-      v-if="grantedActions.length === 0 && !isRadiant"
-      class="text-center q-pa-lg"
-      style="opacity: 0.7"
-    >
+    <div v-if="grantedActions.length === 0 && !isRadiant" class="text-center text-muted q-pa-lg">
       No special actions available. Acquire talents, weapons, or equipment to gain new actions.
     </div>
   </div>

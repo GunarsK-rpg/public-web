@@ -6,7 +6,7 @@ export interface Hero {
   userId: number;
   campaignId: number;
   ancestryId: number;
-  originId: number;
+  startingKitId: number;
   activeSingerFormId?: number;
   radiantOrderId?: number;
   radiantIdeal: number;

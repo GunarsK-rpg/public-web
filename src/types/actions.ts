@@ -1,7 +1,16 @@
 /**
  * Action activation type identifiers
  */
-export type ActionActivation = 'action' | 'bonus' | 'reaction' | 'free' | 'free-action' | 'passive' | 'double-action' | 'triple-action' | 'special';
+export type ActionActivation =
+  | 'action'
+  | 'bonus'
+  | 'reaction'
+  | 'free'
+  | 'free-action'
+  | 'passive'
+  | 'double-action'
+  | 'triple-action'
+  | 'special';
 
 /**
  * Action classifier

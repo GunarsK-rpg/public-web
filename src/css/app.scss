@@ -1,1 +1,161 @@
 // app global css in SCSS form
+
+// =============================================================================
+// Global Utility Classes
+// =============================================================================
+
+// Selected/highlighted item background (theme-aware)
+.item-selected {
+  background-color: $color-selected-bg-light;
+
+  .body--dark & {
+    background-color: $color-selected-bg-dark;
+  }
+}
+
+// Disabled/locked item background (theme-aware)
+.item-disabled {
+  opacity: $color-disabled-opacity;
+  background-color: $color-disabled-bg-light;
+
+  .body--dark & {
+    background-color: $color-disabled-bg-dark;
+  }
+}
+
+// Card/option active selection (prominent highlight)
+.card-selected {
+  background-color: $primary !important;
+  color: white !important;
+}
+
+// =============================================================================
+// Text Utilities
+// =============================================================================
+
+// Muted/placeholder text (theme-aware)
+.text-muted {
+  color: $dark;
+  opacity: 0.6;
+
+  .body--dark & {
+    color: white;
+  }
+}
+
+// Secondary/caption text with reduced emphasis
+.text-secondary-emphasis {
+  opacity: 0.8;
+}
+
+// Empty state / placeholder messages
+.text-empty {
+  color: $dark;
+  opacity: 0.5;
+
+  .body--dark & {
+    color: white;
+  }
+}
+
+// =============================================================================
+// Banner/Alert Styles
+// =============================================================================
+
+// Info banner (contextual information)
+.banner-info {
+  background-color: #0097a7 !important; // cyan-700
+  color: white !important;
+
+  .body--dark & {
+    background-color: #00838f !important; // cyan-800
+  }
+}
+
+// Success banner (positive feedback)
+.banner-success {
+  background-color: $positive !important;
+  color: white !important;
+}
+
+// Error banner (negative feedback)
+.banner-error {
+  background-color: $negative !important;
+  color: white !important;
+}
+
+// Warning banner
+.banner-warning {
+  background-color: $warning !important;
+  color: white !important;
+}
+
+// =============================================================================
+// RPG Banner/Highlight Styles (dark mode friendly)
+// =============================================================================
+
+// Key talent banner - subdued gold/amber
+.banner-key-talent {
+  background-color: #b8860b !important; // dark goldenrod
+  color: white !important;
+
+  .body--dark & {
+    background-color: #8b6914 !important; // darker gold for dark mode
+  }
+}
+
+// Heroic path header - neutral blue-grey
+.banner-heroic-path {
+  background-color: #546e7a !important; // blue-grey-600
+  color: white !important;
+
+  .body--dark & {
+    background-color: #37474f !important; // blue-grey-800
+  }
+}
+
+// Radiant path header - muted amber
+.banner-radiant-path {
+  background-color: #ff8f00 !important; // amber-900
+  color: white !important;
+
+  .body--dark & {
+    background-color: #c67c00 !important; // darker amber
+  }
+}
+
+// Ancestry path header - muted teal
+.banner-ancestry-path {
+  background-color: #00897b !important; // teal-600
+  color: white !important;
+
+  .body--dark & {
+    background-color: #00695c !important; // teal-800
+  }
+}
+
+// =============================================================================
+// Expansion Header Styles
+// =============================================================================
+
+// Light text for colored expansion headers
+.expansion-header-light {
+  .q-item__label {
+    color: white;
+  }
+
+  .q-expansion-item__toggle-icon {
+    color: white;
+  }
+}
+
+// Dark text for light-colored expansion headers (e.g., warning/yellow)
+.expansion-header-dark {
+  .q-item__label {
+    color: $dark;
+  }
+
+  .q-expansion-item__toggle-icon {
+    color: $dark;
+  }
+}
