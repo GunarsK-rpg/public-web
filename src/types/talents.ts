@@ -1,5 +1,7 @@
+import type { Classifier } from './classifier';
+
 /**
- * Talent prerequisite types
+ * Talent prerequisite types (JSONB)
  */
 export interface TalentPrerequisite {
   type: string;
@@ -10,22 +12,18 @@ export interface TalentPrerequisite {
 }
 
 /**
- * Talent classifier
+ * Talent classifier (cl_talents)
+ * Actions granted by talents are linked via cl_action_links
  */
-export interface Talent {
-  id: number;
+export interface Talent extends Classifier {
   pathId?: number;
   specialtyId?: number;
   ancestryId?: number;
   radiantOrderId?: number;
   surgeId?: number;
-  code: string;
-  name: string;
-  description?: string;
   descriptionShort?: string;
-  actionId?: number;
   isKey: boolean;
-  prerequisites?: TalentPrerequisite[] | string;
+  prerequisites?: TalentPrerequisite[];
 }
 
 /**

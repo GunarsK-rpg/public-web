@@ -1,38 +1,14 @@
-/**
- * Skill code identifiers
- */
-export type SkillCode =
-  | 'agility'
-  | 'athletics'
-  | 'heavy-weaponry'
-  | 'light-weaponry'
-  | 'stealth'
-  | 'thievery'
-  | 'crafting'
-  | 'deduction'
-  | 'discipline'
-  | 'intimidation'
-  | 'lore'
-  | 'medicine'
-  | 'deception'
-  | 'insight'
-  | 'leadership'
-  | 'perception'
-  | 'persuasion'
-  | 'survival';
+import type { Classifier } from './classifier';
 
 /**
- * Skill classifier
+ * Skill classifier (cl_skills)
  */
-export interface Skill {
-  id: number;
-  code: SkillCode;
-  name: string;
+export interface Skill extends Classifier {
   attrId: number;
 }
 
 /**
- * Hero's skill
+ * Hero's skill (skills table)
  */
 export interface HeroSkill {
   id: number;

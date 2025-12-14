@@ -1,48 +1,44 @@
 <template>
   <div class="talents-tab">
-    <!-- Heroic Paths -->
+    <!-- Paths with talents -->
     <q-expansion-item
-      v-for="pathCode in heroicPaths"
-      :key="pathCode"
-      :label="getPathName(pathCode)"
-      header-class="path-header"
+      v-for="path in pathsWithTalents"
+      :key="path.id"
+      :label="path.name"
       default-opened
       class="q-mb-sm"
     >
-      <template v-slot:header>
-        <q-item-section avatar>
-          <q-icon name="shield" color="primary" />
-        </q-item-section>
+      <template #header>
         <q-item-section>
-          <q-item-label class="text-weight-bold">{{ getPathName(pathCode) }}</q-item-label>
-          <q-item-label caption>Heroic Path</q-item-label>
+          <q-item-label class="text-weight-bold">{{ path.name }}</q-item-label>
+          <q-item-label caption>Path</q-item-label>
         </q-item-section>
       </template>
 
       <q-card>
         <q-card-section class="q-pt-none">
           <!-- Key Talent -->
-          <div v-if="getKeyTalentForPath(pathCode)" class="q-mb-md">
+          <div v-if="getKeyTalentForPath(path.id)" class="q-mb-md">
             <div class="subsection-title">Key Talent</div>
-            <talent-item :talent="getKeyTalentForPath(pathCode)!" is-key />
+            <talent-item :talent="getKeyTalentForPath(path.id)!" />
           </div>
 
           <!-- General Path Talents (no specialty) -->
-          <div v-if="getGeneralTalentsForPath(pathCode).length > 0" class="q-mb-md">
+          <div v-if="getGeneralTalentsForPath(path.id).length > 0" class="q-mb-md">
             <div class="subsection-title">Path Talents</div>
             <talent-item
-              v-for="talent in getGeneralTalentsForPath(pathCode)"
+              v-for="talent in getGeneralTalentsForPath(path.id)"
               :key="talent.id"
               :talent="talent"
             />
           </div>
 
           <!-- Specialties for this path -->
-          <template v-for="specialty in getSpecialtiesForPath(pathCode)" :key="specialty.id">
-            <div v-if="getTalentsForSpecialty(specialty).length > 0" class="specialty-section">
+          <template v-for="specialty in getSpecialtiesForPath(path.id)" :key="specialty.id">
+            <div v-if="getTalentsForSpecialty(specialty.id).length > 0" class="specialty-section">
               <div class="specialty-title">{{ specialty.name }}</div>
               <talent-item
-                v-for="talent in getTalentsForSpecialty(specialty)"
+                v-for="talent in getTalentsForSpecialty(specialty.id)"
                 :key="talent.id"
                 :talent="talent"
               />
@@ -54,31 +50,27 @@
 
     <!-- Radiant Order -->
     <q-expansion-item
-      v-if="isRadiant && radiantOrder"
+      v-if="heroStore.isRadiant && radiantOrder"
       :label="radiantOrder.name"
-      header-class="radiant-header"
       default-opened
       class="q-mb-sm"
     >
-      <template v-slot:header>
-        <q-item-section avatar>
-          <q-icon name="auto_awesome" color="amber" />
-        </q-item-section>
+      <template #header>
         <q-item-section>
           <q-item-label class="text-weight-bold">{{ radiantOrder.name }}</q-item-label>
           <q-item-label caption
-            >Radiant Order - Ideal {{ character?.radiantIdeal || 0 }}</q-item-label
+            >Radiant Order - Ideal {{ heroStore.hero?.radiantIdeal ?? 0 }}</q-item-label
           >
         </q-item-section>
       </template>
 
       <q-card>
         <q-card-section class="q-pt-none">
-          <!-- Spren Bond -->
+          <!-- Order Core Talents -->
           <div class="specialty-section">
-            <div class="specialty-title">{{ getSprenTypeName(radiantOrder.sprenType) }} Bond</div>
+            <div class="specialty-title">{{ radiantOrder.name }} Bond</div>
             <div v-if="getSprenBondTalents().length === 0" class="text-empty q-pa-sm">
-              No spren bond talents acquired
+              No bond talents acquired
             </div>
             <talent-item
               v-for="talent in getSprenBondTalents()"
@@ -88,17 +80,13 @@
           </div>
 
           <!-- Surges -->
-          <div
-            v-for="surgeCode in radiantOrder.surgeCodes"
-            :key="surgeCode"
-            class="specialty-section"
-          >
-            <div class="specialty-title">{{ getSurgeName(surgeCode) }}</div>
-            <div v-if="getSurgeTalents(surgeCode).length === 0" class="text-empty q-pa-sm">
-              No {{ getSurgeName(surgeCode) }} talents acquired
+          <div v-for="surge in getOrderSurges()" :key="surge.id" class="specialty-section">
+            <div class="specialty-title">{{ surge.name }}</div>
+            <div v-if="getSurgeTalents(surge.id).length === 0" class="text-empty q-pa-sm">
+              No {{ surge.name }} talents acquired
             </div>
             <talent-item
-              v-for="talent in getSurgeTalents(surgeCode)"
+              v-for="talent in getSurgeTalents(surge.id)"
               :key="talent.id"
               :talent="talent"
             />
@@ -109,184 +97,113 @@
 
     <!-- Ancestry Talents (e.g., Singer Forms) -->
     <q-expansion-item
-      v-if="hasAncestryTalents"
-      :label="getAncestryName(ancestryTalents[0]?.ancestryId || 0)"
-      header-class="ancestry-header"
+      v-if="ancestryTalents.length > 0"
+      :label="getAncestryName(ancestryTalents[0]?.ancestryId)"
       default-opened
       class="q-mb-sm"
     >
-      <template v-slot:header>
-        <q-item-section avatar>
-          <q-icon name="music_note" color="purple" />
-        </q-item-section>
+      <template #header>
         <q-item-section>
-          <q-item-label class="text-weight-bold"
-            >{{ getAncestryName(ancestryTalents[0]?.ancestryId || 0) }} Forms</q-item-label
-          >
+          <q-item-label class="text-weight-bold">{{
+            getAncestryName(ancestryTalents[0]?.ancestryId)
+          }}</q-item-label>
           <q-item-label caption>Ancestry Talents</q-item-label>
         </q-item-section>
       </template>
 
       <q-card>
         <q-card-section class="q-pt-none">
-          <talent-item
-            v-for="talent in ancestryTalents"
-            :key="talent.id"
-            :talent="talent"
-            :is-key="talent.isKey"
-          />
+          <talent-item v-for="talent in ancestryTalents" :key="talent.id" :talent="talent" />
         </q-card-section>
       </q-card>
     </q-expansion-item>
 
-    <!-- Uncategorized talents (if any) -->
-    <q-expansion-item
-      v-if="uncategorizedTalents.length > 0"
-      label="Other Talents"
-      header-class="other-header"
-      default-opened
-      class="q-mb-sm"
-    >
-      <template v-slot:header>
-        <q-item-section avatar>
-          <q-icon name="category" color="grey" />
-        </q-item-section>
-        <q-item-section>
-          <q-item-label class="text-weight-bold">Other Talents</q-item-label>
-          <q-item-label caption>Miscellaneous</q-item-label>
-        </q-item-section>
-      </template>
-
-      <q-card>
-        <q-card-section class="q-pt-none">
-          <talent-item v-for="talent in uncategorizedTalents" :key="talent.id" :talent="talent" />
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
+    <!-- Empty state -->
+    <div v-if="heroTalents.length === 0" class="text-empty q-pa-md">No talents acquired</div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
-import { useCharacterStore } from 'stores/character';
-import { useClassifierStore } from 'stores/classifiers';
-import type { Talent, HeroicPathCode, SurgeCode, SprenType, Specialty } from 'src/types';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
+import type { Talent, Path, Specialty, Surge } from 'src/types';
 
 const TalentItem = defineAsyncComponent(() => import('./TalentItem.vue'));
 
-const characterStore = useCharacterStore();
-const classifierStore = useClassifierStore();
+const heroStore = useHeroStore();
+const classifiers = useClassifierStore();
 
-const character = computed(() => characterStore.character);
-const isRadiant = computed(() => characterStore.isRadiant);
-const heroicPaths = computed(() => character.value?.heroicPaths || []);
-
-// Get all character talents as Talent objects
-const characterTalents = computed((): Talent[] => {
-  const talents = character.value?.talents || [];
+// Get all hero talents as Talent objects
+const heroTalents = computed((): Talent[] => {
+  const talents = heroStore.hero?.talents ?? [];
   return talents
-    .map((t) => classifierStore.getTalentById(t.talentId))
+    .map((t) => classifiers.getById(classifiers.talents, t.talentId))
     .filter((t): t is Talent => t !== undefined);
+});
+
+// Get unique paths that have talents
+const pathsWithTalents = computed((): Path[] => {
+  const pathIds = new Set<number>();
+  heroTalents.value.forEach((t) => {
+    if (t.pathId) pathIds.add(t.pathId);
+  });
+  return Array.from(pathIds)
+    .map((id) => classifiers.getById(classifiers.paths, id))
+    .filter((p): p is Path => p !== undefined);
 });
 
 // Get radiant order details
 const radiantOrder = computed(() => {
-  if (!character.value?.radiantOrder) return null;
-  return classifierStore.getRadiantOrderByCode(character.value.radiantOrder);
+  return classifiers.getById(classifiers.radiantOrders, heroStore.hero?.radiantOrderId);
 });
 
 // Ancestry talents (e.g., singer talents)
 const ancestryTalents = computed(() => {
-  return characterTalents.value.filter((t) => t.ancestryId !== undefined);
+  return heroTalents.value.filter((t) => t.ancestryId !== undefined);
 });
 
-const hasAncestryTalents = computed(() => ancestryTalents.value.length > 0);
-
 // Get ancestry name for display
-function getAncestryName(ancestryId: number): string {
-  const ancestry = classifierStore.getAncestryById(ancestryId);
-  return ancestry?.name || String(ancestryId);
+function getAncestryName(ancestryId: number | undefined): string {
+  if (!ancestryId) return '';
+  return classifiers.getById(classifiers.ancestries, ancestryId)?.name ?? '';
 }
 
 // Helper functions
-function getPathName(pathCode: HeroicPathCode): string {
-  const path = classifierStore.getHeroicPathByCode(pathCode);
-  return path?.name || pathCode;
+function getKeyTalentForPath(pathId: number): Talent | undefined {
+  return heroTalents.value.find((t) => t.pathId === pathId && t.isKey);
 }
 
-function getKeyTalentForPath(pathCode: HeroicPathCode): Talent | undefined {
-  const path = classifierStore.getHeroicPathByCode(pathCode);
-  if (!path) return undefined;
-  return characterTalents.value.find((t) => t.pathId === path.id && t.isKey);
+function getGeneralTalentsForPath(pathId: number): Talent[] {
+  return heroTalents.value.filter((t) => t.pathId === pathId && !t.isKey && !t.specialtyId);
 }
 
-function getGeneralTalentsForPath(pathCode: HeroicPathCode): Talent[] {
-  const path = classifierStore.getHeroicPathByCode(pathCode);
-  if (!path) return [];
-  return characterTalents.value.filter((t) => t.pathId === path.id && !t.isKey && !t.specialtyId);
+function getSpecialtiesForPath(pathId: number): Specialty[] {
+  return classifiers.specialties.filter((s) => s.pathId === pathId);
 }
 
-function getSpecialtiesForPath(pathCode: HeroicPathCode): Specialty[] {
-  const path = classifierStore.getHeroicPathByCode(pathCode);
-  if (!path) return [];
-  return classifierStore.getSpecialtiesByPathId(path.id);
+function getTalentsForSpecialty(specialtyId: number): Talent[] {
+  return heroTalents.value.filter((t) => t.specialtyId === specialtyId);
 }
 
-function getTalentsForSpecialty(specialty: Specialty): Talent[] {
-  return characterTalents.value.filter((t) => t.specialtyId === specialty.id);
+// Get the two surges for the radiant order
+function getOrderSurges(): Surge[] {
+  if (!radiantOrder.value) return [];
+  const surge1 = classifiers.getById(classifiers.surges, radiantOrder.value.surge1Id);
+  const surge2 = classifiers.getById(classifiers.surges, radiantOrder.value.surge2Id);
+  return [surge1, surge2].filter((s): s is Surge => s !== undefined);
 }
 
-function getSurgeName(surgeCode: SurgeCode): string {
-  const surge = classifierStore.getSurgeByCode(surgeCode);
-  return surge?.name || surgeCode;
-}
-
-function getSprenTypeName(sprenType: SprenType | undefined): string {
-  if (!sprenType) return 'Spren';
-  const names: Record<SprenType, string> = {
-    honorspren: 'Honorspren',
-    highspren: 'Highspren',
-    ashspren: 'Ashspren',
-    cultivationspren: 'Cultivationspren',
-    mistspren: 'Mistspren',
-    cryptic: 'Cryptic',
-    inkspren: 'Inkspren',
-    lightspren: 'Lightspren',
-    peakspren: 'Peakspren',
-    stormfather: 'Stormfather',
-    nightwatcher: 'Nightwatcher',
-    sibling: 'Sibling',
-  };
-  return names[sprenType] || sprenType;
-}
-
-// TODO: These would need proper categorization based on talent metadata
+// Get radiant order talents that are for the order itself (not surge-specific)
 function getSprenBondTalents(): Talent[] {
-  // For now, return empty - would need talent metadata to identify spren bond talents
-  return [];
+  if (!radiantOrder.value) return [];
+  return heroTalents.value.filter((t) => t.radiantOrderId === radiantOrder.value?.id && !t.surgeId);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getSurgeTalents(surgeCode: SurgeCode): Talent[] {
-  // TODO: Filter talents by surgeCode once talent metadata includes surge association
-  return [];
+// Get talents for a specific surge by ID
+function getSurgeTalents(surgeId: number): Talent[] {
+  return heroTalents.value.filter((t) => t.surgeId === surgeId);
 }
-
-// Uncategorized talents (not in any heroic path, radiant order, or ancestry tree)
-const uncategorizedTalents = computed(() => {
-  const pathIds = heroicPaths.value
-    .map((code) => classifierStore.getHeroicPathByCode(code)?.id)
-    .filter((id): id is number => id !== undefined);
-
-  return characterTalents.value.filter((t) => {
-    // Not an ancestry talent
-    if (t.ancestryId) return false;
-    // Not associated with any of character's heroic paths
-    if (t.pathId && pathIds.includes(t.pathId)) return false;
-    // Has no path association at all and isn't categorized elsewhere
-    return !t.pathId;
-  });
-});
 </script>
 
 <style scoped>
@@ -308,22 +225,5 @@ const uncategorizedTalents = computed(() => {
   font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: 8px;
-  color: var(--q-primary);
-}
-
-:deep(.path-header) {
-  background: color-mix(in srgb, var(--q-primary) 10%, transparent);
-}
-
-:deep(.radiant-header) {
-  background: color-mix(in srgb, var(--q-warning) 10%, transparent);
-}
-
-:deep(.ancestry-header) {
-  background: color-mix(in srgb, var(--q-purple) 10%, transparent);
-}
-
-:deep(.other-header) {
-  background: color-mix(in srgb, var(--q-grey) 10%, transparent);
 }
 </style>

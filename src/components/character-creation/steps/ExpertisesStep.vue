@@ -42,11 +42,12 @@
       indicator-color="primary"
     >
       <q-tab name="all" label="All" />
-      <q-tab name="cultural" label="Cultural" />
-      <q-tab name="utility" label="Utility" />
-      <q-tab name="weapon" label="Weapon" />
-      <q-tab name="armor" label="Armor" />
-      <q-tab name="specialist" label="Specialist" />
+      <q-tab
+        v-for="expType in classifiers.expertiseTypes"
+        :key="expType.id"
+        :name="expType.code"
+        :label="expType.name"
+      />
     </q-tabs>
 
     <!-- Expertise List -->
@@ -70,13 +71,10 @@
           <q-item-label caption>{{ expertise.description }}</q-item-label>
         </q-item-section>
         <q-item-section side>
-          <q-badge
-            v-if="getSource(expertise.id)"
-            :color="getSourceColor(getSource(expertise.id) ?? '')"
-          >
-            {{ formatSource(getSource(expertise.id) ?? '') }}
+          <q-badge v-if="getSource(expertise.id)" color="grey-7">
+            {{ getSource(expertise.id) }}
           </q-badge>
-          <q-badge v-if="expertise.isRestricted" color="warning">Restricted</q-badge>
+          <q-badge v-if="isSpecialist(expertise.id)" color="warning">Restricted</q-badge>
         </q-item-section>
       </q-item>
     </q-list>
@@ -85,51 +83,55 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useCharacterCreationStore } from 'stores/character-creation';
-import { useClassifierStore } from 'stores/classifiers';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
+import { useStepValidation } from 'src/composables/useStepValidation';
 
-const store = useCharacterCreationStore();
+const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
+const { budget } = useStepValidation();
 
 const selectedCategory = ref('all');
 
-const intellectScore = computed(() => store.attributes.allocation.intellect);
-const slotsRemaining = computed(() => store.expertiseSlotsRemaining);
+const intellectScore = computed(() => heroStore.getAttributeValue('int'));
+const expertisesBudget = computed(() => budget('expertises'));
+const slotsRemaining = computed(() => expertisesBudget.value.remaining);
+
+// Hero's current expertises
+const heroExpertises = computed(() => heroStore.hero?.expertises ?? []);
 
 // Get cultural expertises (auto-applied from cultures)
 const culturalExpertises = computed(() => {
-  return store.expertises.allocations
-    .filter((e) => e.source === 'culture')
-    .map((e) => classifiers.getExpertiseById(e.expertiseId))
+  return heroExpertises.value
+    .filter((e) => e.source?.sourceType === 'culture')
+    .map((e) => classifiers.getById(classifiers.expertises, e.expertiseId))
     .filter((e): e is NonNullable<typeof e> => e !== undefined);
 });
 
 // Get expertises from starting kit
 const startingKitExpertises = computed(() => {
-  return store.expertises.allocations
-    .filter((e) => e.source === 'starting_kit')
-    .map((e) => classifiers.getExpertiseById(e.expertiseId))
+  return heroExpertises.value
+    .filter((e) => e.source?.sourceType === 'starting_kit')
+    .map((e) => classifiers.getById(classifiers.expertises, e.expertiseId))
     .filter((e): e is NonNullable<typeof e> => e !== undefined);
 });
 
-const categoryMap: Record<string, number> = {
-  armor: 1,
-  cultural: 2,
-  utility: 3,
-  weapon: 4,
-  specialist: 5,
-};
+// Get expertise type by code
+function getExpertiseTypeId(code: string): number | undefined {
+  return classifiers.getByCode(classifiers.expertiseTypes, code)?.id;
+}
 
 const filteredExpertises = computed(() => {
   if (selectedCategory.value === 'all') {
     return classifiers.expertises;
   }
-  const categoryId = categoryMap[selectedCategory.value];
-  return classifiers.expertises.filter((e) => e.categoryId === categoryId);
+  const typeId = getExpertiseTypeId(selectedCategory.value);
+  if (!typeId) return [];
+  return classifiers.expertises.filter((e) => e.expertiseTypeId === typeId);
 });
 
 function isSelected(expertiseId: number): boolean {
-  return store.expertises.allocations.some((e) => e.expertiseId === expertiseId);
+  return heroExpertises.value.some((e) => e.expertiseId === expertiseId);
 }
 
 function isReadOnly(expertiseId: number): boolean {
@@ -139,40 +141,26 @@ function isReadOnly(expertiseId: number): boolean {
 }
 
 function getSource(expertiseId: number): string | null {
-  const alloc = store.expertises.allocations.find((e) => e.expertiseId === expertiseId);
-  return alloc?.source || null;
-}
-
-function getSourceColor(source: string): string {
-  const colors: Record<string, string> = {
-    starting_kit: 'green',
-    culture: 'blue',
-    intellect: 'purple',
-    talent: 'orange',
-    training: 'grey',
-  };
-  return colors[source] || 'grey';
-}
-
-function formatSource(source: string): string {
-  const labels: Record<string, string> = {
-    starting_kit: 'Kit',
-    culture: 'Culture',
-    intellect: 'INT',
-    talent: 'Talent',
-    training: 'Training',
-  };
-  return labels[source] || source;
+  const heroExp = heroExpertises.value.find((e) => e.expertiseId === expertiseId);
+  return heroExp?.source?.sourceType ?? null;
 }
 
 function toggleExpertise(expertiseId: number) {
   if (isSelected(expertiseId)) {
     // Don't remove read-only expertises
     if (!isReadOnly(expertiseId)) {
-      store.removeExpertise(expertiseId);
+      heroStore.removeExpertise(expertiseId);
     }
   } else if (slotsRemaining.value > 0) {
-    store.addExpertise(expertiseId, 'intellect');
+    heroStore.addExpertise(expertiseId, { sourceType: 'intellect' });
   }
+}
+
+// Check if expertise is specialist type (restricted)
+function isSpecialist(expertiseId: number): boolean {
+  const specialistTypeId = getExpertiseTypeId('specialist');
+  if (!specialistTypeId) return false;
+  const expertise = classifiers.getById(classifiers.expertises, expertiseId);
+  return expertise?.expertiseTypeId === specialistTypeId;
 }
 </script>

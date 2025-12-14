@@ -1,9 +1,6 @@
-import type { HeroicPath, Specialty } from 'src/types';
+import type { Path, Specialty } from 'src/types';
 
-/**
- * Heroic Paths - simplified structure with IDs
- */
-export const heroicPaths: HeroicPath[] = [
+export const paths: Path[] = [
   {
     id: 1,
     code: 'agent',
@@ -42,9 +39,6 @@ export const heroicPaths: HeroicPath[] = [
   },
 ];
 
-/**
- * Specialties - pathId references heroicPaths.id
- */
 export const specialties: Specialty[] = [
   // Agent specialties (pathId 1)
   {
@@ -179,31 +173,3 @@ export const specialties: Specialty[] = [
     description: 'Infantry combat specialist',
   },
 ];
-
-/**
- * Helper to get path by code
- */
-export function getPathByCode(code: string): HeroicPath | undefined {
-  return heroicPaths.find((p) => p.code === code);
-}
-
-/**
- * Helper to get path by ID
- */
-export function getPathById(id: number): HeroicPath | undefined {
-  return heroicPaths.find((p) => p.id === id);
-}
-
-/**
- * Helper to get specialties for a path
- */
-export function getSpecialtiesByPathId(pathId: number): Specialty[] {
-  return specialties.filter((s) => s.pathId === pathId);
-}
-
-/**
- * Helper to get specialty by code
- */
-export function getSpecialtyByCode(code: string): Specialty | undefined {
-  return specialties.find((s) => s.code === code);
-}

@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Campaign, CampaignWithCharacters } from 'src/types';
+import type { Campaign, CampaignWithHeroes } from 'src/types';
 
 export const useCampaignStore = defineStore('campaigns', () => {
   const campaigns = ref<Campaign[]>([]);
-  const currentCampaign = ref<CampaignWithCharacters | null>(null);
+  const currentCampaign = ref<CampaignWithHeroes | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -40,8 +40,8 @@ export const useCampaignStore = defineStore('campaigns', () => {
       // currentCampaign.value = response.data;
 
       // Mock: Import from mock data
-      const { campaignsWithCharacters } = await import('src/mock/campaigns');
-      const found = campaignsWithCharacters.find((c) => c.id === id);
+      const { campaignsWithHeroes } = await import('src/mock/campaigns');
+      const found = campaignsWithHeroes.find((c) => c.id === id);
       if (found) {
         currentCampaign.value = found;
       } else {

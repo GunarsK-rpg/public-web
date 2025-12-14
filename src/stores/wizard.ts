@@ -1,0 +1,140 @@
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { WIZARD_STEPS } from 'src/types/wizard';
+import { useHeroStore } from './hero';
+
+export type WizardMode = 'create' | 'edit' | 'levelup';
+
+export const useWizardStore = defineStore('wizard', () => {
+  // ===================
+  // STATE
+  // ===================
+  const currentStep = ref(1);
+  const completedSteps = ref<number[]>([]);
+  const mode = ref<WizardMode>('create');
+  const isActive = ref(false);
+
+  // ===================
+  // COMPUTED
+  // ===================
+  const currentStepConfig = computed(() => WIZARD_STEPS.find((s) => s.id === currentStep.value));
+  const canGoNext = computed(() => currentStep.value < WIZARD_STEPS.length);
+  const canGoPrev = computed(() => currentStep.value > 1);
+
+  const progress = computed(() => ({
+    current: currentStep.value,
+    total: WIZARD_STEPS.length,
+    completed: completedSteps.value.length,
+    percentage: Math.round((completedSteps.value.length / WIZARD_STEPS.length) * 100),
+  }));
+
+  // ===================
+  // NAVIGATION
+  // ===================
+  function goToStep(step: number) {
+    if (step >= 1 && step <= WIZARD_STEPS.length) {
+      currentStep.value = step;
+    }
+  }
+
+  function nextStep() {
+    if (currentStep.value < WIZARD_STEPS.length) {
+      markStepCompleted(currentStep.value);
+      currentStep.value++;
+    }
+  }
+
+  function previousStep() {
+    if (currentStep.value > 1) {
+      currentStep.value--;
+    }
+  }
+
+  function markStepCompleted(step: number) {
+    if (!completedSteps.value.includes(step)) {
+      completedSteps.value.push(step);
+    }
+  }
+
+  function markStepIncomplete(step: number) {
+    completedSteps.value = completedSteps.value.filter((s) => s !== step);
+  }
+
+  function isStepCompleted(step: number): boolean {
+    return completedSteps.value.includes(step);
+  }
+
+  // ===================
+  // WIZARD LIFECYCLE
+  // ===================
+  function startCreate(campaignId?: number) {
+    const heroStore = useHeroStore();
+    heroStore.initNewHero(campaignId);
+    mode.value = 'create';
+    currentStep.value = 1;
+    completedSteps.value = [];
+    isActive.value = true;
+  }
+
+  function startEdit(heroId: number) {
+    const heroStore = useHeroStore();
+    void heroStore.loadHero(heroId);
+    mode.value = 'edit';
+    currentStep.value = 1;
+    // In edit mode, consider all steps completed initially
+    completedSteps.value = WIZARD_STEPS.map((s) => s.id);
+    isActive.value = true;
+  }
+
+  function startLevelUp(heroId: number) {
+    const heroStore = useHeroStore();
+    void heroStore.loadHero(heroId);
+    mode.value = 'levelup';
+    // Start at attributes step for level up
+    currentStep.value = 4;
+    completedSteps.value = [1, 2, 3]; // Basic info already done
+    isActive.value = true;
+  }
+
+  function cancel() {
+    const heroStore = useHeroStore();
+    heroStore.clearHero();
+    reset();
+  }
+
+  function reset() {
+    currentStep.value = 1;
+    completedSteps.value = [];
+    mode.value = 'create';
+    isActive.value = false;
+  }
+
+  return {
+    // State
+    currentStep,
+    completedSteps,
+    mode,
+    isActive,
+
+    // Computed
+    currentStepConfig,
+    canGoNext,
+    canGoPrev,
+    progress,
+
+    // Navigation
+    goToStep,
+    nextStep,
+    previousStep,
+    markStepCompleted,
+    markStepIncomplete,
+    isStepCompleted,
+
+    // Lifecycle
+    startCreate,
+    startEdit,
+    startLevelUp,
+    cancel,
+    reset,
+  };
+});

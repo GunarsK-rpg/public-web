@@ -14,10 +14,7 @@
           @click="selectKit(kit.id)"
         >
           <q-card-section>
-            <div class="row items-center q-mb-sm">
-              <q-icon :name="getKitIcon(kit.code)" size="sm" class="q-mr-sm" />
-              <div class="text-subtitle1 text-weight-bold">{{ kit.name }}</div>
-            </div>
+            <div class="text-subtitle1 text-weight-bold q-mb-sm">{{ kit.name }}</div>
 
             <div class="text-caption text-muted q-mb-sm">
               {{ kit.description }}
@@ -30,9 +27,6 @@
                 <q-icon name="sym_o_payments" size="xs" class="q-mr-xs" />
                 <span>
                   <strong>{{ kit.startingSpheres }}</strong> marks
-                  <span v-if="kit.startingSpheres !== '0'" class="text-muted">
-                    (avg ~{{ calculateAverageSpheres(kit.startingSpheres) }})
-                  </span>
                 </span>
               </div>
 
@@ -56,16 +50,18 @@
           <q-card-section v-if="selectedKitId === kit.id" class="q-pt-none">
             <q-separator class="q-mb-sm" />
 
-            <!-- Roll spheres button -->
-            <div v-if="kit.startingSpheres !== '0'" class="text-center">
-              <q-btn
-                :label="
-                  rolledSpheres ? `Rolled: ${rolledSpheres} marks` : `Roll ${kit.startingSpheres}`
-                "
-                :color="rolledSpheres ? 'positive' : 'primary'"
-                outline
+            <!-- Starting currency input -->
+            <div v-if="kit.startingSpheres !== '0'" class="row items-center justify-center">
+              <q-input
+                :model-value="startingCurrency"
+                type="number"
+                label="Starting marks"
+                :hint="`Roll ${kit.startingSpheres}`"
+                outlined
                 dense
-                @click.stop="rollSpheres(kit.startingSpheres)"
+                style="max-width: 150px"
+                @update:model-value="setStartingCurrency"
+                @click.stop
               />
             </div>
             <div v-else class="text-center text-caption text-muted">No starting currency</div>
@@ -80,7 +76,7 @@
     </div>
 
     <!-- Special notes for prisoner kit -->
-    <q-banner v-if="selectedKitId === 6" class="bg-amber-2 q-mt-md" rounded>
+    <q-banner v-if="isPrisonerKit" class="bg-amber-2 q-mt-md" rounded>
       <template v-slot:avatar>
         <q-icon name="auto_awesome" color="amber-8" />
       </template>
@@ -93,67 +89,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { useCharacterCreationStore } from 'stores/character-creation';
-import { useClassifierStore } from 'stores/classifiers';
-import type { StartingKitCode } from 'src/types';
+import { computed } from 'vue';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
 
-const creationStore = useCharacterCreationStore();
-const classifierStore = useClassifierStore();
+const heroStore = useHeroStore();
+const classifiers = useClassifierStore();
 
-const startingKits = computed(() => classifierStore.startingKits);
-const selectedKitId = computed(() => creationStore.startingKit.startingKitId);
-const rolledSpheres = ref<number | undefined>(creationStore.startingKit.rolledSpheres);
+const startingKits = computed(() => classifiers.startingKits);
+const selectedKitId = computed(() => heroStore.hero?.startingKitId ?? null);
 
-// Watch for external changes
-watch(
-  () => creationStore.startingKit.rolledSpheres,
-  (newVal) => {
-    rolledSpheres.value = newVal;
-  }
-);
+const isPrisonerKit = computed(() => {
+  const prisonerKit = classifiers.getByCode(classifiers.startingKits, 'prisoner');
+  return selectedKitId.value === prisonerKit?.id;
+});
+
+const startingCurrency = computed(() => heroStore.hero?.currency ?? 0);
 
 function selectKit(kitId: number) {
-  // Clear rolled spheres when changing kit
-  rolledSpheres.value = undefined;
-  creationStore.updateStartingKit({ startingKitId: kitId });
+  heroStore.setStartingKit(kitId);
 }
 
-function rollSpheres(formula: string) {
-  const result = rollDice(formula);
-  rolledSpheres.value = result;
-  creationStore.updateStartingKit({ rolledSpheres: result });
-}
-
-function rollDice(formula: string): number {
-  if (formula === '0') return 0;
-
-  const match = formula.match(/^(\d+)d(\d+)$/);
-  if (!match || !match[1] || !match[2]) return 0;
-
-  const count = parseInt(match[1], 10);
-  const sides = parseInt(match[2], 10);
-
-  let total = 0;
-  for (let i = 0; i < count; i++) {
-    total += Math.floor(Math.random() * sides) + 1;
-  }
-  return total;
-}
-
-function calculateAverageSpheres(formula: string): number {
-  if (formula === '0') return 0;
-
-  const match = formula.match(/^(\d+)d(\d+)$/);
-  if (!match || !match[1] || !match[2]) return 0;
-
-  const count = parseInt(match[1], 10);
-  const sides = parseInt(match[2], 10);
-  return Math.round(count * ((sides + 1) / 2));
+function setStartingCurrency(val: string | number | null) {
+  if (val === null) return;
+  const numVal = typeof val === 'string' ? parseInt(val, 10) || 0 : val;
+  heroStore.setCurrency(numVal);
 }
 
 function getExpertiseName(expertiseId: number): string {
-  return classifierStore.getExpertiseById(expertiseId)?.name || 'Unknown';
+  return classifiers.getById(classifiers.expertises, expertiseId)?.name ?? 'Unknown';
 }
 
 function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
@@ -163,24 +127,12 @@ function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
 
   return kit.equipment
     .map((item) => {
-      const equip = classifierStore.getEquipmentById(item.equipmentId);
+      const equip = classifiers.getById(classifiers.equipment, item.equipmentId);
       if (!equip) return null;
       return item.quantity > 1 ? `${equip.name} x${item.quantity}` : equip.name;
     })
     .filter((name): name is string => name !== null)
     .join(', ');
-}
-
-function getKitIcon(code: StartingKitCode): string {
-  const icons: Record<StartingKitCode, string> = {
-    academic: 'sym_o_school',
-    artisan: 'sym_o_construction',
-    military: 'sym_o_shield',
-    courtier: 'sym_o_diamond',
-    underworld: 'sym_o_visibility_off',
-    prisoner: 'sym_o_lock',
-  };
-  return icons[code] || 'sym_o_backpack';
 }
 </script>
 

@@ -1,56 +1,91 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type {
+  Classifier,
+  AttributeType,
   Attribute,
-  AttributeCode,
-  AttributeTypeCode,
+  DerivedStat,
+  DerivedStatValue,
   Skill,
-  SkillCode,
-  Weapon,
-  Armor,
+  ExpertiseType,
+  Expertise,
+  ActivationType,
+  ActionType,
+  Action,
+  ActionLink,
+  Path,
+  Specialty,
+  Surge,
+  RadiantOrder,
+  SingerForm,
+  Talent,
+  Unit,
+  EquipmentType,
+  EquipmentAttribute,
+  DamageType,
   Equipment,
   Condition,
-  ConditionCode,
-  Expertise,
-  ExpertiseCategoryCode,
+  Injury,
+  GoalStatus,
+  ConnectionType,
+  CompanionType,
   StartingKit,
-  StartingKitCode,
-  HeroicPath,
-  HeroicPathCode,
-  Specialty,
-  SpecialtyCode,
-  RadiantOrder,
-  RadiantOrderCode,
-  Surge,
-  SurgeCode,
-  Talent,
   Ancestry,
-  AncestryCode,
-  SingerForm,
-  SingerFormCode,
   Culture,
-  CultureCode,
+  Tier,
+  Level,
 } from 'src/types';
-import { attributeTypes } from 'src/mock/attributes';
-import { expertiseCategories } from 'src/mock/expertises';
 
 interface Classifiers {
+  // Attributes & Stats
+  attributeTypes: AttributeType[];
   attributes: Attribute[];
+  derivedStats: DerivedStat[];
+  derivedStatValues: DerivedStatValue[];
+
+  // Skills & Expertises
   skills: Skill[];
-  weapons: Weapon[];
-  armor: Armor[];
-  equipment: Equipment[];
-  conditions: Condition[];
+  expertiseTypes: ExpertiseType[];
   expertises: Expertise[];
-  startingKits: StartingKit[];
-  heroicPaths: HeroicPath[];
+
+  // Actions
+  activationTypes: ActivationType[];
+  actionTypes: ActionType[];
+  actions: Action[];
+  actionLinks: ActionLink[];
+
+  // Paths & Talents
+  paths: Path[];
   specialties: Specialty[];
-  radiantOrders: RadiantOrder[];
   surges: Surge[];
-  talents: Talent[];
-  ancestries: Ancestry[];
+  radiantOrders: RadiantOrder[];
   singerForms: SingerForm[];
+  talents: Talent[];
+
+  // Equipment
+  units: Unit[];
+  equipmentTypes: EquipmentType[];
+  damageTypes: DamageType[];
+  equipmentAttributes: EquipmentAttribute[];
+  equipment: Equipment[];
+
+  // Conditions & Status
+  conditions: Condition[];
+  injuries: Injury[];
+
+  // Character Details
+  goalStatuses: GoalStatus[];
+  connectionTypes: ConnectionType[];
+  companionTypes: CompanionType[];
+
+  // Starting & Ancestry
+  startingKits: StartingKit[];
+  ancestries: Ancestry[];
   cultures: Culture[];
+
+  // Progression
+  tiers: Tier[];
+  levels: Level[];
 }
 
 export const useClassifierStore = defineStore('classifiers', () => {
@@ -59,203 +94,121 @@ export const useClassifierStore = defineStore('classifiers', () => {
   const error = ref<string | null>(null);
   const initialized = ref(false);
 
-  const attributes = computed(() => data.value?.attributes || []);
-  const skills = computed(() => data.value?.skills || []);
-  const weapons = computed(() => data.value?.weapons || []);
-  const armor = computed(() => data.value?.armor || []);
-  const equipment = computed(() => data.value?.equipment || []);
-  const conditions = computed(() => data.value?.conditions || []);
-  const expertises = computed(() => data.value?.expertises || []);
-  const startingKits = computed(() => data.value?.startingKits || []);
-  const heroicPaths = computed(() => data.value?.heroicPaths || []);
-  const specialties = computed(() => data.value?.specialties || []);
-  const radiantOrders = computed(() => data.value?.radiantOrders || []);
-  const surges = computed(() => data.value?.surges || []);
-  const talents = computed(() => data.value?.talents || []);
-  const ancestries = computed(() => data.value?.ancestries || []);
-  const singerForms = computed(() => data.value?.singerForms || []);
-  const cultures = computed(() => data.value?.cultures || []);
+  // Attributes & Stats
+  const attributeTypes = computed((): AttributeType[] => data.value?.attributeTypes || []);
+  const attributes = computed((): Attribute[] => data.value?.attributes || []);
+  const derivedStats = computed((): DerivedStat[] => data.value?.derivedStats || []);
+  const derivedStatValues = computed((): DerivedStatValue[] => data.value?.derivedStatValues || []);
 
-  // Lookup by numeric ID
-  function getAttributeById(id: number): Attribute | undefined {
-    return attributes.value.find((a) => a.id === id);
+  // Skills & Expertises
+  const skills = computed((): Skill[] => data.value?.skills || []);
+  const expertiseTypes = computed((): ExpertiseType[] => data.value?.expertiseTypes || []);
+  const expertises = computed((): Expertise[] => data.value?.expertises || []);
+
+  // Actions
+  const activationTypes = computed((): ActivationType[] => data.value?.activationTypes || []);
+  const actionTypes = computed((): ActionType[] => data.value?.actionTypes || []);
+  const actions = computed((): Action[] => data.value?.actions || []);
+  const actionLinks = computed((): ActionLink[] => data.value?.actionLinks || []);
+
+  // Paths & Talents
+  const paths = computed((): Path[] => data.value?.paths || []);
+  const specialties = computed((): Specialty[] => data.value?.specialties || []);
+  const surges = computed((): Surge[] => data.value?.surges || []);
+  const radiantOrders = computed((): RadiantOrder[] => data.value?.radiantOrders || []);
+  const singerForms = computed((): SingerForm[] => data.value?.singerForms || []);
+  const talents = computed((): Talent[] => data.value?.talents || []);
+
+  // Equipment
+  const units = computed((): Unit[] => data.value?.units || []);
+  const equipmentTypes = computed((): EquipmentType[] => data.value?.equipmentTypes || []);
+  const damageTypes = computed((): DamageType[] => data.value?.damageTypes || []);
+  const equipmentAttributes = computed(
+    (): EquipmentAttribute[] => data.value?.equipmentAttributes || []
+  );
+  const equipment = computed((): Equipment[] => data.value?.equipment || []);
+
+  // Conditions & Status
+  const conditions = computed((): Condition[] => data.value?.conditions || []);
+  const injuries = computed((): Injury[] => data.value?.injuries || []);
+
+  // Character Details
+  const goalStatuses = computed((): GoalStatus[] => data.value?.goalStatuses || []);
+  const connectionTypes = computed((): ConnectionType[] => data.value?.connectionTypes || []);
+  const companionTypes = computed((): CompanionType[] => data.value?.companionTypes || []);
+
+  // Starting & Ancestry
+  const startingKits = computed((): StartingKit[] => data.value?.startingKits || []);
+  const ancestries = computed((): Ancestry[] => data.value?.ancestries || []);
+  const cultures = computed((): Culture[] => data.value?.cultures || []);
+
+  // Progression
+  const tiers = computed((): Tier[] => data.value?.tiers || []);
+  const levels = computed((): Level[] => data.value?.levels || []);
+
+  /**
+   * Generic lookup by any property with null safety
+   * @param list - classifier array to search
+   * @param prop - property name to match
+   * @param value - value to find
+   * @returns matching classifier or undefined
+   */
+  function getByProp<T extends Classifier, K extends keyof T>(
+    list: T[],
+    prop: K,
+    value: T[K] | undefined | null
+  ): T | undefined {
+    if (value == null) return undefined;
+    return list.find((item) => item[prop] === value);
   }
 
-  function getSkillById(id: number): Skill | undefined {
-    return skills.value.find((s) => s.id === id);
+  /**
+   * Lookup classifier by id
+   * @param list - classifier array to search
+   * @param id - id to find
+   * @returns matching classifier or undefined
+   */
+  function getById<T extends Classifier>(list: T[], id: number | undefined | null): T | undefined {
+    return getByProp(list, 'id', id);
   }
 
-  function getWeaponById(id: number): Weapon | undefined {
-    return weapons.value.find((w) => w.id === id);
+  /**
+   * Lookup classifier by code
+   * @param list - classifier array to search
+   * @param code - code to find
+   * @returns matching classifier or undefined
+   */
+  function getByCode<T extends Classifier>(
+    list: T[],
+    code: string | undefined | null
+  ): T | undefined {
+    return getByProp(list, 'code', code);
   }
 
-  function getArmorById(id: number): Armor | undefined {
-    return armor.value.find((a) => a.id === id);
+  /**
+   * Lookup derived stat value from config table
+   * @param derivedStatId - the derived stat id
+   * @param attrValue - hero's attribute value for the stat's driving attribute
+   * @returns the config value or undefined if no lookup exists
+   */
+  function getDerivedStatValue(
+    derivedStatId: number | undefined | null,
+    attrValue: number
+  ): number | undefined {
+    if (derivedStatId == null) return undefined;
+
+    const entry = derivedStatValues.value.find(
+      (v) =>
+        v.derivedStatId === derivedStatId &&
+        attrValue >= v.attrMin &&
+        (v.attrMax === null || attrValue <= v.attrMax)
+    );
+    return entry?.value;
   }
 
-  function getEquipmentById(id: number): Equipment | undefined {
-    return equipment.value.find((e) => e.id === id);
-  }
-
-  function getConditionById(id: number): Condition | undefined {
-    return conditions.value.find((c) => c.id === id);
-  }
-
-  function getExpertiseById(id: number): Expertise | undefined {
-    return expertises.value.find((e) => e.id === id);
-  }
-
-  function getStartingKitById(id: number): StartingKit | undefined {
-    return startingKits.value.find((k) => k.id === id);
-  }
-
-  function getHeroicPathById(id: number): HeroicPath | undefined {
-    return heroicPaths.value.find((p) => p.id === id);
-  }
-
-  function getSpecialtyById(id: number): Specialty | undefined {
-    return specialties.value.find((s) => s.id === id);
-  }
-
-  function getRadiantOrderById(id: number): RadiantOrder | undefined {
-    return radiantOrders.value.find((o) => o.id === id);
-  }
-
-  function getSurgeById(id: number): Surge | undefined {
-    return surges.value.find((s) => s.id === id);
-  }
-
-  function getTalentById(id: number): Talent | undefined {
-    return talents.value.find((t) => t.id === id);
-  }
-
-  function getAncestryById(id: number): Ancestry | undefined {
-    return ancestries.value.find((a) => a.id === id);
-  }
-
-  function getSingerFormById(id: number): SingerForm | undefined {
-    return singerForms.value.find((f) => f.id === id);
-  }
-
-  function getCultureById(id: number): Culture | undefined {
-    return cultures.value.find((c) => c.id === id);
-  }
-
-  // Lookup by code (for character references)
-  function getAttributeByCode(code: AttributeCode): Attribute | undefined {
-    return attributes.value.find((a) => a.code === code);
-  }
-
-  function getSkillByCode(code: SkillCode): Skill | undefined {
-    return skills.value.find((s) => s.code === code);
-  }
-
-  function getWeaponByCode(code: string): Weapon | undefined {
-    return weapons.value.find((w) => w.code === code);
-  }
-
-  function getArmorByCode(code: string): Armor | undefined {
-    return armor.value.find((a) => a.code === code);
-  }
-
-  function getEquipmentByCode(code: string): Equipment | undefined {
-    return equipment.value.find((e) => e.code === code);
-  }
-
-  function getConditionByCode(code: ConditionCode): Condition | undefined {
-    return conditions.value.find((c) => c.code === code);
-  }
-
-  function getExpertiseByCode(code: string): Expertise | undefined {
-    return expertises.value.find((e) => e.code === code);
-  }
-
-  function getStartingKitByCode(code: StartingKitCode): StartingKit | undefined {
-    return startingKits.value.find((k) => k.code === code);
-  }
-
-  function getHeroicPathByCode(code: HeroicPathCode): HeroicPath | undefined {
-    return heroicPaths.value.find((p) => p.code === code);
-  }
-
-  function getSpecialtyByCode(code: SpecialtyCode): Specialty | undefined {
-    return specialties.value.find((s) => s.code === code);
-  }
-
-  function getRadiantOrderByCode(code: RadiantOrderCode): RadiantOrder | undefined {
-    return radiantOrders.value.find((o) => o.code === code);
-  }
-
-  function getSurgeByCode(code: SurgeCode): Surge | undefined {
-    return surges.value.find((s) => s.code === code);
-  }
-
-  function getTalentByCode(code: string): Talent | undefined {
-    return talents.value.find((t) => t.code === code);
-  }
-
-  function getAncestryByCode(code: AncestryCode): Ancestry | undefined {
-    return ancestries.value.find((a) => a.code === code);
-  }
-
-  function getSingerFormByCode(code: SingerFormCode): SingerForm | undefined {
-    return singerForms.value.find((f) => f.code === code);
-  }
-
-  function getCultureByCode(code: CultureCode): Culture | undefined {
-    return cultures.value.find((c) => c.code === code);
-  }
-
-  // Helper to get attribute type code from attrTypeId
-  function getAttributeTypeCode(attrTypeId: number): AttributeTypeCode | undefined {
-    return attributeTypes.find((t) => t.id === attrTypeId)?.code;
-  }
-
-  // Helper to get skills by attribute type (physical/cognitive/spiritual)
-  function getSkillsByAttributeType(attrTypeCode: AttributeTypeCode): Skill[] {
-    const attrType = attributeTypes.find((t) => t.code === attrTypeCode);
-    if (!attrType) return [];
-    const attrIds = attributes.value.filter((a) => a.attrTypeId === attrType.id).map((a) => a.id);
-    return skills.value.filter((s) => attrIds.includes(s.attrId));
-  }
-
-  // Helper to get expertise category code from categoryId
-  function getExpertiseCategoryCode(categoryId: number): ExpertiseCategoryCode | undefined {
-    return expertiseCategories.find((c) => c.id === categoryId)?.code;
-  }
-
-  // Helper to get expertises by category code
-  function getExpertisesByCategoryCode(categoryCode: ExpertiseCategoryCode): Expertise[] {
-    const category = expertiseCategories.find((c) => c.code === categoryCode);
-    if (!category) return [];
-    return expertises.value.filter((e) => e.categoryId === category.id);
-  }
-
-  // Helper to get specialties by path ID
-  function getSpecialtiesByPathId(pathId: number): Specialty[] {
-    return specialties.value.filter((s) => s.pathId === pathId);
-  }
-
-  // Helper to get talents by path ID
-  function getTalentsByPathId(pathId: number): Talent[] {
-    return talents.value.filter((t) => t.pathId === pathId);
-  }
-
-  // Helper to get talents by specialty ID
-  function getTalentsBySpecialtyId(specialtyId: number): Talent[] {
-    return talents.value.filter((t) => t.specialtyId === specialtyId);
-  }
-
-  // Helper to get talents by ancestry ID
-  function getTalentsByAncestryId(ancestryId: number): Talent[] {
-    return talents.value.filter((t) => t.ancestryId === ancestryId);
-  }
-
-  // Helper to get key talent for a path
-  function getKeyTalentForPath(pathId: number): Talent | undefined {
-    return talents.value.find((t) => t.pathId === pathId && t.isKey);
-  }
-
+  /**
+   * Initialize classifiers from API or mock data
+   */
   async function initialize(): Promise<void> {
     if (initialized.value) return;
 
@@ -279,6 +232,9 @@ export const useClassifierStore = defineStore('classifiers', () => {
     }
   }
 
+  /**
+   * Reset store to initial state
+   */
   function reset(): void {
     data.value = null;
     loading.value = false;
@@ -291,66 +247,62 @@ export const useClassifierStore = defineStore('classifiers', () => {
     loading,
     error,
     initialized,
+
+    // Attributes & Stats
+    attributeTypes,
     attributes,
+    derivedStats,
+    derivedStatValues,
+
+    // Skills & Expertises
     skills,
-    weapons,
-    armor,
-    equipment,
-    conditions,
+    expertiseTypes,
     expertises,
-    startingKits,
-    heroicPaths,
+
+    // Actions
+    activationTypes,
+    actionTypes,
+    actions,
+    actionLinks,
+
+    // Paths & Talents
+    paths,
     specialties,
-    radiantOrders,
     surges,
-    talents,
-    ancestries,
+    radiantOrders,
     singerForms,
+    talents,
+
+    // Equipment
+    units,
+    equipmentTypes,
+    damageTypes,
+    equipmentAttributes,
+    equipment,
+
+    // Conditions & Status
+    conditions,
+    injuries,
+
+    // Character Details
+    goalStatuses,
+    connectionTypes,
+    companionTypes,
+
+    // Starting & Ancestry
+    startingKits,
+    ancestries,
     cultures,
-    // By ID (numeric)
-    getAttributeById,
-    getSkillById,
-    getWeaponById,
-    getArmorById,
-    getEquipmentById,
-    getConditionById,
-    getExpertiseById,
-    getStartingKitById,
-    getHeroicPathById,
-    getSpecialtyById,
-    getRadiantOrderById,
-    getSurgeById,
-    getTalentById,
-    getAncestryById,
-    getSingerFormById,
-    getCultureById,
-    // By code (string)
-    getAttributeByCode,
-    getSkillByCode,
-    getWeaponByCode,
-    getArmorByCode,
-    getEquipmentByCode,
-    getConditionByCode,
-    getExpertiseByCode,
-    getStartingKitByCode,
-    getHeroicPathByCode,
-    getSpecialtyByCode,
-    getRadiantOrderByCode,
-    getSurgeByCode,
-    getTalentByCode,
-    getAncestryByCode,
-    getSingerFormByCode,
-    getCultureByCode,
-    // New helpers
-    getAttributeTypeCode,
-    getSkillsByAttributeType,
-    getExpertiseCategoryCode,
-    getExpertisesByCategoryCode,
-    getSpecialtiesByPathId,
-    getTalentsByPathId,
-    getTalentsBySpecialtyId,
-    getTalentsByAncestryId,
-    getKeyTalentForPath,
+
+    // Progression
+    tiers,
+    levels,
+
+    // Generic lookups
+    getByProp,
+    getById,
+    getByCode,
+    getDerivedStatValue,
     initialize,
     reset,
   };

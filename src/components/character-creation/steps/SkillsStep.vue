@@ -6,20 +6,18 @@
       <strong :class="pointsRemaining >= 0 ? 'text-positive' : 'text-negative'">{{
         pointsRemaining
       }}</strong>
-      / {{ pointBudgets.skills }}
+      / {{ pointsBudget }}
     </div>
 
-    <!-- Skill Groups -->
-    <div v-for="group in skillGroups" :key="group.name" class="q-mb-md">
-      <div class="text-subtitle2 q-mb-sm" :class="`text-${group.color}`">
-        {{ group.name }} Skills
-      </div>
+    <!-- Skill Groups by Attribute Type -->
+    <div v-for="group in skillGroups" :key="group.typeId" class="q-mb-md">
+      <div class="text-subtitle2 q-mb-sm">{{ group.typeName }} Skills</div>
 
       <q-list bordered separator>
         <q-item v-for="skill in group.skills" :key="skill.id">
           <q-item-section>
             <q-item-label>{{ skill.name }}</q-item-label>
-            <q-item-label caption>{{ getAttrAbbr(skill.attrId) }}</q-item-label>
+            <q-item-label caption>{{ skill.attrAbbr }}</q-item-label>
           </q-item-section>
           <q-item-section side>
             <div class="row items-center">
@@ -32,7 +30,7 @@
                 :disable="getSkillRank(skill.id) <= 0"
                 @click="decrementSkill(skill.id)"
               />
-              <div class="text-body1 q-mx-sm" style="min-width: 20px; text-align: center">
+              <div class="text-body1 q-mx-sm" style="min-width: 30px; text-align: center">
                 {{ getSkillRank(skill.id) }}
               </div>
               <q-btn
@@ -41,8 +39,17 @@
                 flat
                 size="sm"
                 icon="add"
-                :disable="getSkillRank(skill.id) >= 5 || pointsRemaining <= 0"
+                :disable="getSkillRank(skill.id) >= maxSkillRank || pointsRemaining <= 0"
                 @click="incrementSkill(skill.id)"
+              />
+              <q-input
+                :model-value="getSkillModifier(skill.id)"
+                type="number"
+                dense
+                outlined
+                class="modifier-input q-ml-sm"
+                prefix="+"
+                @update:model-value="setSkillModifier(skill.id, $event)"
               />
             </div>
           </q-item-section>
@@ -54,68 +61,72 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useCharacterCreationStore } from 'stores/character-creation';
-import { useClassifierStore } from 'stores/classifiers';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
+import { useStepValidation } from 'src/composables/useStepValidation';
+import type { SkillsBudgetValidation } from 'src/utils/characterValidation';
 
-const store = useCharacterCreationStore();
+const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
+const { budget } = useStepValidation();
 
-const pointBudgets = computed(() => store.pointBudgets);
-const pointsRemaining = computed(() => store.skillPointsRemaining);
+const skillsBudget = computed(() => budget('skills') as SkillsBudgetValidation);
+const pointsRemaining = computed(() => skillsBudget.value.remaining);
+const pointsBudget = computed(() => skillsBudget.value.budget);
+const maxSkillRank = computed(() => skillsBudget.value.maxRank);
 
-// Group skills by attribute type
+// Group skills by attribute type (physical, cognitive, spiritual)
 const skillGroups = computed(() => {
-  const physicalAttrs = [1, 2]; // STR, SPD
-  const cognitiveAttrs = [3, 4]; // INT, WIL
-  const spiritualAttrs = [5, 6]; // AWA, PRE
+  return classifiers.attributeTypes.map((attrType) => {
+    // Get attribute IDs for this type
+    const attrIds = classifiers.attributes
+      .filter((a) => a.attrTypeId === attrType.id)
+      .map((a) => a.id);
 
-  return [
-    {
-      name: 'Physical',
-      color: 'red',
-      skills: classifiers.skills.filter((s) => physicalAttrs.includes(s.attrId)),
-    },
-    {
-      name: 'Cognitive',
-      color: 'blue',
-      skills: classifiers.skills.filter((s) => cognitiveAttrs.includes(s.attrId)),
-    },
-    {
-      name: 'Spiritual',
-      color: 'purple',
-      skills: classifiers.skills.filter((s) => spiritualAttrs.includes(s.attrId)),
-    },
-  ];
+    // Get skills for these attributes
+    const skills = classifiers.skills
+      .filter((s) => attrIds.includes(s.attrId))
+      .map((skill) => {
+        const attr = classifiers.getById(classifiers.attributes, skill.attrId);
+        return {
+          ...skill,
+          attrAbbr: attr?.code.toUpperCase() ?? '',
+        };
+      });
+
+    return {
+      typeId: attrType.id,
+      typeName: attrType.name,
+      skills,
+    };
+  });
 });
 
-function getAttrAbbr(attrId: number): string {
-  const abbrs: Record<number, string> = {
-    1: 'STR',
-    2: 'SPD',
-    3: 'INT',
-    4: 'WIL',
-    5: 'AWA',
-    6: 'PRE',
-  };
-  return abbrs[attrId] || '';
+function getSkillRank(skillId: number): number {
+  return heroStore.getSkillRank(skillId);
 }
 
-function getSkillRank(skillId: number): number {
-  const alloc = store.skills.allocations.find((s) => s.skillId === skillId);
-  return alloc?.rank || 0;
+function getSkillModifier(skillId: number): number {
+  return heroStore.hero?.skills.find((s) => s.skillId === skillId)?.modifier ?? 0;
+}
+
+function setSkillModifier(skillId: number, value: string | number | null) {
+  if (value === null) return;
+  const numValue = typeof value === 'string' ? parseInt(value, 10) || 0 : value;
+  heroStore.setSkillModifier(skillId, numValue);
 }
 
 function incrementSkill(skillId: number) {
   const current = getSkillRank(skillId);
-  if (current < 5 && pointsRemaining.value > 0) {
-    store.setSkillRank(skillId, current + 1);
+  if (current < maxSkillRank.value && pointsRemaining.value > 0) {
+    heroStore.setSkillRank(skillId, current + 1);
   }
 }
 
 function decrementSkill(skillId: number) {
   const current = getSkillRank(skillId);
   if (current > 0) {
-    store.setSkillRank(skillId, current - 1);
+    heroStore.setSkillRank(skillId, current - 1);
   }
 }
 </script>

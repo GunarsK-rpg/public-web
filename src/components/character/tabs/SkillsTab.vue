@@ -1,84 +1,12 @@
 <template>
   <div class="skills-tab">
-    <!-- Physical Skills -->
-    <div class="skill-category">
-      <div class="category-title physical">Physical Skills</div>
+    <!-- Dynamic sections from attribute types classifier -->
+    <div v-for="attrType in classifiers.attributeTypes" :key="attrType.id" class="skill-category">
+      <div class="category-title">{{ attrType.name }} Skills</div>
       <q-list separator>
-        <q-item v-for="skill in physicalSkills" :key="skill.id">
+        <q-item v-for="skill in getSkillsByAttrTypeId(attrType.id)" :key="skill.id">
           <q-item-section avatar>
-            <q-avatar
-              :color="getModifierColor(getSkillModifier(skill.code))"
-              text-color="white"
-              size="md"
-            >
-              {{ getSkillModifier(skill.code) }}
-            </q-avatar>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>{{ skill.name }}</q-item-label>
-            <q-item-label caption>
-              {{ getAttributeName(skill.attrId) }} + Rank {{ getSkillRank(skill.id) }}
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <div class="rank-pips">
-              <span
-                v-for="n in 5"
-                :key="n"
-                class="pip"
-                :class="{ filled: n <= getSkillRank(skill.id) }"
-              />
-            </div>
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </div>
-
-    <!-- Cognitive Skills -->
-    <div class="skill-category">
-      <div class="category-title cognitive">Cognitive Skills</div>
-      <q-list separator>
-        <q-item v-for="skill in cognitiveSkills" :key="skill.id">
-          <q-item-section avatar>
-            <q-avatar
-              :color="getModifierColor(getSkillModifier(skill.code))"
-              text-color="white"
-              size="md"
-            >
-              {{ getSkillModifier(skill.code) }}
-            </q-avatar>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>{{ skill.name }}</q-item-label>
-            <q-item-label caption>
-              {{ getAttributeName(skill.attrId) }} + Rank {{ getSkillRank(skill.id) }}
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <div class="rank-pips">
-              <span
-                v-for="n in 5"
-                :key="n"
-                class="pip"
-                :class="{ filled: n <= getSkillRank(skill.id) }"
-              />
-            </div>
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </div>
-
-    <!-- Spiritual Skills -->
-    <div class="skill-category">
-      <div class="category-title spiritual">Spiritual Skills</div>
-      <q-list separator>
-        <q-item v-for="skill in spiritualSkills" :key="skill.id">
-          <q-item-section avatar>
-            <q-avatar
-              :color="getModifierColor(getSkillModifier(skill.code))"
-              text-color="white"
-              size="md"
-            >
+            <q-avatar color="grey" text-color="white" size="md">
               {{ getSkillModifier(skill.code) }}
             </q-avatar>
           </q-item-section>
@@ -105,36 +33,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useCharacterStore } from 'stores/character';
-import { useClassifierStore } from 'stores/classifiers';
-import type { SkillCode } from 'src/types';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
+import type { Skill } from 'src/types';
 
-const characterStore = useCharacterStore();
-const classifierStore = useClassifierStore();
+const heroStore = useHeroStore();
+const classifiers = useClassifierStore();
 
-const physicalSkills = computed(() => classifierStore.getSkillsByAttributeType('physical'));
-const cognitiveSkills = computed(() => classifierStore.getSkillsByAttributeType('cognitive'));
-const spiritualSkills = computed(() => classifierStore.getSkillsByAttributeType('spiritual'));
-
-function getSkillRank(skillId: number): number {
-  return characterStore.getSkillRank(skillId);
+function getSkillsByAttrTypeId(attrTypeId: number): Skill[] {
+  return classifiers.skills.filter((skill) => {
+    const attr = classifiers.getById(classifiers.attributes, skill.attrId);
+    return attr?.attrTypeId === attrTypeId;
+  });
 }
 
-function getSkillModifier(skillCode: SkillCode): number {
-  return characterStore.getSkillModifier(skillCode);
+function getSkillRank(skillId: number): number {
+  return heroStore.getSkillRank(skillId);
+}
+
+function getSkillModifier(skillCode: string): number {
+  return heroStore.getSkillModifier(skillCode);
 }
 
 function getAttributeName(attrId: number): string {
-  const attr = classifierStore.getAttributeById(attrId);
-  return attr?.abbreviation || 'UNK';
-}
-
-function getModifierColor(mod: number): string {
-  if (mod >= 7) return 'positive';
-  if (mod >= 5) return 'primary';
-  if (mod >= 3) return 'info';
-  return 'grey';
+  return classifiers.getById(classifiers.attributes, attrId)?.code.toUpperCase() ?? '';
 }
 </script>
 
@@ -149,21 +71,7 @@ function getModifierColor(mod: number): string {
   padding: 8px 16px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.category-title.physical {
-  background: color-mix(in srgb, var(--q-info) 15%, transparent);
-  color: var(--q-info);
-}
-
-.category-title.cognitive {
-  background: color-mix(in srgb, var(--q-accent) 15%, transparent);
-  color: var(--q-accent);
-}
-
-.category-title.spiritual {
-  background: color-mix(in srgb, var(--q-warning) 15%, transparent);
-  color: var(--q-warning);
+  opacity: 0.7;
 }
 
 .rank-pips {

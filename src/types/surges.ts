@@ -1,25 +1,8 @@
-/**
- * Surge code identifiers
- */
-export type SurgeCode =
-  | 'abrasion'
-  | 'adhesion'
-  | 'cohesion'
-  | 'division'
-  | 'gravitation'
-  | 'illumination'
-  | 'progression'
-  | 'tension'
-  | 'transformation'
-  | 'transportation';
+import type { Classifier } from './classifier';
 
 /**
- * Surge classifier
+ * Surge classifier (cl_surges)
  */
-export interface Surge {
-  id: number;
-  code: SurgeCode;
-  name: string;
+export interface Surge extends Classifier {
   attributeId: number;
-  description?: string;
 }

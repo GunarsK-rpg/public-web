@@ -1,24 +1,15 @@
-/**
- * Attribute code identifiers
- */
-export type AttributeCode =
-  | 'strength'
-  | 'speed'
-  | 'intellect'
-  | 'willpower'
-  | 'awareness'
-  | 'presence';
+import type { Classifier } from './classifier';
 
 /**
- * Attribute classifier
+ * Attribute type classifier (cl_attribute_types)
  */
-export interface Attribute {
-  id: number;
-  code: AttributeCode;
-  name: string;
-  abbreviation: string;
+export type AttributeType = Classifier;
+
+/**
+ * Attribute classifier (cl_attributes)
+ */
+export interface Attribute extends Classifier {
   attrTypeId: number;
-  notes?: string;
 }
 
 /**

@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useCharacterStore } from 'stores/character';
+import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
 import CharacterHeader from 'components/character/CharacterHeader.vue';
 import StatsTab from 'components/character/tabs/StatsTab.vue';
@@ -93,7 +93,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const characterStore = useCharacterStore();
+const heroStore = useHeroStore();
 const classifierStore = useClassifierStore();
 
 const activeTab = ref('stats');
@@ -108,9 +108,9 @@ const tabs = [
   { id: 'others', label: 'Others', icon: 'more_horiz' },
 ];
 
-const isLoaded = computed(() => characterStore.isLoaded);
-const loading = computed(() => characterStore.loading);
-const error = computed(() => characterStore.error);
+const isLoaded = computed(() => heroStore.isLoaded);
+const loading = computed(() => heroStore.loading);
+const error = computed(() => heroStore.error);
 const classifierLoading = computed(() => classifierStore.loading);
 const classifierError = computed(() => classifierStore.error);
 
@@ -118,11 +118,11 @@ onMounted(async () => {
   if (!classifierStore.initialized) {
     await classifierStore.initialize();
   }
-  await characterStore.loadCharacter(Number(props.characterId));
+  await heroStore.loadHero(Number(props.characterId));
 });
 
 onUnmounted(() => {
-  characterStore.clearCharacter();
+  heroStore.clearHero();
 });
 
 function goBack(): void {

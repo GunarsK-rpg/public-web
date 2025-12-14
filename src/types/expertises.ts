@@ -1,46 +1,33 @@
-import type { ExpertiseCategoryCode } from './expertise-types';
+import type { Classifier } from './classifier';
 
 /**
- * Expertise classifier
+ * Expertise type classifier (cl_expertise_types)
  */
-export interface Expertise {
-  id: number;
-  code: string;
-  name: string;
-  expertiseTypeId?: number;
-  categoryId: number;
-  cultureId?: number;
-  isRestricted?: boolean;
-  description?: string;
+export type ExpertiseType = Classifier;
+
+/**
+ * Expertise source JSONB structure
+ */
+export interface ExpertiseSourceData {
+  sourceType: string; // culture, intellect, starting_kit, talent, reward, training
+  sourceId?: number;
+}
+
+/**
+ * Expertise classifier (cl_expertises)
+ */
+export interface Expertise extends Classifier {
+  expertiseTypeId: number;
 }
 
 /**
  * Hero's expertise
+ * Maps to expertises table
  */
 export interface HeroExpertise {
   id: number;
   heroId: number;
   expertiseId: number;
   notes?: string;
-  source?: string;
-}
-
-/**
- * Expertise category (alias for ExpertiseType)
- */
-export interface ExpertiseCategory {
-  id: number;
-  code: ExpertiseCategoryCode;
-  name: string;
-  description?: string;
-}
-
-/**
- * Expertise source classifier
- */
-export interface ExpertiseSource {
-  id: number;
-  code: string;
-  name: string;
-  description?: string;
+  source?: ExpertiseSourceData; // JSONB: {source_type, source_id}
 }

@@ -13,26 +13,25 @@
           <div class="text-caption">{{ selectedStartingKit.description }}</div>
         </div>
         <div class="col-auto">
-          <q-badge v-if="rolledSpheres !== undefined" color="positive">
-            {{ rolledSpheres }} marks rolled
-          </q-badge>
-          <q-badge v-else color="grey-7"> {{ selectedStartingKit.startingSpheres }} marks </q-badge>
+          <q-badge color="grey-7">{{ selectedStartingKit.startingSpheres }} marks</q-badge>
         </div>
       </div>
     </q-banner>
 
     <!-- Currency -->
-    <div class="row items-center q-mb-md">
-      <div class="text-subtitle2">Total Spheres</div>
-      <q-space />
-      <q-input
-        v-model.number="spheres"
-        type="number"
-        outlined
-        dense
-        style="width: 120px"
-        :min="0"
-      />
+    <div class="text-subtitle2 q-mb-sm">Currency (Diamond Marks)</div>
+    <div class="row q-col-gutter-sm q-mb-md">
+      <div class="col-6 col-sm-4 col-md-3">
+        <q-input
+          :model-value="heroCurrency"
+          label="Diamond Marks"
+          type="number"
+          outlined
+          dense
+          :min="0"
+          @update:model-value="setCurrencyAmount"
+        />
+      </div>
     </div>
 
     <q-separator class="q-my-md" />
@@ -54,7 +53,7 @@
         <q-item v-for="item in getEquipmentByType(eqType.id)" :key="item.equipmentId">
           <q-item-section>
             <q-item-label>{{ getEquipmentName(item.equipmentId) }}</q-item-label>
-            <q-item-label caption>Qty: {{ item.quantity }}</q-item-label>
+            <q-item-label caption>Qty: {{ item.amount }}</q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn
@@ -73,7 +72,7 @@
       <!-- Add item of this type -->
       <div class="row items-center q-mt-sm q-gutter-sm">
         <q-select
-          v-model="newEquipmentByType[eqType.id]"
+          :model-value="newEquipmentByType[eqType.id]"
           :options="getAvailableByType(eqType.id)"
           :label="`Add ${eqType.name}`"
           outlined
@@ -83,6 +82,7 @@
           clearable
           class="col"
           style="max-width: 300px"
+          @update:model-value="(val) => (newEquipmentByType[eqType.id] = val)"
         />
         <q-btn
           v-if="newEquipmentByType[eqType.id]"
@@ -98,45 +98,36 @@
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
-import { useCharacterCreationStore } from 'stores/character-creation';
-import { useClassifierStore } from 'stores/classifiers';
-import { equipmentTypes } from 'src/mock/equipment';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
 
-const store = useCharacterCreationStore();
+const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
-// Equipment types list for iteration
-const equipmentTypesList = equipmentTypes;
+// Equipment types list from classifiers
+const equipmentTypesList = computed(() => classifiers.equipmentTypes);
 
 // Track new equipment selection per type
-const newEquipmentByType = reactive<Record<number, number | null>>({
-  1: null, // weapon
-  2: null, // armor
-  3: null, // fabrial
-  4: null, // consumable
-  5: null, // gear
-});
+const newEquipmentByType = reactive<Record<number, number | null>>({});
 
-// Get selected starting kit from the previous step
+// Get selected starting kit
 const selectedStartingKit = computed(() =>
-  classifiers.getStartingKitById(store.startingKit.startingKitId)
+  classifiers.getById(classifiers.startingKits, heroStore.hero?.startingKitId)
 );
 
-const rolledSpheres = computed(() => store.startingKit.rolledSpheres);
+// Hero's currency (diamond marks)
+const heroCurrency = computed(() => heroStore.hero?.currency ?? 0);
 
-const spheres = computed({
-  get: () => store.equipment.spheres,
-  set: (val) => store.updateEquipment({ spheres: val }),
-});
-const equipment = computed(() => store.equipment.equipment);
+// Hero equipment list
+const heroEquipment = computed(() => heroStore.hero?.equipment ?? []);
 
 // Get equipment names from starting kit
 const startingKitEquipmentNames = computed(() => {
   const kit = selectedStartingKit.value;
   if (!kit?.equipment) return [];
   return kit.equipment
-    .map((e) => {
-      const item = classifiers.getEquipmentById(e.equipmentId);
+    .map((e: { equipmentId: number; quantity: number }) => {
+      const item = classifiers.getById(classifiers.equipment, e.equipmentId);
       if (!item) return null;
       return e.quantity > 1 ? `${item.name} x${e.quantity}` : item.name;
     })
@@ -145,8 +136,8 @@ const startingKitEquipmentNames = computed(() => {
 
 // Get equipment items grouped by type
 function getEquipmentByType(typeId: number) {
-  return equipment.value.filter((item) => {
-    const eq = classifiers.getEquipmentById(item.equipmentId);
+  return heroEquipment.value.filter((item) => {
+    const eq = classifiers.getById(classifiers.equipment, item.equipmentId);
     return eq?.equipTypeId === typeId;
   });
 }
@@ -159,22 +150,25 @@ function getAvailableByType(typeId: number) {
 }
 
 function getEquipmentName(id: number): string {
-  return classifiers.equipment.find((e) => e.id === id)?.name || 'Unknown';
+  return classifiers.getById(classifiers.equipment, id)?.name ?? 'Unknown';
+}
+
+function setCurrencyAmount(val: string | number | null) {
+  if (val === null) return;
+  const numVal = typeof val === 'string' ? parseInt(val, 10) : val;
+  if (isNaN(numVal)) return;
+  heroStore.setCurrency(numVal);
 }
 
 function addItemOfType(typeId: number) {
   const equipmentId = newEquipmentByType[typeId];
   if (equipmentId) {
-    store.addEquipmentItem({
-      equipmentId,
-      quantity: 1,
-      isEquipped: false,
-    });
+    heroStore.addEquipment(equipmentId, 1);
     newEquipmentByType[typeId] = null;
   }
 }
 
 function removeItem(equipmentId: number) {
-  store.removeEquipmentItem(equipmentId);
+  heroStore.removeEquipment(equipmentId);
 }
 </script>

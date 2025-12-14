@@ -1,5 +1,17 @@
+import type { Classifier } from './classifier';
+
 /**
- * Hero's goal
+ * Goal status classifier (cl_goal_status)
+ */
+export type GoalStatus = Classifier;
+
+/**
+ * Connection type classifier (cl_connection_types)
+ */
+export type ConnectionType = Classifier;
+
+/**
+ * Hero's goal (goals table)
  */
 export interface HeroGoal {
   id: number;
@@ -12,7 +24,7 @@ export interface HeroGoal {
 }
 
 /**
- * Hero's connection
+ * Hero's connection (connections table)
  */
 export interface HeroConnection {
   id: number;

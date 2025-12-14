@@ -1,36 +1,12 @@
-/**
- * Condition code identifiers
- */
-export type ConditionCode =
-  | 'afflicted'
-  | 'determined'
-  | 'disoriented'
-  | 'empowered'
-  | 'exhausted'
-  | 'focused'
-  | 'immobilized'
-  | 'prone'
-  | 'restrained'
-  | 'slowed'
-  | 'stunned'
-  | 'surprised'
-  | 'unconscious';
+import type { Classifier } from './classifier';
 
 /**
- * Condition classifier
+ * Condition classifier (cl_conditions)
  */
-export interface Condition {
-  id: number;
-  code: ConditionCode;
-  name: string;
-  effect?: string;
-  hasValue?: boolean;
-  isPositive?: boolean;
-  description?: string;
-}
+export type Condition = Classifier;
 
 /**
- * Hero's condition
+ * Hero's condition (conditions table)
  */
 export interface HeroCondition {
   id: number;
@@ -40,17 +16,12 @@ export interface HeroCondition {
 }
 
 /**
- * Injury classifier
+ * Injury classifier (cl_injuries)
  */
-export interface Injury {
-  id: number;
-  code: string;
-  name: string;
-  description?: string;
-}
+export type Injury = Classifier;
 
 /**
- * Hero's injury
+ * Hero's injury (injuries table)
  */
 export interface HeroInjury {
   id: number;

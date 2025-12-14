@@ -1,54 +1,74 @@
 <template>
-  <div class="q-mt-md row items-center">
-    <q-btn
-      v-if="step > 1"
-      flat
-      label="Back"
-      icon="sym_o_arrow_back"
-      @click="goBack"
-      class="q-mr-sm"
-    />
-    <q-btn
-      color="primary"
-      :label="isLastStep ? 'Review' : 'Continue'"
-      :icon-right="isLastStep ? 'sym_o_checklist' : 'sym_o_arrow_forward'"
-      :disable="!canContinue"
-      @click="goNext"
-    />
+  <div class="creation-footer q-pa-sm row items-center">
+    <q-btn v-if="currentStep > 1" flat dense icon="arrow_back" label="Back" @click="previousStep" />
     <q-space />
-    <div v-if="validation.warnings.length > 0" class="text-warning">
-      <q-icon name="sym_o_warning" class="q-mr-xs" />
-      {{ validation.warnings[0] }}
+    <div v-if="hasErrors" class="text-negative text-caption q-mr-sm">
+      <q-icon name="error" size="xs" class="q-mr-xs" />
+      {{ firstError }}
     </div>
-    <div v-if="validation.errors.length > 0" class="text-negative">
-      <q-icon name="sym_o_error" class="q-mr-xs" />
-      {{ validation.errors[0] }}
-    </div>
+    <q-btn
+      v-if="!isLastStep"
+      color="primary"
+      dense
+      label="Next"
+      icon-right="arrow_forward"
+      @click="nextStep"
+    />
+    <q-btn
+      v-else
+      color="primary"
+      dense
+      label="Create"
+      icon="check"
+      :loading="creating"
+      :disable="!canCreate"
+      @click="$emit('create')"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useCharacterCreationStore } from 'stores/character-creation';
-import { WIZARD_STEPS } from 'src/types';
+import { useWizardStore } from 'src/stores/wizard';
+import { useStepValidation } from 'src/composables/useStepValidation';
 
-const props = defineProps<{
-  step: number;
+defineProps<{
+  creating?: boolean;
 }>();
 
-const store = useCharacterCreationStore();
+defineEmits<{
+  create: [];
+}>();
 
-const isLastStep = computed(() => props.step === WIZARD_STEPS.length - 1);
+const wizardStore = useWizardStore();
+const { currentStepCode, currentValidation, allStepsValidation } = useStepValidation();
 
-const validation = computed(() => store.validateStep(props.step));
+const currentStep = computed(() => wizardStore.currentStep);
+const isLastStep = computed(() => currentStepCode.value === 'review');
+const hasErrors = computed(() => currentValidation.value.errors.length > 0);
+const firstError = computed(() => currentValidation.value.errors[0] ?? '');
+const canCreate = computed(() => allStepsValidation.value.isValid);
 
-const canContinue = computed(() => validation.value.isValid);
-
-function goBack() {
-  store.previousStep();
+function previousStep() {
+  wizardStore.previousStep();
 }
 
-function goNext() {
-  store.nextStep();
+function nextStep() {
+  wizardStore.nextStep();
 }
 </script>
+
+<style scoped lang="scss">
+.creation-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  background-color: var(--q-dark-page);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+
+  .body--light & {
+    background-color: #fff;
+    border-top-color: rgba(0, 0, 0, 0.12);
+  }
+}
+</style>

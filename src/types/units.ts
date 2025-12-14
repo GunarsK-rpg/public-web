@@ -1,13 +1,6 @@
-/**
- * Unit code identifiers (cl_units)
- */
-export type UnitCode = 'lb' | 'ft' | 'each' | 'pcs';
+import type { Classifier } from './classifier';
 
 /**
  * Unit classifier (cl_units)
  */
-export interface Unit {
-  id: number;
-  code: UnitCode;
-  name: string;
-}
+export type Unit = Classifier;

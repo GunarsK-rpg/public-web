@@ -1,65 +1,99 @@
 // Re-export all classifier data from split files
-export { attributes } from './attributes';
+export { attributeTypes, attributes } from './attributes';
+export { derivedStats, derivedStatValues } from './derivedStats';
 export { skills } from './skills';
-export { weapons, armor, equipment } from './equipment';
-export { conditions } from './conditions';
-export { expertises } from './expertises';
-export { startingKits } from './starting-kits';
-export { heroicPaths, specialties } from './paths';
-export { radiantOrders, surges } from './radiant';
+export { expertiseTypes, expertises } from './expertises';
+export { activationTypes, actionTypes, actions, actionLinks } from './actions';
+export { paths, specialties } from './paths';
+export { surges } from './surges';
+export { radiantOrders } from './radiantOrders';
+export { singerForms } from './singerForms';
 export { talents } from './talents';
-export { ancestries, singerForms, cultures } from './ancestry';
-export { activationTypes, actionTypes, actions } from './actions';
-export {
-  derivedStats,
-  liftCapacityTable,
-  carryCapacityTable,
-  movementTable,
-  recoveryDieTable,
-  sensesRangeTable,
-  unarmedDamageTable,
-} from './derived-stats';
-export { goalStatuses, connectionTypes, companionTypes } from './type-classifiers';
+export { units } from './units';
+export { equipmentAttributes, equipmentAttributeMaps } from './equipmentAttributes';
+export { equipmentTypes, damageTypes, equipment } from './equipments';
+export { conditions, injuries } from './conditions';
+export { goalStatuses, connectionTypes } from './goals';
+export { companionTypes } from './companionTypes';
+export { startingKits } from './startingKits';
+export { ancestries } from './ancestries';
+export { cultures } from './cultures';
+export { tiers } from './tiers';
+export { levels } from './levels';
 
 // Import for the combined classifiers object
-import { attributes } from './attributes';
+import { attributeTypes, attributes } from './attributes';
+import { derivedStats, derivedStatValues } from './derivedStats';
 import { skills } from './skills';
-import { weapons, armor, equipment } from './equipment';
-import { conditions } from './conditions';
-import { expertises } from './expertises';
-import { startingKits } from './starting-kits';
-import { heroicPaths, specialties } from './paths';
-import { radiantOrders, surges } from './radiant';
+import { expertiseTypes, expertises } from './expertises';
+import { activationTypes, actionTypes, actions, actionLinks } from './actions';
+import { paths, specialties } from './paths';
+import { surges } from './surges';
+import { radiantOrders } from './radiantOrders';
+import { singerForms } from './singerForms';
 import { talents } from './talents';
-import { ancestries, singerForms, cultures } from './ancestry';
-import { activationTypes, actionTypes, actions } from './actions';
-import { derivedStats } from './derived-stats';
-import { goalStatuses, connectionTypes, companionTypes } from './type-classifiers';
+import { units } from './units';
+import { equipmentAttributes } from './equipmentAttributes';
+import { equipmentTypes, damageTypes, equipment } from './equipments';
+import { conditions, injuries } from './conditions';
+import { goalStatuses, connectionTypes } from './goals';
+import { companionTypes } from './companionTypes';
+import { startingKits } from './startingKits';
+import { ancestries } from './ancestries';
+import { cultures } from './cultures';
+import { tiers } from './tiers';
+import { levels } from './levels';
 
 export const classifiers = {
+  // Attributes & Stats
+  attributeTypes,
   attributes,
+  derivedStats,
+  derivedStatValues,
+
+  // Skills & Expertises
   skills,
-  weapons,
-  armor,
-  equipment,
-  conditions,
+  expertiseTypes,
   expertises,
-  startingKits,
-  heroicPaths,
-  specialties,
-  radiantOrders,
-  surges,
-  talents,
-  ancestries,
-  singerForms,
-  cultures,
+
+  // Actions
   activationTypes,
   actionTypes,
   actions,
-  derivedStats,
+  actionLinks,
+
+  // Paths & Talents
+  paths,
+  specialties,
+  surges,
+  radiantOrders,
+  singerForms,
+  talents,
+
+  // Equipment
+  units,
+  equipmentTypes,
+  damageTypes,
+  equipmentAttributes,
+  equipment,
+
+  // Conditions & Status
+  conditions,
+  injuries,
+
+  // Character Details
   goalStatuses,
   connectionTypes,
   companionTypes,
+
+  // Starting & Ancestry
+  startingKits,
+  ancestries,
+  cultures,
+
+  // Progression
+  tiers,
+  levels,
 };
 
 export default classifiers;

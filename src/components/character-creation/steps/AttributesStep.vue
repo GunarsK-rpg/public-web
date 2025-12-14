@@ -6,12 +6,12 @@
       <strong :class="pointsRemaining >= 0 ? 'text-positive' : 'text-negative'">{{
         pointsRemaining
       }}</strong>
-      / {{ pointBudgets.attributes }}
+      / {{ pointsBudget }}
     </div>
 
     <!-- Attribute Sliders -->
     <div class="row q-col-gutter-md">
-      <div v-for="attr in attributeList" :key="attr.code" class="col-12 col-md-6">
+      <div v-for="attr in attributeList" :key="attr.id" class="col-12 col-md-6">
         <q-card flat bordered>
           <q-card-section>
             <div class="row items-center q-mb-sm">
@@ -26,28 +26,28 @@
                 dense
                 flat
                 icon="remove"
-                :disable="getAttrValue(attr.code) <= 0"
-                @click="decrementAttr(attr.code)"
+                :disable="getAttrValue(attr.id) <= 0"
+                @click="decrementAttr(attr.id)"
               />
               <div class="text-h5 q-mx-md" style="min-width: 30px; text-align: center">
-                {{ getAttrValue(attr.code) }}
+                {{ getAttrValue(attr.id) }}
               </div>
               <q-btn
                 round
                 dense
                 flat
                 icon="add"
-                :disable="getAttrValue(attr.code) >= 5 || pointsRemaining <= 0"
-                @click="incrementAttr(attr.code)"
+                :disable="getAttrValue(attr.id) >= 5 || pointsRemaining <= 0"
+                @click="incrementAttr(attr.id)"
               />
               <q-slider
-                :model-value="getAttrValue(attr.code)"
+                :model-value="getAttrValue(attr.id)"
                 :min="0"
                 :max="5"
                 :step="1"
                 label
                 class="q-ml-md col"
-                @update:model-value="setAttrValue(attr.code, $event)"
+                @update:model-value="setAttrValue(attr.id, $event)"
               />
             </div>
           </q-card-section>
@@ -57,70 +57,29 @@
 
     <q-separator class="q-my-md" />
 
-    <!-- Derived Stats Preview -->
-    <div class="text-subtitle1 q-mb-md">Derived Stats Preview</div>
+    <!-- Derived Stats -->
+    <div class="text-subtitle1 q-mb-md">Derived Stats</div>
     <div class="row q-col-gutter-sm">
-      <div class="col-6 col-sm-4 col-md-3">
+      <div v-for="stat in derivedStatsList" :key="stat.id" class="col-6 col-sm-4 col-md-3">
         <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-caption">Max Health</div>
-            <div class="text-h6">{{ derivedStats.maxHealth }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-caption">Max Focus</div>
-            <div class="text-h6">{{ derivedStats.maxFocus }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-caption">Physical Defense</div>
-            <div class="text-h6">{{ derivedStats.physicalDefense }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-caption">Cognitive Defense</div>
-            <div class="text-h6">{{ derivedStats.cognitiveDefense }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-caption">Spiritual Defense</div>
-            <div class="text-h6">{{ derivedStats.spiritualDefense }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-caption">Movement</div>
-            <div class="text-h6">{{ derivedStats.movement }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-caption">Recovery Die</div>
-            <div class="text-h6">{{ derivedStats.recoveryDie }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-6 col-sm-4 col-md-3">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-caption">Carry Capacity</div>
-            <div class="text-h6">{{ derivedStats.carryCapacity }}</div>
+          <q-card-section class="q-pa-sm">
+            <div class="text-caption q-mb-xs">{{ stat.name }}</div>
+            <div class="row items-center no-wrap">
+              <div class="text-h6 q-mr-sm">{{ stat.baseDisplay }}</div>
+              <q-input
+                v-if="stat.hasModifier"
+                :model-value="stat.modifier"
+                type="number"
+                dense
+                outlined
+                class="modifier-input"
+                prefix="+"
+                @update:model-value="setStatModifier(stat.id, $event)"
+              />
+              <div v-if="stat.hasModifier && stat.modifier !== 0" class="text-subtitle2 q-ml-sm">
+                = {{ stat.totalDisplay }}
+              </div>
+            </div>
           </q-card-section>
         </q-card>
       </div>
@@ -130,87 +89,89 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useCharacterCreationStore } from 'stores/character-creation';
-import type { AttributeAllocation } from 'src/types';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
+import { useStepValidation } from 'src/composables/useStepValidation';
+import { buildDerivedStatsList } from 'src/utils/derivedStats';
 
-const store = useCharacterCreationStore();
+const heroStore = useHeroStore();
+const classifiers = useClassifierStore();
+const { budget } = useStepValidation();
 
-const pointBudgets = computed(() => store.pointBudgets);
-const pointsRemaining = computed(() => store.attributePointsRemaining);
-const derivedStats = computed(() => store.derivedStatsPreview);
+const attrBudget = computed(() => budget('attributes'));
+const pointsRemaining = computed(() => attrBudget.value.remaining);
+const pointsBudget = computed(() => attrBudget.value.budget);
 
-const attributeList = [
-  {
-    code: 'strength',
-    abbr: 'STR',
-    name: 'Strength',
-    typeName: 'Physical',
-    typeColor: 'red',
-    description: 'Raw physical power and endurance',
-  },
-  {
-    code: 'speed',
-    abbr: 'SPD',
-    name: 'Speed',
-    typeName: 'Physical',
-    typeColor: 'red',
-    description: 'Agility, reflexes, and quickness',
-  },
-  {
-    code: 'intellect',
-    abbr: 'INT',
-    name: 'Intellect',
-    typeName: 'Cognitive',
-    typeColor: 'blue',
-    description: 'Reasoning, memory, and learning',
-  },
-  {
-    code: 'willpower',
-    abbr: 'WIL',
-    name: 'Willpower',
-    typeName: 'Cognitive',
-    typeColor: 'blue',
-    description: 'Mental fortitude and focus',
-  },
-  {
-    code: 'awareness',
-    abbr: 'AWA',
-    name: 'Awareness',
-    typeName: 'Spiritual',
-    typeColor: 'purple',
-    description: 'Perception and intuition',
-  },
-  {
-    code: 'presence',
-    abbr: 'PRE',
-    name: 'Presence',
-    typeName: 'Spiritual',
-    typeColor: 'purple',
-    description: 'Force of personality and leadership',
-  },
-];
+const TYPE_COLORS: Record<string, string> = {
+  physical: 'red',
+  cognitive: 'blue',
+  spiritual: 'purple',
+};
 
-function getAttrValue(code: string): number {
-  return store.attributes.allocation[code as keyof AttributeAllocation] || 0;
+const attributeList = computed(() =>
+  classifiers.attributes.map((attr) => {
+    const attrType = classifiers.getById(classifiers.attributeTypes, attr.attrTypeId);
+    return {
+      id: attr.id,
+      code: attr.code,
+      abbr: attr.code.toUpperCase(),
+      name: attr.name,
+      typeName: attrType?.name ?? '',
+      typeColor: TYPE_COLORS[attrType?.code ?? ''] ?? 'grey',
+      description: attr.description ?? '',
+    };
+  })
+);
+
+// Derived stats list built from classifiers with calculated base values
+const derivedStatsList = computed(() => {
+  const attrs = {
+    str: heroStore.getAttributeValue('str'),
+    spd: heroStore.getAttributeValue('spd'),
+    int: heroStore.getAttributeValue('int'),
+    wil: heroStore.getAttributeValue('wil'),
+    awa: heroStore.getAttributeValue('awa'),
+    pre: heroStore.getAttributeValue('pre'),
+  };
+
+  return buildDerivedStatsList(
+    classifiers.derivedStats,
+    classifiers.derivedStatValues,
+    classifiers.attributes,
+    attrs,
+    heroStore.levelData,
+    heroStore.tierData,
+    heroStore.getDerivedStatModifier
+  );
+});
+
+function setStatModifier(statId: number, value: string | number | null) {
+  if (value === null) return;
+  const numValue = typeof value === 'string' ? parseInt(value, 10) || 0 : value;
+  heroStore.setDerivedStatModifier(statId, numValue);
 }
 
-function setAttrValue(code: string, value: number | null) {
+function getAttrValue(attrId: number): number {
+  return heroStore.hero?.attributes.find((a) => a.attrId === attrId)?.value ?? 0;
+}
+
+function setAttrValue(attrId: number, value: number | null) {
   if (value !== null) {
-    store.updateAttributes({ [code]: Math.max(0, Math.min(5, value)) });
+    heroStore.setAttribute(attrId, Math.max(0, Math.min(5, value)));
   }
 }
 
-function incrementAttr(code: string) {
-  const current = getAttrValue(code);
+function incrementAttr(attrId: number) {
+  const current = getAttrValue(attrId);
   if (current < 5 && pointsRemaining.value > 0) {
-    setAttrValue(code, current + 1);
+    setAttrValue(attrId, current + 1);
   }
 }
 
-function decrementAttr(code: string) {
-  const current = getAttrValue(code);
+function decrementAttr(attrId: number) {
+  const current = getAttrValue(attrId);
   if (current > 0) {
-    setAttrValue(code, current - 1);
+    setAttrValue(attrId, current - 1);
   }
 }
 </script>

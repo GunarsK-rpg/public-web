@@ -1,48 +1,13 @@
-/**
- * Heroic path code identifiers
- */
-export type HeroicPathCode = 'agent' | 'envoy' | 'hunter' | 'leader' | 'scholar' | 'warrior';
+import type { Classifier } from './classifier';
 
 /**
- * Heroic path classifier
+ * Heroic path classifier (cl_paths)
  */
-export interface HeroicPath {
-  id: number;
-  code: HeroicPathCode;
-  name: string;
-  description?: string;
-}
+export type Path = Classifier;
 
 /**
- * Specialty code identifiers
+ * Specialty classifier (cl_specialties)
  */
-export type SpecialtyCode =
-  | 'investigator'
-  | 'spy'
-  | 'thief'
-  | 'diplomat'
-  | 'faithful'
-  | 'mentor'
-  | 'archer'
-  | 'assassin'
-  | 'tracker'
-  | 'champion'
-  | 'officer'
-  | 'politico'
-  | 'artifabrian'
-  | 'strategist'
-  | 'surgeon'
-  | 'duelist'
-  | 'shardbearer'
-  | 'soldier';
-
-/**
- * Specialty classifier
- */
-export interface Specialty {
-  id: number;
-  code: SpecialtyCode;
-  name: string;
+export interface Specialty extends Classifier {
   pathId: number;
-  description?: string;
 }

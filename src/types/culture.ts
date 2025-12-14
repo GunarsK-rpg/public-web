@@ -1,36 +1,15 @@
-/**
- * Culture code identifiers
- */
-export type CultureCode =
-  | 'alethi'
-  | 'azish'
-  | 'herdazian'
-  | 'iriali'
-  | 'kharbranthian'
-  | 'listener'
-  | 'natan'
-  | 'reshi'
-  | 'shin'
-  | 'thaylen'
-  | 'unkalaki'
-  | 'veden'
-  | 'wayfarer'
-  | 'high-society';
+import type { Classifier } from './classifier';
 
 /**
- * Culture classifier
+ * Culture classifier (cl_cultures)
  */
-export interface Culture {
+export type Culture = Classifier;
+
+/**
+ * Hero's culture (hero_cultures table)
+ */
+export interface HeroCulture {
   id: number;
-  code: CultureCode;
-  name: string;
-  region?: string;
-  religion?: string;
-  physicalTraits?: string;
-  restrictedTo?: string;
-  skillBonuses?: Record<string, number>;
-  expertiseDescription?: string;
-  sampleNames?: string[];
-  languages?: string[];
-  description?: string;
+  heroId: number;
+  cultureId: number;
 }

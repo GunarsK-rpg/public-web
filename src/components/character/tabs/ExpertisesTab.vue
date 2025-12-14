@@ -4,75 +4,17 @@
       Expertises grant advantage on related skill tests and unlock special options.
     </div>
 
-    <!-- Cultural Expertises -->
-    <div class="category-section">
-      <div class="category-title">Cultural</div>
-      <div v-if="culturalExpertises.length === 0" class="text-empty q-pa-sm">
-        No cultural expertises
+    <!-- Dynamic sections from expertise types classifier -->
+    <div v-for="expType in classifiers.expertiseTypes" :key="expType.id" class="category-section">
+      <div class="category-title">{{ expType.name }}</div>
+      <div v-if="getExpertisesByTypeId(expType.id).length === 0" class="text-empty q-pa-sm">
+        No {{ expType.name.toLowerCase() }} expertises
       </div>
-      <q-chip
-        v-for="exp in culturalExpertises"
-        :key="exp.expertiseId"
-        color="blue-2"
-        text-color="blue-10"
-        icon="language"
-      >
-        {{ getExpertiseName(exp.expertiseId) }}
-        <q-tooltip>Source: {{ exp.source }}</q-tooltip>
-      </q-chip>
-    </div>
-
-    <!-- Utility Expertises -->
-    <div class="category-section">
-      <div class="category-title">Utility</div>
-      <div v-if="utilityExpertises.length === 0" class="text-empty q-pa-sm">
-        No utility expertises
-      </div>
-      <q-chip
-        v-for="exp in utilityExpertises"
-        :key="exp.expertiseId"
-        color="green-2"
-        text-color="green-10"
-        icon="build"
-      >
-        {{ getExpertiseName(exp.expertiseId) }}
-        <q-tooltip>Source: {{ exp.source }}</q-tooltip>
-      </q-chip>
-    </div>
-
-    <!-- Weapon Expertises -->
-    <div class="category-section">
-      <div class="category-title">Weapon</div>
-      <div v-if="weaponExpertises.length === 0" class="text-empty q-pa-sm">
-        No weapon expertises
-      </div>
-      <q-chip
-        v-for="exp in weaponExpertises"
-        :key="exp.expertiseId"
-        color="red-2"
-        text-color="red-10"
-        icon="gps_fixed"
-      >
-        {{ getExpertiseName(exp.expertiseId) }}
-        <q-tooltip>Source: {{ exp.source }}</q-tooltip>
-      </q-chip>
-    </div>
-
-    <!-- Specialist Expertises -->
-    <div class="category-section">
-      <div class="category-title">Specialist</div>
-      <div v-if="specialistExpertises.length === 0" class="text-empty q-pa-sm">
-        No specialist expertises
-      </div>
-      <q-chip
-        v-for="exp in specialistExpertises"
-        :key="exp.expertiseId"
-        color="purple-2"
-        text-color="purple-10"
-        icon="star"
-      >
-        {{ getExpertiseName(exp.expertiseId) }}
-        <q-tooltip>Source: {{ exp.source }}</q-tooltip>
+      <q-chip v-for="heroExp in getExpertisesByTypeId(expType.id)" :key="heroExp.id">
+        {{ getExpertiseName(heroExp.expertiseId) }}
+        <q-badge v-if="heroExp.source" color="grey" class="q-ml-xs">
+          {{ heroExp.source.sourceType }}
+        </q-badge>
       </q-chip>
     </div>
   </div>
@@ -80,45 +22,24 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useCharacterStore } from 'stores/character';
-import { useClassifierStore } from 'stores/classifiers';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
+import type { HeroExpertise } from 'src/types';
 
-const characterStore = useCharacterStore();
-const classifierStore = useClassifierStore();
+const heroStore = useHeroStore();
+const classifiers = useClassifierStore();
 
-const character = computed(() => characterStore.character);
-const expertises = computed(() => character.value?.expertises || []);
+const heroExpertises = computed(() => heroStore.hero?.expertises ?? []);
 
-const culturalExpertises = computed(() =>
-  expertises.value.filter((e) => {
-    const exp = classifierStore.getExpertiseById(e.expertiseId);
-    return classifierStore.getExpertiseCategoryCode(exp?.categoryId ?? 0) === 'cultural';
-  })
-);
+function getExpertisesByTypeId(typeId: number): HeroExpertise[] {
+  return heroExpertises.value.filter((heroExp) => {
+    const expertise = classifiers.getById(classifiers.expertises, heroExp.expertiseId);
+    return expertise?.expertiseTypeId === typeId;
+  });
+}
 
-const utilityExpertises = computed(() =>
-  expertises.value.filter((e) => {
-    const exp = classifierStore.getExpertiseById(e.expertiseId);
-    return classifierStore.getExpertiseCategoryCode(exp?.categoryId ?? 0) === 'utility';
-  })
-);
-
-const weaponExpertises = computed(() =>
-  expertises.value.filter((e) => {
-    const exp = classifierStore.getExpertiseById(e.expertiseId);
-    return classifierStore.getExpertiseCategoryCode(exp?.categoryId ?? 0) === 'weapon';
-  })
-);
-
-const specialistExpertises = computed(() =>
-  expertises.value.filter((e) => {
-    const exp = classifierStore.getExpertiseById(e.expertiseId);
-    return classifierStore.getExpertiseCategoryCode(exp?.categoryId ?? 0) === 'specialist';
-  })
-);
-
-function getExpertiseName(id: number): string {
-  return classifierStore.getExpertiseById(id)?.name || String(id);
+function getExpertiseName(expertiseId: number): string {
+  return classifiers.getById(classifiers.expertises, expertiseId)?.name ?? '';
 }
 </script>
 

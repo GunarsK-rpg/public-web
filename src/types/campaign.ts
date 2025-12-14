@@ -1,4 +1,4 @@
-import type { CharacterSummary } from './character';
+import type { HeroSummary } from './heroes';
 
 /**
  * Campaign data (campaigns table)
@@ -14,18 +14,8 @@ export interface Campaign {
 }
 
 /**
- * Campaign with characters for display
+ * Campaign with heroes for display
  */
-export interface CampaignWithCharacters extends Campaign {
-  characters: CharacterSummary[];
-}
-
-/**
- * Campaign member
- */
-export interface CampaignMember {
-  userId: number;
-  username: string;
-  role: 'gm' | 'player';
-  characterId?: number;
+export interface CampaignWithHeroes extends Campaign {
+  heroes: HeroSummary[];
 }

@@ -91,8 +91,7 @@
               <q-item
                 v-for="talentInfo in getPathTalentsWithStatus(
                   selection.pathId,
-                  selection.specialtyId,
-                  selection.talentIds
+                  selection.specialtyId
                 )"
                 :key="talentInfo.talent.id"
                 :class="{ 'item-disabled': !talentInfo.available }"
@@ -104,7 +103,7 @@
                       !talentInfo.available && !selection.talentIds.includes(talentInfo.talent.id)
                     "
                     @update:model-value="
-                      toggleTalent(selection.pathId, talentInfo.talent.id, talentInfo.available)
+                      toggleHeroTalent(talentInfo.talent.id, talentInfo.available)
                     "
                   />
                 </q-item-section>
@@ -188,7 +187,7 @@
                       !selectedAncestryTalentIds.includes(talentInfo.talent.id)
                     "
                     @update:model-value="
-                      toggleAncestryTalent(talentInfo.talent.id, talentInfo.available)
+                      toggleHeroTalent(talentInfo.talent.id, talentInfo.available)
                     "
                   />
                 </q-item-section>
@@ -232,6 +231,7 @@
       />
     </div>
 
+    <!-- Radiant Order Selection & Talents -->
     <q-list v-if="isRadiant" bordered class="rounded-borders q-mb-md">
       <q-expansion-item
         default-opened
@@ -247,8 +247,7 @@
               {{ getRadiantOrderName(radiantOrderId) || 'Select Order' }}
             </q-item-label>
             <q-item-label class="text-white text-secondary-emphasis" caption>
-              Ideal {{ idealLevel }} · {{ store.paths.radiantPath?.talentIds.length || 0 }} talents
-              selected
+              Ideal {{ idealLevel }} · {{ selectedRadiantTalentIds.length }} talents selected
             </q-item-label>
           </q-item-section>
           <q-item-section side>
@@ -309,63 +308,65 @@
               </q-banner>
             </div>
 
-            <!-- Radiant Talents -->
-            <template v-if="radiantTalentsWithStatus.length > 0">
-              <div class="text-caption q-mb-xs">Radiant Talents</div>
-              <q-list bordered separator class="rounded-borders">
-                <q-item
-                  v-for="talentInfo in radiantTalentsWithStatus"
-                  :key="talentInfo.talent.id"
-                  :class="{ 'item-disabled': !talentInfo.available }"
-                >
-                  <q-item-section avatar>
-                    <q-checkbox
-                      :model-value="isRadiantTalentSelected(talentInfo.talent.id)"
-                      :disable="
-                        !talentInfo.available && !isRadiantTalentSelected(talentInfo.talent.id)
-                      "
-                      @update:model-value="
-                        toggleRadiantTalent(talentInfo.talent.id, talentInfo.available)
-                      "
-                    />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label :class="{ [`text-${COLORS.muted}`]: !talentInfo.available }">
-                      {{ talentInfo.talent.name }}
-                      <q-icon v-if="!talentInfo.available" name="lock" size="xs" class="q-ml-xs" />
-                      <q-badge
-                        v-if="talentInfo.talent.surgeId"
-                        :color="getSurgeColor(talentInfo.talent.surgeId)"
-                        class="q-ml-sm"
-                      >
-                        {{ getSurgeName(talentInfo.talent.surgeId) }}
-                      </q-badge>
-                    </q-item-label>
-                    <q-item-label caption>{{
-                      talentInfo.talent.descriptionShort || talentInfo.talent.description
-                    }}</q-item-label>
-                    <q-item-label
-                      v-if="talentInfo.unmetPrereqs.length > 0"
-                      caption
-                      :class="`text-${COLORS.error}`"
-                    >
-                      <strong>Requires:</strong>
-                      {{ talentInfo.unmetPrereqs.map(formatPrereq).join(', ') }}
-                    </q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    <q-btn
-                      flat
-                      dense
-                      icon="info"
-                      @click.stop="showTalentDetails(talentInfo.talent)"
-                    >
-                      <q-tooltip>View details</q-tooltip>
-                    </q-btn>
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </template>
+            <!-- Surge/Order Tab Selection -->
+            <div v-if="radiantOrderId" class="q-mb-md">
+              <div class="text-caption q-mb-xs">Select Talent Tree</div>
+              <q-btn-toggle
+                v-model="radiantTalentTab"
+                :options="radiantTabOptions"
+                spread
+                no-caps
+              />
+            </div>
+
+            <!-- Radiant Talents List (filtered by selected tab) -->
+            <div class="text-caption q-mb-xs">{{ radiantTalentTabLabel }} Talents</div>
+            <q-list bordered separator class="rounded-borders">
+              <q-item
+                v-for="talentInfo in currentRadiantTalentsWithStatus"
+                :key="talentInfo.talent.id"
+                :class="{ 'item-disabled': !talentInfo.available }"
+              >
+                <q-item-section avatar>
+                  <q-checkbox
+                    :model-value="isRadiantTalentSelected(talentInfo.talent.id)"
+                    :disable="
+                      !talentInfo.available && !isRadiantTalentSelected(talentInfo.talent.id)
+                    "
+                    @update:model-value="
+                      toggleHeroTalent(talentInfo.talent.id, talentInfo.available)
+                    "
+                  />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label :class="{ [`text-${COLORS.muted}`]: !talentInfo.available }">
+                    {{ talentInfo.talent.name }}
+                    <q-icon v-if="!talentInfo.available" name="lock" size="xs" class="q-ml-xs" />
+                  </q-item-label>
+                  <q-item-label caption>{{
+                    talentInfo.talent.descriptionShort || talentInfo.talent.description
+                  }}</q-item-label>
+                  <q-item-label
+                    v-if="talentInfo.unmetPrereqs.length > 0"
+                    caption
+                    :class="`text-${COLORS.error}`"
+                  >
+                    <strong>Requires:</strong>
+                    {{ talentInfo.unmetPrereqs.map(formatPrereq).join(', ') }}
+                  </q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn flat dense icon="info" @click.stop="showTalentDetails(talentInfo.talent)">
+                    <q-tooltip>View details</q-tooltip>
+                  </q-btn>
+                </q-item-section>
+              </q-item>
+              <q-item v-if="currentRadiantTalentsWithStatus.length === 0">
+                <q-item-section class="text-muted">
+                  No {{ radiantTalentTabLabel }} talents available
+                </q-item-section>
+              </q-item>
+            </q-list>
           </q-card-section>
         </q-card>
       </q-expansion-item>
@@ -381,11 +382,6 @@
         </q-card-section>
         <q-separator />
         <q-card-section v-if="selectedTalentForDetails">
-          <div class="q-mb-sm">
-            <q-badge :color="getActivationColor(selectedTalentForDetails.actionId)">
-              {{ getActivationName(selectedTalentForDetails.actionId) }}
-            </q-badge>
-          </div>
           <div class="text-body2" style="white-space: pre-wrap">
             {{ selectedTalentForDetails.description }}
           </div>
@@ -404,24 +400,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useCharacterCreationStore } from 'stores/character-creation';
-import { useClassifierStore } from 'stores/classifiers';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
 import { COLORS } from 'src/constants/theme';
-import {
-  getTalentsByPath,
-  getTalentsBySpecialty,
-  getPathKeyTalent,
-  getTalentsByRadiantOrder,
-  getTalentsByAncestry,
-  getTalentsBySurge,
-  getAncestryKeyTalent,
-  getRadiantOrderKeyTalent,
-  checkTalentPrerequisites,
-  formatPrerequisite,
-  type Talent,
-  type TalentPrerequisite,
-} from 'src/mock/talents';
-import { getSpecialtiesByPathId } from 'src/mock/paths';
+import type { Talent, TalentPrerequisite } from 'src/types';
 
 interface TalentWithStatus {
   talent: Talent;
@@ -429,153 +411,342 @@ interface TalentWithStatus {
   unmetPrereqs: TalentPrerequisite[];
 }
 
-const store = useCharacterCreationStore();
+// UI state for tracking selected paths during wizard
+// This is separate from heroStore.hero.talents which stores the final selections
+interface PathSelection {
+  pathId: number;
+  specialtyId: number | undefined;
+  talentIds: number[]; // Computed from hero talents for this path
+}
+
+const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
 // Dialog state
 const talentDialogOpen = ref(false);
 const selectedTalentForDetails = ref<Talent | null>(null);
 
-// Basic computed values
-const heroicPaths = computed(() => classifiers.heroicPaths);
-const selectedPaths = computed(() => store.paths.paths);
-const isRadiant = computed(() => store.isRadiant);
-const isSinger = computed(() => store.isSinger);
+// Local UI state for path selections (tracks which paths are expanded/selected in UI)
+const selectedPathIds = ref<number[]>([]);
+const pathSpecialties = ref<Map<number, number>>(new Map());
 
-const radiantOrderId = computed(() => store.paths.radiantPath?.orderId);
-const idealLevel = computed(() => store.paths.radiantPath?.idealLevel || 0);
+// Basic computed values
+const heroicPaths = computed(() => classifiers.paths);
+const isRadiant = computed(() => heroStore.isRadiant);
+const isSinger = computed(() => heroStore.isSinger);
+
+const radiantOrderId = computed(() => heroStore.hero?.radiantOrderId ?? null);
+const idealLevel = computed(() => heroStore.hero?.radiantIdeal ?? 0);
 
 const radiantOrderOptions = computed(() =>
   classifiers.radiantOrders.map((o) => ({ value: o.id, label: o.name }))
 );
 
-// Build character skills map from store
+// Hero's selected talent IDs
+const heroTalentIds = computed(() => heroStore.hero?.talents.map((t) => t.talentId) ?? []);
+
+// Build character skills map from hero
 const characterSkills = computed(() => {
   const skills = new Map<number, number>();
-  for (const alloc of store.skills.allocations) {
-    skills.set(alloc.skillId, alloc.rank);
+  for (const skill of heroStore.hero?.skills ?? []) {
+    skills.set(skill.skillId, skill.rank);
   }
   return skills;
 });
 
-// Gather all selected talent IDs across paths, ancestry, and radiant
-const allSelectedTalentIds = computed(() => {
-  const ids: number[] = [];
+// Derive selected paths from hero's talents
+const selectedPaths = computed((): PathSelection[] => {
+  const paths: PathSelection[] = [];
+  for (const pathId of selectedPathIds.value) {
+    const specialtyId = pathSpecialties.value.get(pathId);
+    // Get all hero talents that belong to this path or its specialty
+    const pathTalentIds = heroTalentIds.value.filter((talentId) => {
+      const talent = classifiers.getById(classifiers.talents, talentId);
+      if (!talent) return false;
+      // Talent belongs to this path directly or to the selected specialty
+      return talent.pathId === pathId || (specialtyId && talent.specialtyId === specialtyId);
+    });
+    paths.push({
+      pathId,
+      specialtyId,
+      talentIds: pathTalentIds,
+    });
+  }
+  return paths;
+});
 
-  // Add key talents from selected paths
-  for (const path of selectedPaths.value) {
-    const keyTalent = getPathKeyTalent(path.pathId);
-    if (keyTalent) ids.push(keyTalent.id);
-    ids.push(...path.talentIds);
+// ===================
+// TALENT LOOKUP HELPERS (using classifiers)
+// ===================
+function getTalentsByPath(pathId: number): Talent[] {
+  return classifiers.talents.filter((t) => t.pathId === pathId && !t.specialtyId);
+}
+
+function getTalentsBySpecialty(specialtyId: number): Talent[] {
+  return classifiers.talents.filter((t) => t.specialtyId === specialtyId);
+}
+
+function getPathKeyTalent(pathId: number): Talent | undefined {
+  return classifiers.talents.find((t) => t.pathId === pathId && t.isKey);
+}
+
+function getTalentsByAncestry(ancestryId: number): Talent[] {
+  return classifiers.talents.filter((t) => t.ancestryId === ancestryId);
+}
+
+function getAncestryKeyTalent(ancestryId: number): Talent | undefined {
+  return classifiers.talents.find((t) => t.ancestryId === ancestryId && t.isKey);
+}
+
+function getTalentsByRadiantOrder(orderId: number): Talent[] {
+  return classifiers.talents.filter((t) => t.radiantOrderId === orderId && !t.surgeId);
+}
+
+function getRadiantOrderKeyTalent(orderId: number): Talent | undefined {
+  return classifiers.talents.find((t) => t.radiantOrderId === orderId && t.isKey);
+}
+
+function getTalentsBySurge(surgeId: number): Talent[] {
+  return classifiers.talents.filter((t) => t.surgeId === surgeId);
+}
+
+function getSpecialtiesByPath(pathId: number) {
+  return classifiers.specialties.filter((s) => s.pathId === pathId);
+}
+
+// ===================
+// PREREQUISITE CHECKING
+// ===================
+function checkTalentPrerequisites(
+  talent: Talent,
+  selectedTalentIds: number[],
+  skills: Map<number, number>
+): { met: boolean; unmetPrereqs: TalentPrerequisite[] } {
+  if (!talent.prerequisites || talent.prerequisites.length === 0) {
+    return { met: true, unmetPrereqs: [] };
   }
 
-  // Add singer key talent and selected ancestry talents
-  if (isSinger.value) {
-    const singerKey = getAncestryKeyTalent(2);
-    if (singerKey) ids.push(singerKey.id);
-    ids.push(...selectedAncestryTalentIds.value);
-  }
+  const unmetPrereqs: TalentPrerequisite[] = [];
 
-  // Add radiant key talent and selected radiant talents
-  if (isRadiant.value && radiantOrderId.value) {
-    const radiantKey = getRadiantOrderKeyTalent(radiantOrderId.value);
-    if (radiantKey) ids.push(radiantKey.id);
-    if (store.paths.radiantPath) {
-      ids.push(...store.paths.radiantPath.talentIds);
+  for (const prereq of talent.prerequisites) {
+    let isMet = false;
+
+    switch (prereq.type) {
+      case 'talent':
+        if (prereq.talentId) {
+          isMet = selectedTalentIds.includes(prereq.talentId);
+        }
+        break;
+      case 'skill':
+        if (prereq.skillId && prereq.skillRank) {
+          const currentRank = skills.get(prereq.skillId) ?? 0;
+          isMet = currentRank >= prereq.skillRank;
+        }
+        break;
+      case 'ideal':
+        // Check radiant ideal level
+        isMet = idealLevel.value >= (prereq.skillRank ?? 0);
+        break;
+      case 'level':
+        isMet = (heroStore.hero?.level ?? 1) >= (prereq.skillRank ?? 0);
+        break;
+      default:
+        isMet = true;
+    }
+
+    if (!isMet) {
+      unmetPrereqs.push(prereq);
     }
   }
 
-  return ids;
-});
+  return { met: unmetPrereqs.length === 0, unmetPrereqs };
+}
 
-// Singer ancestry talents
-const selectedAncestryTalentIds = computed(() => store.paths.ancestryTalentIds || []);
+function formatPrerequisite(prereq: TalentPrerequisite): string {
+  switch (prereq.type) {
+    case 'talent': {
+      const talent = classifiers.getById(classifiers.talents, prereq.talentId);
+      return talent?.name ?? 'Unknown talent';
+    }
+    case 'skill': {
+      const skill = classifiers.getById(classifiers.skills, prereq.skillId);
+      return `${skill?.name ?? 'Unknown skill'} ${prereq.skillRank}+`;
+    }
+    case 'ideal':
+      return `Ideal ${prereq.skillRank}+`;
+    case 'level':
+      return `Level ${prereq.skillRank}+`;
+    default:
+      return prereq.description ?? 'Unknown';
+  }
+}
 
-const singerKeyTalent = computed(() => getAncestryKeyTalent(2));
-
-const singerTalentsWithStatus = computed((): TalentWithStatus[] => {
-  if (!isSinger.value) return [];
-
-  const talents = getTalentsByAncestry(2).filter((t) => !t.isKey);
+// Map talents to TalentWithStatus (reusable helper)
+function mapTalentsWithStatus(talents: Talent[]): TalentWithStatus[] {
   return talents.map((talent) => {
     const { met, unmetPrereqs } = checkTalentPrerequisites(
       talent,
-      allSelectedTalentIds.value,
+      heroTalentIds.value,
       characterSkills.value
     );
     return { talent, available: met, unmetPrereqs };
   });
+}
+
+// Toggle any talent selection
+function toggleHeroTalent(talentId: number, available: boolean) {
+  if (heroTalentIds.value.includes(talentId)) {
+    heroStore.removeTalent(talentId);
+  } else if (available) {
+    heroStore.addTalent(talentId);
+  }
+}
+
+// ===================
+// SINGER ANCESTRY
+// ===================
+const singerAncestryId = computed(() => {
+  const singer = classifiers.getByCode(classifiers.ancestries, 'singer');
+  return singer?.id;
 });
 
-// Radiant talents
+const singerKeyTalent = computed(() =>
+  singerAncestryId.value ? getAncestryKeyTalent(singerAncestryId.value) : null
+);
+
+const selectedAncestryTalentIds = computed(() => {
+  if (!singerAncestryId.value) return [];
+  const ancestryTalentIds = getTalentsByAncestry(singerAncestryId.value).map((t) => t.id);
+  return heroTalentIds.value.filter((id) => ancestryTalentIds.includes(id));
+});
+
+const singerTalentsWithStatus = computed((): TalentWithStatus[] => {
+  if (!isSinger.value || !singerAncestryId.value) return [];
+  const talents = getTalentsByAncestry(singerAncestryId.value).filter((t) => !t.isKey);
+  return mapTalentsWithStatus(talents);
+});
+
+// ===================
+// RADIANT PATH
+// ===================
 const radiantKeyTalent = computed(() =>
   radiantOrderId.value ? getRadiantOrderKeyTalent(radiantOrderId.value) : null
 );
 
-const radiantTalentsWithStatus = computed((): TalentWithStatus[] => {
+const selectedRadiantOrder = computed(() =>
+  classifiers.getById(classifiers.radiantOrders, radiantOrderId.value)
+);
+
+const surge1Id = computed(() => selectedRadiantOrder.value?.surge1Id ?? null);
+const surge2Id = computed(() => selectedRadiantOrder.value?.surge2Id ?? null);
+
+const surge1Name = computed(
+  () => classifiers.getById(classifiers.surges, surge1Id.value)?.name ?? 'Surge 1'
+);
+const surge2Name = computed(
+  () => classifiers.getById(classifiers.surges, surge2Id.value)?.name ?? 'Surge 2'
+);
+
+const radiantTalentTab = ref<'order' | 'surge1' | 'surge2'>('surge1');
+
+const radiantTabOptions = computed(() => [
+  { value: 'order', label: getRadiantOrderName(radiantOrderId.value) || 'Order' },
+  { value: 'surge1', label: surge1Name.value },
+  { value: 'surge2', label: surge2Name.value },
+]);
+
+const selectedRadiantTalentIds = computed(() => {
   if (!radiantOrderId.value) return [];
-
-  // Get order-specific talents (non-key)
-  const orderTalents = getTalentsByRadiantOrder(radiantOrderId.value).filter((t) => !t.isKey);
-
-  // Get surge talents for Windrunner (Adhesion + Gravitation)
-  // TODO: Map orders to their surges dynamically
-  const surgeTalents: Talent[] = [];
-  if (radiantOrderId.value === 1) {
-    // Windrunner has Adhesion (1) and Gravitation (2)
-    surgeTalents.push(...getTalentsBySurge(1));
-    surgeTalents.push(...getTalentsBySurge(2));
-  }
-
-  const allTalents = [...orderTalents, ...surgeTalents];
-
-  return allTalents.map((talent) => {
-    const { met, unmetPrereqs } = checkTalentPrerequisites(
-      talent,
-      allSelectedTalentIds.value,
-      characterSkills.value
-    );
-    return { talent, available: met, unmetPrereqs };
-  });
+  // Get all radiant-related talent IDs (order + surges)
+  const orderTalentIds = getTalentsByRadiantOrder(radiantOrderId.value).map((t) => t.id);
+  const surge1TalentIds = surge1Id.value ? getTalentsBySurge(surge1Id.value).map((t) => t.id) : [];
+  const surge2TalentIds = surge2Id.value ? getTalentsBySurge(surge2Id.value).map((t) => t.id) : [];
+  const allRadiantIds = [...orderTalentIds, ...surge1TalentIds, ...surge2TalentIds];
+  return heroTalentIds.value.filter((id) => allRadiantIds.includes(id));
 });
 
-// Helper functions
+const radiantTalentTabLabel = computed(() => {
+  if (radiantTalentTab.value === 'order')
+    return getRadiantOrderName(radiantOrderId.value) || 'Order';
+  if (radiantTalentTab.value === 'surge1') return surge1Name.value;
+  return surge2Name.value;
+});
+
+const orderTalentsWithStatus = computed((): TalentWithStatus[] => {
+  if (!radiantOrderId.value) return [];
+  const orderTalents = getTalentsByRadiantOrder(radiantOrderId.value).filter((t) => !t.isKey);
+  return mapTalentsWithStatus(orderTalents);
+});
+
+const surge1TalentsWithStatus = computed((): TalentWithStatus[] => {
+  if (!surge1Id.value) return [];
+  return mapTalentsWithStatus(getTalentsBySurge(surge1Id.value));
+});
+
+const surge2TalentsWithStatus = computed((): TalentWithStatus[] => {
+  if (!surge2Id.value) return [];
+  return mapTalentsWithStatus(getTalentsBySurge(surge2Id.value));
+});
+
+const currentRadiantTalentsWithStatus = computed((): TalentWithStatus[] => {
+  if (radiantTalentTab.value === 'order') return orderTalentsWithStatus.value;
+  if (radiantTalentTab.value === 'surge1') return surge1TalentsWithStatus.value;
+  return surge2TalentsWithStatus.value;
+});
+
+// ===================
+// PATH ACTIONS
+// ===================
 function isPathSelected(pathId: number): boolean {
-  return selectedPaths.value.some((p) => p.pathId === pathId);
+  return selectedPathIds.value.includes(pathId);
 }
 
 function togglePath(pathId: number) {
   if (isPathSelected(pathId)) {
-    store.removePath(pathId);
+    // Remove path and its key talent
+    selectedPathIds.value = selectedPathIds.value.filter((id) => id !== pathId);
+    pathSpecialties.value.delete(pathId);
+    const keyTalent = getPathKeyTalent(pathId);
+    if (keyTalent) {
+      heroStore.removeTalent(keyTalent.id);
+    }
   } else {
-    store.addPath(pathId);
+    // Add path and its key talent
+    selectedPathIds.value.push(pathId);
+    heroStore.addKeyTalentForPath(pathId);
+    // Select first specialty by default
+    const specialties = getSpecialtiesByPath(pathId);
+    const firstSpecialty = specialties[0];
+    if (firstSpecialty) {
+      pathSpecialties.value.set(pathId, firstSpecialty.id);
+    }
   }
 }
 
 function getPathName(pathId: number): string {
-  return classifiers.heroicPaths.find((p) => p.id === pathId)?.name || '';
+  return classifiers.paths.find((p) => p.id === pathId)?.name || '';
 }
 
 function getSpecialtyName(pathId: number, specialtyId: number | undefined): string {
   if (!specialtyId) return 'No specialty';
-  const specialty = getSpecialtiesByPathId(pathId).find((s) => s.id === specialtyId);
+  const specialty = classifiers.specialties.find((s) => s.id === specialtyId);
   return specialty?.name || 'No specialty';
 }
 
-function getRadiantOrderName(orderId: number | undefined): string {
+function getRadiantOrderName(orderId: number | null | undefined): string {
   if (!orderId) return '';
   return classifiers.radiantOrders.find((o) => o.id === orderId)?.name || '';
 }
 
 function getSpecialtyOptions(pathId: number) {
-  return getSpecialtiesByPathId(pathId).map((s) => ({
+  return getSpecialtiesByPath(pathId).map((s) => ({
     value: s.id,
     label: s.name,
   }));
 }
 
 function setSpecialty(pathId: number, specialtyId: number) {
-  store.setPathSpecialty(pathId, specialtyId);
+  pathSpecialties.value.set(pathId, specialtyId);
 }
 
 function getKeyTalent(pathId: number) {
@@ -584,81 +755,37 @@ function getKeyTalent(pathId: number) {
 
 function getPathTalentsWithStatus(
   pathId: number,
-  specialtyId: number | undefined,
-  currentPathTalentIds: number[]
+  specialtyId: number | undefined
 ): TalentWithStatus[] {
-  // Get path talents (non-key, non-specialty)
-  const pathTalents = getTalentsByPath(pathId).filter((t: Talent) => !t.isKey && !t.specialtyId);
-
-  // Get specialty talents if a specialty is selected
+  const pathTalents = getTalentsByPath(pathId).filter((t) => !t.isKey);
   const specialtyTalents = specialtyId ? getTalentsBySpecialty(specialtyId) : [];
-
-  const allTalents = [...pathTalents, ...specialtyTalents];
-
-  // Build talent IDs including the key talent for this path
-  const pathKeyTalent = getPathKeyTalent(pathId);
-  const talentIdsWithKey = pathKeyTalent
-    ? [pathKeyTalent.id, ...currentPathTalentIds, ...allSelectedTalentIds.value]
-    : [...currentPathTalentIds, ...allSelectedTalentIds.value];
-
-  return allTalents.map((talent) => {
-    const { met, unmetPrereqs } = checkTalentPrerequisites(
-      talent,
-      talentIdsWithKey,
-      characterSkills.value
-    );
-    return { talent, available: met, unmetPrereqs };
-  });
-}
-
-function toggleTalent(pathId: number, talentId: number, available: boolean) {
-  const path = selectedPaths.value.find((p) => p.pathId === pathId);
-  if (!path) return;
-
-  if (path.talentIds.includes(talentId)) {
-    store.removeTalentFromPath(pathId, talentId);
-  } else if (available) {
-    store.addTalentToPath(pathId, talentId);
-  }
-}
-
-function toggleAncestryTalent(talentId: number, available: boolean) {
-  const currentIds = selectedAncestryTalentIds.value;
-  if (currentIds.includes(talentId)) {
-    store.removeAncestryTalent?.(talentId);
-  } else if (available) {
-    store.addAncestryTalent?.(talentId);
-  }
+  return mapTalentsWithStatus([...pathTalents, ...specialtyTalents]);
 }
 
 function toggleRadiant(value: boolean) {
   if (value) {
-    store.setRadiantPath(1, 0); // Default to Windrunner
+    // Default to first order (Windrunner)
+    const firstOrder = classifiers.radiantOrders[0];
+    if (firstOrder) {
+      heroStore.setRadiantOrder(firstOrder.id);
+    }
   } else {
-    store.removeRadiantPath();
+    heroStore.setRadiantOrder(null);
   }
 }
 
 function setRadiantOrder(orderId: number) {
-  store.setRadiantPath(orderId, idealLevel.value);
+  heroStore.setRadiantOrder(orderId);
 }
 
 function setIdealLevel(level: number | null) {
-  if (radiantOrderId.value && level !== null) {
-    store.setRadiantPath(radiantOrderId.value, level);
+  if (level !== null) {
+    heroStore.setRadiantIdeal(level);
   }
 }
 
 function isRadiantTalentSelected(talentId: number): boolean {
-  return store.paths.radiantPath?.talentIds.includes(talentId) || false;
-}
-
-function toggleRadiantTalent(talentId: number, available: boolean) {
-  if (isRadiantTalentSelected(talentId)) {
-    store.removeRadiantTalent?.(talentId);
-  } else if (available) {
-    store.addRadiantTalent(talentId);
-  }
+  return heroTalentIds.value.includes(talentId);
 }
 
 function formatPrereq(prereq: TalentPrerequisite): string {
@@ -666,53 +793,11 @@ function formatPrereq(prereq: TalentPrerequisite): string {
 }
 
 function getPrerequisitesArray(talent: Talent): TalentPrerequisite[] {
-  if (!talent.prerequisites) return [];
-  if (Array.isArray(talent.prerequisites)) return talent.prerequisites;
-  return [];
+  return talent.prerequisites ?? [];
 }
 
 function showTalentDetails(talent: Talent) {
   selectedTalentForDetails.value = talent;
   talentDialogOpen.value = true;
-}
-
-// Activation type helpers
-function getActivationName(actionId: number | undefined): string {
-  const names: Record<number, string> = {
-    1: 'Action',
-    4: 'Free Action',
-    5: 'Reaction',
-    6: 'Special',
-    7: 'Always Active',
-  };
-  return actionId ? names[actionId] || 'Unknown' : 'Unknown';
-}
-
-function getActivationColor(actionId: number | undefined): string {
-  const colors: Record<number, string> = {
-    1: COLORS.primary,
-    4: COLORS.success,
-    5: COLORS.warning,
-    6: COLORS.secondary,
-    7: COLORS.muted,
-  };
-  return actionId ? colors[actionId] || COLORS.muted : COLORS.muted;
-}
-
-// Surge helpers
-function getSurgeName(surgeId: number): string {
-  const names: Record<number, string> = {
-    1: 'Adhesion',
-    2: 'Gravitation',
-  };
-  return names[surgeId] || 'Unknown Surge';
-}
-
-function getSurgeColor(surgeId: number): string {
-  const colors: Record<number, string> = {
-    1: COLORS.accent,
-    2: COLORS.secondary,
-  };
-  return colors[surgeId] || COLORS.muted;
 }
 </script>

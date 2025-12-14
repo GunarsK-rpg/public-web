@@ -1,14 +1,23 @@
+import type { Classifier } from './classifier';
+import type { EquipmentAttributeMap } from './equipmentAttributes';
+
 /**
- * Damage type identifiers
+ * Equipment type classifier (cl_equipment_types)
  */
-export type DamageType = 'energy' | 'impact' | 'keen' | 'spirit' | 'vital';
+export interface EquipmentType extends Classifier {
+  icon: string;
+}
+
+/**
+ * Damage type classifier (cl_damage_types)
+ */
+export type DamageType = Classifier;
 
 /**
  * Equipment special properties (JSONB)
  */
 export interface EquipmentSpecial {
   damage?: string;
-  damageType?: DamageType;
   range?: string;
   deflect?: number;
   charges?: number;
@@ -16,23 +25,22 @@ export interface EquipmentSpecial {
 }
 
 /**
- * Equipment classifier
+ * Equipment classifier (cl_equipments)
+ * Actions granted by equipment are linked via cl_action_links
  */
-export interface Equipment {
-  id: number;
-  code: string;
-  name: string;
+export interface Equipment extends Classifier {
   equipTypeId: number;
-  actionId?: number;
+  damageTypeId?: number;
   unitId?: number;
   special?: EquipmentSpecial;
   cost: number;
   isCustom: boolean;
   heroId?: number;
+  attributes?: EquipmentAttributeMap[];
 }
 
 /**
- * Hero's equipment item
+ * Hero's equipment item (equipment table)
  */
 export interface HeroEquipment {
   id: number;
@@ -43,34 +51,4 @@ export interface HeroEquipment {
   isPrimary: boolean;
   notes?: string;
   customName?: string;
-}
-
-/**
- * @deprecated Use Equipment with equipTypeId=1 instead
- * Weapon type for backwards compatibility
- */
-export interface Weapon {
-  id: number;
-  code: string;
-  name: string;
-  category: string;
-  skillCode: string;
-  damage: string;
-  damageType: DamageType;
-  traits: string[];
-  cost: number;
-  description?: string;
-}
-
-/**
- * @deprecated Use Equipment with equipTypeId=2 instead
- * Armor type for backwards compatibility
- */
-export interface Armor {
-  id: number;
-  code: string;
-  name: string;
-  deflect: number;
-  cost: number;
-  description?: string;
 }

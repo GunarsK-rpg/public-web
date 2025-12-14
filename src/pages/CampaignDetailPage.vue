@@ -27,7 +27,7 @@
           />
         </div>
 
-        <div v-if="campaign.characters.length === 0" class="text-center q-pa-xl">
+        <div v-if="campaign.heroes.length === 0" class="text-center q-pa-xl">
           <q-icon name="person_off" size="64px" color="grey-5" />
           <div class="text-h6 text-grey-7 q-mt-md">No characters</div>
           <div class="text-body2 text-grey-6 q-mb-md">No characters in this campaign yet.</div>
@@ -40,19 +40,14 @@
         </div>
 
         <div v-else class="row q-col-gutter-md">
-          <div
-            v-for="character in campaign.characters"
-            :key="character.id"
-            class="col-12 col-sm-6 col-md-4"
-          >
-            <q-card class="character-card cursor-pointer" @click="selectCharacter(character.id)">
+          <div v-for="hero in campaign.heroes" :key="hero.id" class="col-12 col-sm-6 col-md-4">
+            <q-card class="character-card cursor-pointer" @click="selectCharacter(hero.id)">
               <q-card-section>
-                <div class="text-h6">{{ character.name }}</div>
+                <div class="text-h6">{{ hero.name }}</div>
                 <div class="text-subtitle2">
-                  Level {{ character.level }}
-                  {{ formatPaths(character.heroicPaths) }}
-                  <span v-if="character.radiantOrder">
-                    / {{ formatOrder(character.radiantOrder) }}
+                  Level {{ hero.level }}
+                  <span v-if="hero.radiantOrderId">
+                    · {{ getRadiantOrderName(hero.radiantOrderId) }}
                   </span>
                 </div>
               </q-card-section>
@@ -60,12 +55,12 @@
               <q-card-section>
                 <div class="health-bar">
                   <q-linear-progress
-                    :value="character.currentHealth / character.maxHealth"
+                    :value="hero.currentHealth / hero.maxHealth"
                     color="negative"
                     class="q-mb-xs"
                   />
                   <div class="text-caption">
-                    HP: {{ character.currentHealth }} / {{ character.maxHealth }}
+                    HP: {{ hero.currentHealth }} / {{ hero.maxHealth }}
                   </div>
                 </div>
               </q-card-section>
@@ -80,8 +75,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useCampaignStore } from 'stores/campaigns';
-import type { HeroicPathCode, RadiantOrderCode } from 'src/types';
+import { useCampaignStore } from 'src/stores/campaigns';
+import { useClassifierStore } from 'src/stores/classifiers';
 
 const props = defineProps<{
   campaignId: string;
@@ -89,6 +84,7 @@ const props = defineProps<{
 
 const router = useRouter();
 const campaignStore = useCampaignStore();
+const classifiers = useClassifierStore();
 
 const campaign = computed(() => campaignStore.currentCampaign);
 const loading = computed(() => campaignStore.loading);
@@ -119,32 +115,8 @@ function createCharacter(): void {
   });
 }
 
-function formatPaths(pathCodes: HeroicPathCode[]): string {
-  const names: Record<HeroicPathCode, string> = {
-    agent: 'Agent',
-    envoy: 'Envoy',
-    hunter: 'Hunter',
-    leader: 'Leader',
-    scholar: 'Scholar',
-    warrior: 'Warrior',
-  };
-  return pathCodes.map((code) => names[code] || code).join(' / ');
-}
-
-function formatOrder(orderCode: RadiantOrderCode): string {
-  const names: Record<RadiantOrderCode, string> = {
-    windrunner: 'Windrunner',
-    skybreaker: 'Skybreaker',
-    dustbringer: 'Dustbringer',
-    edgedancer: 'Edgedancer',
-    truthwatcher: 'Truthwatcher',
-    lightweaver: 'Lightweaver',
-    elsecaller: 'Elsecaller',
-    willshaper: 'Willshaper',
-    stoneward: 'Stoneward',
-    bondsmith: 'Bondsmith',
-  };
-  return names[orderCode] || orderCode;
+function getRadiantOrderName(orderId: number): string {
+  return classifiers.getById(classifiers.radiantOrders, orderId)?.name ?? '';
 }
 </script>
 

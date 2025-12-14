@@ -4,18 +4,19 @@
 
     <!-- Primary Culture Selection -->
     <q-select
-      v-model="primaryCultureId"
+      :model-value="primaryCultureId"
       :options="cultureOptions"
       label="Primary Culture"
       outlined
       emit-value
       map-options
       class="q-mb-md"
+      @update:model-value="setPrimaryCulture"
     />
 
     <!-- Secondary Culture (Optional) -->
     <q-select
-      v-model="secondaryCultureId"
+      :model-value="secondaryCultureId"
       :options="secondaryCultureOptions"
       label="Secondary Culture (Optional)"
       outlined
@@ -23,6 +24,7 @@
       map-options
       clearable
       class="q-mb-md"
+      @update:model-value="setSecondaryCulture"
     />
 
     <!-- Culture Info -->
@@ -45,11 +47,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useCharacterCreationStore } from 'stores/character-creation';
-import { useClassifierStore } from 'stores/classifiers';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
 
-const store = useCharacterCreationStore();
+const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
+
+// Hero cultures as array of cultureIds
+const heroCultureIds = computed(() => heroStore.hero?.cultures.map((c) => c.cultureId) ?? []);
+
+// Primary = first culture, Secondary = second culture
+const primaryCultureId = computed(() => heroCultureIds.value[0] ?? null);
+const secondaryCultureId = computed(() => heroCultureIds.value[1] ?? null);
 
 const cultureOptions = computed(() =>
   classifiers.cultures.map((c) => ({ value: c.id, label: c.name }))
@@ -57,61 +66,47 @@ const cultureOptions = computed(() =>
 
 const secondaryCultureOptions = computed(() =>
   classifiers.cultures
-    .filter((c) => c.id !== store.culture.primaryCultureId)
+    .filter((c) => c.id !== primaryCultureId.value)
     .map((c) => ({ value: c.id, label: c.name }))
 );
 
-const primaryCultureId = computed({
-  get: () => store.culture.primaryCultureId || null,
-  set: (val) => store.updateCulture({ primaryCultureId: val || 0 }),
-});
-
-const secondaryCultureId = computed({
-  get: () => store.culture.secondaryCultureId ?? null,
-  set: (val: number | null) => {
-    if (val === null) {
-      store.clearSecondaryCulture();
-    } else {
-      store.updateCulture({ secondaryCultureId: val });
-    }
-  },
-});
-
 const selectedCulture = computed(() =>
-  classifiers.cultures.find((c) => c.id === store.culture.primaryCultureId)
+  classifiers.getById(classifiers.cultures, primaryCultureId.value)
 );
 
 // Get cultural expertise names for display
 const culturalExpertiseNames = computed(() => {
-  const names: string[] = [];
+  const culturalType = classifiers.getByCode(classifiers.expertiseTypes, 'cultural');
+  if (!culturalType) return [];
 
-  // Primary culture expertise (using culture code to find matching expertise)
-  if (store.culture.primaryCultureId) {
-    const primaryCulture = classifiers.cultures.find(
-      (c) => c.id === store.culture.primaryCultureId
-    );
-    if (primaryCulture) {
-      // Cultural expertises have the same name as cultures
-      const expertise = classifiers.expertises.find(
-        (e) => e.categoryId === 2 && e.name === primaryCulture.name
-      );
-      if (expertise) names.push(expertise.name);
-    }
-  }
+  const culturalExpertises = classifiers.expertises.filter(
+    (e) => e.expertiseTypeId === culturalType.id
+  );
 
-  // Secondary culture expertise
-  if (store.culture.secondaryCultureId) {
-    const secondaryCulture = classifiers.cultures.find(
-      (c) => c.id === store.culture.secondaryCultureId
-    );
-    if (secondaryCulture) {
-      const expertise = classifiers.expertises.find(
-        (e) => e.categoryId === 2 && e.name === secondaryCulture.name
-      );
-      if (expertise) names.push(expertise.name);
-    }
-  }
-
-  return names;
+  return heroCultureIds.value
+    .map((cultureId) => {
+      const culture = classifiers.getById(classifiers.cultures, cultureId);
+      if (!culture) return null;
+      const expertise = culturalExpertises.find((e) => e.name === culture.name);
+      return expertise?.name ?? null;
+    })
+    .filter((name): name is string => name !== null);
 });
+
+function setCulture(oldId: number | null, newId: number | null) {
+  if (oldId) {
+    heroStore.removeCulture(oldId);
+  }
+  if (newId !== null) {
+    heroStore.addCulture(newId);
+  }
+}
+
+function setPrimaryCulture(val: number | null) {
+  setCulture(primaryCultureId.value, val);
+}
+
+function setSecondaryCulture(val: number | null) {
+  setCulture(secondaryCultureId.value, val);
+}
 </script>

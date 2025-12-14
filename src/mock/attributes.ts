@@ -15,51 +15,45 @@ export const attributeTypes: AttributeType[] = [
 export const attributes: Attribute[] = [
   {
     id: 1,
-    code: 'strength',
+    code: 'str',
     name: 'Strength',
-    abbreviation: 'STR',
     attrTypeId: 1, // physical
-    notes: 'Physical power, health, lifting capacity',
+    description: 'Physical power, health, lifting capacity',
   },
   {
     id: 2,
-    code: 'speed',
+    code: 'spd',
     name: 'Speed',
-    abbreviation: 'SPD',
     attrTypeId: 1, // physical
-    notes: 'Physical agility, movement rate',
+    description: 'Physical agility, movement rate',
   },
   {
     id: 3,
-    code: 'intellect',
+    code: 'int',
     name: 'Intellect',
-    abbreviation: 'INT',
     attrTypeId: 2, // cognitive
-    notes: 'Mental acuity, number of expertises',
+    description: 'Mental acuity, number of expertises',
   },
   {
     id: 4,
-    code: 'willpower',
+    code: 'wil',
     name: 'Willpower',
-    abbreviation: 'WIL',
     attrTypeId: 2, // cognitive
-    notes: 'Mental resilience, focus, recovery',
+    description: 'Mental resilience, focus, recovery',
   },
   {
     id: 5,
-    code: 'awareness',
+    code: 'awa',
     name: 'Awareness',
-    abbreviation: 'AWA',
     attrTypeId: 3, // spiritual
-    notes: 'Perception, senses range',
+    description: 'Perception, senses range',
   },
   {
     id: 6,
-    code: 'presence',
+    code: 'pre',
     name: 'Presence',
-    abbreviation: 'PRE',
     attrTypeId: 3, // spiritual
-    notes: 'Force of personality, connections',
+    description: 'Force of personality, connections',
   },
 ];
 

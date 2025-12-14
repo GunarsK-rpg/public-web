@@ -1,27 +1,24 @@
-/**
- * Action activation type identifiers
- */
-export type ActionActivation =
-  | 'action'
-  | 'bonus'
-  | 'reaction'
-  | 'free'
-  | 'free-action'
-  | 'passive'
-  | 'double-action'
-  | 'triple-action'
-  | 'special';
+import type { Classifier } from './classifier';
 
 /**
- * Action classifier
+ * Activation type classifier (cl_activation_types)
  */
-export interface Action {
-  id: number;
+export interface ActivationType extends Classifier {
+  icon: string;
+}
+
+/**
+ * Action type classifier (cl_action_types)
+ */
+export type ActionType = Classifier;
+
+/**
+ * Action classifier (cl_actions)
+ */
+export interface Action extends Classifier {
   actionTypeId: number;
   activationTypeId: number;
-  code: string;
-  name: string;
-  description?: string;
+  damageTypeId?: number;
   special?: string;
   dice?: string;
   focusCost: number;
@@ -29,17 +26,12 @@ export interface Action {
 }
 
 /**
- * Granted action from equipment/talent (denormalized for display)
+ * Action link (cl_action_links)
+ * Links actions to their sources (talents, equipment, surges)
+ * The action's actionTypeId determines which table object_id references
  */
-export interface GrantedAction {
+export interface ActionLink {
   id: number;
-  name: string;
-  description?: string;
-  effect?: string;
-  activation: ActionActivation;
-  source: string;
-  sourceName: string;
-  focusCost?: number;
-  investitureCost?: number;
-  charges?: number;
+  actionId: number;
+  objectId: number;
 }

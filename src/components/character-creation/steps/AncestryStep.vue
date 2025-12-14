@@ -43,36 +43,40 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useCharacterCreationStore } from 'stores/character-creation';
-import { useClassifierStore } from 'stores/classifiers';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
 
-const store = useCharacterCreationStore();
+const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
 const ancestries = computed(() => classifiers.ancestries);
 
-const selectedAncestryId = computed(() => store.ancestry.ancestryId);
-const selectedFormId = computed(() => store.ancestry.singerFormId);
+const selectedAncestryId = computed(() => heroStore.hero?.ancestryId ?? 0);
+const selectedFormId = computed(() => heroStore.hero?.activeSingerFormId ?? null);
 
-const isSinger = computed(() => store.isSinger);
+const isSinger = computed(() => heroStore.isSinger);
 
-// Singers start with dullform, mateform available
+// Forms available: no prerequisite talent OR hero has the required talent
 const availableForms = computed(() =>
-  classifiers.singerForms.filter((f) => ['dullform', 'mateform'].includes(f.code))
+  classifiers.singerForms.filter((form) => {
+    if (!form.talentId) return true;
+    return heroStore.hero?.talents.some((t) => t.talentId === form.talentId);
+  })
 );
 
 function selectAncestry(id: number) {
-  store.updateAncestry({ ancestryId: id });
+  heroStore.setAncestry(id);
   // Auto-select dullform for Singer
-  if (id === 2) {
-    const dullform = classifiers.singerForms.find((f) => f.code === 'dullform');
+  const singerAncestry = classifiers.getByCode(classifiers.ancestries, 'singer');
+  if (id === singerAncestry?.id) {
+    const dullform = classifiers.getByCode(classifiers.singerForms, 'dullform');
     if (dullform) {
-      store.updateAncestry({ singerFormId: dullform.id });
+      heroStore.setSingerForm(dullform.id);
     }
   }
 }
 
 function selectForm(id: number) {
-  store.updateAncestry({ singerFormId: id });
+  heroStore.setSingerForm(id);
 }
 </script>

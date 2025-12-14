@@ -13,30 +13,7 @@
       </div>
 
       <!-- Horizontal scrollable step tabs -->
-      <div class="step-tabs-container">
-        <div class="step-tabs row no-wrap">
-          <div
-            v-for="step in steps"
-            :key="step.id"
-            class="step-tab q-px-md q-py-sm text-center cursor-pointer"
-            :class="{
-              'step-tab--active': currentStep === step.id,
-              'step-tab--done': isStepDone(step.id) && currentStep !== step.id,
-              'step-tab--error': hasStepError(step.id) && currentStep !== step.id,
-            }"
-            @click="goToStep(step.id)"
-          >
-            <div class="step-tab-name text-caption text-uppercase">{{ step.name }}</div>
-          </div>
-        </div>
-        <!-- Progress bar under tabs -->
-        <q-linear-progress
-          :value="currentStep / totalSteps"
-          color="primary"
-          size="3px"
-          class="step-progress"
-        />
-      </div>
+      <StepTabs />
     </div>
 
     <!-- Step Content -->
@@ -45,43 +22,7 @@
     </div>
 
     <!-- Bottom Navigation -->
-    <div class="creation-footer q-pa-sm row items-center">
-      <q-btn
-        v-if="currentStep > 1"
-        flat
-        dense
-        icon="arrow_back"
-        label="Back"
-        @click="previousStep"
-      />
-      <q-space />
-      <div
-        v-if="hasErrors"
-        class="text-negative text-caption q-mr-sm ellipsis"
-        style="max-width: 150px"
-      >
-        <q-icon name="error" size="xs" class="q-mr-xs" />
-        {{ firstError }}
-      </div>
-      <q-btn
-        v-if="currentStep < totalSteps"
-        color="primary"
-        dense
-        label="Next"
-        icon-right="arrow_forward"
-        @click="nextStep"
-      />
-      <q-btn
-        v-else
-        color="primary"
-        dense
-        label="Create"
-        icon="check"
-        :loading="creating"
-        :disable="!canCreate"
-        @click="createCharacter"
-      />
-    </div>
+    <StepNavigation :creating="creating" @create="createCharacter" />
 
     <!-- Reset Confirmation Dialog -->
     <q-dialog v-model="showResetDialog">
@@ -103,9 +44,13 @@
 import { ref, computed, onMounted, type Component } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
-import { useCharacterCreationStore } from 'stores/character-creation';
+import { useWizardStore } from 'stores/wizard';
+import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
-import { WIZARD_STEPS } from 'src/types';
+
+// Shared components
+import StepTabs from 'components/character-creation/shared/StepTabs.vue';
+import StepNavigation from 'components/character-creation/shared/StepNavigation.vue';
 
 // Step components
 import BasicSetupStep from 'components/character-creation/steps/BasicSetupStep.vue';
@@ -122,16 +67,13 @@ import ReviewStep from 'components/character-creation/steps/ReviewStep.vue';
 
 const router = useRouter();
 const $q = useQuasar();
-const creationStore = useCharacterCreationStore();
+const wizardStore = useWizardStore();
+const heroStore = useHeroStore();
 const classifierStore = useClassifierStore();
 
 // State
 const creating = ref(false);
 const showResetDialog = ref(false);
-
-// Steps config
-const steps = WIZARD_STEPS;
-const totalSteps = steps.length;
 
 const stepComponents: Record<number, Component> = {
   1: BasicSetupStep,
@@ -148,45 +90,13 @@ const stepComponents: Record<number, Component> = {
 };
 
 // Current step
-const currentStep = computed(() => creationStore.currentStep);
+const currentStep = computed(() => wizardStore.currentStep);
 const currentStepComponent = computed(() => stepComponents[currentStep.value]);
-
-// Validation
-const currentValidation = computed(() => creationStore.validateStep(currentStep.value));
-const hasErrors = computed(() => currentValidation.value.errors.length > 0);
-const firstError = computed(() => currentValidation.value.errors[0] ?? '');
-
-function isStepDone(step: number): boolean {
-  return creationStore.completedSteps.includes(step);
-}
-
-function hasStepError(step: number): boolean {
-  const validation = creationStore.validateStep(step);
-  return !validation.isValid && creationStore.completedSteps.includes(step);
-}
 
 // Navigation
 function goBack() {
   router.back();
 }
-
-function goToStep(step: number) {
-  creationStore.goToStep(step);
-}
-
-function nextStep() {
-  creationStore.nextStep();
-}
-
-function previousStep() {
-  creationStore.previousStep();
-}
-
-// Can create character
-const canCreate = computed(() => {
-  const validation = creationStore.validateStep(11);
-  return validation.isValid;
-});
 
 // Create character
 function createCharacter() {
@@ -198,7 +108,8 @@ function createCharacter() {
       message: 'Character created successfully!',
       position: 'top',
     });
-    creationStore.reset();
+    wizardStore.reset();
+    heroStore.clearHero();
     void router.push('/campaigns');
   } catch (err) {
     console.error('Failed to create character:', err);
@@ -218,7 +129,9 @@ function confirmReset() {
 }
 
 function resetWizard() {
-  creationStore.reset();
+  wizardStore.reset();
+  heroStore.clearHero();
+  wizardStore.startCreate();
   $q.notify({
     type: 'info',
     message: 'Character creation reset',
@@ -226,10 +139,13 @@ function resetWizard() {
   });
 }
 
-// Load classifiers on mount
+// Initialize wizard and load classifiers on mount
 onMounted(async () => {
   if (!classifierStore.initialized) {
     await classifierStore.initialize();
+  }
+  if (!wizardStore.isActive) {
+    wizardStore.startCreate();
   }
 });
 </script>
@@ -250,82 +166,5 @@ onMounted(async () => {
   position: sticky;
   top: 0;
   z-index: 100;
-}
-
-.step-tabs-container {
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.step-tabs {
-  min-width: max-content;
-}
-
-.step-tab {
-  min-width: 80px;
-  opacity: 0.6;
-  transition:
-    opacity 0.2s,
-    border-color 0.2s;
-  border-bottom: 3px solid transparent;
-  white-space: nowrap;
-
-  &:hover {
-    opacity: 0.8;
-  }
-
-  &--active {
-    opacity: 1;
-    border-bottom-color: var(--q-primary);
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  &--done {
-    opacity: 0.8;
-
-    .step-tab-number {
-      color: var(--q-positive);
-    }
-  }
-
-  &--error {
-    .step-tab-number {
-      color: var(--q-negative);
-    }
-  }
-}
-
-.step-tab-number {
-  font-weight: 600;
-}
-
-.step-tab-name {
-  font-size: 10px;
-  letter-spacing: 0.5px;
-}
-
-.step-progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-.creation-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 100;
-  background-color: var(--q-dark-page);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-
-  .body--light & {
-    background-color: #fff;
-    border-top-color: rgba(0, 0, 0, 0.12);
-  }
 }
 </style>
