@@ -1,0 +1,56 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":separateMajorReleases",
+    ":combinePatchMinorReleases",
+    ":label(frontend)"
+  ],
+  "timezone": "Europe/Riga",
+  "schedule": ["every weekend"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "labels": ["dependencies", "automerge"]
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "matchDepTypes": ["dependencies"],
+      "groupName": "all minor dependencies",
+      "labels": ["dependencies", "minor-update"]
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "matchDepTypes": ["devDependencies"],
+      "groupName": "all minor devDependencies",
+      "automerge": true,
+      "automergeType": "pr",
+      "labels": ["devDependencies", "automerge"]
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true,
+      "labels": ["dependencies", "major-update"]
+    },
+    {
+      "matchPackageNames": ["vue", "quasar", "@quasar/app-vite", "vite"],
+      "groupName": "core framework",
+      "dependencyDashboardApproval": true,
+      "labels": ["core", "manual-review"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "automerge": true,
+      "labels": ["ci"]
+    }
+  ],
+  "rangeStrategy": "bump",
+  "prHourlyLimit": 5,
+  "prConcurrentLimit": 10,
+  "rebaseWhen": "behind-base-branch"
+}

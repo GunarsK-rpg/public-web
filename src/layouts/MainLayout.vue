@@ -1,22 +1,45 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+  <q-layout view="hHh lpR fFf">
+    <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+        <q-btn
+          v-if="showBackButton"
+          flat
+          dense
+          round
+          icon="arrow_back"
+          aria-label="Back"
+          @click="goBack"
+        />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title>{{ pageTitle }}</q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <q-btn flat dense round icon="brightness_6" @click="toggleDarkMode">
+          <q-tooltip>Toggle dark mode</q-tooltip>
+        </q-btn>
+
+        <q-btn flat dense round icon="account_circle" v-if="isAuthenticated">
+          <q-menu>
+            <q-list style="min-width: 150px">
+              <q-item-label header>{{ username }}</q-item-label>
+              <q-separator />
+              <q-item clickable v-close-popup @click="goToCampaigns">
+                <q-item-section avatar>
+                  <q-icon name="list" />
+                </q-item-section>
+                <q-item-section>Campaigns</q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup @click="logout">
+                <q-item-section avatar>
+                  <q-icon name="logout" />
+                </q-item-section>
+                <q-item-section>Logout</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
       </q-toolbar>
     </q-header>
-
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <q-list>
-        <q-item-label header> Essential Links </q-item-label>
-
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
-      </q-list>
-    </q-drawer>
 
     <q-page-container>
       <router-view />
@@ -25,57 +48,58 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink.vue';
+import { computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useQuasar } from 'quasar';
+import { useAuthStore } from 'stores/auth';
 
-const linksList: EssentialLinkProps[] = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
-  },
-];
+const router = useRouter();
+const route = useRoute();
+const $q = useQuasar();
+const authStore = useAuthStore();
 
-const leftDrawerOpen = ref(false);
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const username = computed(() => authStore.currentUser?.username || 'User');
 
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
+const pageTitle = computed(() => {
+  return (route.meta?.title as string) || 'Cosmere RPG';
+});
+
+const showBackButton = computed(() => {
+  return route.name !== 'campaigns' && route.name !== 'login';
+});
+
+function toggleDarkMode(): void {
+  $q.dark.toggle();
+  try {
+    localStorage.setItem('darkMode', $q.dark.isActive ? 'true' : 'false');
+  } catch {
+    // localStorage may be unavailable (SSR, private browsing, etc.)
+  }
+}
+
+function goBack(): void {
+  router.back();
+}
+
+function goToCampaigns(): void {
+  void router.push({ name: 'campaigns' });
+}
+
+function logout(): void {
+  authStore.logout();
+  void router.push({ name: 'login' });
+}
+
+// Initialize dark mode from storage
+try {
+  const savedDarkMode = localStorage.getItem('darkMode');
+  if (savedDarkMode === 'true') {
+    $q.dark.set(true);
+  } else if (savedDarkMode === 'false') {
+    $q.dark.set(false);
+  }
+} catch {
+  // localStorage may be unavailable (SSR, private browsing, etc.)
 }
 </script>

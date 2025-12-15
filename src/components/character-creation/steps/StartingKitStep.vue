@@ -1,0 +1,164 @@
+<template>
+  <div class="starting-kit-step">
+    <div class="text-h6 q-mb-md">Choose Starting Kit</div>
+    <p class="text-caption text-muted q-mb-lg">
+      Your starting kit determines your initial equipment, currency, and may grant an expertise.
+      Select one that fits your character concept.
+    </p>
+
+    <div class="row q-col-gutter-md" role="radiogroup" aria-label="Select starting kit">
+      <div v-for="kit in startingKits" :key="kit.id" class="col-12 col-sm-6 col-md-4">
+        <q-card
+          role="radio"
+          tabindex="0"
+          :aria-checked="selectedKitId === kit.id"
+          class="kit-card cursor-pointer"
+          :class="{ 'card-selected': selectedKitId === kit.id }"
+          @click="selectKit(kit.id)"
+          @keydown.enter="selectKit(kit.id)"
+          @keydown.space.prevent="selectKit(kit.id)"
+        >
+          <q-card-section>
+            <div class="text-subtitle1 text-weight-bold q-mb-sm">{{ kit.name }}</div>
+
+            <div class="text-caption text-muted q-mb-sm">
+              {{ kit.description }}
+            </div>
+
+            <q-separator class="q-my-sm" />
+
+            <div class="text-caption">
+              <div class="row items-center q-mb-xs">
+                <q-icon name="sym_o_payments" size="xs" class="q-mr-xs" />
+                <span>
+                  <strong>{{ kit.startingSpheres }}</strong> marks
+                </span>
+              </div>
+
+              <div
+                v-if="kit.expertises && kit.expertises.length > 0"
+                class="row items-center q-mb-xs"
+              >
+                <q-icon name="sym_o_workspace_premium" size="xs" class="q-mr-xs" />
+                <span>
+                  <strong>+1</strong> {{ getExpertiseName(kit.expertises[0]!.expertiseId) }}
+                </span>
+              </div>
+
+              <div class="row items-start">
+                <q-icon name="sym_o_inventory_2" size="xs" class="q-mr-xs q-mt-xs" />
+                <span>{{ getEquipmentSummary(kit) }}</span>
+              </div>
+            </div>
+          </q-card-section>
+
+          <q-card-section v-if="selectedKitId === kit.id" class="q-pt-none">
+            <q-separator class="q-mb-sm" />
+
+            <!-- Starting currency input -->
+            <div v-if="kit.startingSpheres !== '0'" class="row items-center justify-center">
+              <q-input
+                :model-value="startingCurrency"
+                type="number"
+                label="Starting marks"
+                :hint="`Roll ${kit.startingSpheres}`"
+                outlined
+                dense
+                style="max-width: 150px"
+                @update:model-value="setStartingCurrency"
+                @click.stop
+              />
+            </div>
+            <div v-else class="text-center text-caption text-muted">No starting currency</div>
+          </q-card-section>
+
+          <!-- Selection indicator -->
+          <div v-if="selectedKitId === kit.id" class="selection-indicator">
+            <q-icon name="check_circle" color="primary" />
+          </div>
+        </q-card>
+      </div>
+    </div>
+
+    <!-- Special notes for prisoner kit -->
+    <q-banner v-if="isPrisonerKit" class="bg-amber-2 q-mt-md" rounded>
+      <template v-slot:avatar>
+        <q-icon name="auto_awesome" color="amber-8" />
+      </template>
+      <div class="text-caption">
+        <strong>Prisoner Kit Special:</strong> You begin bonded to a Radiant spren at Ideal 1. You
+        will select your Radiant Order in the Paths step.
+      </div>
+    </q-banner>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useHeroStore } from 'src/stores/hero';
+import { useClassifierStore } from 'src/stores/classifiers';
+
+const heroStore = useHeroStore();
+const classifiers = useClassifierStore();
+
+const startingKits = computed(() => classifiers.startingKits);
+const selectedKitId = computed(() => heroStore.hero?.startingKitId ?? null);
+
+const isPrisonerKit = computed(() => {
+  const prisonerKit = classifiers.getByCode(classifiers.startingKits, 'prisoner');
+  return selectedKitId.value === prisonerKit?.id;
+});
+
+const startingCurrency = computed(() => heroStore.hero?.currency ?? 0);
+
+function selectKit(kitId: number) {
+  heroStore.setStartingKit(kitId);
+}
+
+function setStartingCurrency(val: string | number | null) {
+  if (val === null) return;
+  const numVal = typeof val === 'string' ? Number(val) : val;
+  if (Number.isNaN(numVal)) return;
+  heroStore.setCurrency(Math.max(0, numVal));
+}
+
+function getExpertiseName(expertiseId: number): string {
+  return classifiers.getById(classifiers.expertises, expertiseId)?.name ?? 'Unknown';
+}
+
+function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
+  if (!kit.equipment || kit.equipment.length === 0) {
+    return 'No equipment';
+  }
+
+  return kit.equipment
+    .map((item) => {
+      const equip = classifiers.getById(classifiers.equipment, item.equipmentId);
+      if (!equip) return null;
+      return item.quantity > 1 ? `${equip.name} x${item.quantity}` : equip.name;
+    })
+    .filter((name): name is string => name !== null)
+    .join(', ');
+}
+</script>
+
+<style scoped>
+.kit-card {
+  position: relative;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  height: 100%;
+}
+
+.kit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.selection-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+</style>

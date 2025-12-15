@@ -12,7 +12,11 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-$primary: #1976d2;
+// =============================================================================
+// Core Theme Colors
+// =============================================================================
+
+$primary: #1565c0;
 $secondary: #26a69a;
 $accent: #9c27b0;
 
@@ -23,3 +27,40 @@ $positive: #21ba45;
 $negative: #c10015;
 $info: #31ccec;
 $warning: #f2c037;
+
+// =============================================================================
+// Semantic Color Mappings (App-wide)
+// =============================================================================
+// These define reusable semantic meanings that map to core colors.
+// Use these throughout the app for consistency.
+
+// Status/State colors
+$color-success: $positive;
+$color-error: $negative;
+$color-warning: $warning;
+$color-info: $info;
+
+// UI Element states
+$color-disabled-bg-light: rgba(0, 0, 0, 0.05);
+$color-disabled-bg-dark: rgba(255, 255, 255, 0.05);
+$color-disabled-opacity: 0.6;
+
+$color-selected-bg-light: rgba(0, 0, 0, 0.05);
+$color-selected-bg-dark: rgba(255, 255, 255, 0.08);
+
+// =============================================================================
+// CSS Custom Properties (for runtime theming)
+// =============================================================================
+// These are exported as CSS variables for use in components
+
+:root {
+  // Semantic color names (Quasar color class names)
+  --app-color-success: 'positive';
+  --app-color-error: 'negative';
+  --app-color-warning: 'warning';
+  --app-color-info: 'info';
+  --app-color-neutral: 'grey';
+
+  // Disabled/locked state
+  --app-disabled-opacity: #{$color-disabled-opacity};
+}
