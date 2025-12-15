@@ -4,11 +4,17 @@
 
     <!-- Path Selection -->
     <div class="text-subtitle2 q-mb-sm">Heroic Paths</div>
-    <div class="row q-col-gutter-md q-mb-md">
+    <div class="row q-col-gutter-md q-mb-md" role="group" aria-label="Select heroic paths">
       <div v-for="path in heroicPaths" :key="path.id" class="col-12 col-sm-6 col-md-4">
         <q-card
+          role="checkbox"
+          tabindex="0"
+          :aria-checked="isPathSelected(path.id)"
+          :aria-label="`${path.name} path`"
           :class="['cursor-pointer', { 'card-selected': isPathSelected(path.id) }]"
           @click="togglePath(path.id)"
+          @keydown.enter="togglePath(path.id)"
+          @keydown.space.prevent="togglePath(path.id)"
         >
           <q-card-section>
             <div class="text-h6">{{ path.name }}</div>
@@ -374,7 +380,7 @@
 
     <!-- Talent Detail Dialog -->
     <q-dialog v-model="talentDialogOpen">
-      <q-card style="min-width: 400px; max-width: 600px">
+      <q-card style="min-width: min(400px, 90vw); max-width: 600px">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ selectedTalentForDetails?.name }}</div>
           <q-space />
@@ -533,12 +539,12 @@ function checkTalentPrerequisites(
 
     switch (prereq.type) {
       case 'talent':
-        if (prereq.talentId) {
+        if (prereq.talentId !== undefined) {
           isMet = selectedTalentIds.includes(prereq.talentId);
         }
         break;
       case 'skill':
-        if (prereq.skillId && prereq.skillRank) {
+        if (prereq.skillId !== undefined && prereq.skillRank !== undefined) {
           const currentRank = skills.get(prereq.skillId) ?? 0;
           isMet = currentRank >= prereq.skillRank;
         }

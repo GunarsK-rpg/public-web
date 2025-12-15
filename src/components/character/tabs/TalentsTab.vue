@@ -98,15 +98,13 @@
     <!-- Ancestry Talents (e.g., Singer Forms) -->
     <q-expansion-item
       v-if="ancestryTalents.length > 0"
-      :label="getAncestryName(ancestryTalents[0]?.ancestryId)"
+      :label="ancestryTalentName"
       default-opened
       class="q-mb-sm"
     >
       <template #header>
         <q-item-section>
-          <q-item-label class="text-weight-bold">{{
-            getAncestryName(ancestryTalents[0]?.ancestryId)
-          }}</q-item-label>
+          <q-item-label class="text-weight-bold">{{ ancestryTalentName }}</q-item-label>
           <q-item-label caption>Ancestry Talents</q-item-label>
         </q-item-section>
       </template>
@@ -163,11 +161,15 @@ const ancestryTalents = computed(() => {
   return heroTalents.value.filter((t) => t.ancestryId !== undefined);
 });
 
-// Get ancestry name for display
-function getAncestryName(ancestryId: number | undefined): string {
-  if (!ancestryId) return '';
-  return classifiers.getById(classifiers.ancestries, ancestryId)?.name ?? '';
-}
+// Cached ancestry ID from talents to avoid repeated lookups
+const ancestryTalentAncestryId = computed(() => ancestryTalents.value[0]?.ancestryId);
+
+// Cached ancestry name for display
+const ancestryTalentName = computed(() => {
+  const id = ancestryTalentAncestryId.value;
+  if (!id) return '';
+  return classifiers.getById(classifiers.ancestries, id)?.name ?? '';
+});
 
 // Helper functions
 function getKeyTalentForPath(pathId: number): Talent | undefined {

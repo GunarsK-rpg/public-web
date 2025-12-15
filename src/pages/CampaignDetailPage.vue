@@ -10,7 +10,16 @@
         </template>
       </q-banner>
 
-      <template v-else-if="campaign">
+      <div v-else-if="!campaign" class="text-center q-pa-xl">
+        <q-icon name="sym_o_folder_off" size="64px" color="grey-5" />
+        <div class="text-h6 text-grey-7 q-mt-md">Campaign not found</div>
+        <div class="text-body2 text-grey-6 q-mb-md">
+          This campaign doesn't exist or you don't have access to it.
+        </div>
+        <q-btn color="primary" label="Back to Campaigns" @click="goBack" />
+      </div>
+
+      <template v-else>
         <div class="text-h5 q-mb-sm">{{ campaign.name }}</div>
         <div class="text-body2 text-grey q-mb-lg">
           {{ campaign.description }}
@@ -41,7 +50,15 @@
 
         <div v-else class="row q-col-gutter-md">
           <div v-for="hero in campaign.heroes" :key="hero.id" class="col-12 col-sm-6 col-md-4">
-            <q-card class="character-card cursor-pointer" @click="selectCharacter(hero.id)">
+            <q-card
+              class="character-card cursor-pointer"
+              tabindex="0"
+              role="button"
+              :aria-label="`View character: ${hero.name}`"
+              @click="selectCharacter(hero.id)"
+              @keydown.enter="selectCharacter(hero.id)"
+              @keydown.space.prevent="selectCharacter(hero.id)"
+            >
               <q-card-section>
                 <div class="text-h6">{{ hero.name }}</div>
                 <div class="text-subtitle2">
@@ -55,7 +72,12 @@
               <q-card-section>
                 <div class="health-bar">
                   <q-linear-progress
-                    :value="hero.currentHealth / hero.maxHealth"
+                    :value="
+                      Math.max(
+                        0,
+                        Math.min(1, hero.maxHealth > 0 ? hero.currentHealth / hero.maxHealth : 0)
+                      )
+                    "
                     color="negative"
                     class="q-mb-xs"
                   />
@@ -91,7 +113,12 @@ const loading = computed(() => campaignStore.loading);
 const error = computed(() => campaignStore.error);
 
 onMounted(async () => {
-  await campaignStore.selectCampaign(Number(props.campaignId));
+  const campaignId = Number(props.campaignId);
+  if (isNaN(campaignId) || campaignId <= 0) {
+    campaignStore.error = 'Invalid campaign ID';
+    return;
+  }
+  await campaignStore.selectCampaign(campaignId);
 });
 
 function selectCharacter(characterId: number): void {

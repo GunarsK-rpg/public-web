@@ -7,7 +7,12 @@
         <q-card class="attribute-card">
           <q-card-section class="text-center q-pa-sm">
             <div class="attribute-abbr">{{ attr.code.toUpperCase() }}</div>
-            <div class="attribute-value">{{ getAttributeValue(attr.code) }}</div>
+            <div
+              class="attribute-value"
+              :aria-label="`${attr.name}: ${heroStore.getAttributeValue(attr.code)}`"
+            >
+              {{ heroStore.getAttributeValue(attr.code) }}
+            </div>
             <div class="attribute-name">{{ attr.name }}</div>
           </q-card-section>
         </q-card>
@@ -20,7 +25,12 @@
       <div v-for="attrType in classifiers.attributeTypes" :key="attrType.id" class="col-4">
         <q-card class="defense-card">
           <q-card-section class="text-center q-pa-sm">
-            <div class="defense-value">{{ getDefenseValue(attrType.code) }}</div>
+            <div
+              class="defense-value"
+              :aria-label="`${attrType.name} defense: ${heroStore.getDefenseValue(attrType.code)}`"
+            >
+              {{ heroStore.getDefenseValue(attrType.code) }}
+            </div>
             <div class="defense-name">{{ attrType.name }}</div>
           </q-card-section>
         </q-card>
@@ -55,14 +65,6 @@ import { buildDerivedStatsList, type AttributeValues } from 'src/utils/derivedSt
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
-
-function getAttributeValue(attrCode: string): number {
-  return heroStore.getAttributeValue(attrCode);
-}
-
-function getDefenseValue(attrTypeCode: string): number {
-  return heroStore.getDefenseValue(attrTypeCode);
-}
 
 const derivedStatsList = computed(() => {
   const attrs: AttributeValues = {

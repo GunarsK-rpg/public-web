@@ -91,7 +91,14 @@ const stepComponents: Record<number, Component> = {
 
 // Current step
 const currentStep = computed(() => wizardStore.currentStep);
-const currentStepComponent = computed(() => stepComponents[currentStep.value]);
+const currentStepComponent = computed(() => {
+  const component = stepComponents[currentStep.value];
+  if (!component) {
+    console.error(`Invalid step ${currentStep.value}, defaulting to step 1`);
+    return stepComponents[1];
+  }
+  return component;
+});
 
 // Navigation
 function goBack() {

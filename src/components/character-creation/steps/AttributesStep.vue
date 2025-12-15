@@ -26,10 +26,16 @@
                 dense
                 flat
                 icon="remove"
+                :aria-label="`Decrease ${attr.name}`"
                 :disable="getAttrValue(attr.id) <= 0"
                 @click="decrementAttr(attr.id)"
               />
-              <div class="text-h5 q-mx-md" style="min-width: 30px; text-align: center">
+              <div
+                class="text-h5 q-mx-md"
+                style="min-width: 30px; text-align: center"
+                :aria-label="`${attr.name}: ${getAttrValue(attr.id)}`"
+                role="status"
+              >
                 {{ getAttrValue(attr.id) }}
               </div>
               <q-btn
@@ -37,11 +43,13 @@
                 dense
                 flat
                 icon="add"
+                :aria-label="`Increase ${attr.name}`"
                 :disable="getAttrValue(attr.id) >= 5 || pointsRemaining <= 0"
                 @click="incrementAttr(attr.id)"
               />
               <q-slider
                 :model-value="getAttrValue(attr.id)"
+                :aria-label="`${attr.name} slider`"
                 :min="0"
                 :max="5"
                 :step="1"
@@ -69,6 +77,7 @@
               <q-input
                 v-if="stat.hasModifier"
                 :model-value="stat.modifier"
+                :aria-label="`${stat.name} modifier`"
                 type="number"
                 dense
                 outlined
@@ -147,7 +156,8 @@ const derivedStatsList = computed(() => {
 
 function setStatModifier(statId: number, value: string | number | null) {
   if (value === null) return;
-  const numValue = typeof value === 'string' ? parseInt(value, 10) || 0 : value;
+  const numValue = typeof value === 'string' ? Number(value) : value;
+  if (Number.isNaN(numValue)) return;
   heroStore.setDerivedStatModifier(statId, numValue);
 }
 
@@ -156,8 +166,18 @@ function getAttrValue(attrId: number): number {
 }
 
 function setAttrValue(attrId: number, value: number | null) {
-  if (value !== null) {
-    heroStore.setAttribute(attrId, Math.max(0, Math.min(5, value)));
+  if (value === null) return;
+  const currentValue = getAttrValue(attrId);
+  const clampedValue = Math.max(0, Math.min(5, value));
+  const pointsToSpend = clampedValue - currentValue;
+
+  // If increasing, check budget
+  if (pointsToSpend > 0 && pointsToSpend > pointsRemaining.value) {
+    // Only allow spending what's available
+    const maxAllowed = currentValue + pointsRemaining.value;
+    heroStore.setAttribute(attrId, Math.min(5, maxAllowed));
+  } else {
+    heroStore.setAttribute(attrId, clampedValue);
   }
 }
 

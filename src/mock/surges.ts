@@ -1,5 +1,7 @@
 import type { Surge } from 'src/types';
 
+// Surge attributeIds reference cl_attributes classifier:
+// 1=strength, 2=speed, 3=intellect, 4=willpower, 5=awareness, 6=presence
 export const surges: Surge[] = [
   {
     id: 1,

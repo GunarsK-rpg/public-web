@@ -1,9 +1,13 @@
 <template>
   <div class="step-tabs-container">
-    <div class="step-tabs row no-wrap">
+    <div class="step-tabs row no-wrap" role="tablist" aria-label="Character creation steps">
       <div
         v-for="step in steps"
         :key="step.id"
+        role="tab"
+        :tabindex="currentStep === step.id ? 0 : -1"
+        :aria-selected="currentStep === step.id"
+        :aria-controls="`step-panel-${step.id}`"
         class="step-tab q-px-md q-py-sm text-center cursor-pointer"
         :class="{
           'step-tab--active': currentStep === step.id,
@@ -11,18 +15,29 @@
           'text-negative': hasStepErrors(step.code),
         }"
         @click="goToStep(step.id)"
+        @keydown.enter="goToStep(step.id)"
+        @keydown.space.prevent="goToStep(step.id)"
+        @keydown.left="navigateTabs(-1)"
+        @keydown.right="navigateTabs(1)"
       >
         <div class="step-tab-name text-caption text-uppercase">
-          <q-icon v-if="hasStepErrors(step.code)" name="error" size="xs" class="q-mr-xs" />
+          <q-icon
+            v-if="stepErrors[step.code]"
+            name="error"
+            size="xs"
+            class="q-mr-xs"
+            :aria-label="`${step.name} has validation errors`"
+          />
           {{ step.name }}
         </div>
       </div>
     </div>
     <q-linear-progress
-      :value="currentStep / totalSteps"
+      :value="Math.min(currentStep / totalSteps, 1)"
       color="primary"
       size="3px"
       class="step-progress"
+      aria-hidden="true"
     />
   </div>
 </template>
@@ -41,22 +56,42 @@ const totalSteps = steps.length;
 
 const currentStep = computed(() => wizardStore.currentStep);
 
+// Cache step errors to avoid repeated validation calls during render
+const stepErrors = computed(() => {
+  const errors: Record<string, boolean> = {};
+  for (const step of steps) {
+    if (wizardStore.isStepCompleted(step.id)) {
+      errors[step.code] = !validate(step.code).isValid;
+    } else {
+      errors[step.code] = false;
+    }
+  }
+  return errors;
+});
+
 function isStepDone(step: number): boolean {
   return wizardStore.completedSteps.includes(step);
 }
 
 function hasStepErrors(stepCode: string): boolean {
-  if (!wizardStore.isStepCompleted(stepIdFromCode(stepCode))) return false;
-  return !validate(stepCode).isValid;
-}
-
-function stepIdFromCode(code: string): number {
-  return steps.find((s) => s.code === code)?.id ?? 0;
+  return stepErrors.value[stepCode] ?? false;
 }
 
 function goToStep(step: number) {
-  wizardStore.markStepCompleted(wizardStore.currentStep);
+  // Only mark as completed if navigating forward/away
+  if (step !== wizardStore.currentStep) {
+    wizardStore.markStepCompleted(wizardStore.currentStep);
+  }
   wizardStore.goToStep(step);
+}
+
+function navigateTabs(direction: number) {
+  const currentIndex = steps.findIndex((s) => s.id === currentStep.value);
+  const newIndex = Math.max(0, Math.min(steps.length - 1, currentIndex + direction));
+  const targetStep = steps[newIndex];
+  if (newIndex !== currentIndex && targetStep) {
+    goToStep(targetStep.id);
+  }
 }
 </script>
 

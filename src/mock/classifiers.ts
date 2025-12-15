@@ -33,7 +33,7 @@ import { radiantOrders } from './radiantOrders';
 import { singerForms } from './singerForms';
 import { talents } from './talents';
 import { units } from './units';
-import { equipmentAttributes } from './equipmentAttributes';
+import { equipmentAttributes, equipmentAttributeMaps } from './equipmentAttributes';
 import { equipmentTypes, damageTypes, equipment } from './equipments';
 import { conditions, injuries } from './conditions';
 import { goalStatuses, connectionTypes } from './goals';
@@ -75,6 +75,7 @@ export const classifiers = {
   equipmentTypes,
   damageTypes,
   equipmentAttributes,
+  equipmentAttributeMaps,
   equipment,
 
   // Conditions & Status

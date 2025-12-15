@@ -14,7 +14,7 @@
           </div>
 
           <!-- Singer Form (if Singer) -->
-          <template v-if="ancestry?.code === 'singer' && activeSingerForm">
+          <template v-if="heroStore.isSinger && activeSingerForm">
             <div class="text-subtitle2 q-mb-sm">Current Form</div>
             <div class="row items-center q-mb-md">
               <q-chip>{{ activeSingerForm.name }}</q-chip>
@@ -177,28 +177,21 @@ const activeSingerForm = computed(() =>
   classifiers.getById(classifiers.singerForms, heroStore.hero?.activeSingerFormId)
 );
 
-// Lookup functions
-function getCultureName(cultureId: number): string {
-  return classifiers.getById(classifiers.cultures, cultureId)?.name ?? '';
+// Generic lookup helper - uses direct array lookup instead of store method
+// to avoid type issues with getById expecting Classifier type
+function getClassifierName<T extends { id: number; name: string }>(
+  list: T[],
+  id: number | undefined
+): string {
+  if (id === undefined) return '';
+  return list.find((item) => item.id === id)?.name ?? '';
 }
 
-function getGoalStatusName(statusId: number): string {
-  return classifiers.getById(classifiers.goalStatuses, statusId)?.name ?? '';
-}
-
-function getConnectionTypeName(connTypeId: number): string {
-  return classifiers.getById(classifiers.connectionTypes, connTypeId)?.name ?? '';
-}
-
-function getCompanionTypeName(compTypeId: number): string {
-  return classifiers.getById(classifiers.companionTypes, compTypeId)?.name ?? '';
-}
-
-function getConditionName(conditionId: number): string {
-  return classifiers.getById(classifiers.conditions, conditionId)?.name ?? '';
-}
-
-function getInjuryName(injuryId: number): string {
-  return classifiers.getById(classifiers.injuries, injuryId)?.name ?? '';
-}
+// Lookup functions using generic helper
+const getCultureName = (id: number) => getClassifierName(classifiers.cultures, id);
+const getGoalStatusName = (id: number) => getClassifierName(classifiers.goalStatuses, id);
+const getConnectionTypeName = (id: number) => getClassifierName(classifiers.connectionTypes, id);
+const getCompanionTypeName = (id: number) => getClassifierName(classifiers.companionTypes, id);
+const getConditionName = (id: number) => getClassifierName(classifiers.conditions, id);
+const getInjuryName = (id: number) => getClassifierName(classifiers.injuries, id);
 </script>

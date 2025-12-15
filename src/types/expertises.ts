@@ -7,9 +7,10 @@ export type ExpertiseType = Classifier;
 
 /**
  * Expertise source JSONB structure
+ * sourceType values come from database (culture, intellect, starting_kit, talent, reward, training, etc.)
  */
 export interface ExpertiseSourceData {
-  sourceType: string; // culture, intellect, starting_kit, talent, reward, training
+  sourceType: string;
   sourceId?: number;
 }
 

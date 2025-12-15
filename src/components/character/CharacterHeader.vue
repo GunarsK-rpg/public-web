@@ -75,19 +75,27 @@ const maxFocus = computed(() => heroStore.getDerivedStatTotal('max_focus'));
 const maxInvestiture = computed(() => heroStore.getDerivedStatTotal('max_investiture'));
 const isRadiant = computed(() => heroStore.isRadiant);
 
+/**
+ * Clamps a value between 0 and 1 for progress bars
+ */
+function clampProgress(current: number, max: number): number {
+  if (max <= 0) return 0;
+  return Math.max(0, Math.min(1, current / max));
+}
+
 const healthPercent = computed(() => {
-  if (!hero.value || !maxHealth.value) return 0;
-  return maxHealth.value > 0 ? hero.value.currentHealth / maxHealth.value : 0;
+  if (!hero.value) return 0;
+  return clampProgress(hero.value.currentHealth, maxHealth.value);
 });
 
 const focusPercent = computed(() => {
-  if (!hero.value || !maxFocus.value) return 0;
-  return maxFocus.value > 0 ? hero.value.currentFocus / maxFocus.value : 0;
+  if (!hero.value) return 0;
+  return clampProgress(hero.value.currentFocus, maxFocus.value);
 });
 
 const investiturePercent = computed(() => {
-  if (!hero.value || !maxInvestiture.value) return 0;
-  return maxInvestiture.value > 0 ? hero.value.currentInvestiture / maxInvestiture.value : 0;
+  if (!hero.value) return 0;
+  return clampProgress(hero.value.currentInvestiture, maxInvestiture.value);
 });
 
 const orderName = computed(() => {

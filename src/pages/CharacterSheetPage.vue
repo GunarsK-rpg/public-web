@@ -115,10 +115,21 @@ const classifierLoading = computed(() => classifierStore.loading);
 const classifierError = computed(() => classifierStore.error);
 
 onMounted(async () => {
-  if (!classifierStore.initialized) {
-    await classifierStore.initialize();
+  try {
+    const characterId = Number(props.characterId);
+    if (isNaN(characterId) || characterId <= 0) {
+      heroStore.error = 'Invalid character ID';
+      return;
+    }
+
+    if (!classifierStore.initialized) {
+      await classifierStore.initialize();
+    }
+    await heroStore.loadHero(characterId);
+  } catch (err) {
+    console.error('Failed to load character:', err);
+    heroStore.error = 'Failed to load character';
   }
-  await heroStore.loadHero(Number(props.characterId));
 });
 
 onUnmounted(() => {

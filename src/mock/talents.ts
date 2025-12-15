@@ -1776,11 +1776,11 @@ function checkSinglePrerequisite(
 ): boolean {
   switch (prereq.type) {
     case 'talent':
-      return prereq.talentId ? characterTalentIds.includes(prereq.talentId) : true;
+      return prereq.talentId !== undefined ? characterTalentIds.includes(prereq.talentId) : true;
 
     case 'skill':
-      if (prereq.skillId && prereq.skillRank) {
-        const currentRank = characterSkills.get(prereq.skillId) || 0;
+      if (prereq.skillId !== undefined && prereq.skillRank !== undefined) {
+        const currentRank = characterSkills.get(prereq.skillId) ?? 0;
         return currentRank >= prereq.skillRank;
       }
       return true;
@@ -1966,7 +1966,7 @@ export function formatPrerequisite(prereq: TalentPrerequisite): string {
   switch (prereq.type) {
     case 'talent': {
       if (prereq.description) return prereq.description;
-      const talent = prereq.talentId ? getTalentById(prereq.talentId) : undefined;
+      const talent = prereq.talentId !== undefined ? getTalentById(prereq.talentId) : undefined;
       return talent ? talent.name : 'Unknown talent';
     }
     case 'skill': {

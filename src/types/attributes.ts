@@ -13,7 +13,7 @@ export interface Attribute extends Classifier {
 }
 
 /**
- * Hero's attribute value
+ * Hero's attribute value (hero_attributes table)
  */
 export interface HeroAttribute {
   id: number;
@@ -23,7 +23,7 @@ export interface HeroAttribute {
 }
 
 /**
- * Hero's defense value
+ * Hero's defense value (hero_defenses table)
  */
 export interface HeroDefense {
   id: number;

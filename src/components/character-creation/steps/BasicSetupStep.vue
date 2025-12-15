@@ -63,9 +63,13 @@ const campaignOptions = computed(() =>
   campaignStore.campaigns.map((c) => ({ value: c.id, label: c.name }))
 );
 
-onMounted(() => {
+onMounted(async () => {
   if (!campaignStore.hasCampaigns) {
-    void campaignStore.fetchCampaigns();
+    try {
+      await campaignStore.fetchCampaigns();
+    } catch (err) {
+      console.error('Failed to fetch campaigns:', err);
+    }
   }
 });
 
@@ -77,9 +81,10 @@ function setName(val: string | number | null) {
 
 function setLevel(val: string | number | null) {
   if (val !== null) {
-    const numVal = typeof val === 'string' ? parseInt(val, 10) : val;
-    if (!isNaN(numVal)) {
-      heroStore.setLevel(numVal);
+    const numVal = typeof val === 'string' ? Number(val) : val;
+    if (!Number.isNaN(numVal)) {
+      // Clamp level between 1 and 20
+      heroStore.setLevel(Math.max(1, Math.min(20, numVal)));
     }
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Hero's companion
+ * Hero's companion (hero_companions table)
  */
 export interface HeroCompanion {
   id: number;

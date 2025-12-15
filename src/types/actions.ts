@@ -28,10 +28,11 @@ export interface Action extends Classifier {
 /**
  * Action link (cl_action_links)
  * Links actions to their sources (talents, equipment, surges)
- * The action's actionTypeId determines which table object_id references
+ * sourceType values come from database - determines which table objectId references
  */
 export interface ActionLink {
   id: number;
   actionId: number;
+  sourceType: string;
   objectId: number;
 }

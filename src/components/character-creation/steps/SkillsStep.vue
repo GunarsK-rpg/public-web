@@ -27,10 +27,15 @@
                 flat
                 size="sm"
                 icon="remove"
+                :aria-label="`Decrease ${skill.name} rank`"
                 :disable="getSkillRank(skill.id) <= 0"
                 @click="decrementSkill(skill.id)"
               />
-              <div class="text-body1 q-mx-sm" style="min-width: 30px; text-align: center">
+              <div
+                class="text-body1 q-mx-sm"
+                style="min-width: 30px; text-align: center"
+                :aria-label="`${skill.name} rank: ${getSkillRank(skill.id)}`"
+              >
                 {{ getSkillRank(skill.id) }}
               </div>
               <q-btn
@@ -39,11 +44,13 @@
                 flat
                 size="sm"
                 icon="add"
+                :aria-label="`Increase ${skill.name} rank`"
                 :disable="getSkillRank(skill.id) >= maxSkillRank || pointsRemaining <= 0"
                 @click="incrementSkill(skill.id)"
               />
               <q-input
                 :model-value="getSkillModifier(skill.id)"
+                :aria-label="`${skill.name} modifier`"
                 type="number"
                 dense
                 outlined
@@ -112,7 +119,8 @@ function getSkillModifier(skillId: number): number {
 
 function setSkillModifier(skillId: number, value: string | number | null) {
   if (value === null) return;
-  const numValue = typeof value === 'string' ? parseInt(value, 10) || 0 : value;
+  const numValue = typeof value === 'string' ? Number(value) : value;
+  if (Number.isNaN(numValue)) return;
   heroStore.setSkillModifier(skillId, numValue);
 }
 

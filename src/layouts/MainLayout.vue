@@ -71,7 +71,11 @@ const showBackButton = computed(() => {
 
 function toggleDarkMode(): void {
   $q.dark.toggle();
-  localStorage.setItem('darkMode', $q.dark.isActive ? 'true' : 'false');
+  try {
+    localStorage.setItem('darkMode', $q.dark.isActive ? 'true' : 'false');
+  } catch {
+    // localStorage may be unavailable (SSR, private browsing, etc.)
+  }
 }
 
 function goBack(): void {
@@ -88,10 +92,14 @@ function logout(): void {
 }
 
 // Initialize dark mode from storage
-const savedDarkMode = localStorage.getItem('darkMode');
-if (savedDarkMode === 'true') {
-  $q.dark.set(true);
-} else if (savedDarkMode === 'false') {
-  $q.dark.set(false);
+try {
+  const savedDarkMode = localStorage.getItem('darkMode');
+  if (savedDarkMode === 'true') {
+    $q.dark.set(true);
+  } else if (savedDarkMode === 'false') {
+    $q.dark.set(false);
+  }
+} catch {
+  // localStorage may be unavailable (SSR, private browsing, etc.)
 }
 </script>

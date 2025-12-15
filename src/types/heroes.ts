@@ -59,7 +59,7 @@ export interface HeroSummary {
   id: number;
   name: string;
   level: number;
-  radiantOrderId?: number;
+  radiantOrderId?: number | null; // null = not a Radiant, undefined = not yet loaded
   currentHealth: number;
   maxHealth: number;
 }

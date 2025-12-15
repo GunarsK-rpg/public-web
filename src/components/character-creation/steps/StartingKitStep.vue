@@ -6,12 +6,17 @@
       Select one that fits your character concept.
     </p>
 
-    <div class="row q-col-gutter-md">
+    <div class="row q-col-gutter-md" role="radiogroup" aria-label="Select starting kit">
       <div v-for="kit in startingKits" :key="kit.id" class="col-12 col-sm-6 col-md-4">
         <q-card
+          role="radio"
+          tabindex="0"
+          :aria-checked="selectedKitId === kit.id"
           class="kit-card cursor-pointer"
           :class="{ 'card-selected': selectedKitId === kit.id }"
           @click="selectKit(kit.id)"
+          @keydown.enter="selectKit(kit.id)"
+          @keydown.space.prevent="selectKit(kit.id)"
         >
           <q-card-section>
             <div class="text-subtitle1 text-weight-bold q-mb-sm">{{ kit.name }}</div>
@@ -112,8 +117,9 @@ function selectKit(kitId: number) {
 
 function setStartingCurrency(val: string | number | null) {
   if (val === null) return;
-  const numVal = typeof val === 'string' ? parseInt(val, 10) || 0 : val;
-  heroStore.setCurrency(numVal);
+  const numVal = typeof val === 'string' ? Number(val) : val;
+  if (Number.isNaN(numVal)) return;
+  heroStore.setCurrency(Math.max(0, numVal));
 }
 
 function getExpertiseName(expertiseId: number): string {

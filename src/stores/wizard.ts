@@ -5,6 +5,12 @@ import { useHeroStore } from './hero';
 
 export type WizardMode = 'create' | 'edit' | 'levelup';
 
+// Helper to get step ID by code - avoids hardcoding step numbers
+function getStepIdByCode(code: string): number {
+  const step = WIZARD_STEPS.find((s) => s.code === code);
+  return step?.id ?? 1;
+}
+
 export const useWizardStore = defineStore('wizard', () => {
   // ===================
   // STATE
@@ -90,9 +96,11 @@ export const useWizardStore = defineStore('wizard', () => {
     const heroStore = useHeroStore();
     void heroStore.loadHero(heroId);
     mode.value = 'levelup';
-    // Start at attributes step for level up
-    currentStep.value = 4;
-    completedSteps.value = [1, 2, 3]; // Basic info already done
+    // Start at attributes step for level up - use step codes to avoid hardcoding numbers
+    const attributesStepId = getStepIdByCode('attributes');
+    currentStep.value = attributesStepId;
+    // Mark steps before attributes as completed (basic-setup, ancestry, culture)
+    completedSteps.value = WIZARD_STEPS.filter((s) => s.id < attributesStepId).map((s) => s.id);
     isActive.value = true;
   }
 

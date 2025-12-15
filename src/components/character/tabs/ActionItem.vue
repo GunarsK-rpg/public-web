@@ -1,6 +1,6 @@
 <template>
   <q-item>
-    <q-item-section avatar>
+    <q-item-section avatar class="action-avatar">
       <img
         v-if="activationType?.icon"
         :src="iconUrl"
@@ -51,6 +51,11 @@ const iconUrl = computed(() => getIconUrl(activationType.value?.icon, 'actions')
 </script>
 
 <style scoped>
+.action-avatar {
+  min-width: 24px;
+  min-height: 24px;
+}
+
 .action-icon {
   width: 24px;
   height: 24px;

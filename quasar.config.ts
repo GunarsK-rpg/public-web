@@ -109,7 +109,7 @@ export default defineConfig((ctx) => {
     framework: {
       config: {
         brand: {
-          primary: '#1976d2', // Darker blue for better contrast with white text
+          primary: '#1565c0', // Darker blue (WCAG AAA) for better contrast with white text
           secondary: '#26a69a',
           accent: '#9c27b0',
           dark: '#1d1d1d',

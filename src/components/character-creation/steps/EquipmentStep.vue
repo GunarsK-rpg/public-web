@@ -155,9 +155,9 @@ function getEquipmentName(id: number): string {
 
 function setCurrencyAmount(val: string | number | null) {
   if (val === null) return;
-  const numVal = typeof val === 'string' ? parseInt(val, 10) : val;
-  if (isNaN(numVal)) return;
-  heroStore.setCurrency(numVal);
+  const numVal = typeof val === 'string' ? Number(val) : val;
+  if (Number.isNaN(numVal)) return;
+  heroStore.setCurrency(Math.max(0, numVal));
 }
 
 function addItemOfType(typeId: number) {

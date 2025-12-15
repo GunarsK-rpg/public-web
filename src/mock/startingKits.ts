@@ -121,12 +121,20 @@ export function getStartingKitByCode(code: string): StartingKit | undefined {
  * e.g., "3d12" -> 19.5, "4d8" -> 18, "0" -> 0
  */
 export function calculateAverageSpheres(formula: string): number {
-  if (formula === '0') return 0;
+  // Handle empty/null/whitespace
+  const trimmed = formula?.trim();
+  if (!trimmed || trimmed === '0') return 0;
 
-  const match = formula.match(/^(\d+)d(\d+)$/);
+  const match = trimmed.match(/^(\d+)d(\d+)$/i);
   if (!match || !match[1] || !match[2]) return 0;
 
-  const count = parseInt(match[1], 10);
-  const sides = parseInt(match[2], 10);
+  const count = Number(match[1]);
+  const sides = Number(match[2]);
+
+  // Validate count and sides are positive
+  if (count <= 0 || sides <= 0 || !Number.isFinite(count) || !Number.isFinite(sides)) {
+    return 0;
+  }
+
   return count * ((sides + 1) / 2);
 }

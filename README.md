@@ -22,6 +22,7 @@ Character sheet manager for the Cosmere RPG tabletop game built with Vue.js.
 
 - Node.js 22+ (LTS)
 - npm 10+
+- [Task](https://taskfile.dev/) (recommended for running commands)
 
 ## Project Structure
 

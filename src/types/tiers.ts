@@ -1,8 +1,7 @@
 import type { Classifier } from './classifier';
 
 /**
- * Tier classifier
- * Maps to cl_tiers table
+ * Tier classifier (cl_tiers)
  */
 export interface Tier extends Classifier {
   levelMin: number;

@@ -19,7 +19,7 @@ export interface DerivedStatValue {
 }
 
 /**
- * Hero's derived stat value (saved to DB)
+ * Hero's derived stat value (hero_derived_stats table)
  */
 export interface HeroDerivedStat {
   id: number;

@@ -41,6 +41,7 @@
             icon="sym_o_delete"
             color="negative"
             size="sm"
+            :aria-label="`Remove goal: ${goal.name}`"
             @click="removeGoal(index)"
           />
         </q-item-section>
@@ -87,6 +88,7 @@
             icon="sym_o_delete"
             color="negative"
             size="sm"
+            :aria-label="`Remove connection: ${conn.description}`"
             @click="removeConnection(index)"
           />
         </q-item-section>
@@ -198,7 +200,11 @@ function removeGoal(index: number) {
 
 function addConnection() {
   if (newConnectionDescription.value && newConnectionType.value) {
-    heroStore.addConnection(newConnectionType.value, newConnectionDescription.value);
+    heroStore.addConnection(
+      newConnectionType.value,
+      newConnectionDescription.value,
+      newConnectionNotes.value || undefined
+    );
     newConnectionDescription.value = '';
     newConnectionType.value = null;
     newConnectionNotes.value = '';

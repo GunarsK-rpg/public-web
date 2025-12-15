@@ -38,7 +38,11 @@ export function useStepValidation() {
     return getBudgetValidation(stepCode, validationData.value);
   }
 
-  const currentStepCode = computed(() => wizardStore.currentStepConfig?.code as StepCode);
+  const currentStepCode = computed((): StepCode => {
+    const code = wizardStore.currentStepConfig?.code;
+    // Default to 'basic-setup' if currentStepConfig is undefined
+    return (code as StepCode) ?? 'basic-setup';
+  });
   const currentValidation = computed(() => validate(currentStepCode.value));
   const allStepsValidation = computed(() => validate('review'));
 

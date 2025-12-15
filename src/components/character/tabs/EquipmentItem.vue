@@ -11,10 +11,22 @@
     <q-item-section>
       <q-item-label>
         {{ heroEquipment.customName || equipment?.name }}
-        <q-badge v-if="heroEquipment.isEquipped" color="primary" class="q-ml-xs">
+        <q-badge
+          v-if="heroEquipment.isEquipped"
+          color="primary"
+          class="q-ml-xs"
+          aria-label="Equipped"
+        >
           Equipped
         </q-badge>
-        <q-badge v-if="heroEquipment.isPrimary" color="amber" class="q-ml-xs"> Primary </q-badge>
+        <q-badge
+          v-if="heroEquipment.isPrimary"
+          color="amber"
+          class="q-ml-xs"
+          aria-label="Primary weapon"
+        >
+          Primary
+        </q-badge>
       </q-item-label>
       <q-item-label v-if="detailsLine" caption>
         {{ detailsLine }}
@@ -24,7 +36,13 @@
       </q-item-label>
     </q-item-section>
     <q-item-section side>
-      <q-badge v-if="heroEquipment.amount > 1" color="grey"> x{{ heroEquipment.amount }} </q-badge>
+      <q-badge
+        v-if="heroEquipment.amount > 1"
+        color="grey"
+        :aria-label="`Quantity: ${heroEquipment.amount}`"
+      >
+        x{{ heroEquipment.amount }}
+      </q-badge>
     </q-item-section>
   </q-item>
 </template>
@@ -49,10 +67,6 @@ const equipmentType = computed(() =>
   classifiers.getById(classifiers.equipmentTypes, equipment.value?.equipTypeId)
 );
 
-const damageType = computed(() =>
-  classifiers.getById(classifiers.damageTypes, equipment.value?.damageTypeId)
-);
-
 const iconUrl = computed(() => getIconUrl(equipmentType.value?.icon, 'equipment'));
 
 // Build details line from special properties
@@ -63,8 +77,9 @@ const detailsLine = computed(() => {
   const parts: string[] = [];
 
   if (eq.special.damage) {
-    const dmgTypeName = damageType.value?.name ?? '';
-    parts.push(`${eq.special.damage}${dmgTypeName ? ` ${dmgTypeName}` : ''}`);
+    const damageTypeName =
+      classifiers.getById(classifiers.damageTypes, eq.damageTypeId)?.name ?? '';
+    parts.push(`${eq.special.damage}${damageTypeName ? ` ${damageTypeName}` : ''}`);
   }
 
   if (eq.special.range) {

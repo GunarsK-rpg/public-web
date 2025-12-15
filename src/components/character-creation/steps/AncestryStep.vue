@@ -2,11 +2,16 @@
   <div>
     <div class="text-subtitle1 q-mb-md">Choose your character's ancestry</div>
 
-    <div class="row q-col-gutter-md">
+    <div class="row q-col-gutter-md" role="radiogroup" aria-label="Select ancestry">
       <div v-for="ancestry in ancestries" :key="ancestry.id" class="col-12 col-sm-6">
         <q-card
+          role="radio"
+          tabindex="0"
+          :aria-checked="selectedAncestryId === ancestry.id"
           :class="['cursor-pointer', { 'card-selected': selectedAncestryId === ancestry.id }]"
           @click="selectAncestry(ancestry.id)"
+          @keydown.enter="selectAncestry(ancestry.id)"
+          @keydown.space.prevent="selectAncestry(ancestry.id)"
         >
           <q-card-section>
             <div class="text-h6">{{ ancestry.name }}</div>
@@ -24,11 +29,16 @@
         Singers begin in dullform by default. Other forms can be unlocked through talents.
       </div>
 
-      <div class="row q-col-gutter-md">
+      <div class="row q-col-gutter-md" role="radiogroup" aria-label="Select singer form">
         <div v-for="form in availableForms" :key="form.id" class="col-12 col-sm-4">
           <q-card
+            role="radio"
+            tabindex="0"
+            :aria-checked="selectedFormId === form.id"
             :class="['cursor-pointer', { 'card-selected': selectedFormId === form.id }]"
             @click="selectForm(form.id)"
+            @keydown.enter="selectForm(form.id)"
+            @keydown.space.prevent="selectForm(form.id)"
           >
             <q-card-section>
               <div class="text-subtitle2">{{ form.name }}</div>
@@ -66,9 +76,9 @@ const availableForms = computed(() =>
 
 function selectAncestry(id: number) {
   heroStore.setAncestry(id);
-  // Auto-select dullform for Singer
+  // Auto-select dullform for Singer only if no form is already chosen
   const singerAncestry = classifiers.getByCode(classifiers.ancestries, 'singer');
-  if (id === singerAncestry?.id) {
+  if (id === singerAncestry?.id && !heroStore.hero?.activeSingerFormId) {
     const dullform = classifiers.getByCode(classifiers.singerForms, 'dullform');
     if (dullform) {
       heroStore.setSingerForm(dullform.id);

@@ -56,7 +56,7 @@ export const actionTypes: ActionType[] = [
 
 /**
  * Actions - all available actions in the game
- * actionTypeId references actionTypes.id (1=basic, 2=weapon, 3=talent, 4=surge)
+ * actionTypeId references actionTypes.id (1=basic, 2=equipment, 3=talent, 4=surge)
  * activationTypeId references activationTypes.id (1=action, 2=double, 3=triple, 4=free, 5=reaction, 6=special, 7=always)
  */
 export const actions: Action[] = [

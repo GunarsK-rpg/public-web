@@ -12,6 +12,7 @@
             v-model="username"
             label="Username"
             outlined
+            autocomplete="username"
             :rules="[(val) => !!val || 'Username is required']"
           />
 
@@ -20,6 +21,7 @@
             label="Password"
             type="password"
             outlined
+            autocomplete="current-password"
             :rules="[(val) => !!val || 'Password is required']"
           />
 
@@ -33,7 +35,7 @@
         </q-form>
       </q-card-section>
 
-      <q-card-section v-if="error" class="text-negative">
+      <q-card-section v-if="error" class="text-negative" role="alert" aria-live="polite">
         {{ error }}
       </q-card-section>
     </q-card>
@@ -54,20 +56,35 @@ const password = ref('');
 const loading = ref(false);
 const error = ref<string | null>(null);
 
+/**
+ * Validates that redirect URL is safe (relative path only)
+ */
+function isValidRedirect(url: string): boolean {
+  // Only allow relative paths starting with /
+  // Reject absolute URLs, protocol-relative URLs, and javascript: URLs
+  if (!url.startsWith('/')) return false;
+  if (url.startsWith('//')) return false;
+  if (url.toLowerCase().includes('javascript:')) return false;
+  return true;
+}
+
 async function handleLogin(): Promise<void> {
   loading.value = true;
   error.value = null;
 
-  const success = await authStore.login(username.value, password.value);
+  try {
+    const success = await authStore.login(username.value, password.value);
 
-  if (success) {
-    const redirect = (route.query.redirect as string) || '/';
-    void router.push(redirect);
-  } else {
-    error.value = 'Invalid username or password';
+    if (success) {
+      const redirect = route.query.redirect as string;
+      const safeRedirect = redirect && isValidRedirect(redirect) ? redirect : '/';
+      void router.push(safeRedirect);
+    } else {
+      error.value = 'Invalid username or password';
+    }
+  } finally {
+    loading.value = false;
   }
-
-  loading.value = false;
 }
 </script>
 

@@ -2,8 +2,13 @@
   <div class="creation-footer q-pa-sm row items-center">
     <q-btn v-if="currentStep > 1" flat dense icon="arrow_back" label="Back" @click="previousStep" />
     <q-space />
-    <div v-if="hasErrors" class="text-negative text-caption q-mr-sm">
-      <q-icon name="error" size="xs" class="q-mr-xs" />
+    <div
+      v-if="hasErrors"
+      class="text-negative text-caption q-mr-sm"
+      role="alert"
+      aria-live="polite"
+    >
+      <q-icon name="error" size="xs" class="q-mr-xs" aria-hidden="true" />
       {{ firstError }}
     </div>
     <q-btn

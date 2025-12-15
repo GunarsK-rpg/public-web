@@ -69,9 +69,3 @@ function getEquipmentByTypeId(typeId: number): HeroEquipment[] {
   });
 }
 </script>
-
-<style scoped>
-.text-muted {
-  color: #6c757d;
-}
-</style>

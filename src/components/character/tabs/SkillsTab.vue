@@ -7,7 +7,7 @@
         <q-item v-for="skill in getSkillsByAttrTypeId(attrType.id)" :key="skill.id">
           <q-item-section avatar>
             <q-avatar color="grey" text-color="white" size="md">
-              {{ getSkillModifier(skill.code) }}
+              {{ formatModifier(getSkillModifier(skill.code)) }}
             </q-avatar>
           </q-item-section>
           <q-item-section>
@@ -57,6 +57,10 @@ function getSkillModifier(skillCode: string): number {
 
 function getAttributeName(attrId: number): string {
   return classifiers.getById(classifiers.attributes, attrId)?.code.toUpperCase() ?? '';
+}
+
+function formatModifier(value: number): string {
+  return value >= 0 ? `+${value}` : `${value}`;
 }
 </script>
 

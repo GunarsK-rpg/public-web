@@ -78,7 +78,7 @@
               <div v-for="stat in derivedStatsList" :key="stat.id" class="col-6">
                 <span class="text-weight-medium">{{ stat.name }}:</span>
                 {{ stat.baseDisplay }}
-                <span v-if="stat.hasModifier && stat.modifier !== 0" class="text-muted">
+                <span v-if="stat.modifier !== 0" class="text-muted">
                   (+{{ stat.modifier }} = {{ stat.totalDisplay }})
                 </span>
               </div>
@@ -190,8 +190,11 @@ const ancestryName = computed(
 );
 
 const cultureName = computed(() => {
-  const primaryCultureId = heroStore.hero?.cultures[0]?.cultureId;
-  return classifiers.getById(classifiers.cultures, primaryCultureId)?.name ?? 'None';
+  const cultures = heroStore.hero?.cultures ?? [];
+  const primaryCultureId = cultures[0]?.cultureId;
+  return primaryCultureId
+    ? (classifiers.getById(classifiers.cultures, primaryCultureId)?.name ?? 'None')
+    : 'None';
 });
 
 const startingKitName = computed(

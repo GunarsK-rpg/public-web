@@ -156,7 +156,7 @@ jobs:
           fetch-depth: 0 # Full history for scanning
 
       - name: Run TruffleHog
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.88.0
         with:
           path: ./
           base: ""

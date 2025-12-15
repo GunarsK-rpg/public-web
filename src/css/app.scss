@@ -84,10 +84,10 @@
   color: white !important;
 }
 
-// Warning banner
+// Warning banner (dark text for contrast on yellow)
 .banner-warning {
   background-color: $warning !important;
-  color: white !important;
+  color: $dark !important;
 }
 
 // =============================================================================

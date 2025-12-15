@@ -94,9 +94,14 @@ const culturalExpertiseNames = computed(() => {
 });
 
 function setCulture(oldId: number | null, newId: number | null) {
-  if (oldId) {
+  // Skip if no actual change
+  if (oldId === newId) return;
+
+  // Remove old culture if it exists
+  if (oldId !== null) {
     heroStore.removeCulture(oldId);
   }
+  // Add new culture if specified
   if (newId !== null) {
     heroStore.addCulture(newId);
   }

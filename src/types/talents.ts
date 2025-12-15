@@ -27,7 +27,7 @@ export interface Talent extends Classifier {
 }
 
 /**
- * Hero's talent
+ * Hero's talent (hero_talents table)
  */
 export interface HeroTalent {
   id: number;

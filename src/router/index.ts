@@ -23,6 +23,12 @@ export default defineRouter(function (/* { store, ssrContext } */) {
 
   // Navigation guard for authentication
   Router.beforeEach((to, _from, next) => {
+    // Skip auth check during SSR (localStorage not available)
+    if (process.env.SERVER) {
+      next();
+      return;
+    }
+
     const authStore = useAuthStore();
 
     // Initialize auth state if not done

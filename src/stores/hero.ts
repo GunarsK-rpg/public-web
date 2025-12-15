@@ -123,12 +123,16 @@ export const useHeroStore = defineStore('hero', () => {
     loading.value = true;
     error.value = null;
 
+    // Clear any existing hero to avoid stale data
+    hero.value = null;
+
     try {
       // TODO: Replace with actual API call
       const { heroes } = await import('src/mock/heroes');
       const found = heroes.find((h) => h.id === id);
       if (found) {
-        hero.value = found;
+        // Deep clone to avoid mutating shared mock data
+        hero.value = JSON.parse(JSON.stringify(found));
       } else {
         error.value = 'Hero not found';
       }
@@ -142,7 +146,7 @@ export const useHeroStore = defineStore('hero', () => {
 
   function initNewHero(campaignId?: number): void {
     hero.value = createEmptyHero();
-    if (campaignId) {
+    if (campaignId !== undefined) {
       hero.value.campaignId = campaignId;
     }
     tempIdCounter = -1;
@@ -516,15 +520,17 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   function addEquipment(equipmentId: number, amount: number = 1) {
     if (!hero.value) return;
+    // Validate amount - must be positive
+    const validAmount = Math.max(1, Math.floor(amount));
     const existing = hero.value.equipment.find((e) => e.equipmentId === equipmentId);
     if (existing) {
-      existing.amount += amount;
+      existing.amount += validAmount;
     } else {
       hero.value.equipment.push({
         id: nextTempId(),
         heroId: hero.value.id,
         equipmentId,
-        amount,
+        amount: validAmount,
         isEquipped: false,
         isPrimary: false,
       });
@@ -569,13 +575,14 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   // CONNECTIONS
   // ===================
-  function addConnection(connTypeId: number, description: string) {
+  function addConnection(connTypeId: number, description: string, notes?: string) {
     if (!hero.value) return;
     hero.value.connections.push({
       id: nextTempId(),
       heroId: hero.value.id,
       connTypeId,
       description,
+      ...(notes ? { notes } : {}),
     });
   }
 

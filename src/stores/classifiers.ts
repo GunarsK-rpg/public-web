@@ -94,6 +94,9 @@ export const useClassifierStore = defineStore('classifiers', () => {
   const error = ref<string | null>(null);
   const initialized = ref(false);
 
+  // Concurrency lock: prevents parallel initialize() calls from double-loading
+  let initPromise: Promise<void> | null = null;
+
   // Attributes & Stats
   const attributeTypes = computed((): AttributeType[] => data.value?.attributeTypes || []);
   const attributes = computed((): Attribute[] => data.value?.attributes || []);
@@ -164,6 +167,8 @@ export const useClassifierStore = defineStore('classifiers', () => {
 
   /**
    * Lookup classifier by id
+   * Note: This assumes IDs are non-overlapping within each classifier type.
+   * Each classifier table has its own ID sequence in the database.
    * @param list - classifier array to search
    * @param id - id to find
    * @returns matching classifier or undefined
@@ -208,28 +213,42 @@ export const useClassifierStore = defineStore('classifiers', () => {
 
   /**
    * Initialize classifiers from API or mock data
+   * Concurrency-safe: parallel calls will wait for the first to complete
    */
   async function initialize(): Promise<void> {
+    // Already initialized
     if (initialized.value) return;
 
-    loading.value = true;
-    error.value = null;
-
-    try {
-      // TODO: Replace with actual API call
-      // const response = await classifierService.getAll();
-      // data.value = response.data;
-
-      // Mock: Import from mock data
-      const mockData = await import('src/mock/classifiers');
-      data.value = mockData.classifiers;
-      initialized.value = true;
-    } catch (err) {
-      error.value = 'Failed to load classifiers';
-      console.error('Failed to load classifiers:', err);
-    } finally {
-      loading.value = false;
+    // If initialization is in progress, wait for it
+    if (initPromise) {
+      return initPromise;
     }
+
+    // Start initialization
+    initPromise = (async () => {
+      loading.value = true;
+      error.value = null;
+
+      try {
+        // TODO: Replace with actual API call
+        // const response = await classifierService.getAll();
+        // data.value = response.data;
+
+        // Mock: Import from mock data
+        const mockData = await import('src/mock/classifiers');
+        data.value = mockData.classifiers;
+        initialized.value = true;
+      } catch (err) {
+        error.value = 'Failed to load classifiers';
+        console.error('Failed to load classifiers:', err);
+        // Reset promise on failure to allow retry
+        initPromise = null;
+      } finally {
+        loading.value = false;
+      }
+    })();
+
+    return initPromise;
   }
 
   /**

@@ -61,5 +61,7 @@ export interface User {
 export interface AuthState {
   user: User | null;
   token: string | null;
+  // isAuthenticated is a computed convenience (!!token && !!user)
+  // Kept here for serialization/snapshot purposes
   isAuthenticated: boolean;
 }

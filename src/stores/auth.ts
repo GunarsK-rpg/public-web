@@ -4,6 +4,11 @@ import type { User } from 'src/types';
 
 const STORAGE_KEY = 'cosmere_auth';
 
+// Security Note: localStorage is vulnerable to XSS attacks.
+// For production, authentication should use httpOnly cookies set by the backend.
+// This implementation is for development/mock purposes only.
+// TODO: Replace with secure cookie-based auth when backend is implemented
+
 interface StoredAuth {
   token: string;
   user: User;
@@ -22,15 +27,19 @@ export const useAuthStore = defineStore('auth', () => {
   function initialize(): void {
     if (initialized.value) return;
 
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const data: StoredAuth = JSON.parse(stored);
-        token.value = data.token;
-        user.value = data.user;
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const data: StoredAuth = JSON.parse(stored);
+          token.value = data.token;
+          user.value = data.user;
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
       }
+    } catch {
+      // localStorage may be unavailable (SSR, private browsing, etc.)
     }
     initialized.value = true;
   }
@@ -38,7 +47,11 @@ export const useAuthStore = defineStore('auth', () => {
   function setAuth(newToken: string, newUser: User): void {
     token.value = newToken;
     user.value = newUser;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: newToken, user: newUser }));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: newToken, user: newUser }));
+    } catch {
+      // localStorage may be unavailable (SSR, private browsing, etc.)
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -58,7 +71,8 @@ export const useAuthStore = defineStore('auth', () => {
       };
       setAuth('mock-token-' + Date.now(), mockUser);
       return true;
-    } catch {
+    } catch (err) {
+      console.error('Login failed:', err);
       return false;
     } finally {
       loading.value = false;
@@ -68,7 +82,11 @@ export const useAuthStore = defineStore('auth', () => {
   function logout(): void {
     token.value = null;
     user.value = null;
-    localStorage.removeItem(STORAGE_KEY);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // localStorage may be unavailable (SSR, private browsing, etc.)
+    }
   }
 
   function reset(): void {

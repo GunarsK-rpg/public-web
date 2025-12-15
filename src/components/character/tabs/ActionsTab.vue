@@ -115,9 +115,3 @@ function getActionsByTypeId(actionTypeId: number): Action[] {
   return classifiers.actions.filter((a) => linkedActionIds.has(a.id));
 }
 </script>
-
-<style scoped>
-.text-muted {
-  color: #6c757d;
-}
-</style>

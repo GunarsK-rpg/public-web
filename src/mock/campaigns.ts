@@ -74,5 +74,3 @@ export const campaignsWithHeroes: CampaignWithHeroes[] = [
     heroes: [],
   },
 ];
-
-export default campaigns;

@@ -26,7 +26,15 @@
 
       <div v-else class="row q-col-gutter-md">
         <div v-for="campaign in campaigns" :key="campaign.id" class="col-12 col-sm-6 col-md-4">
-          <q-card class="campaign-card cursor-pointer" @click="selectCampaign(campaign.id)">
+          <q-card
+            class="campaign-card cursor-pointer"
+            tabindex="0"
+            role="button"
+            :aria-label="`View campaign: ${campaign.name}`"
+            @click="selectCampaign(campaign.id)"
+            @keydown.enter="selectCampaign(campaign.id)"
+            @keydown.space.prevent="selectCampaign(campaign.id)"
+          >
             <q-card-section>
               <div class="text-h6">{{ campaign.name }}</div>
               <div class="text-subtitle2 text-grey">
@@ -59,7 +67,11 @@ const loading = computed(() => campaignStore.loading);
 const error = computed(() => campaignStore.error);
 
 onMounted(async () => {
-  await campaignStore.fetchCampaigns();
+  try {
+    await campaignStore.fetchCampaigns();
+  } catch (err) {
+    console.error('Failed to fetch campaigns:', err);
+  }
 });
 
 function selectCampaign(id: number): void {
@@ -72,7 +84,9 @@ function createStandaloneCharacter(): void {
 
 function formatDate(dateString: string | undefined): string {
   if (!dateString) return 'Unknown';
-  return new Date(dateString).toLocaleDateString();
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'Unknown';
+  return date.toLocaleDateString();
 }
 </script>
 

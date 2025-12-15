@@ -1,10 +1,10 @@
 import type { GoalStatus, ConnectionType } from 'src/types';
 
 export const goalStatuses: GoalStatus[] = [
-  { id: 1, code: 'active', name: 'Active' },
-  { id: 2, code: 'completed', name: 'Completed' },
-  { id: 3, code: 'failed', name: 'Failed' },
-  { id: 4, code: 'abandoned', name: 'Abandoned' },
+  { id: 1, code: 'active', name: 'Active', description: 'Goal is currently being pursued' },
+  { id: 2, code: 'completed', name: 'Completed', description: 'Goal has been achieved' },
+  { id: 3, code: 'failed', name: 'Failed', description: 'Goal was not achieved' },
+  { id: 4, code: 'abandoned', name: 'Abandoned', description: 'Goal was given up' },
 ];
 
 export const connectionTypes: ConnectionType[] = [

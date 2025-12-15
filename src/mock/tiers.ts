@@ -45,6 +45,12 @@ export const tiers: Tier[] = [
   },
 ];
 
+/**
+ * Get tier by level. Guards against invalid level values.
+ * @param level - The character level (should be >= 1)
+ * @returns The tier for the given level, or undefined if level is invalid
+ */
 export function getTierByLevel(level: number): Tier | undefined {
+  if (level < 1 || !Number.isFinite(level)) return undefined;
   return tiers.find((t) => level >= t.levelMin && (t.levelMax === null || level <= t.levelMax));
 }

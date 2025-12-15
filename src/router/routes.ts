@@ -35,18 +35,18 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Campaign' },
       },
       {
-        path: 'campaigns/:campaignId/characters/:characterId',
-        name: 'character-sheet',
-        component: () => import('pages/CharacterSheetPage.vue'),
-        props: true,
-        meta: { title: 'Character Sheet' },
-      },
-      {
         path: 'campaigns/:campaignId/characters/new',
         name: 'character-create',
         component: () => import('pages/CharacterCreationPage.vue'),
         props: true,
         meta: { title: 'Create Character' },
+      },
+      {
+        path: 'campaigns/:campaignId/characters/:characterId',
+        name: 'character-sheet',
+        component: () => import('pages/CharacterSheetPage.vue'),
+        props: true,
+        meta: { title: 'Character Sheet' },
       },
       {
         path: 'characters/new',

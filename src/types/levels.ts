@@ -1,8 +1,7 @@
 import type { Classifier } from './classifier';
 
 /**
- * Level classifier
- * Maps to cl_levels table
+ * Level classifier (cl_levels)
  */
 export interface Level extends Classifier {
   level: number;

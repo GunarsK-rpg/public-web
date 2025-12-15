@@ -31,15 +31,33 @@ const classifiers = useClassifierStore();
 
 const heroExpertises = computed(() => heroStore.hero?.expertises ?? []);
 
-function getExpertisesByTypeId(typeId: number): HeroExpertise[] {
-  return heroExpertises.value.filter((heroExp) => {
+// Precompute expertises grouped by type ID to avoid repeated filtering in template
+const expertisesByType = computed(() => {
+  const map = new Map<number, HeroExpertise[]>();
+  for (const heroExp of heroExpertises.value) {
     const expertise = classifiers.getById(classifiers.expertises, heroExp.expertiseId);
-    return expertise?.expertiseTypeId === typeId;
-  });
+    if (expertise) {
+      const typeId = expertise.expertiseTypeId;
+      if (!map.has(typeId)) {
+        map.set(typeId, []);
+      }
+      map.get(typeId)!.push(heroExp);
+    }
+  }
+  return map;
+});
+
+function getExpertisesByTypeId(typeId: number): HeroExpertise[] {
+  return expertisesByType.value.get(typeId) ?? [];
 }
 
 function getExpertiseName(expertiseId: number): string {
-  return classifiers.getById(classifiers.expertises, expertiseId)?.name ?? '';
+  const name = classifiers.getById(classifiers.expertises, expertiseId)?.name;
+  if (!name) {
+    console.warn(`Unknown expertise ID: ${expertiseId}`);
+    return 'Unknown';
+  }
+  return name;
 }
 </script>
 
