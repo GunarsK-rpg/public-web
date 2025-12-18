@@ -187,11 +187,17 @@ class Logger {
       'apiKey',
       'api_key',
       'access_token',
+      'refresh_token',
       'auth',
       'password',
       'key',
       'secret',
       'credential',
+      'session',
+      'jwt',
+      'bearer',
+      'client_secret',
+      'private_key',
     ];
 
     try {

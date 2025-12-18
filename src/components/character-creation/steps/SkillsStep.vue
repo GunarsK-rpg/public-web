@@ -55,7 +55,7 @@
                 dense
                 outlined
                 class="modifier-input q-ml-sm"
-                prefix="+"
+                :prefix="getSkillModifier(skill.id) >= 0 ? '+' : ''"
                 @update:model-value="setSkillModifier(skill.id, $event)"
               />
             </div>
@@ -114,7 +114,7 @@ function getSkillRank(skillId: number): number {
 }
 
 function getSkillModifier(skillId: number): number {
-  return heroStore.hero?.skills.find((s) => s.skillId === skillId)?.modifier ?? 0;
+  return heroStore.hero?.skills?.find((s) => s.skillId === skillId)?.modifier ?? 0;
 }
 
 function setSkillModifier(skillId: number, value: string | number | null) {

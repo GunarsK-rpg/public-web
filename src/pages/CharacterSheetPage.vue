@@ -118,6 +118,12 @@ const classifierError = computed(() => classifierStore.error);
 
 onMounted(async () => {
   try {
+    const campaignId = Number(props.campaignId);
+    if (isNaN(campaignId) || campaignId <= 0) {
+      heroStore.setError('Invalid campaign ID');
+      return;
+    }
+
     const characterId = Number(props.characterId);
     if (isNaN(characterId) || characterId <= 0) {
       heroStore.setError('Invalid character ID');
