@@ -47,7 +47,7 @@ tasks:
   docker:run:
     desc: Run Docker container
     cmds:
-      - docker run -p 7100:80 cosmere-rpg
+      - docker run -p 7100:8080 cosmere-rpg
 
   # Code quality
   lint:
@@ -90,10 +90,10 @@ tasks:
 
   # CI/CD
   ci:all:
-    desc: Run all CI checks (format, lint, typecheck, build, security:audit, lint:markdown)
+    desc: Run all CI checks (format:check, lint, typecheck, build, security:audit, lint:markdown)
     cmds:
-      - task: format
-      - task: lint:fix
+      - task: format:check
+      - task: lint
       - task: typecheck
       - task: build
       - task: security:audit

@@ -1,5 +1,5 @@
 <template>
-  <div class="expertises-tab">
+  <div class="expertises-tab" role="region" aria-label="Character expertises">
     <div class="text-body2 text-muted q-mb-md">
       Expertises grant advantage on related skill tests and unlock special options.
     </div>

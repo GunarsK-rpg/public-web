@@ -82,9 +82,9 @@ export const useWizardStore = defineStore('wizard', () => {
     isActive.value = true;
   }
 
-  function startEdit(heroId: number) {
+  async function startEdit(heroId: number) {
     const heroStore = useHeroStore();
-    void heroStore.loadHero(heroId);
+    await heroStore.loadHero(heroId);
     mode.value = 'edit';
     currentStep.value = 1;
     // In edit mode, consider all steps completed initially
@@ -92,9 +92,9 @@ export const useWizardStore = defineStore('wizard', () => {
     isActive.value = true;
   }
 
-  function startLevelUp(heroId: number) {
+  async function startLevelUp(heroId: number) {
     const heroStore = useHeroStore();
-    void heroStore.loadHero(heroId);
+    await heroStore.loadHero(heroId);
     mode.value = 'levelup';
     // Start at attributes step for level up - use step codes to avoid hardcoding numbers
     const attributesStepId = getStepIdByCode('attributes');

@@ -78,6 +78,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
+import { logger } from 'src/utils/logger';
 import CharacterHeader from 'components/character/CharacterHeader.vue';
 import StatsTab from 'components/character/tabs/StatsTab.vue';
 import SkillsTab from 'components/character/tabs/SkillsTab.vue';
@@ -86,6 +87,17 @@ import EquipmentTab from 'components/character/tabs/EquipmentTab.vue';
 import TalentsTab from 'components/character/tabs/TalentsTab.vue';
 import ExpertisesTab from 'components/character/tabs/ExpertisesTab.vue';
 import OthersTab from 'components/character/tabs/OthersTab.vue';
+
+// Static tab configuration - hoisted outside reactive scope for performance
+const tabs = [
+  { id: 'stats', label: 'Stats', icon: 'bar_chart' },
+  { id: 'skills', label: 'Skills', icon: 'psychology' },
+  { id: 'actions', label: 'Actions', icon: 'bolt' },
+  { id: 'equipment', label: 'Equipment', icon: 'shield' },
+  { id: 'talents', label: 'Talents', icon: 'auto_awesome' },
+  { id: 'expertises', label: 'Expertises', icon: 'school' },
+  { id: 'others', label: 'Others', icon: 'more_horiz' },
+] as const;
 
 const props = defineProps<{
   campaignId: string;
@@ -98,16 +110,6 @@ const classifierStore = useClassifierStore();
 
 const activeTab = ref('stats');
 
-const tabs = [
-  { id: 'stats', label: 'Stats', icon: 'bar_chart' },
-  { id: 'skills', label: 'Skills', icon: 'psychology' },
-  { id: 'actions', label: 'Actions', icon: 'bolt' },
-  { id: 'equipment', label: 'Equipment', icon: 'shield' },
-  { id: 'talents', label: 'Talents', icon: 'auto_awesome' },
-  { id: 'expertises', label: 'Expertises', icon: 'school' },
-  { id: 'others', label: 'Others', icon: 'more_horiz' },
-];
-
 const isLoaded = computed(() => heroStore.isLoaded);
 const loading = computed(() => heroStore.loading);
 const error = computed(() => heroStore.error);
@@ -118,7 +120,7 @@ onMounted(async () => {
   try {
     const characterId = Number(props.characterId);
     if (isNaN(characterId) || characterId <= 0) {
-      heroStore.error = 'Invalid character ID';
+      heroStore.setError('Invalid character ID');
       return;
     }
 
@@ -126,9 +128,9 @@ onMounted(async () => {
       await classifierStore.initialize();
     }
     await heroStore.loadHero(characterId);
-  } catch (err) {
-    console.error('Failed to load character:', err);
-    heroStore.error = 'Failed to load character';
+  } catch (err: unknown) {
+    logger.error('Failed to load character', err instanceof Error ? err : { error: String(err) });
+    heroStore.setError('Failed to load character');
   }
 });
 

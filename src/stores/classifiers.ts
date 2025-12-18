@@ -258,12 +258,14 @@ export const useClassifierStore = defineStore('classifiers', () => {
 
   /**
    * Reset store to initial state
+   * Clears initialization promise to allow re-initialization
    */
   function reset(): void {
     data.value = null;
     loading.value = false;
     error.value = null;
     initialized.value = false;
+    initPromise = null;
   }
 
   return {

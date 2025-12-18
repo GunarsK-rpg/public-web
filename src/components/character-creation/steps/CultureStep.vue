@@ -76,18 +76,11 @@ const selectedCulture = computed(() =>
 
 // Get cultural expertise names for display
 const culturalExpertiseNames = computed(() => {
-  const culturalType = classifiers.getByCode(classifiers.expertiseTypes, 'cultural');
-  if (!culturalType) return [];
-
-  const culturalExpertises = classifiers.expertises.filter(
-    (e) => e.expertiseTypeId === culturalType.id
-  );
-
   return heroCultureIds.value
     .map((cultureId) => {
       const culture = classifiers.getById(classifiers.cultures, cultureId);
-      if (!culture) return null;
-      const expertise = culturalExpertises.find((e) => e.name === culture.name);
+      if (!culture?.expertiseId) return null;
+      const expertise = classifiers.getById(classifiers.expertises, culture.expertiseId);
       return expertise?.name ?? null;
     })
     .filter((name): name is string => name !== null);

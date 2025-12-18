@@ -165,6 +165,10 @@ export const useHeroStore = defineStore('hero', () => {
     tempIdCounter = -1;
   }
 
+  function setError(message: string): void {
+    error.value = message;
+  }
+
   // ===================
   // BASIC INFO
   // ===================
@@ -175,6 +179,11 @@ export const useHeroStore = defineStore('hero', () => {
 
   function setLevel(level: number) {
     if (!hero.value) return;
+    // Validate level is within valid range (1-20 typically)
+    if (!Number.isInteger(level) || level < 1 || level > 20) {
+      logger.warn('Invalid level value', { level });
+      return;
+    }
     hero.value.level = level;
   }
 
@@ -659,6 +668,7 @@ export const useHeroStore = defineStore('hero', () => {
     loadHero,
     initNewHero,
     clearHero,
+    setError,
 
     // Basic Info
     setName,

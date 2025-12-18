@@ -33,8 +33,20 @@ export const useAuthStore = defineStore('auth', () => {
       if (stored) {
         try {
           const data: StoredAuth = JSON.parse(stored);
-          token.value = data.token;
-          user.value = data.user;
+          // Validate stored data structure
+          if (
+            data &&
+            typeof data.token === 'string' &&
+            data.token.length > 0 &&
+            data.user &&
+            typeof data.user.id === 'number' &&
+            typeof data.user.email === 'string'
+          ) {
+            token.value = data.token;
+            user.value = data.user;
+          } else {
+            localStorage.removeItem(STORAGE_KEY);
+          }
         } catch {
           localStorage.removeItem(STORAGE_KEY);
         }
@@ -58,13 +70,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function login(username: string, password: string): Promise<boolean> {
+    // Environment guard: prevent mock auth in production
+    if (!import.meta.env.DEV) {
+      logger.error('Mock authentication attempted in production');
+      throw new Error('Mock authentication is disabled in production');
+    }
+
     loading.value = true;
     try {
       // TODO: Replace with actual API call
       // const response = await authService.login(username, password);
       // setAuth(response.token, response.user);
 
-      // Mock login for development
+      // Mock login for development only
       await Promise.resolve();
       const mockUser: User = {
         id: 1,
@@ -100,6 +118,12 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null;
     initialized.value = false;
     loading.value = false;
+    clearUserContext();
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // localStorage may be unavailable
+    }
   }
 
   return {

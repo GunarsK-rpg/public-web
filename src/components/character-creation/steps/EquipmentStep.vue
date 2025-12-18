@@ -62,6 +62,7 @@
               icon="sym_o_delete"
               color="negative"
               size="sm"
+              aria-label="Remove item"
               @click="removeItem(item.equipmentId)"
             />
           </q-item-section>

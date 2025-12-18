@@ -179,3 +179,31 @@
     filter: invert(1);
   }
 }
+
+// =============================================================================
+// Error Page Styles
+// =============================================================================
+
+.error-page {
+  min-height: calc(100vh - 64px);
+  padding: 40px 20px;
+}
+
+.error-code {
+  font-size: 72px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+}
+
+.error-title {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 16px 0 0 0;
+}
+
+.error-message {
+  font-size: 18px;
+  max-width: 500px;
+  margin: 16px auto 0;
+}

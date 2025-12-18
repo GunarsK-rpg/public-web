@@ -58,6 +58,7 @@
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'stores/campaigns';
+import { logger } from 'src/utils/logger';
 
 const router = useRouter();
 const campaignStore = useCampaignStore();
@@ -69,8 +70,8 @@ const error = computed(() => campaignStore.error);
 onMounted(async () => {
   try {
     await campaignStore.fetchCampaigns();
-  } catch (err) {
-    console.error('Failed to fetch campaigns:', err);
+  } catch (err: unknown) {
+    logger.error('Failed to fetch campaigns', err instanceof Error ? err : { error: String(err) });
   }
 });
 

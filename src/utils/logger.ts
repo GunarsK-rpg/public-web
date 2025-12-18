@@ -118,7 +118,7 @@ class Logger {
       ...data,
       http: {
         method: config.method?.toUpperCase(),
-        url: config.url,
+        url: this.sanitizeUrl(config.url),
         baseURL: config.baseURL,
         headers: this.sanitizeHeaders(config.headers),
       },
@@ -131,7 +131,7 @@ class Logger {
       http: {
         status: response.status,
         statusText: response.statusText,
-        url: response.config?.url,
+        url: this.sanitizeUrl(response.config?.url),
         duration: response.config?.metadata?.duration,
       },
     });
@@ -150,7 +150,7 @@ class Logger {
       errorData.http = {
         status: error.response.status,
         statusText: error.response.statusText,
-        url: error.config?.url,
+        url: this.sanitizeUrl(error.config?.url),
         method: error.config?.method?.toUpperCase(),
       };
     }
@@ -177,6 +177,40 @@ class Logger {
     });
 
     return sanitized;
+  }
+
+  private sanitizeUrl(url: string | undefined): string | undefined {
+    if (!url) return url;
+
+    const sensitiveParams = [
+      'token',
+      'apiKey',
+      'api_key',
+      'access_token',
+      'auth',
+      'password',
+      'key',
+      'secret',
+      'credential',
+    ];
+
+    try {
+      // Handle relative URLs by using a dummy base
+      const isRelative = !url.startsWith('http');
+      const parsed = new URL(url, isRelative ? 'http://dummy' : undefined);
+
+      sensitiveParams.forEach((param) => {
+        if (parsed.searchParams.has(param)) {
+          parsed.searchParams.set(param, '[REDACTED]');
+        }
+      });
+
+      // Return relative URL if input was relative
+      return isRelative ? parsed.pathname + parsed.search + parsed.hash : parsed.toString();
+    } catch {
+      // If URL parsing fails, return as-is
+      return url;
+    }
   }
 }
 

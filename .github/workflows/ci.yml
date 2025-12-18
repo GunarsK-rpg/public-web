@@ -95,6 +95,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run npm audit
         run: npm audit --audit-level=high
 
@@ -123,7 +126,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.33.0
         with:
           image-ref: cosmere-rpg:${{ github.sha }}
           format: 'sarif'
@@ -138,7 +141,7 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
       - name: Run Trivy vulnerability scanner (table output)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.33.0
         if: always()
         with:
           image-ref: cosmere-rpg:${{ github.sha }}
@@ -173,6 +176,10 @@ jobs:
         run: |
           if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
             echo "One or more CI jobs failed"
+            exit 1
+          fi
+          if [[ "${{ contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            echo "One or more CI jobs were cancelled"
             exit 1
           fi
           echo "All CI jobs passed successfully!"

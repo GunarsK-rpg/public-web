@@ -70,7 +70,8 @@ const isSinger = computed(() => heroStore.isSinger);
 const availableForms = computed(() =>
   classifiers.singerForms.filter((form) => {
     if (!form.talentId) return true;
-    return heroStore.hero?.talents.some((t) => t.talentId === form.talentId);
+    const talents = heroStore.hero?.talents ?? [];
+    return talents.some((t) => t.talentId === form.talentId);
   })
 );
 

@@ -66,6 +66,10 @@ export const useCampaignStore = defineStore('campaigns', () => {
     currentCampaign.value = null;
   }
 
+  function setError(message: string): void {
+    error.value = message;
+  }
+
   function reset(): void {
     campaigns.value = [];
     currentCampaign.value = null;
@@ -82,6 +86,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
     fetchCampaigns,
     selectCampaign,
     clearCurrentCampaign,
+    setError,
     reset,
   };
 });

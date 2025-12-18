@@ -14,11 +14,25 @@
 
         <q-toolbar-title>{{ pageTitle }}</q-toolbar-title>
 
-        <q-btn flat dense round icon="brightness_6" @click="toggleDarkMode">
+        <q-btn
+          flat
+          dense
+          round
+          icon="brightness_6"
+          aria-label="Toggle dark mode"
+          @click="toggleDarkMode"
+        >
           <q-tooltip>Toggle dark mode</q-tooltip>
         </q-btn>
 
-        <q-btn flat dense round icon="account_circle" v-if="isAuthenticated">
+        <q-btn
+          flat
+          dense
+          round
+          icon="account_circle"
+          aria-label="Account menu"
+          v-if="isAuthenticated"
+        >
           <q-menu>
             <q-list style="min-width: 150px">
               <q-item-label header>{{ username }}</q-item-label>

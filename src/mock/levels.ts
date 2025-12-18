@@ -264,6 +264,9 @@ export const levels: Level[] = [
   },
 ];
 
+// O(1) lookup by level number
+const levelByNumber = new Map<number, Level>(levels.map((l) => [l.level, l]));
+
 export function getLevelData(level: number): Level | undefined {
-  return levels.find((l) => l.level === level);
+  return levelByNumber.get(level);
 }

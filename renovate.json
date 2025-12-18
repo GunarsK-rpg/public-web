@@ -38,6 +38,7 @@
     },
     {
       "matchPackageNames": ["vue", "quasar", "@quasar/app-vite", "vite"],
+      "matchUpdateTypes": ["minor", "major"],
       "groupName": "core framework",
       "dependencyDashboardApproval": true,
       "labels": ["core", "manual-review"]

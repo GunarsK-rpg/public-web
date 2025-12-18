@@ -115,7 +115,7 @@ const error = computed(() => campaignStore.error);
 onMounted(async () => {
   const campaignId = Number(props.campaignId);
   if (isNaN(campaignId) || campaignId <= 0) {
-    campaignStore.error = 'Invalid campaign ID';
+    campaignStore.setError('Invalid campaign ID');
     return;
   }
   await campaignStore.selectCampaign(campaignId);

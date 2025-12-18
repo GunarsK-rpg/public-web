@@ -138,3 +138,13 @@ function decrementSkill(skillId: number) {
   }
 }
 </script>
+
+<style scoped>
+.modifier-input {
+  width: 70px;
+}
+
+.modifier-input :deep(.q-field__native) {
+  text-align: center;
+}
+</style>

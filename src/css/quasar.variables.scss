@@ -54,12 +54,12 @@ $color-selected-bg-dark: rgba(255, 255, 255, 0.08);
 // These are exported as CSS variables for use in components
 
 :root {
-  // Semantic color names (Quasar color class names)
-  --app-color-success: 'positive';
-  --app-color-error: 'negative';
-  --app-color-warning: 'warning';
-  --app-color-info: 'info';
-  --app-color-neutral: 'grey';
+  // Semantic color values (actual colors for CSS usage)
+  --app-color-success: #{$color-success};
+  --app-color-error: #{$color-error};
+  --app-color-warning: #{$color-warning};
+  --app-color-info: #{$color-info};
+  --app-color-neutral: grey;
 
   // Disabled/locked state
   --app-disabled-opacity: #{$color-disabled-opacity};

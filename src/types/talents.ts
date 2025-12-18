@@ -6,6 +6,7 @@ import type { Classifier } from './classifier';
 export interface TalentPrerequisite {
   type: string;
   talentId?: number;
+  talentIds?: number[]; // For OR logic (any of these talents)
   skillId?: number;
   skillRank?: number;
   description?: string;

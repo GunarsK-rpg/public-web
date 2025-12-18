@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0",
+    "test": "echo \"No test specified\" && exit 1",
     "dev": "quasar dev",
     "build": "quasar build",
     "postinstall": "quasar prepare"
@@ -43,7 +43,7 @@
     "vue-tsc": "^3.0.7"
   },
   "engines": {
-    "node": "^28 || ^26 || ^24 || ^22 || ^20",
+    "node": "^22 || ^20",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
   }

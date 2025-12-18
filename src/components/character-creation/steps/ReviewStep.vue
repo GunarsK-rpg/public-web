@@ -79,7 +79,7 @@
                 <span class="text-weight-medium">{{ stat.name }}:</span>
                 {{ stat.baseDisplay }}
                 <span v-if="stat.modifier !== 0" class="text-muted">
-                  (+{{ stat.modifier }} = {{ stat.totalDisplay }})
+                  ({{ stat.modifier >= 0 ? '+' : '' }}{{ stat.modifier }} = {{ stat.totalDisplay }})
                 </span>
               </div>
             </div>
@@ -95,7 +95,9 @@
             <div class="row">
               <div v-for="skill in skillDisplay" :key="skill.id" class="col-6">
                 <span class="text-weight-medium">{{ skill.name }}:</span> {{ skill.rank }}
-                <span v-if="skill.modifier !== 0" class="text-muted">(+{{ skill.modifier }})</span>
+                <span v-if="skill.modifier !== 0" class="text-muted"
+                  >({{ skill.modifier >= 0 ? '+' : '' }}{{ skill.modifier }})</span
+                >
               </div>
             </div>
             <div v-if="skillDisplay.length === 0" class="text-caption text-muted">

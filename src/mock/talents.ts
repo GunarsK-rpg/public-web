@@ -1,4 +1,5 @@
 import type { Talent, TalentPrerequisite } from 'src/types';
+import { getSkillById } from './skills';
 
 // Re-export types for convenience
 export type { Talent, TalentPrerequisite };
@@ -1254,7 +1255,11 @@ const singerTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 9, skillRank: 3 },
-      { type: 'talent', talentId: 2002, description: 'Forms of Finesse, Resolve, or Wisdom' },
+      {
+        type: 'talent',
+        talentIds: [2002, 2003, 2004],
+        description: 'Forms of Finesse, Resolve, or Wisdom',
+      },
     ],
     descriptionShort: '+2 Cognitive defense; can bond Voidspren with forms of power.',
     description: `Your growing thirst for power opens you to Odium's influence.
@@ -1695,18 +1700,22 @@ export const talents: Talent[] = [
 // HELPER FUNCTIONS
 // ============================================================================
 
+// O(1) lookup maps for frequently accessed data
+const talentById = new Map<number, Talent>(talents.map((t) => [t.id, t]));
+const talentByCode = new Map<string, Talent>(talents.map((t) => [t.code, t]));
+
 /**
- * Get a talent by its ID
+ * Get a talent by its ID (O(1) lookup)
  */
 export function getTalentById(id: number): Talent | undefined {
-  return talents.find((t) => t.id === id);
+  return talentById.get(id);
 }
 
 /**
- * Get a talent by its code
+ * Get a talent by its code (O(1) lookup)
  */
 export function getTalentByCode(code: string): Talent | undefined {
-  return talents.find((t) => t.code === code);
+  return talentByCode.get(code);
 }
 
 /**
@@ -1966,34 +1975,20 @@ export function formatPrerequisite(prereq: TalentPrerequisite): string {
   switch (prereq.type) {
     case 'talent': {
       if (prereq.description) return prereq.description;
+      // Handle OR logic with talentIds
+      if (prereq.talentIds?.length) {
+        const names = prereq.talentIds
+          .map((id) => getTalentById(id)?.name)
+          .filter(Boolean)
+          .join(' or ');
+        return names || 'Unknown talents';
+      }
       const talent = prereq.talentId !== undefined ? getTalentById(prereq.talentId) : undefined;
       return talent ? talent.name : 'Unknown talent';
     }
     case 'skill': {
-      // Would need skill name lookup in real implementation
-      const skillNames: Record<number, string> = {
-        1: 'Agility',
-        2: 'Athletics',
-        3: 'Heavy Weaponry',
-        4: 'Light Weaponry',
-        5: 'Stealth',
-        6: 'Thievery',
-        7: 'Crafting',
-        8: 'Deduction',
-        9: 'Discipline',
-        10: 'Intimidation',
-        11: 'Lore',
-        12: 'Medicine',
-        13: 'Deception',
-        14: 'Insight',
-        15: 'Leadership',
-        16: 'Perception',
-        17: 'Persuasion',
-        18: 'Survival',
-      };
-      const skillName = prereq.skillId
-        ? skillNames[prereq.skillId] || `Skill ${prereq.skillId}`
-        : 'Unknown skill';
+      const skill = prereq.skillId ? getSkillById(prereq.skillId) : undefined;
+      const skillName = skill?.name || `Skill ${prereq.skillId}`;
       return `${skillName} ${prereq.skillRank}+`;
     }
     case 'narrative':

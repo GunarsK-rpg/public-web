@@ -23,7 +23,16 @@
             <div class="resource-box">
               <div class="resource-label">HP</div>
               <div class="resource-value">{{ hero?.currentHealth }} / {{ maxHealth }}</div>
-              <q-linear-progress :value="healthPercent" color="negative" track-color="grey-6" />
+              <q-linear-progress
+                :value="healthPercent"
+                color="negative"
+                track-color="grey-6"
+                role="progressbar"
+                :aria-valuenow="hero?.currentHealth ?? 0"
+                :aria-valuemin="0"
+                :aria-valuemax="maxHealth"
+                aria-label="Health"
+              />
             </div>
           </div>
 
@@ -32,7 +41,16 @@
             <div class="resource-box">
               <div class="resource-label">Focus</div>
               <div class="resource-value">{{ hero?.currentFocus }} / {{ maxFocus }}</div>
-              <q-linear-progress :value="focusPercent" color="teal" track-color="grey-6" />
+              <q-linear-progress
+                :value="focusPercent"
+                color="teal"
+                track-color="grey-6"
+                role="progressbar"
+                :aria-valuenow="hero?.currentFocus ?? 0"
+                :aria-valuemin="0"
+                :aria-valuemax="maxFocus"
+                aria-label="Focus"
+              />
             </div>
           </div>
 
@@ -43,7 +61,16 @@
               <div class="resource-value">
                 {{ hero?.currentInvestiture }} / {{ maxInvestiture }}
               </div>
-              <q-linear-progress :value="investiturePercent" color="amber" track-color="grey-6" />
+              <q-linear-progress
+                :value="investiturePercent"
+                color="amber"
+                track-color="grey-6"
+                role="progressbar"
+                :aria-valuenow="hero?.currentInvestiture ?? 0"
+                :aria-valuemin="0"
+                :aria-valuemax="maxInvestiture"
+                aria-label="Investiture"
+              />
             </div>
           </div>
 

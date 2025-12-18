@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { logger } from 'src/utils/logger';
+import { useAuthStore } from 'src/stores/auth';
 
 interface ErrorContext {
   retryFn?: () => Promise<void> | void;
@@ -82,11 +83,14 @@ export function useErrorHandler() {
 
     // Automatically retry after delay
     setTimeout(() => {
-      void retryFn();
-      // Reset counter after a delay (assuming success if no error thrown)
-      setTimeout(() => {
-        retryAttempts.value.delete(retryKey);
-      }, 5000);
+      Promise.resolve(retryFn())
+        .then(() => {
+          // Only clear on actual success
+          retryAttempts.value.delete(retryKey);
+        })
+        .catch(() => {
+          // Error will be handled by the retry function's error handler
+        });
     }, delay);
   }
 
@@ -142,10 +146,14 @@ export function useErrorHandler() {
 
   /**
    * 401 - Unauthorized
-   * Redirect to login (token expired or invalid)
+   * Clear auth state and redirect to login (token expired or invalid)
    */
   function handle401(skipLogout = false): void {
     if (!skipLogout) {
+      // Clear auth state before redirecting to prevent redirect loops
+      const authStore = useAuthStore();
+      authStore.logout();
+
       $q.notify({
         type: 'warning',
         message: 'Session Expired',

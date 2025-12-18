@@ -118,11 +118,22 @@ export const skills: Skill[] = [
   },
 ];
 
+// O(1) lookup maps for frequently accessed data
+const skillById = new Map<number, Skill>(skills.map((s) => [s.id, s]));
+const skillByCode = new Map<string, Skill>(skills.map((s) => [s.code, s]));
+
 /**
- * Helper to get skill by code
+ * Helper to get skill by ID (O(1) lookup)
+ */
+export function getSkillById(id: number): Skill | undefined {
+  return skillById.get(id);
+}
+
+/**
+ * Helper to get skill by code (O(1) lookup)
  */
 export function getSkillByCode(code: string): Skill | undefined {
-  return skills.find((s) => s.code === code);
+  return skillByCode.get(code);
 }
 
 /**

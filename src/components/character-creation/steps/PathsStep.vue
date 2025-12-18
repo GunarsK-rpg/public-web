@@ -405,7 +405,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { COLORS } from 'src/constants/theme';
@@ -459,6 +459,42 @@ const characterSkills = computed(() => {
   }
   return skills;
 });
+
+// Sync local UI state from hero store (for edit mode)
+function syncLocalStateFromHero() {
+  const pathIds = new Set<number>();
+  const specialties = new Map<number, number>();
+
+  for (const ht of heroStore.hero?.talents ?? []) {
+    const talent = classifiers.getById(classifiers.talents, ht.talentId);
+    if (talent?.pathId) {
+      pathIds.add(talent.pathId);
+      if (talent.specialtyId) {
+        // Find path for this specialty
+        const specialty = classifiers.getById(classifiers.specialties, talent.specialtyId);
+        if (specialty?.pathId) {
+          specialties.set(specialty.pathId, talent.specialtyId);
+        }
+      }
+    }
+  }
+
+  selectedPathIds.value = Array.from(pathIds);
+  pathSpecialties.value = specialties;
+}
+
+// Initialize on mount and watch for hero changes
+onMounted(() => {
+  syncLocalStateFromHero();
+});
+
+watch(
+  () => heroStore.hero?.talents,
+  () => {
+    syncLocalStateFromHero();
+  },
+  { deep: true }
+);
 
 // Derive selected paths from hero's talents
 const selectedPaths = computed((): PathSelection[] => {

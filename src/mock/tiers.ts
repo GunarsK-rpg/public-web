@@ -51,6 +51,6 @@ export const tiers: Tier[] = [
  * @returns The tier for the given level, or undefined if level is invalid
  */
 export function getTierByLevel(level: number): Tier | undefined {
-  if (level < 1 || !Number.isFinite(level)) return undefined;
+  if (!Number.isInteger(level) || level < 1) return undefined;
   return tiers.find((t) => level >= t.levelMin && (t.levelMax === null || level <= t.levelMax));
 }

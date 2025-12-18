@@ -4,10 +4,26 @@
     <div class="creation-header bg-dark text-white">
       <!-- Top row: back button and title -->
       <div class="row items-center q-px-sm q-py-xs">
-        <q-btn flat round dense icon="arrow_back" color="white" @click="goBack" />
+        <q-btn
+          flat
+          round
+          dense
+          icon="arrow_back"
+          color="white"
+          aria-label="Go back"
+          @click="goBack"
+        />
         <div class="text-subtitle1 q-ml-sm">Create Character</div>
         <q-space />
-        <q-btn flat round dense icon="refresh" color="negative" @click="confirmReset">
+        <q-btn
+          flat
+          round
+          dense
+          icon="refresh"
+          color="negative"
+          aria-label="Reset character creation"
+          @click="confirmReset"
+        >
           <q-tooltip>Reset</q-tooltip>
         </q-btn>
       </div>
