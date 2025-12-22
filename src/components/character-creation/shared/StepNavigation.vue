@@ -36,6 +36,7 @@
 import { computed } from 'vue';
 import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
+import { STEP_CODES } from 'src/types/wizard';
 
 defineProps<{
   creating?: boolean;
@@ -49,7 +50,7 @@ const wizardStore = useWizardStore();
 const { currentStepCode, currentValidation, allStepsValidation } = useStepValidation();
 
 const currentStep = computed(() => wizardStore.currentStep);
-const isLastStep = computed(() => currentStepCode.value === 'review');
+const isLastStep = computed(() => currentStepCode.value === STEP_CODES.REVIEW);
 const hasErrors = computed(() => currentValidation.value.errors.length > 0);
 const firstError = computed(() => currentValidation.value.errors[0] ?? '');
 // Use positive logic for clarity: button is enabled when all steps are valid

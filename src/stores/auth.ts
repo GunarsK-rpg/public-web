@@ -10,9 +10,13 @@ const STORAGE_KEY = 'cosmere_auth';
 // This implementation is for development/mock purposes only.
 // TODO: Replace with secure cookie-based auth when backend is implemented
 
+// Mock token expiry: 24 hours in development
+const MOCK_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
+
 interface StoredAuth {
   token: string;
   user: User;
+  expiresAt?: number; // Timestamp when token expires
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -34,20 +38,27 @@ export const useAuthStore = defineStore('auth', () => {
         try {
           const data: StoredAuth = JSON.parse(stored);
           // Validate stored data structure
-          if (
+          const isValidStructure =
             data &&
             typeof data.token === 'string' &&
             data.token.length > 0 &&
             data.user &&
             typeof data.user.id === 'number' &&
             typeof data.user.username === 'string' &&
-            typeof data.user.email === 'string'
-          ) {
+            typeof data.user.email === 'string';
+
+          // Check if token is expired (mock tokens have expiry)
+          const isExpired = data.expiresAt && Date.now() > data.expiresAt;
+
+          if (isValidStructure && !isExpired) {
             token.value = data.token;
             user.value = data.user;
             // Restore logger context for restored sessions
             setUserContext(data.user);
           } else {
+            if (isExpired) {
+              logger.info('Session expired, clearing stored auth');
+            }
             localStorage.removeItem(STORAGE_KEY);
           }
         } catch {
@@ -60,12 +71,16 @@ export const useAuthStore = defineStore('auth', () => {
     initialized.value = true;
   }
 
-  function setAuth(newToken: string, newUser: User): void {
+  function setAuth(newToken: string, newUser: User, expiresAt?: number): void {
     token.value = newToken;
     user.value = newUser;
     setUserContext(newUser);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: newToken, user: newUser }));
+      const authData: StoredAuth = { token: newToken, user: newUser };
+      if (expiresAt) {
+        authData.expiresAt = expiresAt;
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(authData));
     } catch {
       // localStorage may be unavailable (SSR, private browsing, etc.)
     }
@@ -92,7 +107,8 @@ export const useAuthStore = defineStore('auth', () => {
         username,
         email: `${username}@example.com`,
       };
-      setAuth('mock-token-' + Date.now(), mockUser);
+      const expiresAt = Date.now() + MOCK_TOKEN_EXPIRY_MS;
+      setAuth('mock-token-' + Date.now(), mockUser, expiresAt);
       logger.info('User logged in', { userId: mockUser.id });
       return true;
     } catch (err) {

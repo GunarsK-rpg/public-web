@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { WIZARD_STEPS } from 'src/types/wizard';
+import { WIZARD_STEPS, STEP_CODES, type StepCodeType } from 'src/types/wizard';
 import { useHeroStore } from './hero';
 import { logger } from 'src/utils/logger';
 
 export type WizardMode = 'create' | 'edit' | 'levelup';
 
 // Helper to get step ID by code - avoids hardcoding step numbers
-function getStepIdByCode(code: string): number {
+function getStepIdByCode(code: StepCodeType): number {
   const step = WIZARD_STEPS.find((s) => s.code === code);
   return step?.id ?? 1;
 }
@@ -111,7 +111,7 @@ export const useWizardStore = defineStore('wizard', () => {
       await heroStore.loadHero(heroId);
       mode.value = 'levelup';
       // Start at attributes step for level up - use step codes to avoid hardcoding numbers
-      const attributesStepId = getStepIdByCode('attributes');
+      const attributesStepId = getStepIdByCode(STEP_CODES.ATTRIBUTES);
       currentStep.value = attributesStepId;
       // Mark steps before attributes as completed (basic-setup, ancestry, culture)
       completedStepsSet.value = new Set(

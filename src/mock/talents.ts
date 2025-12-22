@@ -1,5 +1,4 @@
 import type { Talent, TalentPrerequisite } from 'src/types';
-import { getSkillById } from './skills';
 
 // Re-export types for convenience
 export type { Talent, TalentPrerequisite };
@@ -1876,75 +1875,71 @@ export function checkTalentPrerequisites(
   return { met: unmetPrereqs.length === 0, unmetPrereqs };
 }
 
-/**
- * Get all available talents for a character based on their current talents, skills, and filters
- * @param characterTalentIds Array of talent IDs the character already has
- * @param characterSkills Map of skill ID to rank
- * @param options Filter options for path, ancestry, radiant order
- * @param checkNarrative Optional callback for narrative prerequisites
- */
+/** Filter options for getAvailableTalents */
+export interface TalentFilterOptions {
+  pathId?: number;
+  specialtyId?: number;
+  ancestryId?: number;
+  radiantOrderId?: number;
+  surgeId?: number;
+  includeAcquired?: boolean;
+}
+
+/** Checks if talent passes source filters (path, specialty, ancestry, radiant, surge) */
+function passesSourceFilters(talent: Talent, options?: TalentFilterOptions): boolean {
+  // Filter by path if specified
+  if (options?.pathId !== undefined && talent.pathId && talent.pathId !== options.pathId) {
+    return false;
+  }
+  // Filter by specialty if specified
+  if (
+    options?.specialtyId !== undefined &&
+    talent.specialtyId &&
+    talent.specialtyId !== options.specialtyId
+  ) {
+    return false;
+  }
+  // Ancestry talents require matching ancestryId
+  if (talent.ancestryId && talent.ancestryId !== options?.ancestryId) {
+    return false;
+  }
+  // Radiant talents require matching radiantOrderId
+  if (talent.radiantOrderId && talent.radiantOrderId !== options?.radiantOrderId) {
+    return false;
+  }
+  // Filter by surge if specified
+  if (options?.surgeId !== undefined && talent.surgeId && talent.surgeId !== options.surgeId) {
+    return false;
+  }
+  return true;
+}
+
 export function getAvailableTalents(
   characterTalentIds: number[],
   characterSkills: Map<number, number>,
-  options?: {
-    pathId?: number;
-    specialtyId?: number;
-    ancestryId?: number;
-    radiantOrderId?: number;
-    surgeId?: number;
-    includeAcquired?: boolean;
-  },
+  options?: TalentFilterOptions,
   checkNarrative?: (description: string) => boolean
 ): Talent[] {
+  // Convert to Set for O(1) lookup
+  const acquiredTalents = new Set(characterTalentIds);
+
   return talents.filter((talent) => {
     // Skip talents already acquired unless explicitly included
-    if (!options?.includeAcquired && characterTalentIds.includes(talent.id)) {
+    if (!options?.includeAcquired && acquiredTalents.has(talent.id)) {
       return false;
     }
 
-    // Filter by path if specified (only include path talents matching the filter)
-    if (options?.pathId !== undefined) {
-      if (talent.pathId && talent.pathId !== options.pathId) {
-        return false;
-      }
+    // Check source-based filters
+    if (!passesSourceFilters(talent, options)) {
+      return false;
     }
 
-    // Filter by specialty if specified
-    if (options?.specialtyId !== undefined) {
-      if (talent.specialtyId && talent.specialtyId !== options.specialtyId) {
-        return false;
-      }
-    }
-
-    // Include ancestry talents only if matching
-    if (talent.ancestryId) {
-      if (options?.ancestryId === undefined || talent.ancestryId !== options.ancestryId) {
-        return false;
-      }
-    }
-
-    // Include Radiant talents only if matching
-    if (talent.radiantOrderId) {
-      if (
-        options?.radiantOrderId === undefined ||
-        talent.radiantOrderId !== options.radiantOrderId
-      ) {
-        return false;
-      }
-    }
-
-    // Filter by surge if specified
-    if (options?.surgeId !== undefined) {
-      if (talent.surgeId && talent.surgeId !== options.surgeId) {
-        return false;
-      }
-    }
-
-    // Check prerequisites (key talents have no prerequisites, except narrative ones)
+    // Key talents without prerequisites are always available
     if (talent.isKey && (!talent.prerequisites || talent.prerequisites.length === 0)) {
       return true;
     }
 
+    // Check prerequisites
     const { met } = checkTalentPrerequisites(
       talent,
       characterTalentIds,
@@ -2021,32 +2016,5 @@ export function getTalentPrerequisiteChain(talentId: number): Talent[] {
   return chain;
 }
 
-/**
- * Format prerequisite for display
- */
-export function formatPrerequisite(prereq: TalentPrerequisite): string {
-  switch (prereq.type) {
-    case 'talent': {
-      if (prereq.description) return prereq.description;
-      // Handle OR logic with talentIds
-      if (prereq.talentIds?.length) {
-        const names = prereq.talentIds
-          .map((id) => getTalentById(id)?.name)
-          .filter(Boolean)
-          .join(' or ');
-        return names || 'Unknown talents';
-      }
-      const talent = prereq.talentId !== undefined ? getTalentById(prereq.talentId) : undefined;
-      return talent ? talent.name : 'Unknown talent';
-    }
-    case 'skill': {
-      const skill = prereq.skillId ? getSkillById(prereq.skillId) : undefined;
-      const skillName = skill?.name || `Skill ${prereq.skillId}`;
-      return `${skillName} ${prereq.skillRank}+`;
-    }
-    case 'narrative':
-      return prereq.description || 'Special requirement';
-    default:
-      return prereq.description || 'Unknown requirement';
-  }
-}
+// Note: Use formatPrerequisite from 'src/utils/talentUtils' for prerequisite formatting.
+// The utility version supports dependency injection for better testability.

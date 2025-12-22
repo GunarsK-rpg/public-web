@@ -2,7 +2,6 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { logger } from 'src/utils/logger';
 import type {
-  Classifier,
   AttributeType,
   Attribute,
   DerivedStat,
@@ -185,86 +184,8 @@ export const useClassifierStore = defineStore('classifiers', () => {
     return derivedStatValueCache.value.get(derivedStatId)?.get(attrValue);
   }
 
-  /**
-   * Group classifiers by a property.
-   * @param list - classifier array to group
-   * @param keyFn - function to extract the grouping key from each item
-   * @returns Record mapping keys to arrays of items
-   */
-  function groupByKey<T, K extends PropertyKey>(list: T[], keyFn: (item: T) => K): Record<K, T[]> {
-    const result = {} as Record<K, T[]>;
-    for (const item of list) {
-      const key = keyFn(item);
-      if (!result[key]) result[key] = [];
-      result[key].push(item);
-    }
-    return result;
-  }
-
-  /**
-   * Group classifiers by a foreign key ID property.
-   * @param list - classifier array to group
-   * @param propName - property name containing the foreign key ID
-   * @returns Record mapping IDs to arrays of items
-   */
-  function groupByForeignKey<T extends Classifier, K extends keyof T>(
-    list: T[],
-    propName: K
-  ): Record<number, T[]> {
-    return groupByKey(list, (item) => item[propName] as number);
-  }
-
-  /**
-   * Build a lookup map from one foreign key to another property.
-   * Useful for chained lookups like: skill.attrId -> attribute.attrTypeId
-   * @param list - classifier array to index
-   * @param valueProp - property name for the value to map to
-   * @returns Record mapping item IDs to the specified property value
-   */
-  function buildLookupMap<T extends Classifier, K extends keyof T>(
-    list: T[],
-    valueProp: K
-  ): Record<number, T[K]> {
-    const map: Record<number, T[K]> = {};
-    for (const item of list) {
-      map[item.id] = item[valueProp];
-    }
-    return map;
-  }
-
-  /**
-   * Group items by a chained foreign key lookup.
-   * Example: group skills by attrTypeId via skill.attrId -> attribute.attrTypeId
-   * @param items - items to group
-   * @param foreignKeyProp - property on item containing the foreign key
-   * @param lookupList - classifier list to look up the foreign key in
-   * @param targetProp - property on lookup item to group by
-   * @returns Record mapping target property values to arrays of items
-   */
-  function groupByChainedKey<T, FK extends keyof T, L extends Classifier, TP extends keyof L>(
-    items: T[],
-    foreignKeyProp: FK,
-    lookupList: L[],
-    targetProp: TP
-  ): Record<number, T[]> {
-    // Build lookup map: lookupItem.id -> lookupItem[targetProp]
-    const lookupMap: Record<number, number> = {};
-    for (const item of lookupList) {
-      lookupMap[item.id] = item[targetProp] as number;
-    }
-
-    // Group items by the chained lookup, filtering out items with missing lookups
-    const result: Record<number, T[]> = {};
-    for (const item of items) {
-      const fkValue = item[foreignKeyProp] as number;
-      const targetValue = lookupMap[fkValue];
-      // Skip items with missing lookups to avoid grouping unrelated items under key 0
-      if (targetValue === undefined) continue;
-      if (!result[targetValue]) result[targetValue] = [];
-      result[targetValue].push(item);
-    }
-    return result;
-  }
+  // Note: For array utilities (groupByKey, groupByChainedKey, buildLookupMap),
+  // import directly from 'src/utils/arrayUtils'
 
   /**
    * Initialize classifiers from API or mock data
@@ -380,10 +301,6 @@ export const useClassifierStore = defineStore('classifiers', () => {
 
     // Lookups
     getDerivedStatValue,
-    groupByKey,
-    groupByForeignKey,
-    groupByChainedKey,
-    buildLookupMap,
     initialize,
     reset,
   };

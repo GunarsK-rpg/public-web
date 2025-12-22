@@ -1,5 +1,5 @@
 <template>
-  <div class="stats-tab">
+  <div class="stats-tab" aria-live="polite" aria-atomic="false">
     <!-- Attributes Section -->
     <div class="section-title">Attributes</div>
     <div class="row q-col-gutter-sm q-mb-md">

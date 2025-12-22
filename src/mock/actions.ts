@@ -2,7 +2,7 @@ import type { ActivationType, ActionType, Action, ActionLink } from 'src/types';
 
 /**
  * Activation type classifiers - how an action is activated
- * icon: path relative to src/assets/icons/
+ * icon: filename only (e.g., 'action.svg') - resolved via getIconUrl('filename', 'actions')
  */
 export const activationTypes: ActivationType[] = [
   { id: 1, code: 'action', name: 'Action', icon: 'action.svg', description: 'Standard action' },

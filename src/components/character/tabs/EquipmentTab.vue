@@ -47,6 +47,7 @@
 import { ref, computed, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { groupByChainedKey } from 'src/utils/arrayUtils';
 import EquipmentItem from './EquipmentItem.vue';
 import type { HeroEquipment } from 'src/types';
 
@@ -74,7 +75,7 @@ const totalCurrencyValue = computed(() => heroStore.hero?.currency ?? 0);
 // Hero equipment grouped by type (via heroEquip.equipmentId -> equipment.equipTypeId)
 const equipmentByType = computed((): Record<number, HeroEquipment[]> => {
   if (!heroStore.hero?.equipment) return {};
-  return classifiers.groupByChainedKey(
+  return groupByChainedKey(
     heroStore.hero.equipment,
     'equipmentId',
     classifiers.equipment,

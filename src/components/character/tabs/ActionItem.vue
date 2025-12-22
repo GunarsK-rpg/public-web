@@ -4,8 +4,8 @@
       <img
         v-if="activationType?.icon"
         :src="iconUrl"
-        :alt="activationType.name"
-        :title="activationType.name"
+        :alt="activationType?.name ?? 'Action'"
+        :title="activationType?.name ?? 'Action'"
         class="action-icon icon-theme-aware"
       />
     </q-item-section>

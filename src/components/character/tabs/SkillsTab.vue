@@ -41,6 +41,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { groupByChainedKey } from 'src/utils/arrayUtils';
 import type { Skill } from 'src/types';
 
 const heroStore = useHeroStore();
@@ -48,12 +49,7 @@ const classifiers = useClassifierStore();
 
 // Skills grouped by attribute type (via skill.attrId -> attribute.attrTypeId)
 const skillsByAttrType = computed((): Record<number, Skill[]> => {
-  return classifiers.groupByChainedKey(
-    classifiers.skills,
-    'attrId',
-    classifiers.attributes,
-    'attrTypeId'
-  );
+  return groupByChainedKey(classifiers.skills, 'attrId', classifiers.attributes, 'attrTypeId');
 });
 
 // Pre-computed attribute code lookup for O(1) access

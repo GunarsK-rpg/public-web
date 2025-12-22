@@ -84,7 +84,7 @@
           <q-item-label>{{ conn.description }}</q-item-label>
           <q-item-label caption>
             <q-badge color="grey-7">
-              {{ findById(classifiers.connectionTypes, conn.connTypeId)?.name }}
+              {{ findById(classifiers.connectionTypes, conn.connTypeId)?.name ?? 'Unknown' }}
             </q-badge>
             <span v-if="conn.notes" class="q-ml-sm">{{ conn.notes }}</span>
           </q-item-label>
@@ -187,35 +187,33 @@ const connectionTypeOptions = computed(() =>
   classifiers.connectionTypes.map((t) => ({ value: t.id, label: t.name }))
 );
 
-// Debounced store mutations to reduce updates during typing
-const debouncedSetBiography = debounce((val: string) => heroStore.setBiography(val), 300);
-const debouncedSetAppearance = debounce((val: string) => heroStore.setAppearance(val), 300);
-const debouncedSetNotes = debounce((val: string) => heroStore.setNotes(val), 300);
+// Factory for creating debounced text input handlers
+function createDebouncedHandler(setter: (val: string) => void) {
+  const debouncedFn = debounce(setter, 300);
+  const handler = (val: string | number | null) => {
+    if (val !== null) {
+      debouncedFn(String(val));
+    }
+  };
+  return { handler, cancel: debouncedFn.cancel };
+}
+
+// Create debounced handlers for text inputs
+const biographyHandler = createDebouncedHandler((val) => heroStore.setBiography(val));
+const appearanceHandler = createDebouncedHandler((val) => heroStore.setAppearance(val));
+const notesHandler = createDebouncedHandler((val) => heroStore.setNotes(val));
+
+// Export handlers for template use
+const setBiography = biographyHandler.handler;
+const setAppearance = appearanceHandler.handler;
+const setNotes = notesHandler.handler;
 
 // Cancel pending debounced calls on unmount to prevent memory leaks
 onUnmounted(() => {
-  debouncedSetBiography.cancel();
-  debouncedSetAppearance.cancel();
-  debouncedSetNotes.cancel();
+  biographyHandler.cancel();
+  appearanceHandler.cancel();
+  notesHandler.cancel();
 });
-
-function setBiography(val: string | number | null) {
-  if (val !== null) {
-    debouncedSetBiography(String(val));
-  }
-}
-
-function setAppearance(val: string | number | null) {
-  if (val !== null) {
-    debouncedSetAppearance(String(val));
-  }
-}
-
-function setNotes(val: string | number | null) {
-  if (val !== null) {
-    debouncedSetNotes(String(val));
-  }
-}
 
 function addGoal() {
   if (newGoalName.value) {

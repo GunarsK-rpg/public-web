@@ -143,8 +143,8 @@ Output is in the `dist/spa/` directory.
 # Build image
 docker build -t cosmere-rpg .
 
-# Run container
-docker run -p 7100:80 cosmere-rpg
+# Run container (nginx listens on port 8080)
+docker run -p 7100:8080 cosmere-rpg
 ```
 
 ## License

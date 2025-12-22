@@ -29,6 +29,7 @@
           outlined
           dense
           :min="0"
+          :max="999999"
           @update:model-value="setCurrencyAmount"
         />
       </div>
@@ -137,27 +138,34 @@ const startingKitEquipmentNames = computed(() => {
     .filter((name): name is string => name !== null);
 });
 
-// Pre-computed equipment name lookup to avoid repeated findById calls in template
-const equipmentNamesMap = computed(() => {
-  const map = new Map<number, string>();
+// Pre-computed equipment lookup maps for O(1) access
+const equipmentMaps = computed(() => {
+  const nameMap = new Map<number, string>();
+  const typeMap = new Map<number, number>(); // equipmentId -> equipTypeId
   for (const eq of classifiers.equipment) {
-    map.set(eq.id, eq.name);
+    nameMap.set(eq.id, eq.name);
+    typeMap.set(eq.id, eq.equipTypeId);
   }
-  return map;
+  return { nameMap, typeMap };
 });
 
 function getEquipmentName(equipmentId: number): string {
-  return equipmentNamesMap.value.get(equipmentId) ?? 'Unknown';
+  return equipmentMaps.value.nameMap.get(equipmentId) ?? 'Unknown';
 }
 
-// Pre-computed equipment grouped by type to avoid repeated filter calls
+// Pre-computed equipment grouped by type using O(n) single pass
 const equipmentByType = computed(() => {
   const result: Record<number, typeof heroEquipment.value> = {};
+  // Initialize empty arrays for all types
   for (const eqType of equipmentTypesList.value) {
-    result[eqType.id] = heroEquipment.value.filter((item) => {
-      const eq = findById(classifiers.equipment, item.equipmentId);
-      return eq?.equipTypeId === eqType.id;
-    });
+    result[eqType.id] = [];
+  }
+  // Single pass through hero equipment - O(n)
+  for (const item of heroEquipment.value) {
+    const typeId = equipmentMaps.value.typeMap.get(item.equipmentId);
+    if (typeId !== undefined && result[typeId]) {
+      result[typeId].push(item);
+    }
   }
   return result;
 });

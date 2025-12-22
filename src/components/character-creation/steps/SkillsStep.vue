@@ -74,7 +74,7 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
-import { findById } from 'src/utils/arrayUtils';
+import { groupByChainedKey } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -87,19 +87,25 @@ const maxSkillRank = computed(() => skillsBudget.value.maxRank);
 
 // Group skills by attribute type using chained FK lookup (skill -> attribute -> attributeType)
 const skillsByAttrType = computed(() =>
-  classifiers.groupByChainedKey(classifiers.skills, 'attrId', classifiers.attributes, 'attrTypeId')
+  groupByChainedKey(classifiers.skills, 'attrId', classifiers.attributes, 'attrTypeId')
 );
+
+// Pre-computed attribute code map for O(1) lookups
+const attributeCodeMap = computed(() => {
+  const map = new Map<number, string>();
+  for (const attr of classifiers.attributes) {
+    map.set(attr.id, attr.code.toUpperCase());
+  }
+  return map;
+});
 
 // Build skill groups with attribute abbreviations
 const skillGroups = computed(() => {
   return classifiers.attributeTypes.map((attrType) => {
-    const skills = (skillsByAttrType.value[attrType.id] ?? []).map((skill) => {
-      const attr = findById(classifiers.attributes, skill.attrId);
-      return {
-        ...skill,
-        attrAbbr: attr?.code.toUpperCase() ?? '',
-      };
-    });
+    const skills = (skillsByAttrType.value[attrType.id] ?? []).map((skill) => ({
+      ...skill,
+      attrAbbr: attributeCodeMap.value.get(skill.attrId) ?? '',
+    }));
 
     return {
       typeId: attrType.id,
@@ -118,7 +124,11 @@ function getSkillModifier(skillId: number): number {
 }
 
 function setSkillModifier(skillId: number, value: string | number | null) {
-  if (value === null) return;
+  // Handle null and empty string - reset to 0
+  if (value === null || value === '') {
+    heroStore.setSkillModifier(skillId, 0);
+    return;
+  }
   const numValue = typeof value === 'string' ? Number(value) : value;
   if (Number.isNaN(numValue)) return;
   // Clamp value to min/max bounds

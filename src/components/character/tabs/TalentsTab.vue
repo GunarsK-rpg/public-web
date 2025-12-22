@@ -131,7 +131,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById } from 'src/utils/arrayUtils';
+import { findById, groupByForeignKey } from 'src/utils/arrayUtils';
 import type { Talent, Path, Specialty, Surge } from 'src/types';
 import TalentItem from './TalentItem.vue';
 
@@ -187,7 +187,7 @@ const generalTalentsByPath = computed((): Record<number, Talent[]> => {
 
 // All specialties grouped by path (for paths that have talents)
 const specialtiesByPath = computed((): Record<number, Specialty[]> => {
-  return classifiers.groupByForeignKey(classifiers.specialties, 'pathId');
+  return groupByForeignKey(classifiers.specialties, 'pathId');
 });
 
 const talentsBySpecialty = computed((): Record<number, Talent[]> => {

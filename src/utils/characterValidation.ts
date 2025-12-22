@@ -7,9 +7,9 @@ import type {
   HeroTalent,
   HeroCulture,
 } from 'src/types';
-import { WIZARD_STEPS } from 'src/types';
+import { WIZARD_STEPS, STEP_CODES, type StepCodeType } from 'src/types/wizard';
 
-export type StepCode = (typeof WIZARD_STEPS)[number]['code'];
+export type StepCode = StepCodeType;
 
 export interface StepValidation {
   isValid: boolean;
@@ -189,28 +189,30 @@ export function getStepValidation(stepCode: StepCode, data: HeroValidationData):
   const { hero, levelData, intellectValue } = data;
 
   switch (stepCode) {
-    case 'basic-setup':
+    case STEP_CODES.BASIC_SETUP:
       return validateBasicSetup(hero.name, hero.level);
-    case 'ancestry':
+    case STEP_CODES.ANCESTRY:
       return validateAncestry(hero.ancestryId);
-    case 'culture':
+    case STEP_CODES.CULTURE:
       return validateCulture(hero.cultures);
-    case 'attributes':
+    case STEP_CODES.ATTRIBUTES:
       return validateAttributes(levelData, hero.attributes);
-    case 'skills':
+    case STEP_CODES.SKILLS:
       return validateSkills(levelData, hero.skills);
-    case 'expertises':
+    case STEP_CODES.EXPERTISES:
       return validateExpertises(intellectValue, hero.expertises);
-    case 'paths':
+    case STEP_CODES.PATHS:
       return validatePaths(levelData, hero.talents);
-    case 'starting-kit':
+    case STEP_CODES.STARTING_KIT:
       return validateStartingKit(hero.startingKitId);
-    case 'equipment':
-    case 'personal-details':
+    case STEP_CODES.EQUIPMENT:
+    case STEP_CODES.PERSONAL_DETAILS:
       return { isValid: true, errors: [], warnings: [] };
-    case 'review': {
+    case STEP_CODES.REVIEW: {
       const errors: string[] = [];
-      const requiredSteps = WIZARD_STEPS.filter((s) => !s.isOptional && s.code !== 'review');
+      const requiredSteps = WIZARD_STEPS.filter(
+        (s) => !s.isOptional && s.code !== STEP_CODES.REVIEW
+      );
       for (const step of requiredSteps) {
         errors.push(...getStepValidation(step.code, data).errors);
       }
@@ -231,11 +233,11 @@ const DEFAULT_BUDGET: BudgetValidation = {
 };
 
 export function getBudgetValidation(
-  stepCode: 'skills',
+  stepCode: typeof STEP_CODES.SKILLS,
   data: HeroValidationData
 ): SkillsBudgetValidation;
 export function getBudgetValidation(
-  stepCode: Exclude<StepCode, 'skills'>,
+  stepCode: Exclude<StepCode, typeof STEP_CODES.SKILLS>,
   data: HeroValidationData
 ): BudgetValidation;
 export function getBudgetValidation(
@@ -249,13 +251,13 @@ export function getBudgetValidation(
   const { hero, levelData, intellectValue } = data;
 
   switch (stepCode) {
-    case 'attributes':
+    case STEP_CODES.ATTRIBUTES:
       return validateAttributes(levelData, hero.attributes);
-    case 'skills':
+    case STEP_CODES.SKILLS:
       return validateSkills(levelData, hero.skills);
-    case 'expertises':
+    case STEP_CODES.EXPERTISES:
       return validateExpertises(intellectValue, hero.expertises);
-    case 'paths':
+    case STEP_CODES.PATHS:
       return validateTalents(levelData, hero.talents);
     default:
       return DEFAULT_BUDGET;

@@ -1,6 +1,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useWizardStore } from 'src/stores/wizard';
+import { STEP_CODES } from 'src/types/wizard';
 import {
   getStepValidation,
   getBudgetValidation,
@@ -31,12 +32,12 @@ export function useStepValidation() {
     return getStepValidation(stepCode, validationData.value);
   }
 
-  function budget(stepCode: 'skills'): SkillsBudgetValidation;
-  function budget(stepCode: Exclude<StepCode, 'skills'>): BudgetValidation;
+  function budget(stepCode: typeof STEP_CODES.SKILLS): SkillsBudgetValidation;
+  function budget(stepCode: Exclude<StepCode, typeof STEP_CODES.SKILLS>): BudgetValidation;
   function budget(stepCode: StepCode): BudgetValidation | SkillsBudgetValidation;
   function budget(stepCode: StepCode): BudgetValidation | SkillsBudgetValidation {
     if (!validationData.value) {
-      if (stepCode === 'skills') {
+      if (stepCode === STEP_CODES.SKILLS) {
         return {
           isValid: false,
           errors: [],
@@ -53,11 +54,10 @@ export function useStepValidation() {
   }
 
   const currentStepCode = computed((): StepCode => {
-    // WIZARD_STEPS.code is already typed as StepCode, so no assertion needed
-    return wizardStore.currentStepConfig?.code ?? 'basic-setup';
+    return wizardStore.currentStepConfig?.code ?? STEP_CODES.BASIC_SETUP;
   });
   const currentValidation = computed(() => validate(currentStepCode.value));
-  const allStepsValidation = computed(() => validate('review'));
+  const allStepsValidation = computed(() => validate(STEP_CODES.REVIEW));
 
   return {
     validate,

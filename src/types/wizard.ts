@@ -1,9 +1,28 @@
 /**
+ * Step code constants for type-safe comparisons
+ */
+export const STEP_CODES = {
+  BASIC_SETUP: 'basic-setup',
+  ANCESTRY: 'ancestry',
+  CULTURE: 'culture',
+  ATTRIBUTES: 'attributes',
+  SKILLS: 'skills',
+  EXPERTISES: 'expertises',
+  PATHS: 'paths',
+  STARTING_KIT: 'starting-kit',
+  EQUIPMENT: 'equipment',
+  PERSONAL_DETAILS: 'personal-details',
+  REVIEW: 'review',
+} as const;
+
+export type StepCodeType = (typeof STEP_CODES)[keyof typeof STEP_CODES];
+
+/**
  * Wizard step configuration
  */
 export interface WizardStep {
   id: number;
-  code: string;
+  code: StepCodeType;
   name: string;
   description: string;
   icon: string;
@@ -16,7 +35,7 @@ export interface WizardStep {
 export const WIZARD_STEPS: WizardStep[] = [
   {
     id: 1,
-    code: 'basic-setup',
+    code: STEP_CODES.BASIC_SETUP,
     name: 'Basic Setup',
     description: 'Name, level, and campaign',
     icon: 'sym_o_badge',
@@ -24,7 +43,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 2,
-    code: 'ancestry',
+    code: STEP_CODES.ANCESTRY,
     name: 'Ancestry',
     description: 'Choose your ancestry',
     icon: 'sym_o_diversity_3',
@@ -32,7 +51,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 3,
-    code: 'culture',
+    code: STEP_CODES.CULTURE,
     name: 'Culture',
     description: 'Select cultural background',
     icon: 'sym_o_language',
@@ -40,7 +59,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 4,
-    code: 'attributes',
+    code: STEP_CODES.ATTRIBUTES,
     name: 'Attributes',
     description: 'Allocate attribute points',
     icon: 'sym_o_fitness_center',
@@ -48,7 +67,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 5,
-    code: 'skills',
+    code: STEP_CODES.SKILLS,
     name: 'Skills',
     description: 'Assign skill ranks',
     icon: 'sym_o_school',
@@ -56,7 +75,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 6,
-    code: 'expertises',
+    code: STEP_CODES.EXPERTISES,
     name: 'Expertises',
     description: 'Select your expertises',
     icon: 'sym_o_workspace_premium',
@@ -64,7 +83,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 7,
-    code: 'paths',
+    code: STEP_CODES.PATHS,
     name: 'Paths',
     description: 'Choose paths and talents',
     icon: 'sym_o_route',
@@ -72,7 +91,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 8,
-    code: 'starting-kit',
+    code: STEP_CODES.STARTING_KIT,
     name: 'Starting Kit',
     description: 'Choose equipment bundle',
     icon: 'sym_o_backpack',
@@ -80,7 +99,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 9,
-    code: 'equipment',
+    code: STEP_CODES.EQUIPMENT,
     name: 'Equipment',
     description: 'Customize gear and currency',
     icon: 'sym_o_inventory_2',
@@ -88,7 +107,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 10,
-    code: 'personal-details',
+    code: STEP_CODES.PERSONAL_DETAILS,
     name: 'Details',
     description: 'Biography, goals, connections',
     icon: 'sym_o_person',
@@ -96,7 +115,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 11,
-    code: 'review',
+    code: STEP_CODES.REVIEW,
     name: 'Review',
     description: 'Review and create',
     icon: 'sym_o_checklist',

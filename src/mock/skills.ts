@@ -122,6 +122,14 @@ export const skills: Skill[] = [
 const skillById = new Map<number, Skill>(skills.map((s) => [s.id, s]));
 const skillByCode = new Map<string, Skill>(skills.map((s) => [s.code, s]));
 
+// Pre-computed skills grouped by attribute ID for O(1) lookup
+const skillsByAttrId = new Map<number, Skill[]>();
+for (const skill of skills) {
+  const existing = skillsByAttrId.get(skill.attrId) || [];
+  existing.push(skill);
+  skillsByAttrId.set(skill.attrId, existing);
+}
+
 /**
  * Helper to get skill by ID (O(1) lookup)
  */
@@ -137,8 +145,8 @@ export function getSkillByCode(code: string): Skill | undefined {
 }
 
 /**
- * Helper to get skills by attribute ID
+ * Helper to get skills by attribute ID (O(1) lookup)
  */
 export function getSkillsByAttrId(attrId: number): Skill[] {
-  return skills.filter((s) => s.attrId === attrId);
+  return skillsByAttrId.get(attrId) ?? [];
 }

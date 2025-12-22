@@ -24,6 +24,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { groupByChainedKey } from 'src/utils/arrayUtils';
 import type { HeroExpertise } from 'src/types';
 
 const heroStore = useHeroStore();
@@ -33,7 +34,7 @@ const heroExpertises = computed(() => heroStore.expertises);
 
 // Hero expertises grouped by type (via heroExp.expertiseId -> expertise.expertiseTypeId)
 const expertisesByTypeRecord = computed((): Record<number, HeroExpertise[]> => {
-  return classifiers.groupByChainedKey(
+  return groupByChainedKey(
     heroExpertises.value,
     'expertiseId',
     classifiers.expertises,

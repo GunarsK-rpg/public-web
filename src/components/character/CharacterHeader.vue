@@ -92,6 +92,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { buildLookupMap } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -117,53 +118,26 @@ const investiturePercent = computed(() =>
 );
 
 // Pre-computed lookup maps for O(1) classifier name access
-const radiantOrderNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const order of classifiers.radiantOrders) {
-    map.set(order.id, order.name);
-  }
-  return map;
-});
-
-const ancestryNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const ancestry of classifiers.ancestries) {
-    map.set(ancestry.id, ancestry.name);
-  }
-  return map;
-});
-
-const singerFormNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const form of classifiers.singerForms) {
-    map.set(form.id, form.name);
-  }
-  return map;
-});
-
-const cultureNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const culture of classifiers.cultures) {
-    map.set(culture.id, culture.name);
-  }
-  return map;
-});
+const radiantOrderNamesMap = computed(() => buildLookupMap(classifiers.radiantOrders, 'name'));
+const ancestryNamesMap = computed(() => buildLookupMap(classifiers.ancestries, 'name'));
+const singerFormNamesMap = computed(() => buildLookupMap(classifiers.singerForms, 'name'));
+const cultureNamesMap = computed(() => buildLookupMap(classifiers.cultures, 'name'));
 
 // Classifier name lookups using cached maps
 const orderName = computed(() =>
-  hero.value?.radiantOrderId ? radiantOrderNamesMap.value.get(hero.value.radiantOrderId) : undefined
+  hero.value?.radiantOrderId ? radiantOrderNamesMap.value[hero.value.radiantOrderId] : undefined
 );
 const ancestryName = computed(() =>
-  hero.value?.ancestryId ? ancestryNamesMap.value.get(hero.value.ancestryId) : undefined
+  hero.value?.ancestryId ? ancestryNamesMap.value[hero.value.ancestryId] : undefined
 );
 const activeSingerFormName = computed(() =>
   hero.value?.activeSingerFormId
-    ? singerFormNamesMap.value.get(hero.value.activeSingerFormId)
+    ? singerFormNamesMap.value[hero.value.activeSingerFormId]
     : undefined
 );
 const cultureName = computed(() => {
   const cultureId = hero.value?.cultures?.[0]?.cultureId;
-  return cultureId ? cultureNamesMap.value.get(cultureId) : undefined;
+  return cultureId ? cultureNamesMap.value[cultureId] : undefined;
 });
 const totalSpheres = computed(() => hero.value?.currency ?? 0);
 </script>
