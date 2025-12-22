@@ -61,7 +61,13 @@ export interface User {
 export interface AuthState {
   user: User | null;
   token: string | null;
-  // isAuthenticated is a computed convenience (!!token && !!user)
-  // Kept here for serialization/snapshot purposes
-  isAuthenticated: boolean;
+}
+
+/**
+ * Runtime auth state with computed property.
+ * Note: isAuthenticated should NEVER be persisted to storage.
+ * It must always be derived from !!token && !!user to avoid inconsistency.
+ */
+export interface AuthStateWithComputed extends AuthState {
+  readonly isAuthenticated: boolean;
 }

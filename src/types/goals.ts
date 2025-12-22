@@ -19,6 +19,10 @@ export interface HeroGoal {
   name: string;
   description?: string;
   notes?: string;
+  /**
+   * Importance value (1-5) indicating goal priority.
+   * Higher values indicate more important goals.
+   */
   value: number;
   statusId: number;
 }

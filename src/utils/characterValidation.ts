@@ -45,10 +45,10 @@ function validateAttributes(
     warnings.push(`${remaining} attribute points remaining`);
   }
 
-  for (const attr of attributes) {
-    if (attr.value < 0 || attr.value > 5) {
-      errors.push('Attribute values must be between 0 and 5');
-    }
+  // Check for invalid attribute values (only add error once)
+  const hasInvalidAttr = attributes.some((attr) => attr.value < 0 || attr.value > 5);
+  if (hasInvalidAttr) {
+    errors.push('Attribute values must be between 0 and 5');
   }
 
   return { isValid: errors.length === 0, errors, warnings, budget, spent, remaining };
@@ -70,10 +70,10 @@ function validateSkills(levelData: Level | undefined, skills: HeroSkill[]): Skil
     warnings.push(`${remaining} skill ranks remaining`);
   }
 
-  for (const skill of skills) {
-    if (skill.rank > maxRank) {
-      errors.push(`Skill rank exceeds maximum of ${maxRank}`);
-    }
+  // Check for skill ranks exceeding max (only add error once)
+  const hasExceedingRank = skills.some((skill) => skill.rank > maxRank);
+  if (hasExceedingRank) {
+    errors.push(`Skill rank exceeds maximum of ${maxRank}`);
   }
 
   return { isValid: errors.length === 0, errors, warnings, budget, spent, remaining, maxRank };

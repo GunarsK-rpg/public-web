@@ -62,14 +62,21 @@ tasks:
       - npx eslint -c ./eslint.config.js "./src*/**/*.{ts,js,cjs,mjs,vue}" --fix
 
   format:
-    desc: Format code with Prettier
+    desc: Format code with Prettier (alias for format:fix)
     cmds:
-      - npx prettier --write "src/**/*.{ts,js,vue,json,md}"
+      - task: format:fix
+
+  format:fix:
+    desc: Format code with Prettier (auto-fix, covers src/ and src-tauri/)
+    cmds:
+      # Pattern src*/** covers both src/ and src-tauri/ for consistency with lint:fix
+      - npx prettier --write "src*/**/*.{ts,js,vue,json,md}"
 
   format:check:
-    desc: Check code formatting
+    desc: Check code formatting (covers src/ and src-tauri/)
     cmds:
-      - npx prettier --check "src/**/*.{ts,js,vue,json,md}"
+      # Pattern src*/** covers both src/ and src-tauri/ for consistency with lint
+      - npx prettier --check "src*/**/*.{ts,js,vue,json,md}"
 
   # Type checking
   typecheck:
@@ -100,3 +107,9 @@ tasks:
       - task: security:audit
       - task: lint:markdown
       - echo "All CI checks passed!"
+
+  ci:fix:
+    desc: Auto-fix all fixable issues (format, lint)
+    cmds:
+      - task: format:fix
+      - task: lint:fix

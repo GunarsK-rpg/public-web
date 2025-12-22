@@ -18,9 +18,12 @@ export interface DerivedStatDisplay {
  * Format value for display based on stat code
  */
 function formatValue(statCode: string, value: number): string {
+  // Handle edge cases
+  if (!Number.isFinite(value)) return '—';
+
   switch (statCode) {
     case 'recovery_die':
-      return `d${value}`;
+      return value > 0 ? `d${value}` : '—';
     case 'lift_capacity':
     case 'carry_capacity':
       return `${value.toLocaleString()} lb`;
@@ -92,22 +95,21 @@ export function buildDerivedStatsList(
   getModifier: (statId: number) => number
 ): DerivedStatDisplay[] {
   return derivedStats.map((stat) => {
-    // Check if this stat has a lookup table entry
-    const cfgEntry = derivedStatValues.find((v) => v.derivedStatId === stat.id);
+    // Check if this stat has lookup table entries
+    const statEntries = derivedStatValues.filter((v) => v.derivedStatId === stat.id);
     let baseValue: number;
     const hasModifier = stat.code !== 'recovery_die';
 
-    if (cfgEntry) {
-      // Lookup-based stat
-      const attr = attributes.find((a) => a.id === cfgEntry.attrId);
+    const firstEntry = statEntries[0];
+    if (firstEntry) {
+      // Lookup-based stat - all entries for a stat should reference the same attribute
+      const attrId = firstEntry.attrId;
+      const attr = attributes.find((a) => a.id === attrId);
       const attrValue = attr ? (attrs[attr.code] ?? 0) : 0;
 
-      // Find matching range
-      const entry = derivedStatValues.find(
-        (v) =>
-          v.derivedStatId === stat.id &&
-          attrValue >= v.attrMin &&
-          (v.attrMax === null || attrValue <= v.attrMax)
+      // Find matching range for the hero's attribute value
+      const entry = statEntries.find(
+        (v) => attrValue >= v.attrMin && (v.attrMax === null || attrValue <= v.attrMax)
       );
 
       baseValue = entry?.value ?? 0;

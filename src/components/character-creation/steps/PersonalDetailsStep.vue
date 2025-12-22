@@ -9,6 +9,7 @@
       label="Biography"
       outlined
       autogrow
+      maxlength="2000"
       class="q-mb-md"
       @update:model-value="setBiography"
     />
@@ -20,6 +21,7 @@
       label="Appearance"
       outlined
       autogrow
+      maxlength="2000"
       class="q-mb-md"
       @update:model-value="setAppearance"
     />
@@ -50,10 +52,16 @@
 
     <div class="row q-col-gutter-sm q-mb-md">
       <div class="col-12 col-sm-6">
-        <q-input v-model="newGoalName" label="Goal Name" outlined dense />
+        <q-input v-model="newGoalName" label="Goal Name" outlined dense maxlength="100" />
       </div>
       <div class="col-12 col-sm-4">
-        <q-input v-model="newGoalDescription" label="Description (Optional)" outlined dense />
+        <q-input
+          v-model="newGoalDescription"
+          label="Description (Optional)"
+          outlined
+          dense
+          maxlength="500"
+        />
       </div>
       <div class="col-12 col-sm-2">
         <q-btn
@@ -97,7 +105,13 @@
 
     <div class="row q-col-gutter-sm q-mb-md">
       <div class="col-12 col-sm-4">
-        <q-input v-model="newConnectionDescription" label="Name/Description" outlined dense />
+        <q-input
+          v-model="newConnectionDescription"
+          label="Name/Description"
+          outlined
+          dense
+          maxlength="200"
+        />
       </div>
       <div class="col-12 col-sm-3">
         <q-select
@@ -111,7 +125,13 @@
         />
       </div>
       <div class="col-12 col-sm-3">
-        <q-input v-model="newConnectionNotes" label="Notes (Optional)" outlined dense />
+        <q-input
+          v-model="newConnectionNotes"
+          label="Notes (Optional)"
+          outlined
+          dense
+          maxlength="500"
+        />
       </div>
       <div class="col-12 col-sm-2">
         <q-btn
@@ -133,13 +153,14 @@
       label="Additional Notes"
       outlined
       autogrow
+      maxlength="5000"
       @update:model-value="setNotes"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { debounce } from 'src/utils/debounce';
@@ -170,6 +191,13 @@ const connectionTypeOptions = computed(() =>
 const debouncedSetBiography = debounce((val: string) => heroStore.setBiography(val), 300);
 const debouncedSetAppearance = debounce((val: string) => heroStore.setAppearance(val), 300);
 const debouncedSetNotes = debounce((val: string) => heroStore.setNotes(val), 300);
+
+// Cancel pending debounced calls on unmount to prevent memory leaks
+onUnmounted(() => {
+  debouncedSetBiography.cancel();
+  debouncedSetAppearance.cancel();
+  debouncedSetNotes.cancel();
+});
 
 function setBiography(val: string | number | null) {
   if (val !== null) {

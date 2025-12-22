@@ -150,8 +150,27 @@ export const useClassifierStore = defineStore('classifiers', () => {
   const tiers = computed((): Tier[] => data.value?.tiers || []);
   const levels = computed((): Level[] => data.value?.levels || []);
 
+  // Memoized lookup map for derived stat values: Map<derivedStatId, Map<attrValue, configValue>>
+  // Cleared when data changes (via computed reactivity on derivedStatValues)
+  const derivedStatValueCache = computed(() => {
+    const cache = new Map<number, Map<number, number>>();
+    // Pre-build the cache for O(1) lookups
+    for (const v of derivedStatValues.value) {
+      if (!cache.has(v.derivedStatId)) {
+        cache.set(v.derivedStatId, new Map());
+      }
+      // Store for each attribute value in the range
+      const statMap = cache.get(v.derivedStatId)!;
+      const maxVal = v.attrMax ?? 10; // Reasonable upper bound
+      for (let attr = v.attrMin; attr <= maxVal; attr++) {
+        statMap.set(attr, v.value);
+      }
+    }
+    return cache;
+  });
+
   /**
-   * Lookup derived stat value from config table
+   * Lookup derived stat value from config table (memoized)
    * @param derivedStatId - the derived stat id
    * @param attrValue - hero's attribute value for the stat's driving attribute
    * @returns the config value or undefined if no lookup exists
@@ -162,13 +181,8 @@ export const useClassifierStore = defineStore('classifiers', () => {
   ): number | undefined {
     if (derivedStatId == null) return undefined;
 
-    const entry = derivedStatValues.value.find(
-      (v) =>
-        v.derivedStatId === derivedStatId &&
-        attrValue >= v.attrMin &&
-        (v.attrMax === null || attrValue <= v.attrMax)
-    );
-    return entry?.value;
+    // Use memoized cache for O(1) lookup
+    return derivedStatValueCache.value.get(derivedStatId)?.get(attrValue);
   }
 
   /**
@@ -239,8 +253,17 @@ export const useClassifierStore = defineStore('classifiers', () => {
       lookupMap[item.id] = item[targetProp] as number;
     }
 
-    // Group items by the chained lookup
-    return groupByKey(items, (item) => lookupMap[item[foreignKeyProp] as number] ?? 0);
+    // Group items by the chained lookup, filtering out items with missing lookups
+    const result: Record<number, T[]> = {};
+    for (const item of items) {
+      const fkValue = item[foreignKeyProp] as number;
+      const targetValue = lookupMap[fkValue];
+      // Skip items with missing lookups to avoid grouping unrelated items under key 0
+      if (targetValue === undefined) continue;
+      if (!result[targetValue]) result[targetValue] = [];
+      result[targetValue].push(item);
+    }
+    return result;
   }
 
   /**
@@ -273,10 +296,10 @@ export const useClassifierStore = defineStore('classifiers', () => {
         logger.info('Classifiers loaded');
       } catch (err) {
         error.value = 'Failed to load classifiers';
-        logger.error(
-          'Failed to load classifiers',
-          err instanceof Error ? err : { error: String(err) }
-        );
+        logger.error('Failed to load classifiers', {
+          error: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
+        });
         // Reset promise on failure to allow retry
         initPromise = null;
       } finally {

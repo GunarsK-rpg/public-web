@@ -3,7 +3,7 @@
     <div class="text-center">
       <q-icon name="sym_o_cloud_off" size="120px" color="negative" aria-hidden="true" />
 
-      <div class="q-mt-lg">
+      <div class="q-mt-lg" role="alert" aria-live="assertive">
         <h1 class="error-code text-negative">500</h1>
         <h2 class="error-title">Server Error</h2>
         <p class="error-message text-grey-7">
@@ -33,8 +33,14 @@ const router = useRouter();
 
 function retry(): void {
   // Navigate back instead of reloading to avoid infinite refresh loops
-  // when the server error is persistent
-  router.back();
+  // when the server error is persistent. If no history, go home.
+  // SSR-safe: check window exists before accessing history
+  const hasHistory = typeof window !== 'undefined' && window.history.length > 1;
+  if (hasHistory) {
+    router.back();
+  } else {
+    void router.push('/');
+  }
 }
 // Styles in src/css/app.scss (.error-page, .error-code, .error-title, .error-message)
 </script>

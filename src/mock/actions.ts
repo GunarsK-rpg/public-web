@@ -1257,6 +1257,8 @@ export function getActionTypeName(actionTypeId: number): string {
 
 /**
  * Helper to get action by code
+ * Note: Some action codes are duplicated (e.g., same action from different talents).
+ * This returns the first match. Use getActionById for precise lookups.
  */
 export function getActionByCode(code: string): Action | undefined {
   return actions.find((a) => a.code === code);

@@ -3,7 +3,7 @@
     <!-- Currency Summary -->
     <q-card flat bordered class="q-mb-md">
       <q-card-section class="row items-center">
-        <q-icon name="sym_o_paid" size="md" color="amber" class="q-mr-md" />
+        <q-icon name="sym_o_paid" size="md" color="amber" class="q-mr-md" aria-hidden="true" />
         <div>
           <div class="text-h6">{{ totalCurrencyValue }} marks</div>
           <div class="text-caption text-muted">Total currency value</div>

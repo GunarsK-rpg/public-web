@@ -11,7 +11,7 @@
       </q-banner>
 
       <div v-else-if="!campaign" class="text-center q-pa-xl">
-        <q-icon name="sym_o_folder_off" size="64px" color="grey-5" />
+        <q-icon name="sym_o_folder_off" size="64px" color="grey-5" aria-hidden="true" />
         <div class="text-h6 text-grey-7 q-mt-md">Campaign not found</div>
         <div class="text-body2 text-grey-6 q-mb-md">
           This campaign doesn't exist or you don't have access to it.
@@ -37,7 +37,7 @@
         </div>
 
         <div v-if="campaign.heroes.length === 0" class="text-center q-pa-xl">
-          <q-icon name="person_off" size="64px" color="grey-5" />
+          <q-icon name="person_off" size="64px" color="grey-5" aria-hidden="true" />
           <div class="text-h6 text-grey-7 q-mt-md">No characters</div>
           <div class="text-body2 text-grey-6 q-mb-md">No characters in this campaign yet.</div>
           <q-btn

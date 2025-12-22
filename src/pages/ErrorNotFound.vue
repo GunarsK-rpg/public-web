@@ -3,7 +3,7 @@
     <div class="text-center">
       <q-icon name="sym_o_error" size="120px" color="negative" aria-hidden="true" />
 
-      <div class="q-mt-lg">
+      <div class="q-mt-lg" role="alert" aria-live="assertive">
         <h1 class="error-code text-negative">404</h1>
         <h2 class="error-title">Page Not Found</h2>
         <p class="error-message text-grey-7">

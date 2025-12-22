@@ -51,6 +51,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
         currentCampaign.value = found;
         logger.info('Campaign selected', { id, name: found.name, heroCount: found.heroes.length });
       } else {
+        currentCampaign.value = null;
         error.value = 'Campaign not found';
         logger.warn('Campaign not found', { id });
       }

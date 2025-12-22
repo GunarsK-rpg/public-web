@@ -5,7 +5,7 @@
     <!-- Starting Kit Summary -->
     <q-banner v-if="selectedStartingKit" class="banner-info q-mb-md">
       <template v-slot:avatar>
-        <q-icon name="sym_o_backpack" />
+        <q-icon name="sym_o_backpack" aria-hidden="true" />
       </template>
       <div class="row items-center">
         <div class="col">
@@ -39,7 +39,7 @@
     <!-- Equipment from Starting Kit -->
     <q-banner v-if="startingKitEquipmentNames.length > 0" class="banner-info q-mb-md">
       <template v-slot:avatar>
-        <q-icon name="sym_o_inventory_2" />
+        <q-icon name="sym_o_inventory_2" aria-hidden="true" />
       </template>
       Equipment from starting kit: {{ startingKitEquipmentNames.join(', ') }}
     </q-banner>
@@ -52,9 +52,7 @@
       <q-list v-if="equipmentByType[eqType.id]?.length" bordered separator>
         <q-item v-for="item in equipmentByType[eqType.id]" :key="item.equipmentId">
           <q-item-section>
-            <q-item-label>{{
-              findById(classifiers.equipment, item.equipmentId)?.name
-            }}</q-item-label>
+            <q-item-label>{{ getEquipmentName(item.equipmentId) }}</q-item-label>
             <q-item-label caption>Qty: {{ item.amount }}</q-item-label>
           </q-item-section>
           <q-item-section side>
@@ -92,6 +90,7 @@
           color="primary"
           icon="sym_o_add"
           dense
+          :aria-label="`Add ${eqType.name} item`"
           @click="addItemOfType(eqType.id)"
         />
       </div>
@@ -137,6 +136,19 @@ const startingKitEquipmentNames = computed(() => {
     })
     .filter((name): name is string => name !== null);
 });
+
+// Pre-computed equipment name lookup to avoid repeated findById calls in template
+const equipmentNamesMap = computed(() => {
+  const map = new Map<number, string>();
+  for (const eq of classifiers.equipment) {
+    map.set(eq.id, eq.name);
+  }
+  return map;
+});
+
+function getEquipmentName(equipmentId: number): string {
+  return equipmentNamesMap.value.get(equipmentId) ?? 'Unknown';
+}
 
 // Pre-computed equipment grouped by type to avoid repeated filter calls
 const equipmentByType = computed(() => {

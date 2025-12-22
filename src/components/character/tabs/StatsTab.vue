@@ -67,14 +67,10 @@ const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
 const derivedStatsList = computed(() => {
-  const attrs: AttributeValues = {
-    str: heroStore.getAttributeValue('str'),
-    spd: heroStore.getAttributeValue('spd'),
-    int: heroStore.getAttributeValue('int'),
-    wil: heroStore.getAttributeValue('wil'),
-    awa: heroStore.getAttributeValue('awa'),
-    pre: heroStore.getAttributeValue('pre'),
-  };
+  // Build attrs dynamically from classifier codes
+  const attrs: AttributeValues = Object.fromEntries(
+    classifiers.attributes.map((attr) => [attr.code, heroStore.getAttributeValue(attr.code)])
+  );
 
   return buildDerivedStatsList(
     classifiers.derivedStats,

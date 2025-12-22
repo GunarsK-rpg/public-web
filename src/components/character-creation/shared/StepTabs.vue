@@ -129,7 +129,7 @@ function navigateTabs(direction: number) {
   &--active {
     opacity: 1;
     border-bottom-color: var(--q-primary);
-    background: rgba(255, 255, 255, 0.1);
+    background: $color-overlay-light;
   }
 
   &--done {

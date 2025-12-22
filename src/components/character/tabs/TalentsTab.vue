@@ -5,7 +5,9 @@
       v-for="path in pathsWithTalents"
       :key="path.id"
       :label="path.name"
+      :aria-label="`${path.name} path talents`"
       default-opened
+      switch-toggle-side
       class="q-mb-sm"
     >
       <template #header>
@@ -58,6 +60,7 @@
     <q-expansion-item
       v-if="heroStore.isRadiant && radiantOrder"
       :label="radiantOrder.name"
+      :aria-label="`${radiantOrder.name} radiant order talents`"
       default-opened
       class="q-mb-sm"
     >
@@ -101,6 +104,7 @@
     <q-expansion-item
       v-if="ancestryTalents.length > 0"
       :label="ancestryTalentName"
+      :aria-label="`${ancestryTalentName} ancestry talents`"
       default-opened
       class="q-mb-sm"
     >
@@ -124,13 +128,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue';
+import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import type { Talent, Path, Specialty, Surge } from 'src/types';
-
-const TalentItem = defineAsyncComponent(() => import('./TalentItem.vue'));
+import TalentItem from './TalentItem.vue';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();

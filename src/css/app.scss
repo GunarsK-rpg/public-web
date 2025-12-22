@@ -26,7 +26,7 @@
 // Card/option active selection (prominent highlight)
 .card-selected {
   background-color: $primary !important;
-  color: white !important;
+  color: $color-text-on-color !important;
 }
 
 // =============================================================================
@@ -63,7 +63,7 @@
 // Info banner (contextual information)
 .banner-info {
   background-color: $color-banner-info-light !important;
-  color: white !important;
+  color: $color-text-on-color !important;
 
   .body--dark & {
     background-color: $color-banner-info-dark !important;
@@ -73,19 +73,19 @@
 // Success banner (positive feedback)
 .banner-success {
   background-color: $positive !important;
-  color: white !important;
+  color: $color-text-on-color !important;
 }
 
 // Error banner (negative feedback)
 .banner-error {
   background-color: $negative !important;
-  color: white !important;
+  color: $color-text-on-color !important;
 }
 
 // Warning banner (dark text for contrast on yellow)
 .banner-warning {
   background-color: $warning !important;
-  color: $dark !important;
+  color: $color-text-on-warning !important;
 }
 
 // =============================================================================
@@ -95,7 +95,7 @@
 // Key talent banner - subdued gold/amber
 .banner-key-talent {
   background-color: $color-key-talent-light !important;
-  color: white !important;
+  color: $color-text-on-color !important;
 
   .body--dark & {
     background-color: $color-key-talent-dark !important;
@@ -105,7 +105,7 @@
 // Heroic path header - neutral blue-grey
 .banner-heroic-path {
   background-color: $color-heroic-path-light !important;
-  color: white !important;
+  color: $color-text-on-color !important;
 
   .body--dark & {
     background-color: $color-heroic-path-dark !important;
@@ -115,7 +115,7 @@
 // Radiant path header - muted amber
 .banner-radiant-path {
   background-color: $color-radiant-path-light !important;
-  color: white !important;
+  color: $color-text-on-color !important;
 
   .body--dark & {
     background-color: $color-radiant-path-dark !important;
@@ -125,7 +125,7 @@
 // Ancestry path header - muted teal
 .banner-ancestry-path {
   background-color: $color-ancestry-path-light !important;
-  color: white !important;
+  color: $color-text-on-color !important;
 
   .body--dark & {
     background-color: $color-ancestry-path-dark !important;
@@ -139,22 +139,22 @@
 // Light text for colored expansion headers
 .expansion-header-light {
   .q-item__label {
-    color: white;
+    color: $color-text-on-color;
   }
 
   .q-expansion-item__toggle-icon {
-    color: white;
+    color: $color-text-on-color;
   }
 }
 
 // Dark text for light-colored expansion headers (e.g., warning/yellow)
 .expansion-header-dark {
   .q-item__label {
-    color: $dark;
+    color: $color-text-on-warning;
   }
 
   .q-expansion-item__toggle-icon {
-    color: $dark;
+    color: $color-text-on-warning;
   }
 }
 

@@ -29,13 +29,14 @@
       <q-expansion-item
         v-for="selection in selectedPaths"
         :key="selection.pathId"
+        :aria-label="`${findById(classifiers.paths, selection.pathId)?.name} path talents and specialties`"
         :default-opened="selectedPaths.length === 1"
         header-class="banner-heroic-path"
         expand-icon-class="text-white"
       >
         <template v-slot:header>
           <q-item-section avatar>
-            <q-icon name="sym_o_route" color="white" />
+            <q-icon name="sym_o_route" color="white" aria-hidden="true" />
           </q-item-section>
           <q-item-section>
             <q-item-label class="text-white text-weight-medium">
@@ -54,6 +55,7 @@
               icon="close"
               color="white"
               size="sm"
+              aria-label="Remove path"
               @click.stop="togglePath(selection.pathId)"
             >
               <q-tooltip>Remove path</q-tooltip>
@@ -79,7 +81,7 @@
             <div class="q-mb-md">
               <q-banner class="banner-key-talent" dense rounded>
                 <template v-slot:avatar>
-                  <q-icon name="sym_o_stars" />
+                  <q-icon name="sym_o_stars" aria-hidden="true" />
                 </template>
                 <strong>Key Talent:</strong> {{ getKeyTalent(selection.pathId)?.name }}
                 <div class="text-caption">
@@ -116,7 +118,13 @@
                 <q-item-section>
                   <q-item-label :class="{ [`text-${COLORS.muted}`]: !talentInfo.available }">
                     {{ talentInfo.talent.name }}
-                    <q-icon v-if="!talentInfo.available" name="lock" size="xs" class="q-ml-xs" />
+                    <q-icon
+                      v-if="!talentInfo.available"
+                      name="lock"
+                      size="xs"
+                      class="q-ml-xs"
+                      aria-hidden="true"
+                    />
                   </q-item-label>
                   <q-item-label caption>{{
                     talentInfo.talent.descriptionShort || talentInfo.talent.description
@@ -132,7 +140,13 @@
                   </q-item-label>
                 </q-item-section>
                 <q-item-section side>
-                  <q-btn flat dense icon="info" @click.stop="showTalentDetails(talentInfo.talent)">
+                  <q-btn
+                    flat
+                    dense
+                    icon="info"
+                    aria-label="View talent details"
+                    @click.stop="showTalentDetails(talentInfo.talent)"
+                  >
                     <q-tooltip>View details</q-tooltip>
                   </q-btn>
                 </q-item-section>
@@ -146,13 +160,14 @@
     <!-- Singer Ancestry Talents -->
     <q-list v-if="isSinger" bordered class="rounded-borders q-mb-md">
       <q-expansion-item
+        aria-label="Singer ancestry talents"
         default-opened
         header-class="banner-ancestry-path"
         expand-icon-class="text-white"
       >
         <template v-slot:header>
           <q-item-section avatar>
-            <q-icon name="sym_o_change_circle" color="white" />
+            <q-icon name="sym_o_change_circle" color="white" aria-hidden="true" />
           </q-item-section>
           <q-item-section>
             <q-item-label class="text-white text-weight-medium"> Singer Ancestry </q-item-label>
@@ -168,7 +183,7 @@
             <div class="q-mb-md">
               <q-banner class="banner-key-talent" dense rounded>
                 <template v-slot:avatar>
-                  <q-icon name="sym_o_stars" />
+                  <q-icon name="sym_o_stars" aria-hidden="true" />
                 </template>
                 <strong>Key Talent:</strong> {{ singerKeyTalent?.name }}
                 <div class="text-caption">
@@ -200,7 +215,13 @@
                 <q-item-section>
                   <q-item-label :class="{ [`text-${COLORS.muted}`]: !talentInfo.available }">
                     {{ talentInfo.talent.name }}
-                    <q-icon v-if="!talentInfo.available" name="lock" size="xs" class="q-ml-xs" />
+                    <q-icon
+                      v-if="!talentInfo.available"
+                      name="lock"
+                      size="xs"
+                      class="q-ml-xs"
+                      aria-hidden="true"
+                    />
                   </q-item-label>
                   <q-item-label caption>{{
                     talentInfo.talent.descriptionShort || talentInfo.talent.description
@@ -215,7 +236,13 @@
                   </q-item-label>
                 </q-item-section>
                 <q-item-section side>
-                  <q-btn flat dense icon="info" @click.stop="showTalentDetails(talentInfo.talent)">
+                  <q-btn
+                    flat
+                    dense
+                    icon="info"
+                    aria-label="View talent details"
+                    @click.stop="showTalentDetails(talentInfo.talent)"
+                  >
                     <q-tooltip>View details</q-tooltip>
                   </q-btn>
                 </q-item-section>
@@ -240,13 +267,14 @@
     <!-- Radiant Order Selection & Talents -->
     <q-list v-if="isRadiant" bordered class="rounded-borders q-mb-md">
       <q-expansion-item
+        :aria-label="`${findById(classifiers.radiantOrders, radiantOrderId)?.name || 'Radiant'} order talents`"
         default-opened
         header-class="banner-radiant-path"
         expand-icon-class="text-white"
       >
         <template v-slot:header>
           <q-item-section avatar>
-            <q-icon name="sym_o_auto_awesome" color="white" />
+            <q-icon name="sym_o_auto_awesome" color="white" aria-hidden="true" />
           </q-item-section>
           <q-item-section>
             <q-item-label class="text-white text-weight-medium">
@@ -264,6 +292,7 @@
               icon="close"
               color="white"
               size="sm"
+              aria-label="Remove Radiant path"
               @click.stop="toggleRadiant(false)"
             >
               <q-tooltip>Remove Radiant path</q-tooltip>
@@ -305,7 +334,7 @@
             <div v-if="radiantKeyTalent" class="q-mb-md">
               <q-banner class="banner-key-talent" dense rounded>
                 <template v-slot:avatar>
-                  <q-icon name="sym_o_stars" />
+                  <q-icon name="sym_o_stars" aria-hidden="true" />
                 </template>
                 <strong>Order Talent:</strong> {{ radiantKeyTalent.name }}
                 <div class="text-caption">
@@ -347,7 +376,13 @@
                 <q-item-section>
                   <q-item-label :class="{ [`text-${COLORS.muted}`]: !talentInfo.available }">
                     {{ talentInfo.talent.name }}
-                    <q-icon v-if="!talentInfo.available" name="lock" size="xs" class="q-ml-xs" />
+                    <q-icon
+                      v-if="!talentInfo.available"
+                      name="lock"
+                      size="xs"
+                      class="q-ml-xs"
+                      aria-hidden="true"
+                    />
                   </q-item-label>
                   <q-item-label caption>{{
                     talentInfo.talent.descriptionShort || talentInfo.talent.description
@@ -362,7 +397,13 @@
                   </q-item-label>
                 </q-item-section>
                 <q-item-section side>
-                  <q-btn flat dense icon="info" @click.stop="showTalentDetails(talentInfo.talent)">
+                  <q-btn
+                    flat
+                    dense
+                    icon="info"
+                    aria-label="View talent details"
+                    @click.stop="showTalentDetails(talentInfo.talent)"
+                  >
                     <q-tooltip>View details</q-tooltip>
                   </q-btn>
                 </q-item-section>
@@ -384,7 +425,7 @@
         <q-card-section class="row items-center">
           <div class="text-h6">{{ selectedTalentForDetails?.name }}</div>
           <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
+          <q-btn icon="close" flat round dense aria-label="Close dialog" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-card-section v-if="selectedTalentForDetails">

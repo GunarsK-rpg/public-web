@@ -60,37 +60,22 @@ function getActionTypeByCode(code: string) {
   return findByCode(classifiers.actionTypes, code);
 }
 
+// Configuration map for extracting hero object IDs by action type
+const heroObjectExtractors: Record<string, () => number[]> = {
+  equipment: () => (heroStore.hero?.equipment || []).map((e) => e.equipmentId),
+  talent: () => (heroStore.hero?.talents || []).map((t) => t.talentId),
+  surge: () => {
+    if (!heroStore.hero?.radiantOrderId) return [];
+    const order = findById(classifiers.radiantOrders, heroStore.hero.radiantOrderId);
+    return order ? [order.surge1Id, order.surge2Id] : [];
+  },
+};
+
 // Get hero's object IDs by action type
 // Returns the set of objectIds the hero has for the given action type
 function getHeroObjectIds(actionTypeCode: string): Set<number> {
-  const ids = new Set<number>();
-
-  switch (actionTypeCode) {
-    case 'equipment':
-      // Hero's equipment IDs
-      for (const heroEquip of heroStore.hero?.equipment || []) {
-        ids.add(heroEquip.equipmentId);
-      }
-      break;
-    case 'talent':
-      // Hero's talent IDs
-      for (const heroTalent of heroStore.hero?.talents || []) {
-        ids.add(heroTalent.talentId);
-      }
-      break;
-    case 'surge':
-      // Hero's surge IDs (from radiant order)
-      if (heroStore.hero?.radiantOrderId) {
-        const order = findById(classifiers.radiantOrders, heroStore.hero.radiantOrderId);
-        if (order) {
-          ids.add(order.surge1Id);
-          ids.add(order.surge2Id);
-        }
-      }
-      break;
-  }
-
-  return ids;
+  const extractor = heroObjectExtractors[actionTypeCode];
+  return new Set(extractor ? extractor() : []);
 }
 
 // Get actions by action type ID

@@ -223,17 +223,36 @@ class Logger {
 export const logger = new Logger(baseLogger);
 
 /**
- * Sets user context for logging
+ * Sets user context for logging.
+ * Accepts any object with an id property (number or string convertible to number).
  */
-export function setUserContext(user: { id: number } | null | undefined): void {
-  if (!user || typeof user !== 'object') {
-    logger.warn('setUserContext called with invalid user', { user });
+export function setUserContext(user: { id: number | string } | null | undefined): void {
+  // Handle null/undefined explicitly - this is a valid "clear" operation
+  if (user === null || user === undefined) {
+    logger.clearContext(['user']);
+    return;
+  }
+
+  // Validate user object shape
+  if (typeof user !== 'object' || !('id' in user)) {
+    logger.warn('setUserContext called with invalid user object', {
+      receivedType: typeof user,
+    });
+    return;
+  }
+
+  // Coerce id to number and validate
+  const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+  if (typeof userId !== 'number' || isNaN(userId)) {
+    logger.warn('setUserContext called with invalid user id', {
+      receivedId: user.id,
+    });
     return;
   }
 
   logger.setContext({
     user: {
-      id: user.id,
+      id: userId,
     },
   });
 }

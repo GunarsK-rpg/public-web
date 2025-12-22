@@ -1995,8 +1995,17 @@ export function getTalentPrerequisiteChain(talentId: number): Talent[] {
 
     if (talent.prerequisites && Array.isArray(talent.prerequisites)) {
       for (const prereq of talent.prerequisites) {
-        if (prereq.type === 'talent' && prereq.talentId) {
-          collectPrereqs(prereq.talentId);
+        if (prereq.type === 'talent') {
+          // Handle single talentId
+          if (prereq.talentId) {
+            collectPrereqs(prereq.talentId);
+          }
+          // Handle OR logic with talentIds array (include all possible paths)
+          if (prereq.talentIds?.length) {
+            for (const prereqTalentId of prereq.talentIds) {
+              collectPrereqs(prereqTalentId);
+            }
+          }
         }
       }
     }

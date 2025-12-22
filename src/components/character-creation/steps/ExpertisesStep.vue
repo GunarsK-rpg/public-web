@@ -12,7 +12,7 @@
     <!-- Cultural Expertises Banner -->
     <q-banner v-if="culturalExpertises.length > 0" class="banner-info q-mb-md">
       <template v-slot:avatar>
-        <q-icon name="sym_o_language" />
+        <q-icon name="sym_o_language" aria-hidden="true" />
       </template>
       <div>
         <strong>Cultural Expertises:</strong>
@@ -24,7 +24,7 @@
     <!-- Starting Kit Expertises Banner -->
     <q-banner v-if="startingKitExpertises.length > 0" class="banner-info q-mb-md">
       <template v-slot:avatar>
-        <q-icon name="sym_o_backpack" />
+        <q-icon name="sym_o_backpack" aria-hidden="true" />
       </template>
       <div>
         <strong>Starting Kit Expertises:</strong>
@@ -98,6 +98,9 @@ const intellectScore = computed(() => heroStore.getAttributeValue('int'));
 const expertisesBudget = computed(() => budget('expertises'));
 const slotsRemaining = computed(() => expertisesBudget.value.remaining);
 
+// Cache specialist type ID lookup to avoid repeated findByCode calls
+const specialistTypeId = computed(() => findByCode(classifiers.expertiseTypes, 'specialist')?.id);
+
 // Hero's current expertises
 const heroExpertises = computed(() => heroStore.expertises);
 
@@ -157,9 +160,8 @@ function toggleExpertise(expertiseId: number, checked: boolean) {
 
 // Check if expertise is specialist type (restricted)
 function isSpecialist(expertiseId: number): boolean {
-  const specialistTypeId = getExpertiseTypeId('specialist');
-  if (!specialistTypeId) return false;
+  if (!specialistTypeId.value) return false;
   const expertise = findById(classifiers.expertises, expertiseId);
-  return expertise?.expertiseTypeId === specialistTypeId;
+  return expertise?.expertiseTypeId === specialistTypeId.value;
 }
 </script>

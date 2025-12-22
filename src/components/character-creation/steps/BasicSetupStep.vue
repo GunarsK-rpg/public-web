@@ -45,7 +45,7 @@
 
     <q-banner v-if="currentLevel > 1 && levelData" class="banner-info q-mt-md">
       <template v-slot:avatar>
-        <q-icon name="sym_o_info" />
+        <q-icon name="sym_o_info" aria-hidden="true" />
       </template>
       Starting at level {{ currentLevel }} gives you {{ levelData.attributePoints }} attribute
       points, {{ levelData.skillRanks }} skill ranks, and {{ levelData.talentSlots }} talent slots.
@@ -58,6 +58,7 @@ import { computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useCampaignStore } from 'src/stores/campaigns';
+import { logger } from 'src/utils/logger';
 
 const $q = useQuasar();
 const heroStore = useHeroStore();
@@ -75,7 +76,10 @@ onMounted(async () => {
     try {
       await campaignStore.fetchCampaigns();
     } catch (err) {
-      console.error('Failed to fetch campaigns:', err);
+      logger.error(
+        'Failed to fetch campaigns',
+        err instanceof Error ? err : { error: String(err) }
+      );
       $q.notify({
         type: 'warning',
         message: 'Could not load campaigns. You can continue without selecting one.',

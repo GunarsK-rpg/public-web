@@ -50,3 +50,15 @@ export function removeById<T extends { id: number }>(
   }
   return false;
 }
+
+/**
+ * Returns a new array without the item with the given ID.
+ * Non-mutating alternative to removeById.
+ */
+export function filterById<T extends { id: number }>(
+  array: T[] | undefined | null,
+  id: number
+): T[] {
+  if (!array) return [];
+  return array.filter((item) => item.id !== id);
+}

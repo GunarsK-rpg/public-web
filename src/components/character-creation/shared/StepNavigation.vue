@@ -26,7 +26,7 @@
       label="Create"
       icon="check"
       :loading="creating"
-      :disable="!canCreate"
+      :disable="!isReadyToCreate"
       @click="$emit('create')"
     />
   </div>
@@ -52,7 +52,8 @@ const currentStep = computed(() => wizardStore.currentStep);
 const isLastStep = computed(() => currentStepCode.value === 'review');
 const hasErrors = computed(() => currentValidation.value.errors.length > 0);
 const firstError = computed(() => currentValidation.value.errors[0] ?? '');
-const canCreate = computed(() => allStepsValidation.value.isValid);
+// Use positive logic for clarity: button is enabled when all steps are valid
+const isReadyToCreate = computed(() => allStepsValidation.value.isValid);
 
 function previousStep() {
   wizardStore.previousStep();
@@ -69,11 +70,11 @@ function nextStep() {
   bottom: 0;
   z-index: 100;
   background-color: var(--q-dark-page);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid $color-border-dark;
 
   .body--light & {
-    background-color: #fff;
-    border-top-color: rgba(0, 0, 0, 0.12);
+    background-color: $color-background-light;
+    border-top-color: $color-border-light;
   }
 }
 </style>

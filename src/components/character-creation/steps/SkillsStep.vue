@@ -34,6 +34,7 @@
               <div
                 class="text-body1 q-mx-sm"
                 style="min-width: 30px; text-align: center"
+                role="status"
                 :aria-label="`${skill.name} rank: ${getSkillRank(skill.id)}`"
               >
                 {{ getSkillRank(skill.id) }}
@@ -120,7 +121,9 @@ function setSkillModifier(skillId: number, value: string | number | null) {
   if (value === null) return;
   const numValue = typeof value === 'string' ? Number(value) : value;
   if (Number.isNaN(numValue)) return;
-  heroStore.setSkillModifier(skillId, numValue);
+  // Clamp value to min/max bounds
+  const clampedValue = Math.max(-10, Math.min(10, numValue));
+  heroStore.setSkillModifier(skillId, clampedValue);
 }
 
 function incrementSkill(skillId: number) {

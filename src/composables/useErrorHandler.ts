@@ -4,6 +4,20 @@ import { useQuasar } from 'quasar';
 import { logger } from 'src/utils/logger';
 import { useAuthStore } from 'src/stores/auth';
 
+/**
+ * Sanitize a message string to prevent XSS when displaying server-provided content.
+ * Escapes HTML special characters to prevent injection.
+ */
+function sanitizeMessage(message: string | undefined): string | undefined {
+  if (!message) return message;
+  return message
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 interface ErrorContext {
   retryFn?: () => Promise<void> | void;
   retryKey?: string;
@@ -14,17 +28,33 @@ interface ErrorContext {
   navigateToErrorPage?: boolean;
 }
 
+/**
+ * API error shape compatible with Axios error structure.
+ * Extends Error to ensure stack traces and message are preserved.
+ */
 interface ApiError extends Error {
+  /** HTTP response details from Axios */
   response?: {
     status: number;
     statusText: string;
-    data?: { message?: string };
+    data?: {
+      message?: string;
+      error?: string;
+      errors?: Record<string, string[]>;
+    };
   };
+  /** Request configuration from Axios */
   config?: {
     url?: string;
     method?: string;
+    baseURL?: string;
   };
+  /** Direct status for non-Axios errors */
   status?: number;
+  /** Axios error code (e.g., 'ECONNABORTED', 'ERR_NETWORK') */
+  code?: string;
+  /** Whether request was made but no response received */
+  request?: unknown;
 }
 
 /**
@@ -41,8 +71,10 @@ export function useErrorHandler() {
   const authStore = useAuthStore();
 
   // Track retry attempts per request to prevent infinite loops
+  // Note: Map entries are cleaned up on success or final failure to prevent memory leaks
   const retryAttempts = ref(new Map<string, number>());
   const MAX_RETRIES = 3;
+  const MAX_TRACKED_KEYS = 100; // Safety limit to prevent unbounded growth
 
   /**
    * Automatic retry with exponential backoff
@@ -82,6 +114,18 @@ export function useErrorHandler() {
     // Increment retry count
     retryAttempts.value.set(retryKey, attempts + 1);
 
+    // Safety: prevent unbounded Map growth if cleanup fails
+    if (retryAttempts.value.size > MAX_TRACKED_KEYS) {
+      // Remove oldest entries (first inserted)
+      const keysToRemove = Array.from(retryAttempts.value.keys()).slice(
+        0,
+        retryAttempts.value.size - MAX_TRACKED_KEYS
+      );
+      for (const key of keysToRemove) {
+        retryAttempts.value.delete(key);
+      }
+    }
+
     // Automatically retry after delay
     setTimeout(() => {
       Promise.resolve(retryFn())
@@ -105,9 +149,10 @@ export function useErrorHandler() {
    * Main error handler - routes to appropriate handler based on error type
    */
   function handleError(error: ApiError, context: ErrorContext = {}): void {
-    // Extract error info
+    // Extract error info and sanitize server-provided message to prevent XSS
     const status = error.response?.status ?? error.status;
-    const message = error.response?.data?.message ?? error.message;
+    const rawMessage = error.response?.data?.message ?? error.message;
+    const message = sanitizeMessage(rawMessage);
 
     // Log error with structured data
     logger.error('Error occurred', {

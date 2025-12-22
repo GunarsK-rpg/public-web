@@ -19,7 +19,7 @@
       </q-banner>
 
       <div v-else-if="campaigns.length === 0" class="text-center q-pa-xl">
-        <q-icon name="folder_off" size="64px" color="grey-5" />
+        <q-icon name="folder_off" size="64px" color="grey-5" aria-hidden="true" />
         <div class="text-h6 text-grey-7 q-mt-md">No campaigns found</div>
         <div class="text-body2 text-grey-6">You haven't joined any campaigns yet.</div>
       </div>
@@ -87,8 +87,9 @@ function formatDate(dateString: string | undefined): string {
   if (!dateString) return 'Unknown';
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return 'Unknown';
-  // Use navigator.language for user's locale preference with explicit formatting options
-  return date.toLocaleDateString(navigator.language, {
+  // Use navigator.language for user's locale preference with SSR-safe fallback
+  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en-US';
+  return date.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

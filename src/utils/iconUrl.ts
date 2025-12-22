@@ -20,6 +20,14 @@ const equipmentIcons: Record<string, string> = import.meta.glob('../assets/icons
 });
 
 /**
+ * Lookup map for O(1) icon type to modules mapping
+ */
+const iconModules: Record<IconType, Record<string, string>> = {
+  actions: actionIcons,
+  equipment: equipmentIcons,
+};
+
+/**
  * Get icon URL from icon name and type
  * @param iconName - Icon filename (e.g., 'action.svg')
  * @param iconType - Icon type/subfolder (e.g., 'actions')
@@ -28,8 +36,9 @@ const equipmentIcons: Record<string, string> = import.meta.glob('../assets/icons
 export function getIconUrl(iconName: string | undefined, iconType: IconType): string {
   if (!iconName) return '';
 
-  const modules = iconType === 'actions' ? actionIcons : equipmentIcons;
-  const key = `../assets/icons/${iconType}/${iconName}`;
+  const modules = iconModules[iconType];
+  if (!modules) return '';
 
+  const key = `../assets/icons/${iconType}/${iconName}`;
   return modules[key] ?? '';
 }

@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, type Component } from 'vue';
 import { useRouter } from 'vue-router';
 import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
@@ -76,7 +76,7 @@ const tabs = [
 ] as const;
 
 // Map tab IDs to their components for dynamic rendering
-const tabComponents: Record<string, typeof StatsTab> = {
+const tabComponents: Record<string, Component> = {
   stats: StatsTab,
   skills: SkillsTab,
   actions: ActionsTab,

@@ -32,8 +32,13 @@
       <StepTabs />
     </div>
 
+    <!-- Loading state -->
+    <div v-if="initializing" class="flex flex-center q-pa-xl step-content">
+      <q-spinner-dots size="50px" color="primary" aria-label="Loading character creation" />
+    </div>
+
     <!-- Step Content -->
-    <div :id="`step-panel-${currentStep}`" class="q-pa-md step-content" role="tabpanel">
+    <div v-else :id="`step-panel-${currentStep}`" class="q-pa-md step-content" role="tabpanel">
       <component :is="currentStepComponent" />
     </div>
 
@@ -63,6 +68,7 @@ import { useQuasar } from 'quasar';
 import { useWizardStore } from 'stores/wizard';
 import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
+import { logger } from 'src/utils/logger';
 
 // Shared components
 import StepTabs from 'components/character-creation/shared/StepTabs.vue';
@@ -90,6 +96,7 @@ const classifierStore = useClassifierStore();
 // State
 const creating = ref(false);
 const showResetDialog = ref(false);
+const initializing = ref(true);
 
 const stepComponents: Record<number, Component> = {
   1: BasicSetupStep,
@@ -110,7 +117,11 @@ const currentStep = computed(() => wizardStore.currentStep);
 const currentStepComponent = computed(() => {
   const component = stepComponents[currentStep.value];
   if (!component) {
-    console.error(`Invalid step ${currentStep.value}, defaulting to step 1`);
+    // Log issue for debugging rather than silent fallback
+    logger.warn('Invalid wizard step, defaulting to step 1', {
+      requestedStep: currentStep.value,
+      availableSteps: Object.keys(stepComponents).map(Number),
+    });
     return stepComponents[1];
   }
   return component;
@@ -136,7 +147,7 @@ async function createCharacter(): Promise<void> {
     heroStore.clearHero();
     void router.push('/campaigns');
   } catch (err) {
-    console.error('Failed to create character:', err);
+    logger.error('Failed to create character', err instanceof Error ? err : { error: String(err) });
     $q.notify({
       type: 'negative',
       message: 'Failed to create character',
@@ -173,13 +184,18 @@ onMounted(async () => {
       wizardStore.startCreate();
     }
   } catch (error) {
-    console.error('Failed to initialize character creation:', error);
+    logger.error(
+      'Failed to initialize character creation',
+      error instanceof Error ? error : { error: String(error) }
+    );
     $q.notify({
       type: 'negative',
       message: 'Failed to initialize',
       caption: 'Unable to load required data. Please refresh the page.',
       timeout: 8000,
     });
+  } finally {
+    initializing.value = false;
   }
 });
 </script>

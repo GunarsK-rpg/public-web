@@ -29,25 +29,32 @@
 
             <div class="text-caption">
               <div class="row items-center q-mb-xs">
-                <q-icon name="sym_o_payments" size="xs" class="q-mr-xs" />
+                <q-icon name="sym_o_payments" size="xs" class="q-mr-xs" aria-hidden="true" />
                 <span>
                   <strong>{{ kit.startingSpheres }}</strong> marks
                 </span>
               </div>
 
-              <div
-                v-if="kit.expertises && kit.expertises.length > 0"
-                class="row items-center q-mb-xs"
-              >
-                <q-icon name="sym_o_workspace_premium" size="xs" class="q-mr-xs" />
+              <div v-if="kit.expertises?.[0]?.expertiseId" class="row items-center q-mb-xs">
+                <q-icon
+                  name="sym_o_workspace_premium"
+                  size="xs"
+                  class="q-mr-xs"
+                  aria-hidden="true"
+                />
                 <span>
                   <strong>+1</strong>
-                  {{ findById(classifiers.expertises, kit.expertises[0]!.expertiseId)?.name }}
+                  {{ findById(classifiers.expertises, kit.expertises[0].expertiseId)?.name }}
                 </span>
               </div>
 
               <div class="row items-start">
-                <q-icon name="sym_o_inventory_2" size="xs" class="q-mr-xs q-mt-xs" />
+                <q-icon
+                  name="sym_o_inventory_2"
+                  size="xs"
+                  class="q-mr-xs q-mt-xs"
+                  aria-hidden="true"
+                />
                 <span>{{ getEquipmentSummary(kit) }}</span>
               </div>
             </div>
@@ -77,7 +84,7 @@
 
           <!-- Selection indicator -->
           <div v-if="selectedKitId === kit.id" class="selection-indicator">
-            <q-icon name="check_circle" color="primary" />
+            <q-icon name="check_circle" color="primary" aria-hidden="true" />
           </div>
         </q-card>
       </div>
@@ -86,7 +93,7 @@
     <!-- Special notes for prisoner kit -->
     <q-banner v-if="isPrisonerKit" class="bg-amber-2 q-mt-md" rounded>
       <template v-slot:avatar>
-        <q-icon name="auto_awesome" color="amber-8" />
+        <q-icon name="auto_awesome" color="amber-8" aria-hidden="true" />
       </template>
       <div class="text-caption">
         <strong>Prisoner Kit Special:</strong> You begin bonded to a Radiant spren at Ideal 1. You
@@ -142,7 +149,7 @@ function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .kit-card {
   position: relative;
   transition:
@@ -153,7 +160,7 @@ function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
 
 .kit-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px $color-shadow;
 }
 
 .selection-indicator {

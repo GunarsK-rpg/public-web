@@ -97,9 +97,8 @@ async function handleLogin(): Promise<void> {
     } else {
       error.value = 'Invalid username or password';
     }
-  } catch (err) {
-    // Handle network errors or unexpected failures
-    console.error('Login error:', err);
+  } catch {
+    // Handle network errors or unexpected failures (don't log error object in production)
     error.value = 'Unable to connect. Please check your connection and try again.';
   } finally {
     loading.value = false;

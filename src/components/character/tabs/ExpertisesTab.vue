@@ -9,7 +9,7 @@
       <div class="category-title">{{ expType.name }}</div>
       <template v-if="expertisesByTypeRecord[expType.id]?.length">
         <q-chip v-for="heroExp in expertisesByTypeRecord[expType.id]" :key="heroExp.id">
-          {{ findById(classifiers.expertises, heroExp.expertiseId)?.name }}
+          {{ getExpertiseName(heroExp.expertiseId) }}
           <q-badge v-if="heroExp.source" color="grey" class="q-ml-xs">
             {{ heroExp.source.sourceType }}
           </q-badge>
@@ -24,7 +24,6 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById } from 'src/utils/arrayUtils';
 import type { HeroExpertise } from 'src/types';
 
 const heroStore = useHeroStore();
@@ -41,6 +40,19 @@ const expertisesByTypeRecord = computed((): Record<number, HeroExpertise[]> => {
     'expertiseTypeId'
   );
 });
+
+// Pre-compute expertise names to avoid repeated lookups in template
+const expertiseNamesMap = computed((): Map<number, string> => {
+  const map = new Map<number, string>();
+  for (const exp of classifiers.expertises) {
+    map.set(exp.id, exp.name);
+  }
+  return map;
+});
+
+function getExpertiseName(expertiseId: number): string {
+  return expertiseNamesMap.value.get(expertiseId) ?? 'Unknown';
+}
 </script>
 
 <style scoped>

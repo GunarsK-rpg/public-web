@@ -41,7 +41,6 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById } from 'src/utils/arrayUtils';
 import type { Skill } from 'src/types';
 
 const heroStore = useHeroStore();
@@ -57,8 +56,17 @@ const skillsByAttrType = computed((): Record<number, Skill[]> => {
   );
 });
 
+// Pre-computed attribute code lookup for O(1) access
+const attributeCodeMap = computed(() => {
+  const map = new Map<number, string>();
+  for (const attr of classifiers.attributes) {
+    map.set(attr.id, attr.code.toUpperCase());
+  }
+  return map;
+});
+
 function getAttributeCode(attrId: number): string {
-  return findById(classifiers.attributes, attrId)?.code.toUpperCase() ?? '';
+  return attributeCodeMap.value.get(attrId) ?? '';
 }
 
 function formatModifier(value: number): string {

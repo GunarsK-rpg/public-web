@@ -48,9 +48,10 @@ export const useHeroStore = defineStore('hero', () => {
   const error = ref<string | null>(null);
 
   // Temporary ID counter for new items (negative to distinguish from DB IDs)
-  let tempIdCounter = -1;
+  // Using ref ensures counter persists across HMR and is reactive
+  const tempIdCounter = ref(-1);
   function nextTempId(): number {
-    return tempIdCounter--;
+    return tempIdCounter.value--;
   }
 
   // ===================
@@ -72,21 +73,22 @@ export const useHeroStore = defineStore('hero', () => {
   const injuries = computed(() => hero.value?.injuries ?? []);
   const cultures = computed(() => hero.value?.cultures ?? []);
 
+  // Get classifier store reference once at setup time (not inside computed)
+  // This avoids creating new store refs on each computed evaluation
+  const classifierStore = useClassifierStore();
+
   const isSinger = computed(() => {
     if (!hero.value) return false;
-    const classifiers = useClassifierStore();
-    const singerAncestry = findByCode(classifiers.ancestries, 'singer');
+    const singerAncestry = findByCode(classifierStore.ancestries, 'singer');
     return hero.value.ancestryId === singerAncestry?.id;
   });
 
   const levelData = computed(() => {
-    const classifiers = useClassifierStore();
-    return findByProp(classifiers.levels, 'level', hero.value?.level || 1);
+    return findByProp(classifierStore.levels, 'level', hero.value?.level || 1);
   });
 
   const tierData = computed(() => {
-    const classifiers = useClassifierStore();
-    return findById(classifiers.tiers, levelData.value?.tierId);
+    return findById(classifierStore.tiers, levelData.value?.tierId);
   });
 
   // ===================
@@ -143,8 +145,19 @@ export const useHeroStore = defineStore('hero', () => {
 
     try {
       // TODO: Replace with actual API call
-      const { heroes } = await import('src/mock/heroes');
-      const found = heroes.find((h) => h.id === id);
+      let heroesModule;
+      try {
+        heroesModule = await import('src/mock/heroes');
+      } catch (importErr) {
+        error.value = 'Failed to load hero data module';
+        logger.error('Failed to import heroes module', {
+          id,
+          error: importErr instanceof Error ? importErr.message : String(importErr),
+          stack: importErr instanceof Error ? importErr.stack : undefined,
+        });
+        return;
+      }
+      const found = heroesModule.heroes.find((h) => h.id === id);
       if (found) {
         // Deep clone to avoid mutating shared mock data
         hero.value = structuredClone(found);
@@ -158,6 +171,7 @@ export const useHeroStore = defineStore('hero', () => {
       logger.error('Failed to load hero', {
         id,
         error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
       });
     } finally {
       loading.value = false;
@@ -169,14 +183,14 @@ export const useHeroStore = defineStore('hero', () => {
     if (campaignId !== undefined) {
       hero.value.campaignId = campaignId;
     }
-    tempIdCounter = -1;
+    tempIdCounter.value = -1;
     logger.info('New hero initialized', { campaignId });
   }
 
   function clearHero(): void {
     hero.value = null;
     error.value = null;
-    tempIdCounter = -1;
+    tempIdCounter.value = -1;
   }
 
   function setError(message: string): void {
@@ -223,8 +237,9 @@ export const useHeroStore = defineStore('hero', () => {
 
     // Remove previous ancestry talents if changing ancestry
     if (hero.value.ancestryId) {
+      const prevAncestryId = hero.value.ancestryId;
       const prevAncestryTalentIds = classifiers.talents
-        .filter((t) => t.ancestryId === hero.value!.ancestryId)
+        .filter((t) => t.ancestryId === prevAncestryId)
         .map((t) => t.id);
       hero.value.talents = hero.value.talents.filter(
         (t) => !prevAncestryTalentIds.includes(t.talentId)
@@ -557,19 +572,23 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   // EQUIPMENT
   // ===================
+  // Maximum stack size for equipment items
+  const MAX_EQUIPMENT_STACK = 999;
+
   function addEquipment(equipmentId: number, amount: number = 1) {
     if (!hero.value) return;
     // Validate amount - must be positive
     const validAmount = Math.max(1, Math.floor(amount));
     const existing = hero.value.equipment.find((e) => e.equipmentId === equipmentId);
     if (existing) {
-      existing.amount += validAmount;
+      // Cap at max stack size
+      existing.amount = Math.min(existing.amount + validAmount, MAX_EQUIPMENT_STACK);
     } else {
       hero.value.equipment.push({
         id: nextTempId(),
         heroId: hero.value.id,
         equipmentId,
-        amount: validAmount,
+        amount: Math.min(validAmount, MAX_EQUIPMENT_STACK),
         isEquipped: false,
         isPrimary: false,
       });
@@ -606,8 +625,8 @@ export const useHeroStore = defineStore('hero', () => {
     });
   }
 
-  function removeGoalById(goalId: number) {
-    removeById(hero.value?.goals, goalId);
+  function removeGoalById(goalId: number): boolean {
+    return removeById(hero.value?.goals, goalId);
   }
 
   /** @deprecated Use removeGoalById for race-condition safe removal */
@@ -630,8 +649,8 @@ export const useHeroStore = defineStore('hero', () => {
     });
   }
 
-  function removeConnectionById(connectionId: number) {
-    removeById(hero.value?.connections, connectionId);
+  function removeConnectionById(connectionId: number): boolean {
+    return removeById(hero.value?.connections, connectionId);
   }
 
   /** @deprecated Use removeConnectionById for race-condition safe removal */

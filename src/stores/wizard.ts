@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { WIZARD_STEPS } from 'src/types/wizard';
 import { useHeroStore } from './hero';
+import { logger } from 'src/utils/logger';
 
 export type WizardMode = 'create' | 'edit' | 'levelup';
 
@@ -16,9 +17,13 @@ export const useWizardStore = defineStore('wizard', () => {
   // STATE
   // ===================
   const currentStep = ref(1);
-  const completedSteps = ref<number[]>([]);
+  // Use Set for O(1) lookup performance instead of Array.includes()
+  const completedStepsSet = ref<Set<number>>(new Set());
   const mode = ref<WizardMode>('create');
   const isActive = ref(false);
+
+  // Expose as array for backwards compatibility with existing consumers
+  const completedSteps = computed(() => Array.from(completedStepsSet.value));
 
   // ===================
   // COMPUTED
@@ -30,8 +35,8 @@ export const useWizardStore = defineStore('wizard', () => {
   const progress = computed(() => ({
     current: currentStep.value,
     total: WIZARD_STEPS.length,
-    completed: completedSteps.value.length,
-    percentage: Math.round((completedSteps.value.length / WIZARD_STEPS.length) * 100),
+    completed: completedStepsSet.value.size,
+    percentage: Math.round((completedStepsSet.value.size / WIZARD_STEPS.length) * 100),
   }));
 
   // ===================
@@ -57,17 +62,15 @@ export const useWizardStore = defineStore('wizard', () => {
   }
 
   function markStepCompleted(step: number) {
-    if (!completedSteps.value.includes(step)) {
-      completedSteps.value.push(step);
-    }
+    completedStepsSet.value.add(step);
   }
 
   function markStepIncomplete(step: number) {
-    completedSteps.value = completedSteps.value.filter((s) => s !== step);
+    completedStepsSet.value.delete(step);
   }
 
   function isStepCompleted(step: number): boolean {
-    return completedSteps.value.includes(step);
+    return completedStepsSet.value.has(step);
   }
 
   // ===================
@@ -78,7 +81,7 @@ export const useWizardStore = defineStore('wizard', () => {
     heroStore.initNewHero(campaignId);
     mode.value = 'create';
     currentStep.value = 1;
-    completedSteps.value = [];
+    completedStepsSet.value = new Set();
     isActive.value = true;
   }
 
@@ -89,11 +92,14 @@ export const useWizardStore = defineStore('wizard', () => {
       mode.value = 'edit';
       currentStep.value = 1;
       // In edit mode, consider all steps completed initially
-      completedSteps.value = WIZARD_STEPS.map((s) => s.id);
+      completedStepsSet.value = new Set(WIZARD_STEPS.map((s) => s.id));
       isActive.value = true;
       return true;
     } catch (error) {
-      console.error('Failed to load hero for editing:', error);
+      logger.error(
+        'Failed to load hero for editing',
+        error instanceof Error ? error : { error: String(error) }
+      );
       reset();
       return false;
     }
@@ -108,11 +114,16 @@ export const useWizardStore = defineStore('wizard', () => {
       const attributesStepId = getStepIdByCode('attributes');
       currentStep.value = attributesStepId;
       // Mark steps before attributes as completed (basic-setup, ancestry, culture)
-      completedSteps.value = WIZARD_STEPS.filter((s) => s.id < attributesStepId).map((s) => s.id);
+      completedStepsSet.value = new Set(
+        WIZARD_STEPS.filter((s) => s.id < attributesStepId).map((s) => s.id)
+      );
       isActive.value = true;
       return true;
     } catch (error) {
-      console.error('Failed to load hero for level up:', error);
+      logger.error(
+        'Failed to load hero for level up',
+        error instanceof Error ? error : { error: String(error) }
+      );
       reset();
       return false;
     }
@@ -126,7 +137,7 @@ export const useWizardStore = defineStore('wizard', () => {
 
   function reset() {
     currentStep.value = 1;
-    completedSteps.value = [];
+    completedStepsSet.value = new Set();
     mode.value = 'create';
     isActive.value = false;
   }

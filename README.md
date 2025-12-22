@@ -52,15 +52,15 @@ public-web/
 
 1. Install dependencies:
 
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
 1. Run development server:
 
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
 1. Access at: `http://localhost:7100`
 

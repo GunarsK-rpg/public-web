@@ -10,6 +10,7 @@
       outlined
       emit-value
       map-options
+      :rules="[(val) => !!val || 'Primary culture is required']"
       class="q-mb-md"
       @update:model-value="setPrimaryCulture"
     />
@@ -38,7 +39,7 @@
     <!-- Cultural Expertises Info Banner -->
     <q-banner v-if="culturalExpertiseNames.length > 0" class="banner-info q-mt-md">
       <template v-slot:avatar>
-        <q-icon name="sym_o_workspace_premium" />
+        <q-icon name="sym_o_workspace_premium" aria-hidden="true" />
       </template>
       <div><strong>Cultural Expertises:</strong> {{ culturalExpertiseNames.join(', ') }}</div>
     </q-banner>

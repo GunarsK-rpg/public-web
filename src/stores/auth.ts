@@ -45,6 +45,8 @@ export const useAuthStore = defineStore('auth', () => {
           ) {
             token.value = data.token;
             user.value = data.user;
+            // Restore logger context for restored sessions
+            setUserContext(data.user);
           } else {
             localStorage.removeItem(STORAGE_KEY);
           }
@@ -91,7 +93,7 @@ export const useAuthStore = defineStore('auth', () => {
         email: `${username}@example.com`,
       };
       setAuth('mock-token-' + Date.now(), mockUser);
-      logger.info('User logged in', { userId: mockUser.id, username: mockUser.username });
+      logger.info('User logged in', { userId: mockUser.id });
       return true;
     } catch (err) {
       logger.error('Login failed', err instanceof Error ? err : { error: String(err) });

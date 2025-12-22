@@ -39,13 +39,13 @@
               <q-separator />
               <q-item clickable v-close-popup @click="goToCampaigns">
                 <q-item-section avatar>
-                  <q-icon name="list" />
+                  <q-icon name="list" aria-hidden="true" />
                 </q-item-section>
                 <q-item-section>Campaigns</q-item-section>
               </q-item>
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
-                  <q-icon name="logout" />
+                  <q-icon name="logout" aria-hidden="true" />
                 </q-item-section>
                 <q-item-section>Logout</q-item-section>
               </q-item>
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useAuthStore } from 'stores/auth';
@@ -96,24 +96,34 @@ function goBack(): void {
   router.back();
 }
 
-function goToCampaigns(): void {
-  void router.push({ name: 'campaigns' });
-}
-
-function logout(): void {
-  authStore.logout();
-  void router.push({ name: 'login' });
-}
-
-// Initialize dark mode from storage
-try {
-  const savedDarkMode = localStorage.getItem('darkMode');
-  if (savedDarkMode === 'true') {
-    $q.dark.set(true);
-  } else if (savedDarkMode === 'false') {
-    $q.dark.set(false);
+async function goToCampaigns(): Promise<void> {
+  try {
+    await router.push({ name: 'campaigns' });
+  } catch {
+    // Navigation cancelled or duplicate navigation - ignore
   }
-} catch {
-  // localStorage may be unavailable (SSR, private browsing, etc.)
 }
+
+async function logout(): Promise<void> {
+  authStore.logout();
+  try {
+    await router.push({ name: 'login' });
+  } catch {
+    // Navigation cancelled or duplicate navigation - ignore
+  }
+}
+
+// Initialize dark mode from storage (in onMounted for SSR safety)
+onMounted(() => {
+  try {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode === 'true') {
+      $q.dark.set(true);
+    } else if (savedDarkMode === 'false') {
+      $q.dark.set(false);
+    }
+  } catch {
+    // localStorage may be unavailable (private browsing, etc.)
+  }
+});
 </script>

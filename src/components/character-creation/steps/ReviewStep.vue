@@ -3,9 +3,9 @@
     <div class="text-subtitle1 q-mb-md">Review your character before creation</div>
 
     <!-- Validation Summary -->
-    <q-banner v-if="!isValid" class="banner-error q-mb-md">
+    <q-banner v-if="!isValid" class="banner-error q-mb-md" role="alert" aria-live="polite">
       <template v-slot:avatar>
-        <q-icon name="sym_o_error" />
+        <q-icon name="sym_o_error" aria-hidden="true" />
       </template>
       <div class="text-subtitle2">Validation Errors</div>
       <ul class="q-pl-md q-my-xs">
@@ -13,9 +13,9 @@
       </ul>
     </q-banner>
 
-    <q-banner v-else class="banner-success q-mb-md">
+    <q-banner v-else class="banner-success q-mb-md" role="status" aria-live="polite">
       <template v-slot:avatar>
-        <q-icon name="sym_o_check_circle" />
+        <q-icon name="sym_o_check_circle" aria-hidden="true" />
       </template>
       Character is ready to create!
     </q-banner>
@@ -216,14 +216,11 @@ const attributeDisplay = computed(() =>
 
 // Derived stats calculated from attributes
 const derivedStatsList = computed(() => {
-  const attrs = {
-    str: heroStore.getAttributeValue('str'),
-    spd: heroStore.getAttributeValue('spd'),
-    int: heroStore.getAttributeValue('int'),
-    wil: heroStore.getAttributeValue('wil'),
-    awa: heroStore.getAttributeValue('awa'),
-    pre: heroStore.getAttributeValue('pre'),
-  };
+  // Build attrs dynamically from classifier codes
+  const attrs: Record<string, number> = {};
+  for (const attr of classifiers.attributes) {
+    attrs[attr.code] = heroStore.getAttributeValue(attr.code);
+  }
 
   return buildDerivedStatsList(
     classifiers.derivedStats,
