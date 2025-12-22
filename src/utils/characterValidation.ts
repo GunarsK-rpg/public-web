@@ -27,6 +27,9 @@ export interface SkillsBudgetValidation extends BudgetValidation {
   maxRank: number;
 }
 
+// Base expertise slots before Intellect bonus (from game rules)
+const BASE_EXPERTISE_SLOTS = 2;
+
 function validateAttributes(
   levelData: Level | undefined,
   attributes: HeroAttribute[]
@@ -83,7 +86,7 @@ function validateExpertises(intellectValue: number, expertises: HeroExpertise[])
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  const budget = 2 + intellectValue;
+  const budget = BASE_EXPERTISE_SLOTS + intellectValue;
   // Count only non-starting-kit expertises
   const spent = expertises.filter((e) => e.source?.sourceType !== 'starting_kit').length;
   const remaining = budget - spent;

@@ -91,7 +91,8 @@ onMounted(async () => {
 
 function setName(val: string | number | null) {
   if (val !== null) {
-    heroStore.setName(String(val));
+    // Trim whitespace to match validation rule and prevent storing whitespace-only names
+    heroStore.setName(String(val).trim());
   }
 }
 

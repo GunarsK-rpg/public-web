@@ -691,8 +691,20 @@ export const useHeroStore = defineStore('hero', () => {
     error.value = null;
 
     try {
+      // Validate resource values are non-negative integers
+      const validated: Partial<typeof resources> = {};
+      if (resources.currentHealth !== undefined) {
+        validated.currentHealth = Math.max(0, Math.floor(resources.currentHealth));
+      }
+      if (resources.currentFocus !== undefined) {
+        validated.currentFocus = Math.max(0, Math.floor(resources.currentFocus));
+      }
+      if (resources.currentInvestiture !== undefined) {
+        validated.currentInvestiture = Math.max(0, Math.floor(resources.currentInvestiture));
+      }
+
       // TODO: API call
-      Object.assign(hero.value, resources);
+      Object.assign(hero.value, validated);
       return { success: true };
     } catch (err) {
       error.value = 'Failed to update resources';

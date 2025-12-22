@@ -66,6 +66,7 @@ import { computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useAuthStore } from 'stores/auth';
+import { logger } from 'src/utils/logger';
 
 const router = useRouter();
 const route = useRoute();
@@ -122,8 +123,11 @@ onMounted(() => {
     } else if (savedDarkMode === 'false') {
       $q.dark.set(false);
     }
-  } catch {
+  } catch (err) {
     // localStorage may be unavailable (private browsing, etc.)
+    logger.debug('localStorage unavailable for dark mode', {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 });
 </script>

@@ -1710,6 +1710,7 @@ const talentsByAncestry = new Map<number, Talent[]>();
 const talentsByRadiantOrder = new Map<number, Talent[]>();
 const keyTalentsByPath = new Map<number, Talent>();
 const keyTalentsByAncestry = new Map<number, Talent>();
+const keyTalentsByRadiantOrder = new Map<number, Talent>();
 
 // Build indexes on module load
 for (const talent of talents) {
@@ -1733,6 +1734,9 @@ for (const talent of talents) {
     const existing = talentsByRadiantOrder.get(talent.radiantOrderId) ?? [];
     existing.push(talent);
     talentsByRadiantOrder.set(talent.radiantOrderId, existing);
+    if (talent.isKey) {
+      keyTalentsByRadiantOrder.set(talent.radiantOrderId, talent);
+    }
   }
 }
 
@@ -1800,10 +1804,10 @@ export function getAncestryKeyTalent(ancestryId: number): Talent | undefined {
 }
 
 /**
- * Get the key talent for a Radiant order
+ * Get the key talent for a Radiant order (O(1) lookup from pre-computed index)
  */
 export function getRadiantOrderKeyTalent(radiantOrderId: number): Talent | undefined {
-  return talents.find((t) => t.radiantOrderId === radiantOrderId && t.isKey);
+  return keyTalentsByRadiantOrder.get(radiantOrderId);
 }
 
 /**

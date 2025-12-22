@@ -3,7 +3,7 @@
     <div class="text-center">
       <q-icon name="sym_o_lock" size="120px" color="negative" aria-hidden="true" />
 
-      <div class="q-mt-lg" role="alert" aria-live="assertive">
+      <div class="q-mt-lg" role="status" aria-live="polite">
         <h1 class="error-code text-negative">403</h1>
         <h2 class="error-title">Access Forbidden</h2>
         <p class="error-message text-grey-7">You don't have permission to access this resource.</p>

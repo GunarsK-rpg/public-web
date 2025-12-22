@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import EquipmentItem from './EquipmentItem.vue';
@@ -53,8 +53,20 @@ import type { HeroEquipment } from 'src/types';
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
-// Default to first equipment type
+// Active tab with sync to equipmentTypes (handles async classifier loading)
 const activeTab = ref(classifiers.equipmentTypes[0]?.id ?? 0);
+
+// Sync activeTab when equipmentTypes become available (async classifier init)
+watch(
+  () => classifiers.equipmentTypes,
+  (types) => {
+    const firstType = types[0];
+    if (firstType && activeTab.value === 0) {
+      activeTab.value = firstType.id;
+    }
+  },
+  { immediate: true }
+);
 
 // Currency value in diamond marks
 const totalCurrencyValue = computed(() => heroStore.hero?.currency ?? 0);

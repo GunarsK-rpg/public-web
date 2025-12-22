@@ -1,7 +1,8 @@
 /**
  * Debounced function interface with cancel method for cleanup
  */
-export interface DebouncedFunction<T extends (...args: never[]) => void> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface DebouncedFunction<T extends (...args: any[]) => void> {
   (...args: Parameters<T>): void;
   cancel: () => void;
 }
@@ -19,7 +20,8 @@ export interface DebouncedFunction<T extends (...args: never[]) => void> {
  * debouncedSave('test');
  * // On unmount: debouncedSave.cancel();
  */
-export function debounce<T extends (...args: never[]) => void>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce<T extends (...args: any[]) => void>(
   fn: T,
   delay: number
 ): DebouncedFunction<T> {

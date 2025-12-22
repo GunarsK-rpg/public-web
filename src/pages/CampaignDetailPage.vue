@@ -72,12 +72,7 @@
               <q-card-section>
                 <div class="health-bar">
                   <q-linear-progress
-                    :value="
-                      Math.max(
-                        0,
-                        Math.min(1, hero.maxHealth > 0 ? hero.currentHealth / hero.maxHealth : 0)
-                      )
-                    "
+                    :value="getHealthPercent(hero.currentHealth, hero.maxHealth)"
                     color="negative"
                     class="q-mb-xs"
                   />
@@ -100,6 +95,7 @@ import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'src/stores/campaigns';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import { logger } from 'src/utils/logger';
 
 const props = defineProps<{
   campaignId: string;
@@ -113,6 +109,12 @@ const campaign = computed(() => campaignStore.currentCampaign);
 const loading = computed(() => campaignStore.loading);
 const error = computed(() => campaignStore.error);
 
+// Calculate health percentage clamped to 0-1 (handles negative health edge case)
+function getHealthPercent(current: number, max: number): number {
+  if (max <= 0) return 0;
+  return Math.max(0, Math.min(1, current / max));
+}
+
 onMounted(async () => {
   const campaignId = Number(props.campaignId);
   if (isNaN(campaignId) || campaignId <= 0) {
@@ -121,7 +123,14 @@ onMounted(async () => {
   }
   // Initialize classifiers before loading campaign to ensure radiant order names are available
   if (!classifiers.initialized) {
-    await classifiers.initialize();
+    try {
+      await classifiers.initialize();
+    } catch (err) {
+      logger.error('Failed to initialize classifiers', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      // Continue loading campaign - radiant order names may be missing but page still works
+    }
   }
   await campaignStore.selectCampaign(campaignId);
 });
@@ -155,7 +164,13 @@ function createCharacter(): void {
     box-shadow 0.2s;
 }
 
-.character-card:hover {
+.character-card:hover,
+.character-card:focus {
   transform: translateY(-2px);
+}
+
+.character-card:focus {
+  outline: 2px solid var(--q-primary);
+  outline-offset: 2px;
 }
 </style>

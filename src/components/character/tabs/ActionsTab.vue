@@ -46,6 +46,18 @@ const classifiers = useClassifierStore();
 // Default to first action type
 const activeTab = ref(classifiers.actionTypes[0]?.id ?? 0);
 
+// Pre-compute action links map for O(1) lookup: objectId → Set<actionId>
+const actionLinksMap = computed(() => {
+  const map = new Map<number, Set<number>>();
+  for (const link of classifiers.actionLinks) {
+    if (!map.has(link.objectId)) {
+      map.set(link.objectId, new Set());
+    }
+    map.get(link.objectId)!.add(link.actionId);
+  }
+  return map;
+});
+
 // Pre-computed actions grouped by type to avoid repeated filter calls
 const actionsByType = computed((): Record<number, Action[]> => {
   const result: Record<number, Action[]> = {};
@@ -91,18 +103,20 @@ function getActionsByTypeId(actionTypeId: number): Action[] {
     return classifiers.actions.filter((a) => a.actionTypeId === actionTypeId);
   }
 
-  // Other action types - filter by actionLinks
+  // Other action types - filter by actionLinks using pre-computed map
   const heroObjectIds = getHeroObjectIds(actionType.code);
   if (heroObjectIds.size === 0) return [];
 
-  // Find action IDs linked to hero's objects
+  // Find action IDs linked to hero's objects using O(1) map lookup
   const linkedActionIds = new Set<number>();
-  for (const link of classifiers.actionLinks) {
-    if (heroObjectIds.has(link.objectId)) {
-      // Verify the action is of the correct type
-      const action = findById(classifiers.actions, link.actionId);
-      if (action?.actionTypeId === actionTypeId) {
-        linkedActionIds.add(link.actionId);
+  for (const objectId of heroObjectIds) {
+    const actionIds = actionLinksMap.value.get(objectId);
+    if (actionIds) {
+      for (const actionId of actionIds) {
+        const action = findById(classifiers.actions, actionId);
+        if (action?.actionTypeId === actionTypeId) {
+          linkedActionIds.add(actionId);
+        }
       }
     }
   }

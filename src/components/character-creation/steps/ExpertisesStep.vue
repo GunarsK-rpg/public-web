@@ -149,7 +149,8 @@ function getSource(expertiseId: number): string | null {
 
 function toggleExpertise(expertiseId: number, checked: boolean) {
   if (checked) {
-    if (slotsRemaining.value > 0) {
+    // Defensive guard: prevent adding if already selected (edge case from rapid clicks)
+    if (slotsRemaining.value > 0 && !isSelected(expertiseId)) {
       heroStore.addExpertise(expertiseId, { sourceType: 'intellect' });
     }
   } else if (!isReadOnly(expertiseId)) {
