@@ -28,9 +28,9 @@
         :name="eqType.id"
         class="q-pa-none"
       >
-        <q-list v-if="getEquipmentByTypeId(eqType.id).length > 0" bordered separator>
+        <q-list v-if="equipmentByType[eqType.id]?.length" bordered separator>
           <EquipmentItem
-            v-for="heroEquip in getEquipmentByTypeId(eqType.id)"
+            v-for="heroEquip in equipmentByType[eqType.id]"
             :key="heroEquip.id"
             :hero-equipment="heroEquip"
           />
@@ -59,13 +59,14 @@ const activeTab = ref(classifiers.equipmentTypes[0]?.id ?? 0);
 // Currency value in diamond marks
 const totalCurrencyValue = computed(() => heroStore.hero?.currency ?? 0);
 
-// Get hero's equipment filtered by equipment type ID
-function getEquipmentByTypeId(typeId: number): HeroEquipment[] {
-  if (!heroStore.hero?.equipment) return [];
-
-  return heroStore.hero.equipment.filter((heroEquip) => {
-    const eq = classifiers.getById(classifiers.equipment, heroEquip.equipmentId);
-    return eq?.equipTypeId === typeId;
-  });
-}
+// Hero equipment grouped by type (via heroEquip.equipmentId -> equipment.equipTypeId)
+const equipmentByType = computed((): Record<number, HeroEquipment[]> => {
+  if (!heroStore.hero?.equipment) return {};
+  return classifiers.groupByChainedKey(
+    heroStore.hero.equipment,
+    'equipmentId',
+    classifiers.equipment,
+    'equipTypeId'
+  );
+});
 </script>

@@ -33,13 +33,12 @@
 // Text Utilities
 // =============================================================================
 
-// Muted/placeholder text (theme-aware)
+// Muted/placeholder text (theme-aware with WCAG-compliant contrast)
 .text-muted {
-  color: $dark;
-  opacity: 0.6;
+  color: $color-text-muted-light;
 
   .body--dark & {
-    color: white;
+    color: $color-text-muted-dark;
   }
 }
 
@@ -48,13 +47,12 @@
   opacity: 0.8;
 }
 
-// Empty state / placeholder messages
+// Empty state / placeholder messages (WCAG-compliant contrast)
 .text-empty {
-  color: $dark;
-  opacity: 0.5;
+  color: $color-text-empty-light;
 
   .body--dark & {
-    color: white;
+    color: $color-text-empty-dark;
   }
 }
 
@@ -64,11 +62,11 @@
 
 // Info banner (contextual information)
 .banner-info {
-  background-color: #0097a7 !important; // cyan-700
+  background-color: $color-banner-info-light !important;
   color: white !important;
 
   .body--dark & {
-    background-color: #00838f !important; // cyan-800
+    background-color: $color-banner-info-dark !important;
   }
 }
 
@@ -96,41 +94,41 @@
 
 // Key talent banner - subdued gold/amber
 .banner-key-talent {
-  background-color: #b8860b !important; // dark goldenrod
+  background-color: $color-key-talent-light !important;
   color: white !important;
 
   .body--dark & {
-    background-color: #8b6914 !important; // darker gold for dark mode
+    background-color: $color-key-talent-dark !important;
   }
 }
 
 // Heroic path header - neutral blue-grey
 .banner-heroic-path {
-  background-color: #546e7a !important; // blue-grey-600
+  background-color: $color-heroic-path-light !important;
   color: white !important;
 
   .body--dark & {
-    background-color: #37474f !important; // blue-grey-800
+    background-color: $color-heroic-path-dark !important;
   }
 }
 
 // Radiant path header - muted amber
 .banner-radiant-path {
-  background-color: #ff8f00 !important; // amber-900
+  background-color: $color-radiant-path-light !important;
   color: white !important;
 
   .body--dark & {
-    background-color: #c67c00 !important; // darker amber
+    background-color: $color-radiant-path-dark !important;
   }
 }
 
 // Ancestry path header - muted teal
 .banner-ancestry-path {
-  background-color: #00897b !important; // teal-600
+  background-color: $color-ancestry-path-light !important;
   color: white !important;
 
   .body--dark & {
-    background-color: #00695c !important; // teal-800
+    background-color: $color-ancestry-path-dark !important;
   }
 }
 
@@ -185,25 +183,25 @@
 // =============================================================================
 
 .error-page {
-  min-height: calc(100vh - 64px);
-  padding: 40px 20px;
+  min-height: calc(100vh - 4rem);
+  padding: 2.5rem 1.25rem;
 }
 
 .error-code {
-  font-size: 72px;
+  font-size: 4.5rem;
   font-weight: 700;
   margin: 0;
   line-height: 1;
 }
 
 .error-title {
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 600;
-  margin: 16px 0 0 0;
+  margin: 1rem 0 0 0;
 }
 
 .error-message {
-  font-size: 18px;
-  max-width: 500px;
-  margin: 16px auto 0;
+  font-size: 1.125rem;
+  max-width: 31.25rem;
+  margin: 1rem auto 0;
 }

@@ -750,7 +750,7 @@ export const actions: Action[] = [
 
   // Agent Key Talent: Opportunist (id: 1)
   {
-    id: 101,
+    id: 100,
     actionTypeId: 3,
     activationTypeId: 6, // special
     code: 'opportunist',
@@ -1285,7 +1285,12 @@ export function getBasicActions(): Action[] {
  * - surge (actionTypeId=4) → objectId is cl_surges.id
  * - basic (actionTypeId=1) → no entry needed (available to all)
  */
-export const actionLinks: ActionLink[] = [
-  // TODO: Populate with actual links when talents/equipment/surges are defined
-  // Example: { id: 1, actionId: 600, objectId: 1 } // Vigilant Stance action linked to talent id 1
-];
+/**
+ * Action links - intentionally empty in mock data.
+ * In production, this data comes from cl_action_links database table.
+ * Links are established when talents, equipment, and surges reference specific actions.
+ *
+ * Example structure:
+ * { id: 1, actionId: 600, sourceType: 'talent', objectId: 1 } // Action linked to talent
+ */
+export const actionLinks: ActionLink[] = [];

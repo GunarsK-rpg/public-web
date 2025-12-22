@@ -7,15 +7,15 @@
     <!-- Dynamic sections from expertise types classifier -->
     <div v-for="expType in classifiers.expertiseTypes" :key="expType.id" class="category-section">
       <div class="category-title">{{ expType.name }}</div>
-      <div v-if="getExpertisesByTypeId(expType.id).length === 0" class="text-empty q-pa-sm">
-        No {{ expType.name.toLowerCase() }} expertises
-      </div>
-      <q-chip v-for="heroExp in getExpertisesByTypeId(expType.id)" :key="heroExp.id">
-        {{ getExpertiseName(heroExp.expertiseId) }}
-        <q-badge v-if="heroExp.source" color="grey" class="q-ml-xs">
-          {{ heroExp.source.sourceType }}
-        </q-badge>
-      </q-chip>
+      <template v-if="expertisesByTypeRecord[expType.id]?.length">
+        <q-chip v-for="heroExp in expertisesByTypeRecord[expType.id]" :key="heroExp.id">
+          {{ findById(classifiers.expertises, heroExp.expertiseId)?.name }}
+          <q-badge v-if="heroExp.source" color="grey" class="q-ml-xs">
+            {{ heroExp.source.sourceType }}
+          </q-badge>
+        </q-chip>
+      </template>
+      <div v-else class="text-empty q-pa-sm">No {{ expType.name.toLowerCase() }} expertises</div>
     </div>
   </div>
 </template>
@@ -24,41 +24,23 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { findById } from 'src/utils/arrayUtils';
 import type { HeroExpertise } from 'src/types';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
-const heroExpertises = computed(() => heroStore.hero?.expertises ?? []);
+const heroExpertises = computed(() => heroStore.expertises);
 
-// Precompute expertises grouped by type ID to avoid repeated filtering in template
-const expertisesByType = computed(() => {
-  const map = new Map<number, HeroExpertise[]>();
-  for (const heroExp of heroExpertises.value) {
-    const expertise = classifiers.getById(classifiers.expertises, heroExp.expertiseId);
-    if (expertise) {
-      const typeId = expertise.expertiseTypeId;
-      if (!map.has(typeId)) {
-        map.set(typeId, []);
-      }
-      map.get(typeId)!.push(heroExp);
-    }
-  }
-  return map;
+// Hero expertises grouped by type (via heroExp.expertiseId -> expertise.expertiseTypeId)
+const expertisesByTypeRecord = computed((): Record<number, HeroExpertise[]> => {
+  return classifiers.groupByChainedKey(
+    heroExpertises.value,
+    'expertiseId',
+    classifiers.expertises,
+    'expertiseTypeId'
+  );
 });
-
-function getExpertisesByTypeId(typeId: number): HeroExpertise[] {
-  return expertisesByType.value.get(typeId) ?? [];
-}
-
-function getExpertiseName(expertiseId: number): string {
-  const name = classifiers.getById(classifiers.expertises, expertiseId)?.name;
-  if (!name) {
-    console.warn(`Unknown expertise ID: ${expertiseId}`);
-    return 'Unknown';
-  }
-  return name;
-}
 </script>
 
 <style scoped>

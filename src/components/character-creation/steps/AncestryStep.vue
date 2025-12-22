@@ -55,6 +55,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { findByCode } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -70,17 +71,16 @@ const isSinger = computed(() => heroStore.isSinger);
 const availableForms = computed(() =>
   classifiers.singerForms.filter((form) => {
     if (!form.talentId) return true;
-    const talents = heroStore.hero?.talents ?? [];
-    return talents.some((t) => t.talentId === form.talentId);
+    return heroStore.talents.some((t) => t.talentId === form.talentId);
   })
 );
 
 function selectAncestry(id: number) {
   heroStore.setAncestry(id);
   // Auto-select dullform for Singer only if no form is already chosen
-  const singerAncestry = classifiers.getByCode(classifiers.ancestries, 'singer');
+  const singerAncestry = findByCode(classifiers.ancestries, 'singer');
   if (id === singerAncestry?.id && !heroStore.hero?.activeSingerFormId) {
-    const dullform = classifiers.getByCode(classifiers.singerForms, 'dullform');
+    const dullform = findByCode(classifiers.singerForms, 'dullform');
     if (dullform) {
       heroStore.setSingerForm(dullform.id);
     }

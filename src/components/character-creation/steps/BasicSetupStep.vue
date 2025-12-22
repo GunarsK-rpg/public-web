@@ -7,7 +7,12 @@
       label="Character Name"
       outlined
       class="q-mb-md"
-      :rules="[(val) => !!val.trim() || 'Name is required']"
+      maxlength="100"
+      counter
+      :rules="[
+        (val) => !!val.trim() || 'Name is required',
+        (val) => val.length <= 100 || 'Name must be 100 characters or less',
+      ]"
       @update:model-value="setName"
     />
 
@@ -50,9 +55,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useCampaignStore } from 'src/stores/campaigns';
 
+const $q = useQuasar();
 const heroStore = useHeroStore();
 const campaignStore = useCampaignStore();
 
@@ -69,6 +76,11 @@ onMounted(async () => {
       await campaignStore.fetchCampaigns();
     } catch (err) {
       console.error('Failed to fetch campaigns:', err);
+      $q.notify({
+        type: 'warning',
+        message: 'Could not load campaigns. You can continue without selecting one.',
+        position: 'top',
+      });
     }
   }
 });
@@ -91,6 +103,6 @@ function setLevel(val: string | number | null) {
 
 function setCampaignId(val: number | null) {
   // Campaign is optional - allow clearing
-  heroStore.setCampaignId(val ?? 0);
+  heroStore.setCampaignId(val);
 }
 </script>

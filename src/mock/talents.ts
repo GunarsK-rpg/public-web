@@ -1704,6 +1704,38 @@ export const talents: Talent[] = [
 const talentById = new Map<number, Talent>(talents.map((t) => [t.id, t]));
 const talentByCode = new Map<string, Talent>(talents.map((t) => [t.code, t]));
 
+// Pre-computed indexes for frequently filtered lookups
+const talentsByPath = new Map<number, Talent[]>();
+const talentsByAncestry = new Map<number, Talent[]>();
+const talentsByRadiantOrder = new Map<number, Talent[]>();
+const keyTalentsByPath = new Map<number, Talent>();
+const keyTalentsByAncestry = new Map<number, Talent>();
+
+// Build indexes on module load
+for (const talent of talents) {
+  if (talent.pathId !== undefined) {
+    const existing = talentsByPath.get(talent.pathId) ?? [];
+    existing.push(talent);
+    talentsByPath.set(talent.pathId, existing);
+    if (talent.isKey && !talent.specialtyId) {
+      keyTalentsByPath.set(talent.pathId, talent);
+    }
+  }
+  if (talent.ancestryId !== undefined) {
+    const existing = talentsByAncestry.get(talent.ancestryId) ?? [];
+    existing.push(talent);
+    talentsByAncestry.set(talent.ancestryId, existing);
+    if (talent.isKey) {
+      keyTalentsByAncestry.set(talent.ancestryId, talent);
+    }
+  }
+  if (talent.radiantOrderId !== undefined) {
+    const existing = talentsByRadiantOrder.get(talent.radiantOrderId) ?? [];
+    existing.push(talent);
+    talentsByRadiantOrder.set(talent.radiantOrderId, existing);
+  }
+}
+
 /**
  * Get a talent by its ID (O(1) lookup)
  */
@@ -1719,10 +1751,10 @@ export function getTalentByCode(code: string): Talent | undefined {
 }
 
 /**
- * Get all talents for a specific path
+ * Get all talents for a specific path (O(1) lookup from pre-computed index)
  */
 export function getTalentsByPath(pathId: number): Talent[] {
-  return talents.filter((t) => t.pathId === pathId);
+  return talentsByPath.get(pathId) ?? [];
 }
 
 /**
@@ -1733,17 +1765,17 @@ export function getTalentsBySpecialty(specialtyId: number): Talent[] {
 }
 
 /**
- * Get all talents for a specific ancestry
+ * Get all talents for a specific ancestry (O(1) lookup from pre-computed index)
  */
 export function getTalentsByAncestry(ancestryId: number): Talent[] {
-  return talents.filter((t) => t.ancestryId === ancestryId);
+  return talentsByAncestry.get(ancestryId) ?? [];
 }
 
 /**
- * Get all talents for a specific Radiant order
+ * Get all talents for a specific Radiant order (O(1) lookup from pre-computed index)
  */
 export function getTalentsByRadiantOrder(radiantOrderId: number): Talent[] {
-  return talents.filter((t) => t.radiantOrderId === radiantOrderId);
+  return talentsByRadiantOrder.get(radiantOrderId) ?? [];
 }
 
 /**
@@ -1754,17 +1786,17 @@ export function getTalentsBySurge(surgeId: number): Talent[] {
 }
 
 /**
- * Get the key talent for a path
+ * Get the key talent for a path (O(1) lookup from pre-computed index)
  */
 export function getPathKeyTalent(pathId: number): Talent | undefined {
-  return talents.find((t) => t.pathId === pathId && t.isKey && !t.specialtyId);
+  return keyTalentsByPath.get(pathId);
 }
 
 /**
- * Get the key talent for an ancestry
+ * Get the key talent for an ancestry (O(1) lookup from pre-computed index)
  */
 export function getAncestryKeyTalent(ancestryId: number): Talent | undefined {
-  return talents.find((t) => t.ancestryId === ancestryId && t.isKey);
+  return keyTalentsByAncestry.get(ancestryId);
 }
 
 /**
@@ -1785,7 +1817,15 @@ function checkSinglePrerequisite(
 ): boolean {
   switch (prereq.type) {
     case 'talent':
-      return prereq.talentId !== undefined ? characterTalentIds.includes(prereq.talentId) : true;
+      // Single talent requirement (AND logic)
+      if (prereq.talentId !== undefined) {
+        return characterTalentIds.includes(prereq.talentId);
+      }
+      // Multiple talents requirement (OR logic - any of these)
+      if (prereq.talentIds !== undefined && prereq.talentIds.length > 0) {
+        return prereq.talentIds.some((id) => characterTalentIds.includes(id));
+      }
+      return true;
 
     case 'skill':
       if (prereq.skillId !== undefined && prereq.skillRank !== undefined) {

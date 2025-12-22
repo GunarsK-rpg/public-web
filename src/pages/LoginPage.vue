@@ -60,11 +60,26 @@ const error = ref<string | null>(null);
  * Validates that redirect URL is safe (relative path only)
  */
 function isValidRedirect(url: string): boolean {
-  // Only allow relative paths starting with /
-  // Reject absolute URLs, protocol-relative URLs, and javascript: URLs
-  if (!url.startsWith('/')) return false;
-  if (url.startsWith('//')) return false;
-  if (url.toLowerCase().includes('javascript:')) return false;
+  // Normalize backslashes to forward slashes (browsers may interpret \ as /)
+  const normalized = url.replace(/\\/g, '/');
+
+  // Only allow relative paths starting with single /
+  if (!normalized.startsWith('/')) return false;
+
+  // Reject protocol-relative URLs (//example.com)
+  if (normalized.startsWith('//')) return false;
+
+  // Reject any URL containing : before / (protocol schemes like javascript:, data:, etc.)
+  const colonIndex = normalized.indexOf(':');
+  const slashIndex = normalized.indexOf('/', 1);
+  if (colonIndex !== -1 && (slashIndex === -1 || colonIndex < slashIndex)) return false;
+
+  // Reject URLs with @ which could be used for credential injection (http://evil.com@target.com)
+  if (normalized.includes('@')) return false;
+
+  // Reject encoded characters that could bypass validation (%2F, %3A, etc.)
+  if (/%[0-9a-fA-F]{2}/.test(url)) return false;
+
   return true;
 }
 
@@ -82,6 +97,10 @@ async function handleLogin(): Promise<void> {
     } else {
       error.value = 'Invalid username or password';
     }
+  } catch (err) {
+    // Handle network errors or unexpected failures
+    console.error('Login error:', err);
+    error.value = 'Unable to connect. Please check your connection and try again.';
   } finally {
     loading.value = false;
   }

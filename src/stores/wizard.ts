@@ -82,26 +82,40 @@ export const useWizardStore = defineStore('wizard', () => {
     isActive.value = true;
   }
 
-  async function startEdit(heroId: number) {
+  async function startEdit(heroId: number): Promise<boolean> {
     const heroStore = useHeroStore();
-    await heroStore.loadHero(heroId);
-    mode.value = 'edit';
-    currentStep.value = 1;
-    // In edit mode, consider all steps completed initially
-    completedSteps.value = WIZARD_STEPS.map((s) => s.id);
-    isActive.value = true;
+    try {
+      await heroStore.loadHero(heroId);
+      mode.value = 'edit';
+      currentStep.value = 1;
+      // In edit mode, consider all steps completed initially
+      completedSteps.value = WIZARD_STEPS.map((s) => s.id);
+      isActive.value = true;
+      return true;
+    } catch (error) {
+      console.error('Failed to load hero for editing:', error);
+      reset();
+      return false;
+    }
   }
 
-  async function startLevelUp(heroId: number) {
+  async function startLevelUp(heroId: number): Promise<boolean> {
     const heroStore = useHeroStore();
-    await heroStore.loadHero(heroId);
-    mode.value = 'levelup';
-    // Start at attributes step for level up - use step codes to avoid hardcoding numbers
-    const attributesStepId = getStepIdByCode('attributes');
-    currentStep.value = attributesStepId;
-    // Mark steps before attributes as completed (basic-setup, ancestry, culture)
-    completedSteps.value = WIZARD_STEPS.filter((s) => s.id < attributesStepId).map((s) => s.id);
-    isActive.value = true;
+    try {
+      await heroStore.loadHero(heroId);
+      mode.value = 'levelup';
+      // Start at attributes step for level up - use step codes to avoid hardcoding numbers
+      const attributesStepId = getStepIdByCode('attributes');
+      currentStep.value = attributesStepId;
+      // Mark steps before attributes as completed (basic-setup, ancestry, culture)
+      completedSteps.value = WIZARD_STEPS.filter((s) => s.id < attributesStepId).map((s) => s.id);
+      isActive.value = true;
+      return true;
+    } catch (error) {
+      console.error('Failed to load hero for level up:', error);
+      reset();
+      return false;
+    }
   }
 
   function cancel() {

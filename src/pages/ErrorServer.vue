@@ -1,7 +1,7 @@
 <template>
   <q-page class="error-page flex flex-center">
     <div class="text-center">
-      <q-icon name="sym_o_cloud_off" size="120px" color="negative" />
+      <q-icon name="sym_o_cloud_off" size="120px" color="negative" aria-hidden="true" />
 
       <div class="q-mt-lg">
         <h1 class="error-code text-negative">500</h1>
@@ -32,7 +32,9 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 function retry(): void {
-  router.go(0);
+  // Navigate back instead of reloading to avoid infinite refresh loops
+  // when the server error is persistent
+  router.back();
 }
 // Styles in src/css/app.scss (.error-page, .error-code, .error-title, .error-message)
 </script>

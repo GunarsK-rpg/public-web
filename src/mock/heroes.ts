@@ -1,5 +1,13 @@
 import type { Hero } from 'src/types';
 
+/**
+ * Currency conversion rates (all values stored as diamond marks - the base unit):
+ * - 1 diamond mark = 1 (base)
+ * - 1 emerald mark = 10 diamond marks
+ * - 1 sapphire mark = 50 diamond marks
+ * - 1 topaz mark = 10 diamond marks
+ * - 1 ruby mark = 25 diamond marks
+ */
 export const heroes: Hero[] = [
   // Kaladin - Level 5 Windrunner Warrior
   {
@@ -187,5 +195,3 @@ export const heroes: Hero[] = [
     ],
   },
 ];
-
-export default heroes;

@@ -90,7 +90,9 @@ function navigateTabs(direction: number) {
   const newIndex = Math.max(0, Math.min(steps.length - 1, currentIndex + direction));
   const targetStep = steps[newIndex];
   if (newIndex !== currentIndex && targetStep) {
-    goToStep(targetStep.id);
+    // Use direct step navigation without marking current step complete
+    // This allows keyboard exploration without unintended side effects
+    wizardStore.goToStep(targetStep.id);
   }
 }
 </script>

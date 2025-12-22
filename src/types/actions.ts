@@ -28,7 +28,10 @@ export interface Action extends Classifier {
 /**
  * Action link (cl_action_links)
  * Links actions to their sources (talents, equipment, surges)
- * sourceType values come from database - determines which table objectId references
+ *
+ * @property sourceType - Database classifier code (e.g., 'talent', 'equipment', 'surge').
+ *   Values are dynamically defined in cl_source_types table - use string type to support future extensions.
+ * @property objectId - Foreign key to the source table (determined by sourceType)
  */
 export interface ActionLink {
   id: number;

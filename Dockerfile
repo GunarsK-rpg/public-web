@@ -21,10 +21,8 @@ RUN npm run build
 # Production stage
 FROM nginx:1.27-alpine
 
-RUN apk upgrade --no-cache && \
-    # Create non-root user for nginx
-    addgroup -g 101 -S nginx || true && \
-    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx || true
+# Security update
+RUN apk upgrade --no-cache
 
 # Copy built assets
 COPY --from=builder /app/dist/spa /usr/share/nginx/html

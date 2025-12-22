@@ -29,7 +29,7 @@
     <!-- Goals -->
     <div class="text-subtitle2 q-mb-sm">Goals</div>
     <q-list v-if="goals.length > 0" bordered separator class="q-mb-sm">
-      <q-item v-for="(goal, index) in goals" :key="goal.id">
+      <q-item v-for="goal in goals" :key="goal.id">
         <q-item-section>
           <q-item-label>{{ goal.name }}</q-item-label>
           <q-item-label v-if="goal.description" caption>{{ goal.description }}</q-item-label>
@@ -42,7 +42,7 @@
             color="negative"
             size="sm"
             :aria-label="`Remove goal: ${goal.name}`"
-            @click="removeGoal(index)"
+            @click="removeGoal(goal.id)"
           />
         </q-item-section>
       </q-item>
@@ -71,12 +71,12 @@
     <!-- Connections -->
     <div class="text-subtitle2 q-mb-sm">Connections</div>
     <q-list v-if="connections.length > 0" bordered separator class="q-mb-sm">
-      <q-item v-for="(conn, index) in connections" :key="conn.id">
+      <q-item v-for="conn in connections" :key="conn.id">
         <q-item-section>
           <q-item-label>{{ conn.description }}</q-item-label>
           <q-item-label caption>
             <q-badge color="grey-7">
-              {{ getConnectionTypeName(conn.connTypeId) }}
+              {{ findById(classifiers.connectionTypes, conn.connTypeId)?.name }}
             </q-badge>
             <span v-if="conn.notes" class="q-ml-sm">{{ conn.notes }}</span>
           </q-item-label>
@@ -89,7 +89,7 @@
             color="negative"
             size="sm"
             :aria-label="`Remove connection: ${conn.description}`"
-            @click="removeConnection(index)"
+            @click="removeConnection(conn.id)"
           />
         </q-item-section>
       </q-item>
@@ -142,13 +142,15 @@
 import { ref, computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { debounce } from 'src/utils/debounce';
+import { findById } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
 // Goals and connections from hero
-const goals = computed(() => heroStore.hero?.goals ?? []);
-const connections = computed(() => heroStore.hero?.connections ?? []);
+const goals = computed(() => heroStore.goals);
+const connections = computed(() => heroStore.connections);
 
 // New goal form
 const newGoalName = ref('');
@@ -164,25 +166,26 @@ const connectionTypeOptions = computed(() =>
   classifiers.connectionTypes.map((t) => ({ value: t.id, label: t.name }))
 );
 
-function getConnectionTypeName(typeId: number): string {
-  return classifiers.getById(classifiers.connectionTypes, typeId)?.name ?? 'Unknown';
-}
+// Debounced store mutations to reduce updates during typing
+const debouncedSetBiography = debounce((val: string) => heroStore.setBiography(val), 300);
+const debouncedSetAppearance = debounce((val: string) => heroStore.setAppearance(val), 300);
+const debouncedSetNotes = debounce((val: string) => heroStore.setNotes(val), 300);
 
 function setBiography(val: string | number | null) {
   if (val !== null) {
-    heroStore.setBiography(String(val));
+    debouncedSetBiography(String(val));
   }
 }
 
 function setAppearance(val: string | number | null) {
   if (val !== null) {
-    heroStore.setAppearance(String(val));
+    debouncedSetAppearance(String(val));
   }
 }
 
 function setNotes(val: string | number | null) {
   if (val !== null) {
-    heroStore.setNotes(String(val));
+    debouncedSetNotes(String(val));
   }
 }
 
@@ -194,8 +197,8 @@ function addGoal() {
   }
 }
 
-function removeGoal(index: number) {
-  heroStore.removeGoal(index);
+function removeGoal(goalId: number) {
+  heroStore.removeGoalById(goalId);
 }
 
 function addConnection() {
@@ -211,7 +214,7 @@ function addConnection() {
   }
 }
 
-function removeConnection(index: number) {
-  heroStore.removeConnection(index);
+function removeConnection(connectionId: number) {
+  heroStore.removeConnectionById(connectionId);
 }
 </script>

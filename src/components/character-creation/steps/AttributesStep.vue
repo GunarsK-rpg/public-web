@@ -82,7 +82,7 @@
                 dense
                 outlined
                 class="modifier-input"
-                prefix="+"
+                :prefix="stat.modifier > 0 ? '+' : ''"
                 @update:model-value="setStatModifier(stat.id, $event)"
               />
               <div v-if="stat.hasModifier && stat.modifier !== 0" class="text-subtitle2 q-ml-sm">
@@ -102,6 +102,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
+import { findById } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -119,7 +120,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 const attributeList = computed(() =>
   classifiers.attributes.map((attr) => {
-    const attrType = classifiers.getById(classifiers.attributeTypes, attr.attrTypeId);
+    const attrType = findById(classifiers.attributeTypes, attr.attrTypeId);
     return {
       id: attr.id,
       code: attr.code,
@@ -134,14 +135,10 @@ const attributeList = computed(() =>
 
 // Derived stats list built from classifiers with calculated base values
 const derivedStatsList = computed(() => {
-  const attrs = {
-    str: heroStore.getAttributeValue('str'),
-    spd: heroStore.getAttributeValue('spd'),
-    int: heroStore.getAttributeValue('int'),
-    wil: heroStore.getAttributeValue('wil'),
-    awa: heroStore.getAttributeValue('awa'),
-    pre: heroStore.getAttributeValue('pre'),
-  };
+  // Dynamically build attribute values from classifiers instead of hardcoding codes
+  const attrs = Object.fromEntries(
+    classifiers.attributes.map((attr) => [attr.code, heroStore.getAttributeValue(attr.code)])
+  );
 
   return buildDerivedStatsList(
     classifiers.derivedStats,

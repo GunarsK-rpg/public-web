@@ -39,7 +39,7 @@
           </q-item-section>
           <q-item-section>
             <q-item-label class="text-white text-weight-medium">
-              {{ getPathName(selection.pathId) }} Path
+              {{ findById(classifiers.paths, selection.pathId)?.name }} Path
             </q-item-label>
             <q-item-label class="text-white text-secondary-emphasis" caption>
               {{ getSpecialtyName(selection.pathId, selection.specialtyId) }}
@@ -250,7 +250,7 @@
           </q-item-section>
           <q-item-section>
             <q-item-label class="text-white text-weight-medium">
-              {{ getRadiantOrderName(radiantOrderId) || 'Select Order' }}
+              {{ findById(classifiers.radiantOrders, radiantOrderId)?.name || 'Select Order' }}
             </q-item-label>
             <q-item-label class="text-white text-secondary-emphasis" caption>
               Ideal {{ idealLevel }} · {{ selectedRadiantTalentIds.length }} talents selected
@@ -409,6 +409,8 @@ import { computed, ref, onMounted, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { COLORS } from 'src/constants/theme';
+import { createPrerequisiteFormatter } from 'src/utils/talentUtils';
+import { findById, findByCode } from 'src/utils/arrayUtils';
 import type { Talent, TalentPrerequisite } from 'src/types';
 
 interface TalentWithStatus {
@@ -449,12 +451,12 @@ const radiantOrderOptions = computed(() =>
 );
 
 // Hero's selected talent IDs
-const heroTalentIds = computed(() => heroStore.hero?.talents.map((t) => t.talentId) ?? []);
+const heroTalentIds = computed(() => heroStore.talents.map((t) => t.talentId));
 
 // Build character skills map from hero
 const characterSkills = computed(() => {
   const skills = new Map<number, number>();
-  for (const skill of heroStore.hero?.skills ?? []) {
+  for (const skill of heroStore.skills) {
     skills.set(skill.skillId, skill.rank);
   }
   return skills;
@@ -465,13 +467,13 @@ function syncLocalStateFromHero() {
   const pathIds = new Set<number>();
   const specialties = new Map<number, number>();
 
-  for (const ht of heroStore.hero?.talents ?? []) {
-    const talent = classifiers.getById(classifiers.talents, ht.talentId);
+  for (const ht of heroStore.talents) {
+    const talent = findById(classifiers.talents, ht.talentId);
     if (talent?.pathId) {
       pathIds.add(talent.pathId);
       if (talent.specialtyId) {
         // Find path for this specialty
-        const specialty = classifiers.getById(classifiers.specialties, talent.specialtyId);
+        const specialty = findById(classifiers.specialties, talent.specialtyId);
         if (specialty?.pathId) {
           specialties.set(specialty.pathId, talent.specialtyId);
         }
@@ -489,11 +491,11 @@ onMounted(() => {
 });
 
 watch(
-  () => heroStore.hero?.talents,
+  // Watch talents array length instead of deep watching to avoid performance overhead
+  () => heroStore.hero?.talents.length,
   () => {
     syncLocalStateFromHero();
-  },
-  { deep: true }
+  }
 );
 
 // Derive selected paths from hero's talents
@@ -503,7 +505,7 @@ const selectedPaths = computed((): PathSelection[] => {
     const specialtyId = pathSpecialties.value.get(pathId);
     // Get all hero talents that belong to this path or its specialty
     const pathTalentIds = heroTalentIds.value.filter((talentId) => {
-      const talent = classifiers.getById(classifiers.talents, talentId);
+      const talent = findById(classifiers.talents, talentId);
       if (!talent) return false;
       // Talent belongs to this path directly or to the selected specialty
       return talent.pathId === pathId || (specialtyId && talent.specialtyId === specialtyId);
@@ -604,24 +606,8 @@ function checkTalentPrerequisites(
   return { met: unmetPrereqs.length === 0, unmetPrereqs };
 }
 
-function formatPrerequisite(prereq: TalentPrerequisite): string {
-  switch (prereq.type) {
-    case 'talent': {
-      const talent = classifiers.getById(classifiers.talents, prereq.talentId);
-      return talent?.name ?? 'Unknown talent';
-    }
-    case 'skill': {
-      const skill = classifiers.getById(classifiers.skills, prereq.skillId);
-      return `${skill?.name ?? 'Unknown skill'} ${prereq.skillRank}+`;
-    }
-    case 'ideal':
-      return `Ideal ${prereq.skillRank}+`;
-    case 'level':
-      return `Level ${prereq.skillRank}+`;
-    default:
-      return prereq.description ?? 'Unknown';
-  }
-}
+// Format prerequisite for display - uses centralized utility
+const formatPrereq = createPrerequisiteFormatter(classifiers.talents, classifiers.skills);
 
 // Map talents to TalentWithStatus (reusable helper)
 function mapTalentsWithStatus(talents: Talent[]): TalentWithStatus[] {
@@ -648,7 +634,7 @@ function toggleHeroTalent(talentId: number, available: boolean) {
 // SINGER ANCESTRY
 // ===================
 const singerAncestryId = computed(() => {
-  const singer = classifiers.getByCode(classifiers.ancestries, 'singer');
+  const singer = findByCode(classifiers.ancestries, 'singer');
   return singer?.id;
 });
 
@@ -676,23 +662,22 @@ const radiantKeyTalent = computed(() =>
 );
 
 const selectedRadiantOrder = computed(() =>
-  classifiers.getById(classifiers.radiantOrders, radiantOrderId.value)
+  findById(classifiers.radiantOrders, radiantOrderId.value)
 );
 
 const surge1Id = computed(() => selectedRadiantOrder.value?.surge1Id ?? null);
 const surge2Id = computed(() => selectedRadiantOrder.value?.surge2Id ?? null);
 
-const surge1Name = computed(
-  () => classifiers.getById(classifiers.surges, surge1Id.value)?.name ?? 'Surge 1'
-);
-const surge2Name = computed(
-  () => classifiers.getById(classifiers.surges, surge2Id.value)?.name ?? 'Surge 2'
-);
+const surge1Name = computed(() => findById(classifiers.surges, surge1Id.value)?.name || 'Surge 1');
+const surge2Name = computed(() => findById(classifiers.surges, surge2Id.value)?.name || 'Surge 2');
 
 const radiantTalentTab = ref<'order' | 'surge1' | 'surge2'>('surge1');
 
 const radiantTabOptions = computed(() => [
-  { value: 'order', label: getRadiantOrderName(radiantOrderId.value) || 'Order' },
+  {
+    value: 'order',
+    label: findById(classifiers.radiantOrders, radiantOrderId.value)?.name || 'Order',
+  },
   { value: 'surge1', label: surge1Name.value },
   { value: 'surge2', label: surge2Name.value },
 ]);
@@ -709,7 +694,7 @@ const selectedRadiantTalentIds = computed(() => {
 
 const radiantTalentTabLabel = computed(() => {
   if (radiantTalentTab.value === 'order')
-    return getRadiantOrderName(radiantOrderId.value) || 'Order';
+    return findById(classifiers.radiantOrders, radiantOrderId.value)?.name || 'Order';
   if (radiantTalentTab.value === 'surge1') return surge1Name.value;
   return surge2Name.value;
 });
@@ -765,19 +750,9 @@ function togglePath(pathId: number) {
   }
 }
 
-function getPathName(pathId: number): string {
-  return classifiers.paths.find((p) => p.id === pathId)?.name || '';
-}
-
-function getSpecialtyName(pathId: number, specialtyId: number | undefined): string {
+function getSpecialtyName(_pathId: number, specialtyId: number | undefined): string {
   if (!specialtyId) return 'No specialty';
-  const specialty = classifiers.specialties.find((s) => s.id === specialtyId);
-  return specialty?.name || 'No specialty';
-}
-
-function getRadiantOrderName(orderId: number | null | undefined): string {
-  if (!orderId) return '';
-  return classifiers.radiantOrders.find((o) => o.id === orderId)?.name || '';
+  return findById(classifiers.specialties, specialtyId)?.name || 'No specialty';
 }
 
 function getSpecialtyOptions(pathId: number) {
@@ -828,10 +803,6 @@ function setIdealLevel(level: number | null) {
 
 function isRadiantTalentSelected(talentId: number): boolean {
   return heroTalentIds.value.includes(talentId);
-}
-
-function formatPrereq(prereq: TalentPrerequisite): string {
-  return formatPrerequisite(prereq);
 }
 
 function getPrerequisitesArray(talent: Talent): TalentPrerequisite[] {

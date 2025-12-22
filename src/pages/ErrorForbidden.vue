@@ -1,7 +1,7 @@
 <template>
   <q-page class="error-page flex flex-center">
     <div class="text-center">
-      <q-icon name="sym_o_lock" size="120px" color="negative" />
+      <q-icon name="sym_o_lock" size="120px" color="negative" aria-hidden="true" />
 
       <div class="q-mt-lg">
         <h1 class="error-code text-negative">403</h1>

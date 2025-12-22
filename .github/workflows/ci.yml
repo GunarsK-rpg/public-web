@@ -32,7 +32,7 @@ jobs:
         run: npm run lint
 
       - name: Check Prettier formatting
-        run: npx prettier --check "src/**/*.{ts,js,vue,json,md}"
+        run: npx prettier --check "**/*.{ts,js,vue,json,md}" --ignore-path .gitignore
 
   # Job 2: Type check
   typecheck:
@@ -163,7 +163,7 @@ jobs:
         with:
           path: ./
           base: ""
-          head: ${{ github.ref }}
+          head: ${{ github.ref_name }}
 
   # Summary job - require all to pass
   ci-success:

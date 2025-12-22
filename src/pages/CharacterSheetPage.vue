@@ -41,32 +41,8 @@
 
       <!-- Tab Panels -->
       <q-tab-panels v-model="activeTab" animated>
-        <q-tab-panel name="stats">
-          <StatsTab />
-        </q-tab-panel>
-
-        <q-tab-panel name="skills">
-          <SkillsTab />
-        </q-tab-panel>
-
-        <q-tab-panel name="actions">
-          <ActionsTab />
-        </q-tab-panel>
-
-        <q-tab-panel name="equipment">
-          <EquipmentTab />
-        </q-tab-panel>
-
-        <q-tab-panel name="talents">
-          <TalentsTab />
-        </q-tab-panel>
-
-        <q-tab-panel name="expertises">
-          <ExpertisesTab />
-        </q-tab-panel>
-
-        <q-tab-panel name="others">
-          <OthersTab />
+        <q-tab-panel v-for="tab in tabs" :key="tab.id" :name="tab.id">
+          <component :is="tabComponents[tab.id]" />
         </q-tab-panel>
       </q-tab-panels>
     </template>
@@ -98,6 +74,17 @@ const tabs = [
   { id: 'expertises', label: 'Expertises', icon: 'school' },
   { id: 'others', label: 'Others', icon: 'more_horiz' },
 ] as const;
+
+// Map tab IDs to their components for dynamic rendering
+const tabComponents: Record<string, typeof StatsTab> = {
+  stats: StatsTab,
+  skills: SkillsTab,
+  actions: ActionsTab,
+  equipment: EquipmentTab,
+  talents: TalentsTab,
+  expertises: ExpertisesTab,
+  others: OthersTab,
+};
 
 const props = defineProps<{
   campaignId: string;

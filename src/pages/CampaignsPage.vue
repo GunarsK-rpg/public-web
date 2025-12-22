@@ -87,7 +87,12 @@ function formatDate(dateString: string | undefined): string {
   if (!dateString) return 'Unknown';
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return 'Unknown';
-  return date.toLocaleDateString();
+  // Use navigator.language for user's locale preference with explicit formatting options
+  return date.toLocaleDateString(navigator.language, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 </script>
 

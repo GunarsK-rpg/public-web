@@ -40,6 +40,7 @@ export const useAuthStore = defineStore('auth', () => {
             data.token.length > 0 &&
             data.user &&
             typeof data.user.id === 'number' &&
+            typeof data.user.username === 'string' &&
             typeof data.user.email === 'string'
           ) {
             token.value = data.token;

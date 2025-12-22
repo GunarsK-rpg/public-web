@@ -4,25 +4,30 @@
     <div v-for="attrType in classifiers.attributeTypes" :key="attrType.id" class="skill-category">
       <div class="category-title">{{ attrType.name }} Skills</div>
       <q-list separator>
-        <q-item v-for="skill in getSkillsByAttrTypeId(attrType.id)" :key="skill.id">
+        <q-item v-for="skill in skillsByAttrType[attrType.id]" :key="skill.id">
           <q-item-section avatar>
             <q-avatar color="grey" text-color="white" size="md">
-              {{ formatModifier(getSkillModifier(skill.code)) }}
+              {{ formatModifier(heroStore.getSkillModifier(skill.code)) }}
             </q-avatar>
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ skill.name }}</q-item-label>
             <q-item-label caption>
-              {{ getAttributeName(skill.attrId) }} + Rank {{ getSkillRank(skill.id) }}
+              {{ getAttributeCode(skill.attrId) }} + Rank {{ heroStore.getSkillRank(skill.id) }}
             </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <div class="rank-pips">
+            <div
+              class="rank-pips"
+              role="img"
+              :aria-label="`Rank ${heroStore.getSkillRank(skill.id)} of 5`"
+            >
               <span
                 v-for="n in 5"
                 :key="n"
                 class="pip"
-                :class="{ filled: n <= getSkillRank(skill.id) }"
+                :class="{ filled: n <= heroStore.getSkillRank(skill.id) }"
+                aria-hidden="true"
               />
             </div>
           </q-item-section>
@@ -33,30 +38,27 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { findById } from 'src/utils/arrayUtils';
 import type { Skill } from 'src/types';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
-function getSkillsByAttrTypeId(attrTypeId: number): Skill[] {
-  return classifiers.skills.filter((skill) => {
-    const attr = classifiers.getById(classifiers.attributes, skill.attrId);
-    return attr?.attrTypeId === attrTypeId;
-  });
-}
+// Skills grouped by attribute type (via skill.attrId -> attribute.attrTypeId)
+const skillsByAttrType = computed((): Record<number, Skill[]> => {
+  return classifiers.groupByChainedKey(
+    classifiers.skills,
+    'attrId',
+    classifiers.attributes,
+    'attrTypeId'
+  );
+});
 
-function getSkillRank(skillId: number): number {
-  return heroStore.getSkillRank(skillId);
-}
-
-function getSkillModifier(skillCode: string): number {
-  return heroStore.getSkillModifier(skillCode);
-}
-
-function getAttributeName(attrId: number): string {
-  return classifiers.getById(classifiers.attributes, attrId)?.code.toUpperCase() ?? '';
+function getAttributeCode(attrId: number): string {
+  return findById(classifiers.attributes, attrId)?.code.toUpperCase() ?? '';
 }
 
 function formatModifier(value: number): string {

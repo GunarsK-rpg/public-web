@@ -121,7 +121,7 @@ Based on the Cosmere RPG system:
 
 - **Attributes**: 6 attributes (0-5 scale)
 - **Defenses**: Physical (STR+SPD), Cognitive (INT+WIL), Spiritual (AWA+PRE)
-- **Health**: 10 + STR + floor(level/2)
+- **Health**: healthBase (from level table) + STR × tier
 - **Focus**: 2 + WIL
 - **Investiture**: 2 + max(AWA, PRE) for Radiants
 

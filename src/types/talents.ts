@@ -1,10 +1,16 @@
 import type { Classifier } from './classifier';
 
 /**
+ * Known prerequisite types - extensible via database
+ * Using string union for common types with fallback to string for future additions
+ */
+export type PrerequisiteType = 'talent' | 'skill' | 'narrative' | (string & NonNullable<unknown>);
+
+/**
  * Talent prerequisite types (JSONB)
  */
 export interface TalentPrerequisite {
-  type: string;
+  type: PrerequisiteType;
   talentId?: number;
   talentIds?: number[]; // For OR logic (any of these talents)
   skillId?: number;

@@ -63,7 +63,7 @@
             :disable="
               isReadOnly(expertise.id) || (!isSelected(expertise.id) && slotsRemaining <= 0)
             "
-            @update:model-value="toggleExpertise(expertise.id)"
+            @update:model-value="(val) => toggleExpertise(expertise.id, val)"
           />
         </q-item-section>
         <q-item-section>
@@ -86,6 +86,7 @@ import { ref, computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
+import { findById, findByCode } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -98,27 +99,25 @@ const expertisesBudget = computed(() => budget('expertises'));
 const slotsRemaining = computed(() => expertisesBudget.value.remaining);
 
 // Hero's current expertises
-const heroExpertises = computed(() => heroStore.hero?.expertises ?? []);
+const heroExpertises = computed(() => heroStore.expertises);
+
+// Helper to get expertises by source type
+function getExpertisesBySource(sourceType: string) {
+  return heroExpertises.value
+    .filter((e) => e.source?.sourceType === sourceType)
+    .map((e) => findById(classifiers.expertises, e.expertiseId))
+    .filter((e): e is NonNullable<typeof e> => e !== undefined);
+}
 
 // Get cultural expertises (auto-applied from cultures)
-const culturalExpertises = computed(() => {
-  return heroExpertises.value
-    .filter((e) => e.source?.sourceType === 'culture')
-    .map((e) => classifiers.getById(classifiers.expertises, e.expertiseId))
-    .filter((e): e is NonNullable<typeof e> => e !== undefined);
-});
+const culturalExpertises = computed(() => getExpertisesBySource('culture'));
 
 // Get expertises from starting kit
-const startingKitExpertises = computed(() => {
-  return heroExpertises.value
-    .filter((e) => e.source?.sourceType === 'starting_kit')
-    .map((e) => classifiers.getById(classifiers.expertises, e.expertiseId))
-    .filter((e): e is NonNullable<typeof e> => e !== undefined);
-});
+const startingKitExpertises = computed(() => getExpertisesBySource('starting_kit'));
 
 // Get expertise type by code
 function getExpertiseTypeId(code: string): number | undefined {
-  return classifiers.getByCode(classifiers.expertiseTypes, code)?.id;
+  return findByCode(classifiers.expertiseTypes, code)?.id;
 }
 
 const filteredExpertises = computed(() => {
@@ -145,14 +144,14 @@ function getSource(expertiseId: number): string | null {
   return heroExp?.source?.sourceType ?? null;
 }
 
-function toggleExpertise(expertiseId: number) {
-  if (isSelected(expertiseId)) {
-    // Don't remove read-only expertises
-    if (!isReadOnly(expertiseId)) {
-      heroStore.removeExpertise(expertiseId);
+function toggleExpertise(expertiseId: number, checked: boolean) {
+  if (checked) {
+    if (slotsRemaining.value > 0) {
+      heroStore.addExpertise(expertiseId, { sourceType: 'intellect' });
     }
-  } else if (slotsRemaining.value > 0) {
-    heroStore.addExpertise(expertiseId, { sourceType: 'intellect' });
+  } else if (!isReadOnly(expertiseId)) {
+    // Don't remove read-only expertises
+    heroStore.removeExpertise(expertiseId);
   }
 }
 
@@ -160,7 +159,7 @@ function toggleExpertise(expertiseId: number) {
 function isSpecialist(expertiseId: number): boolean {
   const specialistTypeId = getExpertiseTypeId('specialist');
   if (!specialistTypeId) return false;
-  const expertise = classifiers.getById(classifiers.expertises, expertiseId);
+  const expertise = findById(classifiers.expertises, expertiseId);
   return expertise?.expertiseTypeId === specialistTypeId;
 }
 </script>

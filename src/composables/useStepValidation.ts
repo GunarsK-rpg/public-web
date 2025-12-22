@@ -31,17 +31,30 @@ export function useStepValidation() {
     return getStepValidation(stepCode, validationData.value);
   }
 
+  function budget(stepCode: 'skills'): SkillsBudgetValidation;
+  function budget(stepCode: Exclude<StepCode, 'skills'>): BudgetValidation;
+  function budget(stepCode: StepCode): BudgetValidation | SkillsBudgetValidation;
   function budget(stepCode: StepCode): BudgetValidation | SkillsBudgetValidation {
     if (!validationData.value) {
+      if (stepCode === 'skills') {
+        return {
+          isValid: false,
+          errors: [],
+          warnings: [],
+          budget: 0,
+          spent: 0,
+          remaining: 0,
+          maxRank: 2,
+        };
+      }
       return { isValid: false, errors: [], warnings: [], budget: 0, spent: 0, remaining: 0 };
     }
     return getBudgetValidation(stepCode, validationData.value);
   }
 
   const currentStepCode = computed((): StepCode => {
-    const code = wizardStore.currentStepConfig?.code;
-    // Default to 'basic-setup' if currentStepConfig is undefined
-    return (code as StepCode) ?? 'basic-setup';
+    // WIZARD_STEPS.code is already typed as StepCode, so no assertion needed
+    return wizardStore.currentStepConfig?.code ?? 'basic-setup';
   });
   const currentValidation = computed(() => validate(currentStepCode.value));
   const allStepsValidation = computed(() => validate('review'));

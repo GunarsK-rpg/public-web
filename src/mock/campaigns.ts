@@ -51,6 +51,7 @@ export const campaignsWithHeroes: CampaignWithHeroes[] = [
         id: 3,
         name: 'Adolin Kholin',
         level: 6,
+        radiantOrderId: null, // Not a Radiant (explicit null vs undefined which means "not loaded")
         currentHealth: 14,
         maxHealth: 17,
       },
@@ -58,6 +59,7 @@ export const campaignsWithHeroes: CampaignWithHeroes[] = [
         id: 4,
         name: 'Rlain',
         level: 4,
+        radiantOrderId: null, // Not a Radiant
         currentHealth: 12,
         maxHealth: 13,
       },

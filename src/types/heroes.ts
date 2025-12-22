@@ -15,7 +15,7 @@ import type { HeroDerivedStat } from './derivedStats';
 export interface Hero {
   id: number;
   userId: number;
-  campaignId: number;
+  campaignId: number | null;
   ancestryId: number;
   startingKitId: number | null;
   activeSingerFormId: number | null;
@@ -54,12 +54,17 @@ export interface Hero {
 
 /**
  * Hero summary for lists
+ *
+ * @property radiantOrderId - Semantic distinction:
+ *   - null: Hero is confirmed not a Radiant (non-Radiant path chosen)
+ *   - undefined: Data not yet loaded or field not included in response
+ *   - number: Hero is a Radiant of the specified order
  */
 export interface HeroSummary {
   id: number;
   name: string;
   level: number;
-  radiantOrderId?: number | null; // null = not a Radiant, undefined = not yet loaded
+  radiantOrderId?: number | null;
   currentHealth: number;
   maxHealth: number;
 }

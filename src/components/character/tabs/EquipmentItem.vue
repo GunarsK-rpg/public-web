@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { findById } from 'src/utils/arrayUtils';
 import { getIconUrl } from 'src/utils/iconUrl';
 import type { HeroEquipment } from 'src/types';
 
@@ -59,12 +60,10 @@ const props = defineProps<{
 
 const classifiers = useClassifierStore();
 
-const equipment = computed(() =>
-  classifiers.getById(classifiers.equipment, props.heroEquipment.equipmentId)
-);
+const equipment = computed(() => findById(classifiers.equipment, props.heroEquipment.equipmentId));
 
 const equipmentType = computed(() =>
-  classifiers.getById(classifiers.equipmentTypes, equipment.value?.equipTypeId)
+  findById(classifiers.equipmentTypes, equipment.value?.equipTypeId)
 );
 
 const iconUrl = computed(() => getIconUrl(equipmentType.value?.icon, 'equipment'));
@@ -77,8 +76,7 @@ const detailsLine = computed(() => {
   const parts: string[] = [];
 
   if (eq.special.damage) {
-    const damageTypeName =
-      classifiers.getById(classifiers.damageTypes, eq.damageTypeId)?.name ?? '';
+    const damageTypeName = findById(classifiers.damageTypes, eq.damageTypeId)?.name;
     parts.push(`${eq.special.damage}${damageTypeName ? ` ${damageTypeName}` : ''}`);
   }
 

@@ -151,47 +151,6 @@ export const useClassifierStore = defineStore('classifiers', () => {
   const levels = computed((): Level[] => data.value?.levels || []);
 
   /**
-   * Generic lookup by any property with null safety
-   * @param list - classifier array to search
-   * @param prop - property name to match
-   * @param value - value to find
-   * @returns matching classifier or undefined
-   */
-  function getByProp<T extends Classifier, K extends keyof T>(
-    list: T[],
-    prop: K,
-    value: T[K] | undefined | null
-  ): T | undefined {
-    if (value == null) return undefined;
-    return list.find((item) => item[prop] === value);
-  }
-
-  /**
-   * Lookup classifier by id
-   * Note: This assumes IDs are non-overlapping within each classifier type.
-   * Each classifier table has its own ID sequence in the database.
-   * @param list - classifier array to search
-   * @param id - id to find
-   * @returns matching classifier or undefined
-   */
-  function getById<T extends Classifier>(list: T[], id: number | undefined | null): T | undefined {
-    return getByProp(list, 'id', id);
-  }
-
-  /**
-   * Lookup classifier by code
-   * @param list - classifier array to search
-   * @param code - code to find
-   * @returns matching classifier or undefined
-   */
-  function getByCode<T extends Classifier>(
-    list: T[],
-    code: string | undefined | null
-  ): T | undefined {
-    return getByProp(list, 'code', code);
-  }
-
-  /**
    * Lookup derived stat value from config table
    * @param derivedStatId - the derived stat id
    * @param attrValue - hero's attribute value for the stat's driving attribute
@@ -210,6 +169,78 @@ export const useClassifierStore = defineStore('classifiers', () => {
         (v.attrMax === null || attrValue <= v.attrMax)
     );
     return entry?.value;
+  }
+
+  /**
+   * Group classifiers by a property.
+   * @param list - classifier array to group
+   * @param keyFn - function to extract the grouping key from each item
+   * @returns Record mapping keys to arrays of items
+   */
+  function groupByKey<T, K extends PropertyKey>(list: T[], keyFn: (item: T) => K): Record<K, T[]> {
+    const result = {} as Record<K, T[]>;
+    for (const item of list) {
+      const key = keyFn(item);
+      if (!result[key]) result[key] = [];
+      result[key].push(item);
+    }
+    return result;
+  }
+
+  /**
+   * Group classifiers by a foreign key ID property.
+   * @param list - classifier array to group
+   * @param propName - property name containing the foreign key ID
+   * @returns Record mapping IDs to arrays of items
+   */
+  function groupByForeignKey<T extends Classifier, K extends keyof T>(
+    list: T[],
+    propName: K
+  ): Record<number, T[]> {
+    return groupByKey(list, (item) => item[propName] as number);
+  }
+
+  /**
+   * Build a lookup map from one foreign key to another property.
+   * Useful for chained lookups like: skill.attrId -> attribute.attrTypeId
+   * @param list - classifier array to index
+   * @param valueProp - property name for the value to map to
+   * @returns Record mapping item IDs to the specified property value
+   */
+  function buildLookupMap<T extends Classifier, K extends keyof T>(
+    list: T[],
+    valueProp: K
+  ): Record<number, T[K]> {
+    const map: Record<number, T[K]> = {};
+    for (const item of list) {
+      map[item.id] = item[valueProp];
+    }
+    return map;
+  }
+
+  /**
+   * Group items by a chained foreign key lookup.
+   * Example: group skills by attrTypeId via skill.attrId -> attribute.attrTypeId
+   * @param items - items to group
+   * @param foreignKeyProp - property on item containing the foreign key
+   * @param lookupList - classifier list to look up the foreign key in
+   * @param targetProp - property on lookup item to group by
+   * @returns Record mapping target property values to arrays of items
+   */
+  function groupByChainedKey<T, FK extends keyof T, L extends Classifier, TP extends keyof L>(
+    items: T[],
+    foreignKeyProp: FK,
+    lookupList: L[],
+    targetProp: TP
+  ): Record<number, T[]> {
+    // Build lookup map: lookupItem.id -> lookupItem[targetProp]
+    const lookupMap: Record<number, number> = {};
+    for (const item of lookupList) {
+      lookupMap[item.id] = item[targetProp] as number;
+    }
+
+    // Group items by the chained lookup
+    return groupByKey(items, (item) => lookupMap[item[foreignKeyProp] as number] ?? 0);
   }
 
   /**
@@ -324,11 +355,12 @@ export const useClassifierStore = defineStore('classifiers', () => {
     tiers,
     levels,
 
-    // Generic lookups
-    getByProp,
-    getById,
-    getByCode,
+    // Lookups
     getDerivedStatValue,
+    groupByKey,
+    groupByForeignKey,
+    groupByChainedKey,
+    buildLookupMap,
     initialize,
     reset,
   };

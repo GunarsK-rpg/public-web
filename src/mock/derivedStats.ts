@@ -1,12 +1,18 @@
 import type { DerivedStat, DerivedStatValue } from 'src/types';
 
-// Attribute IDs (matching mock/attributes.ts)
+/**
+ * Mock data constants for attribute and stat IDs.
+ * In production, these IDs come from cl_attributes and cl_derived_stats tables.
+ * Keeping constants here ensures mock data consistency with attributes.ts definitions.
+ */
+
+// Attribute IDs (must match mock/attributes.ts)
 const ATTR_STR = 1;
 const ATTR_SPD = 2;
 const ATTR_WIL = 4;
 const ATTR_AWA = 5;
 
-// Derived stat IDs
+// Derived stat IDs (must match derivedStats array below)
 const STAT_MOVEMENT = 4;
 const STAT_RECOVERY_DIE = 5;
 const STAT_LIFT_CAPACITY = 6;

@@ -38,6 +38,7 @@ interface ApiError extends Error {
 export function useErrorHandler() {
   const router = useRouter();
   const $q = useQuasar();
+  const authStore = useAuthStore();
 
   // Track retry attempts per request to prevent infinite loops
   const retryAttempts = ref(new Map<string, number>());
@@ -88,8 +89,14 @@ export function useErrorHandler() {
           // Only clear on actual success
           retryAttempts.value.delete(retryKey);
         })
-        .catch(() => {
-          // Error will be handled by the retry function's error handler
+        .catch((retryError: unknown) => {
+          // Log retry failure for debugging - the retry function's error handler
+          // will process the error, but we log here for visibility
+          logger.debug('Retry attempt failed', {
+            retryKey,
+            attempt: attempts + 1,
+            error: retryError instanceof Error ? retryError.message : String(retryError),
+          });
         });
     }, delay);
   }
@@ -151,7 +158,6 @@ export function useErrorHandler() {
   function handle401(skipLogout = false): void {
     if (!skipLogout) {
       // Clear auth state before redirecting to prevent redirect loops
-      const authStore = useAuthStore();
       authStore.logout();
 
       $q.notify({

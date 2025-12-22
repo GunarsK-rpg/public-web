@@ -64,7 +64,7 @@
                 <div class="text-subtitle2">
                   Level {{ hero.level }}
                   <span v-if="hero.radiantOrderId">
-                    · {{ getRadiantOrderName(hero.radiantOrderId) }}
+                    · {{ findById(classifiers.radiantOrders, hero.radiantOrderId)?.name }}
                   </span>
                 </div>
               </q-card-section>
@@ -99,6 +99,7 @@ import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'src/stores/campaigns';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { findById } from 'src/utils/arrayUtils';
 
 const props = defineProps<{
   campaignId: string;
@@ -117,6 +118,10 @@ onMounted(async () => {
   if (isNaN(campaignId) || campaignId <= 0) {
     campaignStore.setError('Invalid campaign ID');
     return;
+  }
+  // Initialize classifiers before loading campaign to ensure radiant order names are available
+  if (!classifiers.initialized) {
+    await classifiers.initialize();
   }
   await campaignStore.selectCampaign(campaignId);
 });
@@ -140,10 +145,6 @@ function createCharacter(): void {
     name: 'character-create',
     params: { campaignId: props.campaignId },
   });
-}
-
-function getRadiantOrderName(orderId: number): string {
-  return classifiers.getById(classifiers.radiantOrders, orderId)?.name ?? '';
 }
 </script>
 

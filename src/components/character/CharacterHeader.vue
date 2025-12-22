@@ -92,6 +92,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { findById } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -102,47 +103,31 @@ const maxFocus = computed(() => heroStore.getDerivedStatTotal('max_focus'));
 const maxInvestiture = computed(() => heroStore.getDerivedStatTotal('max_investiture'));
 const isRadiant = computed(() => heroStore.isRadiant);
 
-/**
- * Clamps a value between 0 and 1 for progress bars
- */
-function clampProgress(current: number, max: number): number {
-  if (max <= 0) return 0;
-  return Math.max(0, Math.min(1, current / max));
-}
+// Progress bar helpers
+const clampProgress = (current: number, max: number) =>
+  max <= 0 ? 0 : Math.max(0, Math.min(1, current / max));
 
-const healthPercent = computed(() => {
-  if (!hero.value) return 0;
-  return clampProgress(hero.value.currentHealth, maxHealth.value);
-});
+const healthPercent = computed(() =>
+  hero.value ? clampProgress(hero.value.currentHealth, maxHealth.value) : 0
+);
+const focusPercent = computed(() =>
+  hero.value ? clampProgress(hero.value.currentFocus, maxFocus.value) : 0
+);
+const investiturePercent = computed(() =>
+  hero.value ? clampProgress(hero.value.currentInvestiture, maxInvestiture.value) : 0
+);
 
-const focusPercent = computed(() => {
-  if (!hero.value) return 0;
-  return clampProgress(hero.value.currentFocus, maxFocus.value);
-});
-
-const investiturePercent = computed(() => {
-  if (!hero.value) return 0;
-  return clampProgress(hero.value.currentInvestiture, maxInvestiture.value);
-});
-
-const orderName = computed(() => {
-  return classifiers.getById(classifiers.radiantOrders, hero.value?.radiantOrderId)?.name ?? '';
-});
-
-const ancestryName = computed(() => {
-  return classifiers.getById(classifiers.ancestries, hero.value?.ancestryId)?.name ?? '';
-});
-
-const activeSingerFormName = computed(() => {
-  return classifiers.getById(classifiers.singerForms, hero.value?.activeSingerFormId)?.name ?? '';
-});
-
-const cultureName = computed(() => {
-  const cultureId = hero.value?.cultures?.[0]?.cultureId;
-  if (!cultureId) return '';
-  return classifiers.getById(classifiers.cultures, cultureId)?.name ?? '';
-});
-
+// Classifier name lookups
+const orderName = computed(
+  () => findById(classifiers.radiantOrders, hero.value?.radiantOrderId)?.name
+);
+const ancestryName = computed(() => findById(classifiers.ancestries, hero.value?.ancestryId)?.name);
+const activeSingerFormName = computed(
+  () => findById(classifiers.singerForms, hero.value?.activeSingerFormId)?.name
+);
+const cultureName = computed(
+  () => findById(classifiers.cultures, hero.value?.cultures?.[0]?.cultureId)?.name
+);
 const totalSpheres = computed(() => hero.value?.currency ?? 0);
 </script>
 

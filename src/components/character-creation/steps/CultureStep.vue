@@ -49,6 +49,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { findById } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -70,41 +71,49 @@ const secondaryCultureOptions = computed(() =>
     .map((c) => ({ value: c.id, label: c.name }))
 );
 
-const selectedCulture = computed(() =>
-  classifiers.getById(classifiers.cultures, primaryCultureId.value)
-);
+const selectedCulture = computed(() => findById(classifiers.cultures, primaryCultureId.value));
 
 // Get cultural expertise names for display
 const culturalExpertiseNames = computed(() => {
   return heroCultureIds.value
     .map((cultureId) => {
-      const culture = classifiers.getById(classifiers.cultures, cultureId);
+      const culture = findById(classifiers.cultures, cultureId);
       if (!culture?.expertiseId) return null;
-      const expertise = classifiers.getById(classifiers.expertises, culture.expertiseId);
-      return expertise?.name ?? null;
+      return findById(classifiers.expertises, culture.expertiseId)?.name || null;
     })
     .filter((name): name is string => name !== null);
 });
 
-function setCulture(oldId: number | null, newId: number | null) {
+function setCulture(oldId: number | null, newId: number | null, isPrimary: boolean) {
   // Skip if no actual change
   if (oldId === newId) return;
 
-  // Remove old culture if it exists
-  if (oldId !== null) {
-    heroStore.removeCulture(oldId);
-  }
-  // Add new culture if specified
-  if (newId !== null) {
-    heroStore.addCulture(newId);
+  // For primary culture changes, we need to preserve array order
+  // to prevent secondary culture from shifting to primary position
+  if (isPrimary && secondaryCultureId.value !== null) {
+    const secondaryId = secondaryCultureId.value;
+    // Remove both cultures
+    if (oldId !== null) heroStore.removeCulture(oldId);
+    heroStore.removeCulture(secondaryId);
+    // Re-add in correct order: new primary first, then secondary
+    if (newId !== null) heroStore.addCulture(newId);
+    heroStore.addCulture(secondaryId);
+  } else {
+    // Simple case: no secondary or changing secondary
+    if (oldId !== null) {
+      heroStore.removeCulture(oldId);
+    }
+    if (newId !== null) {
+      heroStore.addCulture(newId);
+    }
   }
 }
 
 function setPrimaryCulture(val: number | null) {
-  setCulture(primaryCultureId.value, val);
+  setCulture(primaryCultureId.value, val, true);
 }
 
 function setSecondaryCulture(val: number | null) {
-  setCulture(secondaryCultureId.value, val);
+  setCulture(secondaryCultureId.value, val, false);
 }
 </script>

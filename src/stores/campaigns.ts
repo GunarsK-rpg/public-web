@@ -24,9 +24,11 @@ export const useCampaignStore = defineStore('campaigns', () => {
       const { campaigns: mockCampaigns } = await import('src/mock/campaigns');
       campaigns.value = mockCampaigns;
       logger.info('Campaigns loaded', { count: mockCampaigns.length });
-    } catch (err) {
+    } catch (err: unknown) {
       error.value = 'Failed to load campaigns';
-      logger.error('Failed to load campaigns', err instanceof Error ? err : { error: String(err) });
+      logger.error('Failed to load campaigns', {
+        error: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       loading.value = false;
     }
@@ -42,6 +44,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
       // currentCampaign.value = response.data;
 
       // Mock: Import from mock data
+      // Note: campaignsWithHeroes has hero details, while campaigns list may not
       const { campaignsWithHeroes } = await import('src/mock/campaigns');
       const found = campaignsWithHeroes.find((c) => c.id === id);
       if (found) {
@@ -51,7 +54,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
         error.value = 'Campaign not found';
         logger.warn('Campaign not found', { id });
       }
-    } catch (err) {
+    } catch (err: unknown) {
       error.value = 'Failed to load campaign';
       logger.error('Failed to load campaign', {
         id,

@@ -5,6 +5,8 @@
         v-if="activationType?.icon"
         :src="iconUrl"
         :alt="activationType.name"
+        :title="activationType.name"
+        role="img"
         class="action-icon icon-theme-aware"
       />
     </q-item-section>
@@ -34,6 +36,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { findById } from 'src/utils/arrayUtils';
 import { getIconUrl } from 'src/utils/iconUrl';
 import type { Action } from 'src/types';
 
@@ -44,7 +47,7 @@ const props = defineProps<{
 const classifiers = useClassifierStore();
 
 const activationType = computed(() =>
-  classifiers.getById(classifiers.activationTypes, props.action.activationTypeId)
+  findById(classifiers.activationTypes, props.action.activationTypeId)
 );
 
 const iconUrl = computed(() => getIconUrl(activationType.value?.icon, 'actions'));

@@ -1,13 +1,6 @@
 import type { Level, Tier, DerivedStat, DerivedStatValue, Attribute } from 'src/types';
 
-export interface AttributeValues {
-  str: number;
-  spd: number;
-  int: number;
-  wil: number;
-  awa: number;
-  pre: number;
-}
+export type AttributeValues = Record<string, number>;
 
 export interface DerivedStatDisplay {
   id: number;
@@ -43,13 +36,18 @@ function formatValue(statCode: string, value: number): string {
 /**
  * Calculate formula-based stat value
  */
-function calculateFormulaStat(
+export function calculateFormulaStat(
   statCode: string,
   attrs: AttributeValues,
   levelData: Level | undefined,
   tierData: Tier | undefined
 ): number {
-  const { str, spd, int, wil, awa, pre } = attrs;
+  const str = attrs['str'] ?? 0;
+  const spd = attrs['spd'] ?? 0;
+  const int = attrs['int'] ?? 0;
+  const wil = attrs['wil'] ?? 0;
+  const awa = attrs['awa'] ?? 0;
+  const pre = attrs['pre'] ?? 0;
   const tier = tierData?.id ?? 1;
   const healthBase = levelData?.healthBase ?? 10;
 
@@ -102,7 +100,7 @@ export function buildDerivedStatsList(
     if (cfgEntry) {
       // Lookup-based stat
       const attr = attributes.find((a) => a.id === cfgEntry.attrId);
-      const attrValue = attr ? (attrs[attr.code as keyof AttributeValues] ?? 0) : 0;
+      const attrValue = attr ? (attrs[attr.code] ?? 0) : 0;
 
       // Find matching range
       const entry = derivedStatValues.find(

@@ -3,6 +3,8 @@ import { ref, computed } from 'vue';
 import type { Hero, ExpertiseSourceData } from 'src/types';
 import { useClassifierStore } from './classifiers';
 import { logger } from 'src/utils/logger';
+import { findById, findByCode, findByProp, removeById } from 'src/utils/arrayUtils';
+import { calculateFormulaStat } from 'src/utils/derivedStats';
 
 /**
  * Default empty Hero for new character creation
@@ -58,21 +60,33 @@ export const useHeroStore = defineStore('hero', () => {
   const isNew = computed(() => hero.value?.id === 0);
   const isRadiant = computed(() => !!hero.value?.radiantOrderId);
 
+  // Array getters - avoid repeating `hero.value?.X ?? []` everywhere
+  const talents = computed(() => hero.value?.talents ?? []);
+  const skills = computed(() => hero.value?.skills ?? []);
+  const expertises = computed(() => hero.value?.expertises ?? []);
+  const equipment = computed(() => hero.value?.equipment ?? []);
+  const goals = computed(() => hero.value?.goals ?? []);
+  const connections = computed(() => hero.value?.connections ?? []);
+  const companions = computed(() => hero.value?.companions ?? []);
+  const conditions = computed(() => hero.value?.conditions ?? []);
+  const injuries = computed(() => hero.value?.injuries ?? []);
+  const cultures = computed(() => hero.value?.cultures ?? []);
+
   const isSinger = computed(() => {
     if (!hero.value) return false;
     const classifiers = useClassifierStore();
-    const singerAncestry = classifiers.getByCode(classifiers.ancestries, 'singer');
+    const singerAncestry = findByCode(classifiers.ancestries, 'singer');
     return hero.value.ancestryId === singerAncestry?.id;
   });
 
   const levelData = computed(() => {
     const classifiers = useClassifierStore();
-    return classifiers.getByProp(classifiers.levels, 'level', hero.value?.level || 1);
+    return findByProp(classifiers.levels, 'level', hero.value?.level || 1);
   });
 
   const tierData = computed(() => {
     const classifiers = useClassifierStore();
-    return classifiers.getById(classifiers.tiers, levelData.value?.tierId);
+    return findById(classifiers.tiers, levelData.value?.tierId);
   });
 
   // ===================
@@ -81,7 +95,7 @@ export const useHeroStore = defineStore('hero', () => {
   function getAttributeValue(attrCode: string): number {
     if (!hero.value?.attributes) return 0;
     const classifiers = useClassifierStore();
-    const attr = classifiers.getByCode(classifiers.attributes, attrCode);
+    const attr = findByCode(classifiers.attributes, attrCode);
     if (!attr) return 0;
     const heroAttr = hero.value.attributes.find((a) => a.attrId === attr.id);
     return heroAttr?.value || 0;
@@ -96,7 +110,7 @@ export const useHeroStore = defineStore('hero', () => {
   function getDefenseValue(attrTypeCode: string): number {
     if (!hero.value?.defenses) return 10;
     const classifiers = useClassifierStore();
-    const attrType = classifiers.getByCode(classifiers.attributeTypes, attrTypeCode);
+    const attrType = findByCode(classifiers.attributeTypes, attrTypeCode);
     if (!attrType) return 10;
     const defense = hero.value.defenses.find((d) => d.attrTypeId === attrType.id);
     return defense?.value || 10;
@@ -110,7 +124,7 @@ export const useHeroStore = defineStore('hero', () => {
 
   function getSkillModifier(skillCode: string): number {
     const classifiers = useClassifierStore();
-    const skillData = classifiers.getByCode(classifiers.skills, skillCode);
+    const skillData = findByCode(classifiers.skills, skillCode);
     if (!skillData || !hero.value) return 0;
     const attrValue = getAttributeValueById(skillData.attrId);
     const rank = getSkillRank(skillData.id);
@@ -133,7 +147,7 @@ export const useHeroStore = defineStore('hero', () => {
       const found = heroes.find((h) => h.id === id);
       if (found) {
         // Deep clone to avoid mutating shared mock data
-        hero.value = JSON.parse(JSON.stringify(found));
+        hero.value = structuredClone(found);
         logger.info('Hero loaded', { id, name: found.name, level: found.level });
       } else {
         error.value = 'Hero not found';
@@ -174,7 +188,14 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   function setName(name: string) {
     if (!hero.value) return;
-    hero.value.name = name;
+    // Validate input type
+    if (typeof name !== 'string') {
+      logger.warn('Invalid name type', { received: typeof name });
+      return;
+    }
+    // Sanitize: trim whitespace and limit length
+    const sanitized = name.trim().slice(0, 100);
+    hero.value.name = sanitized;
   }
 
   function setLevel(level: number) {
@@ -187,7 +208,7 @@ export const useHeroStore = defineStore('hero', () => {
     hero.value.level = level;
   }
 
-  function setCampaignId(campaignId: number) {
+  function setCampaignId(campaignId: number | null) {
     if (!hero.value) return;
     hero.value.campaignId = campaignId;
   }
@@ -198,7 +219,7 @@ export const useHeroStore = defineStore('hero', () => {
   function setAncestry(ancestryId: number) {
     if (!hero.value) return;
     const classifiers = useClassifierStore();
-    const singerAncestry = classifiers.getByCode(classifiers.ancestries, 'singer');
+    const singerAncestry = findByCode(classifiers.ancestries, 'singer');
 
     // Remove previous ancestry talents if changing ancestry
     if (hero.value.ancestryId) {
@@ -259,7 +280,7 @@ export const useHeroStore = defineStore('hero', () => {
   function applyCulturalExpertise(cultureId: number) {
     if (!hero.value) return;
     const classifiers = useClassifierStore();
-    const culture = classifiers.getById(classifiers.cultures, cultureId);
+    const culture = findById(classifiers.cultures, cultureId);
     if (!culture) return;
 
     addExpertise(culture.expertiseId, { sourceType: 'culture', sourceId: cultureId });
@@ -278,7 +299,7 @@ export const useHeroStore = defineStore('hero', () => {
   function getHeroDerivedStat(statCode: string) {
     if (!hero.value?.derivedStats) return undefined;
     const classifiers = useClassifierStore();
-    const stat = classifiers.getByCode(classifiers.derivedStats, statCode);
+    const stat = findByCode(classifiers.derivedStats, statCode);
     if (!stat) return undefined;
     return hero.value.derivedStats.find((s) => s.statId === stat.id);
   }
@@ -288,9 +309,21 @@ export const useHeroStore = defineStore('hero', () => {
   }
 
   function getDerivedStatTotal(statCode: string): number {
+    // Build attribute values map for formula calculation
+    const classifiers = useClassifierStore();
+    const attrs: Record<string, number> = {};
+    for (const attr of classifiers.attributes) {
+      attrs[attr.code] = getAttributeValue(attr.code);
+    }
+
+    // Calculate base value from formula
+    const baseValue = calculateFormulaStat(statCode, attrs, levelData.value, tierData.value);
+
+    // Add modifier from hero's stored stat
     const heroStat = getHeroDerivedStat(statCode);
-    if (!heroStat) return 0;
-    return heroStat.value + (heroStat.modifier ?? 0);
+    const modifier = heroStat?.modifier ?? 0;
+
+    return baseValue + modifier;
   }
 
   function getDerivedStatModifier(statId: number): number {
@@ -303,9 +336,7 @@ export const useHeroStore = defineStore('hero', () => {
     const heroStat = getHeroDerivedStat(statCode);
     if (!heroStat) return '';
     const classifiers = useClassifierStore();
-    const unit = heroStat.unitId
-      ? (classifiers.getById(classifiers.units, heroStat.unitId)?.code ?? '')
-      : '';
+    const unit = heroStat.unitId ? (findById(classifiers.units, heroStat.unitId)?.code ?? '') : '';
     const modifier = heroStat.modifier ?? 0;
     const total = heroStat.value + modifier;
     if (modifier) {
@@ -439,7 +470,7 @@ export const useHeroStore = defineStore('hero', () => {
 
     // Remove all radiant talents from previous order
     if (hero.value.radiantOrderId) {
-      const prevOrder = classifiers.getById(classifiers.radiantOrders, hero.value.radiantOrderId);
+      const prevOrder = findById(classifiers.radiantOrders, hero.value.radiantOrderId);
       if (prevOrder) {
         // Get all talent IDs for this order (order talents + surge talents)
         const orderTalentIds = classifiers.talents
@@ -491,7 +522,7 @@ export const useHeroStore = defineStore('hero', () => {
   function applyStartingKitBonuses(startingKitId: number) {
     if (!hero.value) return;
     const classifiers = useClassifierStore();
-    const kitData = classifiers.getById(classifiers.startingKits, startingKitId);
+    const kitData = findById(classifiers.startingKits, startingKitId);
     if (!kitData) return;
 
     // Clear previous starting kit expertises
@@ -564,7 +595,7 @@ export const useHeroStore = defineStore('hero', () => {
   function addGoal(name: string, description?: string) {
     if (!hero.value) return;
     const classifiers = useClassifierStore();
-    const activeStatus = classifiers.getByCode(classifiers.goalStatuses, 'active');
+    const activeStatus = findByCode(classifiers.goalStatuses, 'active');
     hero.value.goals.push({
       id: nextTempId(),
       heroId: hero.value.id,
@@ -575,6 +606,11 @@ export const useHeroStore = defineStore('hero', () => {
     });
   }
 
+  function removeGoalById(goalId: number) {
+    removeById(hero.value?.goals, goalId);
+  }
+
+  /** @deprecated Use removeGoalById for race-condition safe removal */
   function removeGoal(index: number) {
     if (!hero.value) return;
     hero.value.goals.splice(index, 1);
@@ -594,6 +630,11 @@ export const useHeroStore = defineStore('hero', () => {
     });
   }
 
+  function removeConnectionById(connectionId: number) {
+    removeById(hero.value?.connections, connectionId);
+  }
+
+  /** @deprecated Use removeConnectionById for race-condition safe removal */
   function removeConnection(index: number) {
     if (!hero.value) return;
     hero.value.connections.splice(index, 1);
@@ -634,8 +675,11 @@ export const useHeroStore = defineStore('hero', () => {
       // TODO: API call
       Object.assign(hero.value, resources);
       return { success: true };
-    } catch {
+    } catch (err) {
       error.value = 'Failed to update resources';
+      logger.error('Failed to update resources', {
+        error: err instanceof Error ? err.message : String(err),
+      });
       return { success: false, error: error.value };
     } finally {
       saving.value = false;
@@ -656,6 +700,16 @@ export const useHeroStore = defineStore('hero', () => {
     isSinger,
     levelData,
     tierData,
+    talents,
+    skills,
+    expertises,
+    equipment,
+    goals,
+    connections,
+    companions,
+    conditions,
+    injuries,
+    cultures,
 
     // Lookup helpers
     getAttributeValue,
@@ -724,10 +778,12 @@ export const useHeroStore = defineStore('hero', () => {
     // Goals
     addGoal,
     removeGoal,
+    removeGoalById,
 
     // Connections
     addConnection,
     removeConnection,
+    removeConnectionById,
 
     // Personal Details
     setAppearance,

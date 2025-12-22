@@ -41,7 +41,8 @@
               >
                 <q-icon name="sym_o_workspace_premium" size="xs" class="q-mr-xs" />
                 <span>
-                  <strong>+1</strong> {{ getExpertiseName(kit.expertises[0]!.expertiseId) }}
+                  <strong>+1</strong>
+                  {{ findById(classifiers.expertises, kit.expertises[0]!.expertiseId)?.name }}
                 </span>
               </div>
 
@@ -64,6 +65,8 @@
                 :hint="`Roll ${kit.startingSpheres}`"
                 outlined
                 dense
+                :min="0"
+                :max="999999"
                 style="max-width: 150px"
                 @update:model-value="setStartingCurrency"
                 @click.stop
@@ -97,6 +100,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { findById, findByCode } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -105,7 +109,7 @@ const startingKits = computed(() => classifiers.startingKits);
 const selectedKitId = computed(() => heroStore.hero?.startingKitId ?? null);
 
 const isPrisonerKit = computed(() => {
-  const prisonerKit = classifiers.getByCode(classifiers.startingKits, 'prisoner');
+  const prisonerKit = findByCode(classifiers.startingKits, 'prisoner');
   return selectedKitId.value === prisonerKit?.id;
 });
 
@@ -119,11 +123,7 @@ function setStartingCurrency(val: string | number | null) {
   if (val === null) return;
   const numVal = typeof val === 'string' ? Number(val) : val;
   if (Number.isNaN(numVal)) return;
-  heroStore.setCurrency(Math.max(0, numVal));
-}
-
-function getExpertiseName(expertiseId: number): string {
-  return classifiers.getById(classifiers.expertises, expertiseId)?.name ?? 'Unknown';
+  heroStore.setCurrency(Math.max(0, Math.min(999999, numVal)));
 }
 
 function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
@@ -133,9 +133,9 @@ function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
 
   return kit.equipment
     .map((item) => {
-      const equip = classifiers.getById(classifiers.equipment, item.equipmentId);
-      if (!equip) return null;
-      return item.quantity > 1 ? `${equip.name} x${item.quantity}` : equip.name;
+      const name = findById(classifiers.equipment, item.equipmentId)?.name;
+      if (!name) return null;
+      return item.quantity > 1 ? `${name} x${item.quantity}` : name;
     })
     .filter((name): name is string => name !== null)
     .join(', ');

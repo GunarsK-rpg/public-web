@@ -56,6 +56,8 @@
                 outlined
                 class="modifier-input q-ml-sm"
                 :prefix="getSkillModifier(skill.id) >= 0 ? '+' : ''"
+                :min="-10"
+                :max="10"
                 @update:model-value="setSkillModifier(skill.id, $event)"
               />
             </div>
@@ -71,35 +73,32 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
-import type { SkillsBudgetValidation } from 'src/utils/characterValidation';
+import { findById } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 const { budget } = useStepValidation();
 
-const skillsBudget = computed(() => budget('skills') as SkillsBudgetValidation);
+const skillsBudget = computed(() => budget('skills'));
 const pointsRemaining = computed(() => skillsBudget.value.remaining);
 const pointsBudget = computed(() => skillsBudget.value.budget);
 const maxSkillRank = computed(() => skillsBudget.value.maxRank);
 
-// Group skills by attribute type (physical, cognitive, spiritual)
+// Group skills by attribute type using chained FK lookup (skill -> attribute -> attributeType)
+const skillsByAttrType = computed(() =>
+  classifiers.groupByChainedKey(classifiers.skills, 'attrId', classifiers.attributes, 'attrTypeId')
+);
+
+// Build skill groups with attribute abbreviations
 const skillGroups = computed(() => {
   return classifiers.attributeTypes.map((attrType) => {
-    // Get attribute IDs for this type
-    const attrIds = classifiers.attributes
-      .filter((a) => a.attrTypeId === attrType.id)
-      .map((a) => a.id);
-
-    // Get skills for these attributes
-    const skills = classifiers.skills
-      .filter((s) => attrIds.includes(s.attrId))
-      .map((skill) => {
-        const attr = classifiers.getById(classifiers.attributes, skill.attrId);
-        return {
-          ...skill,
-          attrAbbr: attr?.code.toUpperCase() ?? '',
-        };
-      });
+    const skills = (skillsByAttrType.value[attrType.id] ?? []).map((skill) => {
+      const attr = findById(classifiers.attributes, skill.attrId);
+      return {
+        ...skill,
+        attrAbbr: attr?.code.toUpperCase() ?? '',
+      };
+    });
 
     return {
       typeId: attrType.id,

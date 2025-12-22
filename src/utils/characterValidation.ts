@@ -227,11 +227,18 @@ const DEFAULT_BUDGET: BudgetValidation = {
   remaining: 0,
 };
 
-const DEFAULT_SKILLS_BUDGET: SkillsBudgetValidation = {
-  ...DEFAULT_BUDGET,
-  maxRank: 2,
-};
-
+export function getBudgetValidation(
+  stepCode: 'skills',
+  data: HeroValidationData
+): SkillsBudgetValidation;
+export function getBudgetValidation(
+  stepCode: Exclude<StepCode, 'skills'>,
+  data: HeroValidationData
+): BudgetValidation;
+export function getBudgetValidation(
+  stepCode: StepCode,
+  data: HeroValidationData
+): BudgetValidation | SkillsBudgetValidation;
 export function getBudgetValidation(
   stepCode: StepCode,
   data: HeroValidationData
@@ -248,6 +255,6 @@ export function getBudgetValidation(
     case 'paths':
       return validateTalents(levelData, hero.talents);
     default:
-      return stepCode === 'skills' ? DEFAULT_SKILLS_BUDGET : DEFAULT_BUDGET;
+      return DEFAULT_BUDGET;
   }
 }

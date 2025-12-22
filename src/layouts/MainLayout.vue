@@ -3,7 +3,7 @@
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn
-          v-if="showBackButton"
+          v-show="showBackButton"
           flat
           dense
           round

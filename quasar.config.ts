@@ -100,16 +100,14 @@ export default defineConfig((ctx) => {
     devServer: {
       port: 7100,
       // https: true,
-      open: {
-        app: { name: 'chrome' },
-      },
+      open: true, // Use system default browser
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
     framework: {
       config: {
         brand: {
-          primary: '#1565c0', // Darker blue (WCAG AAA) for better contrast with white text
+          primary: '#1565c0', // Darker blue (WCAG AA compliant) for better contrast with white text
           secondary: '#26a69a',
           accent: '#9c27b0',
           dark: '#1d1d1d',

@@ -49,6 +49,36 @@ $color-selected-bg-light: rgba(0, 0, 0, 0.05);
 $color-selected-bg-dark: rgba(255, 255, 255, 0.08);
 
 // =============================================================================
+// Banner/RPG Theme Colors
+// =============================================================================
+
+// Info banner colors (cyan tones)
+$color-banner-info-light: #0097a7; // cyan-700
+$color-banner-info-dark: #00838f; // cyan-800
+
+// Key talent banner (gold/amber tones)
+$color-key-talent-light: #b8860b; // dark goldenrod
+$color-key-talent-dark: #8b6914; // darker gold
+
+// Heroic path header (blue-grey tones)
+$color-heroic-path-light: #546e7a; // blue-grey-600
+$color-heroic-path-dark: #37474f; // blue-grey-800
+
+// Radiant path header (amber tones)
+$color-radiant-path-light: #ff8f00; // amber-900
+$color-radiant-path-dark: #c67c00; // darker amber
+
+// Ancestry path header (teal tones)
+$color-ancestry-path-light: #00897b; // teal-600
+$color-ancestry-path-dark: #00695c; // teal-800
+
+// Text colors (WCAG-compliant)
+$color-text-muted-light: #525252; // 4.6:1 contrast on white
+$color-text-muted-dark: #a3a3a3; // 4.5:1 contrast on dark
+$color-text-empty-light: #6b6b6b; // 4.5:1 contrast on white
+$color-text-empty-dark: #9a9a9a; // 4.5:1 contrast on dark
+
+// =============================================================================
 // CSS Custom Properties (for runtime theming)
 // =============================================================================
 // These are exported as CSS variables for use in components
@@ -63,4 +93,14 @@ $color-selected-bg-dark: rgba(255, 255, 255, 0.08);
 
   // Disabled/locked state
   --app-disabled-opacity: #{$color-disabled-opacity};
+
+  // Light mode disabled/selected states
+  --app-disabled-bg: #{$color-disabled-bg-light};
+  --app-selected-bg: #{$color-selected-bg-light};
+}
+
+// Dark mode overrides
+.body--dark {
+  --app-disabled-bg: #{$color-disabled-bg-dark};
+  --app-selected-bg: #{$color-selected-bg-dark};
 }

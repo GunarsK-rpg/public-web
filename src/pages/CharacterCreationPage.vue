@@ -33,7 +33,7 @@
     </div>
 
     <!-- Step Content -->
-    <div class="q-pa-md step-content">
+    <div :id="`step-panel-${currentStep}`" class="q-pa-md step-content" role="tabpanel">
       <component :is="currentStepComponent" />
     </div>
 
@@ -122,10 +122,11 @@ function goBack() {
 }
 
 // Create character
-function createCharacter() {
+async function createCharacter(): Promise<void> {
   creating.value = true;
   try {
-    // TODO: Implement API call to create character
+    // TODO: Replace with actual API call
+    await Promise.resolve(); // Placeholder for: await heroService.createHero(heroStore.hero);
     $q.notify({
       type: 'positive',
       message: 'Character created successfully!',
@@ -164,11 +165,21 @@ function resetWizard() {
 
 // Initialize wizard and load classifiers on mount
 onMounted(async () => {
-  if (!classifierStore.initialized) {
-    await classifierStore.initialize();
-  }
-  if (!wizardStore.isActive) {
-    wizardStore.startCreate();
+  try {
+    if (!classifierStore.initialized) {
+      await classifierStore.initialize();
+    }
+    if (!wizardStore.isActive) {
+      wizardStore.startCreate();
+    }
+  } catch (error) {
+    console.error('Failed to initialize character creation:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to initialize',
+      caption: 'Unable to load required data. Please refresh the page.',
+      timeout: 8000,
+    });
   }
 });
 </script>
