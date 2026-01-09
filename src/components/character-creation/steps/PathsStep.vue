@@ -26,231 +26,22 @@
 
     <!-- Selected Paths with Specialties and Talents -->
     <q-list v-if="selectedPaths.length > 0" bordered class="rounded-borders q-mb-md">
-      <q-expansion-item
+      <HeroicPathPanel
         v-for="selection in selectedPaths"
         :key="selection.pathId"
-        :aria-label="`${findById(classifiers.paths, selection.pathId)?.name} path talents and specialties`"
+        :path-id="selection.pathId"
+        :specialty-id="selection.specialtyId"
         :default-opened="selectedPaths.length === 1"
-        header-class="banner-heroic-path"
-        expand-icon-class="text-white"
-      >
-        <template v-slot:header>
-          <q-item-section avatar>
-            <q-icon name="sym_o_route" color="white" aria-hidden="true" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="text-white text-weight-medium">
-              {{ findById(classifiers.paths, selection.pathId)?.name }} Path
-            </q-item-label>
-            <q-item-label class="text-white text-secondary-emphasis" caption>
-              {{ getSpecialtyName(selection.pathId, selection.specialtyId) }}
-              · {{ selection.talentIds.length }} talents selected
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              flat
-              dense
-              round
-              icon="close"
-              color="white"
-              size="sm"
-              aria-label="Remove path"
-              @click.stop="togglePath(selection.pathId)"
-            >
-              <q-tooltip>Remove path</q-tooltip>
-            </q-btn>
-          </q-item-section>
-        </template>
-
-        <q-card>
-          <q-card-section>
-            <!-- Specialty Selection -->
-            <div class="q-mb-md">
-              <div class="text-caption q-mb-xs">Select Specialty</div>
-              <q-btn-toggle
-                :model-value="selection.specialtyId"
-                :options="getSpecialtyOptions(selection.pathId)"
-                spread
-                no-caps
-                @update:model-value="setSpecialty(selection.pathId, $event)"
-              />
-            </div>
-
-            <!-- Key Talent (auto-granted) -->
-            <div class="q-mb-md">
-              <q-banner class="banner-key-talent" dense rounded>
-                <template v-slot:avatar>
-                  <q-icon name="sym_o_stars" aria-hidden="true" />
-                </template>
-                <strong>Key Talent:</strong> {{ getKeyTalent(selection.pathId)?.name }}
-                <div class="text-caption">
-                  {{
-                    getKeyTalent(selection.pathId)?.descriptionShort ||
-                    getKeyTalent(selection.pathId)?.description
-                  }}
-                </div>
-              </q-banner>
-            </div>
-
-            <!-- Available Talents -->
-            <div class="text-caption q-mb-xs">Path Talents</div>
-            <q-list bordered separator class="rounded-borders">
-              <q-item
-                v-for="talentInfo in getPathTalentsWithStatus(
-                  selection.pathId,
-                  selection.specialtyId
-                )"
-                :key="talentInfo.talent.id"
-                :class="{ 'item-disabled': !talentInfo.available }"
-              >
-                <q-item-section avatar>
-                  <q-checkbox
-                    :model-value="selection.talentIds.includes(talentInfo.talent.id)"
-                    :disable="
-                      !talentInfo.available && !selection.talentIds.includes(talentInfo.talent.id)
-                    "
-                    @update:model-value="
-                      toggleHeroTalent(talentInfo.talent.id, talentInfo.available)
-                    "
-                  />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label :class="{ [`text-${COLORS.muted}`]: !talentInfo.available }">
-                    {{ talentInfo.talent.name }}
-                    <q-icon
-                      v-if="!talentInfo.available"
-                      name="lock"
-                      size="xs"
-                      class="q-ml-xs"
-                      aria-hidden="true"
-                    />
-                  </q-item-label>
-                  <q-item-label caption>{{
-                    talentInfo.talent.descriptionShort || talentInfo.talent.description
-                  }}</q-item-label>
-                  <!-- Show unmet prerequisites -->
-                  <q-item-label
-                    v-if="talentInfo.unmetPrereqs.length > 0"
-                    caption
-                    :class="`text-${COLORS.error}`"
-                  >
-                    <strong>Requires:</strong>
-                    {{ talentInfo.unmetPrereqs.map(formatPrereq).join(', ') }}
-                  </q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    flat
-                    dense
-                    icon="info"
-                    aria-label="View talent details"
-                    @click.stop="showTalentDetails(talentInfo.talent)"
-                  >
-                    <q-tooltip>View details</q-tooltip>
-                  </q-btn>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
+        @remove="togglePath(selection.pathId)"
+        @update:specialty-id="setSpecialty(selection.pathId, $event)"
+        @toggle-talent="handleToggleTalent"
+        @show-details="showTalentDetails"
+      />
     </q-list>
 
     <!-- Singer Ancestry Talents -->
     <q-list v-if="isSinger" bordered class="rounded-borders q-mb-md">
-      <q-expansion-item
-        aria-label="Singer ancestry talents"
-        default-opened
-        header-class="banner-ancestry-path"
-        expand-icon-class="text-white"
-      >
-        <template v-slot:header>
-          <q-item-section avatar>
-            <q-icon name="sym_o_change_circle" color="white" aria-hidden="true" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="text-white text-weight-medium"> Singer Ancestry </q-item-label>
-            <q-item-label class="text-white text-secondary-emphasis" caption>
-              {{ selectedAncestryTalentIds.length }} talents selected
-            </q-item-label>
-          </q-item-section>
-        </template>
-
-        <q-card>
-          <q-card-section>
-            <!-- Key Talent (auto-granted) -->
-            <div class="q-mb-md">
-              <q-banner class="banner-key-talent" dense rounded>
-                <template v-slot:avatar>
-                  <q-icon name="sym_o_stars" aria-hidden="true" />
-                </template>
-                <strong>Key Talent:</strong> {{ singerKeyTalent?.name }}
-                <div class="text-caption">
-                  {{ singerKeyTalent?.descriptionShort || singerKeyTalent?.description }}
-                </div>
-              </q-banner>
-            </div>
-
-            <!-- Ancestry Talents -->
-            <div class="text-caption q-mb-xs">Ancestry Talents</div>
-            <q-list bordered separator class="rounded-borders">
-              <q-item
-                v-for="talentInfo in singerTalentsWithStatus"
-                :key="talentInfo.talent.id"
-                :class="{ 'item-disabled': !talentInfo.available }"
-              >
-                <q-item-section avatar>
-                  <q-checkbox
-                    :model-value="selectedAncestryTalentIds.includes(talentInfo.talent.id)"
-                    :disable="
-                      !talentInfo.available &&
-                      !selectedAncestryTalentIds.includes(talentInfo.talent.id)
-                    "
-                    @update:model-value="
-                      toggleHeroTalent(talentInfo.talent.id, talentInfo.available)
-                    "
-                  />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label :class="{ [`text-${COLORS.muted}`]: !talentInfo.available }">
-                    {{ talentInfo.talent.name }}
-                    <q-icon
-                      v-if="!talentInfo.available"
-                      name="lock"
-                      size="xs"
-                      class="q-ml-xs"
-                      aria-hidden="true"
-                    />
-                  </q-item-label>
-                  <q-item-label caption>{{
-                    talentInfo.talent.descriptionShort || talentInfo.talent.description
-                  }}</q-item-label>
-                  <q-item-label
-                    v-if="talentInfo.unmetPrereqs.length > 0"
-                    caption
-                    :class="`text-${COLORS.error}`"
-                  >
-                    <strong>Requires:</strong>
-                    {{ talentInfo.unmetPrereqs.map(formatPrereq).join(', ') }}
-                  </q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    flat
-                    dense
-                    icon="info"
-                    aria-label="View talent details"
-                    @click.stop="showTalentDetails(talentInfo.talent)"
-                  >
-                    <q-tooltip>View details</q-tooltip>
-                  </q-btn>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
+      <SingerAncestryPanel @toggle-talent="handleToggleTalent" @show-details="showTalentDetails" />
     </q-list>
 
     <!-- Radiant Path (Optional) -->
@@ -266,182 +57,23 @@
 
     <!-- Radiant Order Selection & Talents -->
     <q-list v-if="isRadiant" bordered class="rounded-borders q-mb-md">
-      <q-expansion-item
-        :aria-label="`${findById(classifiers.radiantOrders, radiantOrderId)?.name || 'Radiant'} order talents`"
-        default-opened
-        header-class="banner-radiant-path"
-        expand-icon-class="text-white"
-      >
-        <template v-slot:header>
-          <q-item-section avatar>
-            <q-icon name="sym_o_auto_awesome" color="white" aria-hidden="true" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="text-white text-weight-medium">
-              {{ findById(classifiers.radiantOrders, radiantOrderId)?.name || 'Select Order' }}
-            </q-item-label>
-            <q-item-label class="text-white text-secondary-emphasis" caption>
-              Ideal {{ idealLevel }} · {{ selectedRadiantTalentIds.length }} talents selected
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn
-              flat
-              dense
-              round
-              icon="close"
-              color="white"
-              size="sm"
-              aria-label="Remove Radiant path"
-              @click.stop="toggleRadiant(false)"
-            >
-              <q-tooltip>Remove Radiant path</q-tooltip>
-            </q-btn>
-          </q-item-section>
-        </template>
-
-        <q-card>
-          <q-card-section>
-            <div class="text-caption q-mb-md">
-              Choose an order of Knights Radiant to bond with a spren and gain access to surges.
-            </div>
-
-            <q-select
-              :model-value="radiantOrderId"
-              :options="radiantOrderOptions"
-              label="Radiant Order"
-              outlined
-              emit-value
-              map-options
-              class="q-mb-md"
-              @update:model-value="setRadiantOrder"
-            />
-
-            <div v-if="radiantOrderId" class="q-mb-md">
-              <div class="text-caption q-mb-xs">Ideal Level (0-5)</div>
-              <q-slider
-                :model-value="idealLevel"
-                :min="0"
-                :max="5"
-                :step="1"
-                label
-                markers
-                @update:model-value="setIdealLevel"
-              />
-            </div>
-
-            <!-- Radiant Key Talent -->
-            <div v-if="radiantKeyTalent" class="q-mb-md">
-              <q-banner class="banner-key-talent" dense rounded>
-                <template v-slot:avatar>
-                  <q-icon name="sym_o_stars" aria-hidden="true" />
-                </template>
-                <strong>Order Talent:</strong> {{ radiantKeyTalent.name }}
-                <div class="text-caption">
-                  {{ radiantKeyTalent.descriptionShort || radiantKeyTalent.description }}
-                </div>
-              </q-banner>
-            </div>
-
-            <!-- Surge/Order Tab Selection -->
-            <div v-if="radiantOrderId" class="q-mb-md">
-              <div class="text-caption q-mb-xs">Select Talent Tree</div>
-              <q-btn-toggle
-                v-model="radiantTalentTab"
-                :options="radiantTabOptions"
-                spread
-                no-caps
-              />
-            </div>
-
-            <!-- Radiant Talents List (filtered by selected tab) -->
-            <div class="text-caption q-mb-xs">{{ radiantTalentTabLabel }} Talents</div>
-            <q-list bordered separator class="rounded-borders">
-              <q-item
-                v-for="talentInfo in currentRadiantTalentsWithStatus"
-                :key="talentInfo.talent.id"
-                :class="{ 'item-disabled': !talentInfo.available }"
-              >
-                <q-item-section avatar>
-                  <q-checkbox
-                    :model-value="isRadiantTalentSelected(talentInfo.talent.id)"
-                    :disable="
-                      !talentInfo.available && !isRadiantTalentSelected(talentInfo.talent.id)
-                    "
-                    @update:model-value="
-                      toggleHeroTalent(talentInfo.talent.id, talentInfo.available)
-                    "
-                  />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label :class="{ [`text-${COLORS.muted}`]: !talentInfo.available }">
-                    {{ talentInfo.talent.name }}
-                    <q-icon
-                      v-if="!talentInfo.available"
-                      name="lock"
-                      size="xs"
-                      class="q-ml-xs"
-                      aria-hidden="true"
-                    />
-                  </q-item-label>
-                  <q-item-label caption>{{
-                    talentInfo.talent.descriptionShort || talentInfo.talent.description
-                  }}</q-item-label>
-                  <q-item-label
-                    v-if="talentInfo.unmetPrereqs.length > 0"
-                    caption
-                    :class="`text-${COLORS.error}`"
-                  >
-                    <strong>Requires:</strong>
-                    {{ talentInfo.unmetPrereqs.map(formatPrereq).join(', ') }}
-                  </q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn
-                    flat
-                    dense
-                    icon="info"
-                    aria-label="View talent details"
-                    @click.stop="showTalentDetails(talentInfo.talent)"
-                  >
-                    <q-tooltip>View details</q-tooltip>
-                  </q-btn>
-                </q-item-section>
-              </q-item>
-              <q-item v-if="currentRadiantTalentsWithStatus.length === 0">
-                <q-item-section class="text-muted">
-                  No {{ radiantTalentTabLabel }} talents available
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
+      <RadiantPathPanel
+        :order-id="radiantOrderId"
+        :ideal-level="idealLevel"
+        @remove="toggleRadiant(false)"
+        @update:order-id="setRadiantOrder"
+        @update:ideal-level="setIdealLevel"
+        @toggle-talent="handleToggleTalent"
+        @show-details="showTalentDetails"
+      />
     </q-list>
 
     <!-- Talent Detail Dialog -->
-    <q-dialog v-model="talentDialogOpen">
-      <q-card style="min-width: min(400px, 90vw); max-width: 600px">
-        <q-card-section class="row items-center">
-          <div class="text-h6">{{ selectedTalentForDetails?.name }}</div>
-          <q-space />
-          <q-btn icon="close" flat round dense aria-label="Close dialog" v-close-popup />
-        </q-card-section>
-        <q-separator />
-        <q-card-section v-if="selectedTalentForDetails">
-          <div class="text-body2" style="white-space: pre-wrap">
-            {{ selectedTalentForDetails.description }}
-          </div>
-          <template v-if="getPrerequisitesArray(selectedTalentForDetails).length">
-            <q-separator class="q-my-sm" />
-            <div class="text-caption text-muted">
-              <strong>Prerequisites:</strong>
-              {{ getPrerequisitesArray(selectedTalentForDetails).map(formatPrereq).join(', ') }}
-            </div>
-          </template>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
+    <TalentDetailDialog
+      v-model="talentDialogOpen"
+      :talent="selectedTalentForDetails"
+      :format-prereq="formatPrereq"
+    />
   </div>
 </template>
 
@@ -449,33 +81,30 @@
 import { computed, ref, onMounted, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { COLORS } from 'src/constants/theme';
-import { createPrerequisiteFormatter } from 'src/utils/talentUtils';
-import { findById, findByCode } from 'src/utils/arrayUtils';
-import type { Talent, TalentPrerequisite } from 'src/types';
-
-interface TalentWithStatus {
-  talent: Talent;
-  available: boolean;
-  unmetPrereqs: TalentPrerequisite[];
-}
+import { useTalentPrerequisites } from 'src/composables/useTalentPrerequisites';
+import { findById } from 'src/utils/arrayUtils';
+import HeroicPathPanel from '../shared/HeroicPathPanel.vue';
+import SingerAncestryPanel from '../shared/SingerAncestryPanel.vue';
+import RadiantPathPanel from '../shared/RadiantPathPanel.vue';
+import TalentDetailDialog from '../shared/TalentDetailDialog.vue';
+import type { Talent } from 'src/types';
 
 // UI state for tracking selected paths during wizard
-// This is separate from heroStore.hero.talents which stores the final selections
 interface PathSelection {
   pathId: number;
   specialtyId: number | undefined;
-  talentIds: number[]; // Computed from hero talents for this path
 }
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
+const { getPathKeyTalent, getSpecialtiesByPath, toggleTalent, formatPrereq } =
+  useTalentPrerequisites();
 
 // Dialog state
 const talentDialogOpen = ref(false);
 const selectedTalentForDetails = ref<Talent | null>(null);
 
-// Local UI state for path selections (tracks which paths are expanded/selected in UI)
+// Local UI state for path selections
 const selectedPathIds = ref<number[]>([]);
 const pathSpecialties = ref<Map<number, number>>(new Map());
 
@@ -483,25 +112,8 @@ const pathSpecialties = ref<Map<number, number>>(new Map());
 const heroicPaths = computed(() => classifiers.paths);
 const isRadiant = computed(() => heroStore.isRadiant);
 const isSinger = computed(() => heroStore.isSinger);
-
 const radiantOrderId = computed(() => heroStore.hero?.radiantOrderId ?? null);
 const idealLevel = computed(() => heroStore.hero?.radiantIdeal ?? 0);
-
-const radiantOrderOptions = computed(() =>
-  classifiers.radiantOrders.map((o) => ({ value: o.id, label: o.name }))
-);
-
-// Hero's selected talent IDs
-const heroTalentIds = computed(() => heroStore.talents.map((t) => t.talentId));
-
-// Build character skills map from hero
-const characterSkills = computed(() => {
-  const skills = new Map<number, number>();
-  for (const skill of heroStore.skills) {
-    skills.set(skill.skillId, skill.rank);
-  }
-  return skills;
-});
 
 // Sync local UI state from hero store (for edit mode)
 function syncLocalStateFromHero() {
@@ -513,7 +125,6 @@ function syncLocalStateFromHero() {
     if (talent?.pathId) {
       pathIds.add(talent.pathId);
       if (talent.specialtyId) {
-        // Find path for this specialty
         const specialty = findById(classifiers.specialties, talent.specialtyId);
         if (specialty?.pathId) {
           specialties.set(specialty.pathId, talent.specialtyId);
@@ -526,13 +137,11 @@ function syncLocalStateFromHero() {
   pathSpecialties.value = specialties;
 }
 
-// Initialize on mount and watch for hero changes
 onMounted(() => {
   syncLocalStateFromHero();
 });
 
 watch(
-  // Watch talents array length instead of deep watching to avoid performance overhead
   () => heroStore.hero?.talents.length,
   () => {
     syncLocalStateFromHero();
@@ -541,237 +150,19 @@ watch(
 
 // Derive selected paths from hero's talents
 const selectedPaths = computed((): PathSelection[] => {
-  const paths: PathSelection[] = [];
-  for (const pathId of selectedPathIds.value) {
-    const specialtyId = pathSpecialties.value.get(pathId);
-    // Get all hero talents that belong to this path or its specialty
-    const pathTalentIds = heroTalentIds.value.filter((talentId) => {
-      const talent = findById(classifiers.talents, talentId);
-      if (!talent) return false;
-      // Talent belongs to this path directly or to the selected specialty
-      return talent.pathId === pathId || (specialtyId && talent.specialtyId === specialtyId);
-    });
-    paths.push({
-      pathId,
-      specialtyId,
-      talentIds: pathTalentIds,
-    });
-  }
-  return paths;
+  return selectedPathIds.value.map((pathId) => ({
+    pathId,
+    specialtyId: pathSpecialties.value.get(pathId),
+  }));
 });
 
-// ===================
-// TALENT LOOKUP HELPERS (using classifiers)
-// ===================
-function getTalentsByPath(pathId: number): Talent[] {
-  return classifiers.talents.filter((t) => t.pathId === pathId && !t.specialtyId);
-}
-
-function getTalentsBySpecialty(specialtyId: number): Talent[] {
-  return classifiers.talents.filter((t) => t.specialtyId === specialtyId);
-}
-
-function getPathKeyTalent(pathId: number): Talent | undefined {
-  return classifiers.talents.find((t) => t.pathId === pathId && t.isKey);
-}
-
-function getTalentsByAncestry(ancestryId: number): Talent[] {
-  return classifiers.talents.filter((t) => t.ancestryId === ancestryId);
-}
-
-function getAncestryKeyTalent(ancestryId: number): Talent | undefined {
-  return classifiers.talents.find((t) => t.ancestryId === ancestryId && t.isKey);
-}
-
-function getTalentsByRadiantOrder(orderId: number): Talent[] {
-  return classifiers.talents.filter((t) => t.radiantOrderId === orderId && !t.surgeId);
-}
-
-function getRadiantOrderKeyTalent(orderId: number): Talent | undefined {
-  return classifiers.talents.find((t) => t.radiantOrderId === orderId && t.isKey);
-}
-
-function getTalentsBySurge(surgeId: number): Talent[] {
-  return classifiers.talents.filter((t) => t.surgeId === surgeId);
-}
-
-function getSpecialtiesByPath(pathId: number) {
-  return classifiers.specialties.filter((s) => s.pathId === pathId);
-}
-
-// ===================
-// PREREQUISITE CHECKING
-// ===================
-function checkTalentPrerequisites(
-  talent: Talent,
-  selectedTalentIds: number[],
-  skills: Map<number, number>
-): { met: boolean; unmetPrereqs: TalentPrerequisite[] } {
-  if (!talent.prerequisites || talent.prerequisites.length === 0) {
-    return { met: true, unmetPrereqs: [] };
-  }
-
-  const unmetPrereqs: TalentPrerequisite[] = [];
-
-  for (const prereq of talent.prerequisites) {
-    let isMet = false;
-
-    switch (prereq.type) {
-      case 'talent':
-        if (prereq.talentIds?.length) {
-          isMet = prereq.talentIds.some((id) => selectedTalentIds.includes(id));
-        }
-        break;
-      case 'skill':
-        if (prereq.skillId !== undefined && prereq.skillRank !== undefined) {
-          const currentRank = skills.get(prereq.skillId) ?? 0;
-          isMet = currentRank >= prereq.skillRank;
-        }
-        break;
-      case 'ideal':
-        // Check radiant ideal level
-        isMet = idealLevel.value >= (prereq.skillRank ?? 0);
-        break;
-      case 'level':
-        isMet = (heroStore.hero?.level ?? 1) >= (prereq.skillRank ?? 0);
-        break;
-      default:
-        isMet = true;
-    }
-
-    if (!isMet) {
-      unmetPrereqs.push(prereq);
-    }
-  }
-
-  return { met: unmetPrereqs.length === 0, unmetPrereqs };
-}
-
-// Format prerequisite for display - uses centralized utility
-const formatPrereq = createPrerequisiteFormatter(classifiers.talents, classifiers.skills);
-
-// Map talents to TalentWithStatus (reusable helper)
-function mapTalentsWithStatus(talents: Talent[]): TalentWithStatus[] {
-  return talents.map((talent) => {
-    const { met, unmetPrereqs } = checkTalentPrerequisites(
-      talent,
-      heroTalentIds.value,
-      characterSkills.value
-    );
-    return { talent, available: met, unmetPrereqs };
-  });
-}
-
-// Toggle any talent selection
-function toggleHeroTalent(talentId: number, available: boolean) {
-  if (heroTalentIds.value.includes(talentId)) {
-    heroStore.removeTalent(talentId);
-  } else if (available) {
-    heroStore.addTalent(talentId);
-  }
-}
-
-// ===================
-// SINGER ANCESTRY
-// ===================
-const singerAncestryId = computed(() => {
-  const singer = findByCode(classifiers.ancestries, 'singer');
-  return singer?.id;
-});
-
-const singerKeyTalent = computed(() =>
-  singerAncestryId.value ? getAncestryKeyTalent(singerAncestryId.value) : null
-);
-
-const selectedAncestryTalentIds = computed(() => {
-  if (!singerAncestryId.value) return [];
-  const ancestryTalentIds = getTalentsByAncestry(singerAncestryId.value).map((t) => t.id);
-  return heroTalentIds.value.filter((id) => ancestryTalentIds.includes(id));
-});
-
-const singerTalentsWithStatus = computed((): TalentWithStatus[] => {
-  if (!isSinger.value || !singerAncestryId.value) return [];
-  const talents = getTalentsByAncestry(singerAncestryId.value).filter((t) => !t.isKey);
-  return mapTalentsWithStatus(talents);
-});
-
-// ===================
-// RADIANT PATH
-// ===================
-const radiantKeyTalent = computed(() =>
-  radiantOrderId.value ? getRadiantOrderKeyTalent(radiantOrderId.value) : null
-);
-
-const selectedRadiantOrder = computed(() =>
-  findById(classifiers.radiantOrders, radiantOrderId.value)
-);
-
-const surge1Id = computed(() => selectedRadiantOrder.value?.surge1Id ?? null);
-const surge2Id = computed(() => selectedRadiantOrder.value?.surge2Id ?? null);
-
-const surge1Name = computed(() => findById(classifiers.surges, surge1Id.value)?.name || 'Surge 1');
-const surge2Name = computed(() => findById(classifiers.surges, surge2Id.value)?.name || 'Surge 2');
-
-const radiantTalentTab = ref<'order' | 'surge1' | 'surge2'>('surge1');
-
-const radiantTabOptions = computed(() => [
-  {
-    value: 'order',
-    label: findById(classifiers.radiantOrders, radiantOrderId.value)?.name || 'Order',
-  },
-  { value: 'surge1', label: surge1Name.value },
-  { value: 'surge2', label: surge2Name.value },
-]);
-
-const selectedRadiantTalentIds = computed(() => {
-  if (!radiantOrderId.value) return [];
-  // Get all radiant-related talent IDs (order + surges)
-  const orderTalentIds = getTalentsByRadiantOrder(radiantOrderId.value).map((t) => t.id);
-  const surge1TalentIds = surge1Id.value ? getTalentsBySurge(surge1Id.value).map((t) => t.id) : [];
-  const surge2TalentIds = surge2Id.value ? getTalentsBySurge(surge2Id.value).map((t) => t.id) : [];
-  const allRadiantIds = [...orderTalentIds, ...surge1TalentIds, ...surge2TalentIds];
-  return heroTalentIds.value.filter((id) => allRadiantIds.includes(id));
-});
-
-const radiantTalentTabLabel = computed(() => {
-  if (radiantTalentTab.value === 'order')
-    return findById(classifiers.radiantOrders, radiantOrderId.value)?.name || 'Order';
-  if (radiantTalentTab.value === 'surge1') return surge1Name.value;
-  return surge2Name.value;
-});
-
-const orderTalentsWithStatus = computed((): TalentWithStatus[] => {
-  if (!radiantOrderId.value) return [];
-  const orderTalents = getTalentsByRadiantOrder(radiantOrderId.value).filter((t) => !t.isKey);
-  return mapTalentsWithStatus(orderTalents);
-});
-
-const surge1TalentsWithStatus = computed((): TalentWithStatus[] => {
-  if (!surge1Id.value) return [];
-  return mapTalentsWithStatus(getTalentsBySurge(surge1Id.value));
-});
-
-const surge2TalentsWithStatus = computed((): TalentWithStatus[] => {
-  if (!surge2Id.value) return [];
-  return mapTalentsWithStatus(getTalentsBySurge(surge2Id.value));
-});
-
-const currentRadiantTalentsWithStatus = computed((): TalentWithStatus[] => {
-  if (radiantTalentTab.value === 'order') return orderTalentsWithStatus.value;
-  if (radiantTalentTab.value === 'surge1') return surge1TalentsWithStatus.value;
-  return surge2TalentsWithStatus.value;
-});
-
-// ===================
-// PATH ACTIONS
-// ===================
+// Path actions
 function isPathSelected(pathId: number): boolean {
   return selectedPathIds.value.includes(pathId);
 }
 
 function togglePath(pathId: number) {
   if (isPathSelected(pathId)) {
-    // Remove path and its key talent
     selectedPathIds.value = selectedPathIds.value.filter((id) => id !== pathId);
     pathSpecialties.value.delete(pathId);
     const keyTalent = getPathKeyTalent(pathId);
@@ -779,10 +170,8 @@ function togglePath(pathId: number) {
       heroStore.removeTalent(keyTalent.id);
     }
   } else {
-    // Add path and its key talent
     selectedPathIds.value.push(pathId);
     heroStore.addKeyTalentForPath(pathId);
-    // Select first specialty by default
     const specialties = getSpecialtiesByPath(pathId);
     const firstSpecialty = specialties[0];
     if (firstSpecialty) {
@@ -791,38 +180,13 @@ function togglePath(pathId: number) {
   }
 }
 
-function getSpecialtyName(_pathId: number, specialtyId: number | undefined): string {
-  if (!specialtyId) return 'No specialty';
-  return findById(classifiers.specialties, specialtyId)?.name || 'No specialty';
-}
-
-function getSpecialtyOptions(pathId: number) {
-  return getSpecialtiesByPath(pathId).map((s) => ({
-    value: s.id,
-    label: s.name,
-  }));
-}
-
 function setSpecialty(pathId: number, specialtyId: number) {
   pathSpecialties.value.set(pathId, specialtyId);
 }
 
-function getKeyTalent(pathId: number) {
-  return getPathKeyTalent(pathId);
-}
-
-function getPathTalentsWithStatus(
-  pathId: number,
-  specialtyId: number | undefined
-): TalentWithStatus[] {
-  const pathTalents = getTalentsByPath(pathId).filter((t) => !t.isKey);
-  const specialtyTalents = specialtyId ? getTalentsBySpecialty(specialtyId) : [];
-  return mapTalentsWithStatus([...pathTalents, ...specialtyTalents]);
-}
-
+// Radiant actions
 function toggleRadiant(value: boolean) {
   if (value) {
-    // Default to first order (Windrunner)
     const firstOrder = classifiers.radiantOrders[0];
     if (firstOrder) {
       heroStore.setRadiantOrder(firstOrder.id);
@@ -842,12 +206,9 @@ function setIdealLevel(level: number | null) {
   }
 }
 
-function isRadiantTalentSelected(talentId: number): boolean {
-  return heroTalentIds.value.includes(talentId);
-}
-
-function getPrerequisitesArray(talent: Talent): TalentPrerequisite[] {
-  return talent.prerequisites ?? [];
+// Talent actions
+function handleToggleTalent(talentId: number, available: boolean) {
+  toggleTalent(talentId, available);
 }
 
 function showTalentDetails(talent: Talent) {
