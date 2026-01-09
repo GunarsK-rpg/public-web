@@ -90,6 +90,11 @@ tasks:
     cmds:
       - npm audit --audit-level=high
 
+  security:fix:
+    desc: Auto-fix security vulnerabilities
+    cmds:
+      - npm audit fix
+
   # Linting
   lint:markdown:
     desc: Lint Markdown files
@@ -109,7 +114,8 @@ tasks:
       - echo "All CI checks passed!"
 
   ci:fix:
-    desc: Auto-fix all fixable issues (format, lint)
+    desc: Auto-fix all fixable issues (format, lint, security)
     cmds:
       - task: format:fix
       - task: lint:fix
+      - task: security:fix

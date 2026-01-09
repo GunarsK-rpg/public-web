@@ -37,7 +37,7 @@
       "labels": ["dependencies", "major-update"]
     },
     {
-      "matchPackageNames": ["vue", "quasar", "@quasar/app-vite", "vite"],
+      "matchPackageNames": ["vue", "quasar", "@quasar/app-vite", "vite", "typescript"],
       "matchUpdateTypes": ["minor", "major"],
       "groupName": "core framework",
       "dependencyDashboardApproval": true,

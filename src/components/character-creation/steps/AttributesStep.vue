@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="text-subtitle1 q-mb-sm">Allocate your attribute points</div>
-    <div class="text-caption q-mb-md">
+    <div class="text-caption q-mb-md" aria-live="polite" aria-atomic="true">
       Points remaining:
       <strong :class="pointsRemaining >= 0 ? 'text-positive' : 'text-negative'">{{
         pointsRemaining

@@ -163,6 +163,7 @@ class Logger {
     const sensitiveHeaders = [
       'authorization',
       'cookie',
+      'set-cookie',
       'x-api-key',
       'x-auth-token',
       'x-csrf-token',

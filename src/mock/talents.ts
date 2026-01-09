@@ -55,7 +55,7 @@ const investigatorTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 8, skillRank: 1 },
-      { type: 'talent', talentId: 1 },
+      { type: 'talent', talentIds: [1] },
     ],
     descriptionShort: "Use Opportunist for an ally's plot die within 20 feet.",
     description: `Allies can be an asset or a liability, so you keep an eye on them for their protection and yours.
@@ -69,7 +69,7 @@ const investigatorTalents: Talent[] = [
     code: 'quick-analysis',
     name: 'Quick Analysis',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 101 }],
+    prerequisites: [{ type: 'talent', talentIds: [101] }],
     descriptionShort: 'Spend 2 focus for extra action on cognitive tests.',
     description: `Your mind quickly files and organizes data, and you swiftly act on that information while under pressure.
 
@@ -84,7 +84,7 @@ const investigatorTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 14, skillRank: 2 },
-      { type: 'talent', talentId: 1 },
+      { type: 'talent', talentIds: [1] },
     ],
     descriptionShort: "Learn target's motivation and raise stakes against them.",
     description: `With a leading question or cutting remark, you goad others into revealing their motives.
@@ -100,7 +100,7 @@ const investigatorTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 14, skillRank: 2 },
-      { type: 'talent', talentId: 102 },
+      { type: 'talent', talentIds: [102] },
     ],
     descriptionShort: 'Become Focused after cognitive test success. Gain Legal Codes expertise.',
     description: `Observing clues in your environment, you slowly but surely build a mental model of the mysteries before you.
@@ -114,7 +114,7 @@ const investigatorTalents: Talent[] = [
     code: 'baleful',
     name: 'Baleful',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 103 }],
+    prerequisites: [{ type: 'talent', talentIds: [103] }],
     descriptionShort: 'Targets spend extra focus equal to your tier to resist your influence.',
     description: `With a severe stare, you crack the resolve of all but the most composed adversaries.
 
@@ -127,7 +127,7 @@ const investigatorTalents: Talent[] = [
     code: 'hardy',
     name: 'Hardy',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 105 }],
+    prerequisites: [{ type: 'talent', talentIds: [105] }],
     descriptionShort: '+1 max health per level (retroactive).',
     description: `You've trained your body to endure pain and fatigue, keeping you in the fight until the bitter end.
 
@@ -142,7 +142,7 @@ const investigatorTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 8, skillRank: 3 },
-      { type: 'talent', talentId: 106 },
+      { type: 'talent', talentIds: [106] },
     ],
     descriptionShort:
       'Advantage on cognitive tests vs known motivations; detect lies automatically.',
@@ -159,7 +159,7 @@ const investigatorTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 8, skillRank: 3 },
-      { type: 'talent', talentId: 106 },
+      { type: 'talent', talentIds: [106] },
     ],
     descriptionShort: 'Spend 3 focus to make target back down.',
     description: `You've compiled information on your target's motive and circumstances. Now, by pressing on your target's desires, weaknesses, or guilt, you can convince them to back down.
@@ -179,7 +179,7 @@ const spyTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 14, skillRank: 2 },
-      { type: 'talent', talentId: 1 },
+      { type: 'talent', talentIds: [1] },
     ],
     descriptionShort: 'Flip plot die to specific result for 2 focus.',
     description: `The best gamble is one that secretly isn't a gamble at all.
@@ -193,7 +193,7 @@ const spyTalents: Talent[] = [
     code: 'collected-spy',
     name: 'Collected',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 201 }],
+    prerequisites: [{ type: 'talent', talentIds: [201] }],
     descriptionShort: '+2 Cognitive and +2 Spiritual defense.',
     description: `You remain mindful of your immediate goals without losing sight of your deeper value, keeping you even-keeled amid chaos.
 
@@ -208,7 +208,7 @@ const spyTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 13, skillRank: 1 },
-      { type: 'talent', talentId: 1 },
+      { type: 'talent', talentIds: [1] },
     ],
     descriptionShort: 'Feign innocence when discovered; gain Sleight of Hand expertise.',
     description: `Years of covert operations have taught you to dissemble on the spot.
@@ -222,7 +222,7 @@ const spyTalents: Talent[] = [
     code: 'cover-story',
     name: 'Cover Story',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 203 }],
+    prerequisites: [{ type: 'talent', talentIds: [203] }],
     descriptionShort: 'Create a false identity with cultural expertise.',
     description: `By spinning vague rumors into popular gossip, you've created a false identity to inhabit.
 
@@ -237,7 +237,7 @@ const spyTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 14, skillRank: 3 },
-      { type: 'talent', talentId: 204 },
+      { type: 'talent', talentIds: [204] },
     ],
     descriptionShort: 'Silent unarmed attack against unaware targets.',
     description: `You swiftly strike at your target's throat, knees, or another vulnerable area.
@@ -251,7 +251,7 @@ const spyTalents: Talent[] = [
     code: 'mighty',
     name: 'Mighty',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 204 }],
+    prerequisites: [{ type: 'talent', talentIds: [204] }],
     descriptionShort: '+1+tier damage per action spent on attack.',
     description: `You deliver your swings, punches, and kicks with practiced efficiency.
 
@@ -266,7 +266,7 @@ const spyTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'narrative', description: 'Have a patron who is part of high society' },
-      { type: 'talent', talentId: 204 },
+      { type: 'talent', talentIds: [204] },
     ],
     descriptionShort: 'Add Opportunity to high society social tests for 2 focus.',
     description: `Your patron's name opens doors for you, even in unfamiliar places.
@@ -282,7 +282,7 @@ const spyTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 13, skillRank: 3 },
-      { type: 'talent', talentId: 205 },
+      { type: 'talent', talentIds: [205] },
     ],
     descriptionShort: 'Disguise without supplies; first one to see through is Surprised.',
     description: `You know poise is essential to any disguise.
@@ -300,7 +300,7 @@ const thiefTalents: Talent[] = [
     code: 'cheap-shot',
     name: 'Cheap Shot',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 1 }],
+    prerequisites: [{ type: 'talent', talentIds: [1] }],
     descriptionShort: 'Thievery attack vs Cognitive defense; target Stunned on hit.',
     description: `You know exactly where to strike to leave your foe reeling in pain.
 
@@ -313,7 +313,7 @@ const thiefTalents: Talent[] = [
     code: 'surefooted',
     name: 'Surefooted',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 301 }],
+    prerequisites: [{ type: 'talent', talentIds: [301] }],
     descriptionShort: '+10 movement; reduce fall/terrain damage by 2 x tier.',
     description: `You move through treacherous terrain with confidence and speed.
 
@@ -328,7 +328,7 @@ const thiefTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 6, skillRank: 3 },
-      { type: 'talent', talentId: 302 },
+      { type: 'talent', talentIds: [302] },
     ],
     descriptionShort: 'Hide after Disengage by spending 2 focus.',
     description: `You can slip from sight with ease.
@@ -344,7 +344,7 @@ const thiefTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 6, skillRank: 3 },
-      { type: 'talent', talentId: 302 },
+      { type: 'talent', talentIds: [302] },
     ],
     descriptionShort: 'Spend 2 focus for extra action on physical tests.',
     description: `Your acts of skulduggery are executed with subtlety and dexterity.
@@ -360,7 +360,7 @@ const thiefTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 14, skillRank: 2 },
-      { type: 'talent', talentId: 1 },
+      { type: 'talent', talentIds: [1] },
     ],
     descriptionShort: 'Spend 1 focus to raise the stakes on any test.',
     description: `You know that risk and reward are inseparable.
@@ -374,7 +374,7 @@ const thiefTalents: Talent[] = [
     code: 'double-down',
     name: 'Double Down',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 305 }],
+    prerequisites: [{ type: 'talent', talentIds: [305] }],
     descriptionShort: 'Reroll Opportunist again; lose 2 focus on Complication.',
     description: `When you decide to take a risk, you commit fully.
 
@@ -389,7 +389,7 @@ const thiefTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 14, skillRank: 3 },
-      { type: 'talent', talentId: 306 },
+      { type: 'talent', talentIds: [306] },
     ],
     descriptionShort: 'Spend 2 focus for extra action on spiritual tests.',
     description: `Speaking quickly gets you out of trouble as often as it gets you into it.
@@ -405,7 +405,7 @@ const thiefTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'narrative', description: 'Have a patron or follower in the criminal underworld' },
-      { type: 'talent', talentId: 306 },
+      { type: 'talent', talentIds: [306] },
     ],
     descriptionShort: 'Add Opportunity to criminal social tests for 2 focus.',
     description: `Your patron's name carries weight in circles of ill repute.
@@ -441,7 +441,7 @@ const artifabrianTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 7, skillRank: 1 },
-      { type: 'talent', talentId: 500 },
+      { type: 'talent', talentIds: [500] },
     ],
     descriptionShort:
       'Gain crafting expertise and fabrial; expanded Opportunity range, half material cost.',
@@ -456,7 +456,7 @@ const artifabrianTalents: Talent[] = [
     code: 'prized-acquisition',
     name: 'Prized Acquisition',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 500 }],
+    prerequisites: [{ type: 'talent', talentIds: [500] }],
     descriptionShort: 'Gain Fabrial Crafting expertise and a special gem.',
     description: `Through good fortune or hard work, you've acquired a gemstone of sufficient quality.
 
@@ -469,7 +469,7 @@ const artifabrianTalents: Talent[] = [
     code: 'deep-study',
     name: 'Deep Study',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 501 }],
+    prerequisites: [{ type: 'talent', talentIds: [501] }],
     descriptionShort: 'Erudition grants extra expertise and two additional cognitive skills.',
     description: `You love getting lost in an archive of books, scrolls, and dusty secrets.
 
@@ -484,7 +484,7 @@ const artifabrianTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 7, skillRank: 2 },
-      { type: 'talent', talentId: 502 },
+      { type: 'talent', talentIds: [502] },
     ],
     descriptionShort: 'Prized Acquisition fabrial can use effects 1 tier higher.',
     description: `Your custom fabrials integrate novel functionalities.
@@ -498,7 +498,7 @@ const artifabrianTalents: Talent[] = [
     code: 'fine-handiwork',
     name: 'Fine Handiwork',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 501 }],
+    prerequisites: [{ type: 'talent', talentIds: [501] }],
     descriptionShort: 'Advanced features cost 1 upgrade instead of 2.',
     description: `Your dedication to quality ensures your designs stand out.
 
@@ -513,7 +513,7 @@ const artifabrianTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 7, skillRank: 3 },
-      { type: 'talent', talentId: 502 },
+      { type: 'talent', talentIds: [502] },
     ],
     descriptionShort: 'Raise stakes on fabrial attacks; spend Opportunity for free Strike.',
     description: `You push fabrials to their limits.
@@ -527,7 +527,7 @@ const artifabrianTalents: Talent[] = [
     code: 'experimental-tinkering',
     name: 'Experimental Tinkering',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 505 }],
+    prerequisites: [{ type: 'talent', talentIds: [505] }],
     descriptionShort:
       'Expanded Opportunity range, halved craft time; reconfigure Prized fabrial during rest.',
     description: `You've honed your instinct for when to sacrifice one feature to enhance another.
@@ -543,7 +543,7 @@ const artifabrianTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 11, skillRank: 3 },
-      { type: 'talent', talentId: 507 },
+      { type: 'talent', talentIds: [507] },
     ],
     descriptionShort: 'Spend 2 focus to use Lore for any cognitive/spiritual test.',
     description: `When speaking about a topic you're passionate about, you do so with unsurpassed authority.
@@ -563,7 +563,7 @@ const strategistTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 8, skillRank: 1 },
-      { type: 'talent', talentId: 500 },
+      { type: 'talent', talentIds: [500] },
     ],
     descriptionShort: 'Give Gain Advantage benefits to an ally instead of yourself.',
     description: `You carefully observe and assess your problem from novel angles.
@@ -577,7 +577,7 @@ const strategistTalents: Talent[] = [
     code: 'mind-and-body',
     name: 'Mind and Body',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 500 }],
+    prerequisites: [{ type: 'talent', talentIds: [500] }],
     descriptionShort: 'Erudition can grant physical skills; gain weapon expertise.',
     description: `You expand your studies to include martial arts and fitness.
 
@@ -590,7 +590,7 @@ const strategistTalents: Talent[] = [
     code: 'composed',
     name: 'Composed',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 511 }],
+    prerequisites: [{ type: 'talent', talentIds: [511] }],
     descriptionShort: '+tier to max and current focus.',
     description: `Through practiced composure, you push your limits.
 
@@ -605,7 +605,7 @@ const strategistTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 8, skillRank: 2 },
-      { type: 'talent', talentId: 512 },
+      { type: 'talent', talentIds: [512] },
     ],
     descriptionShort: '+2 to all defenses from start of round until your turn.',
     description: `Your knowledge of strategy guides you on when to act for greatest effect.
@@ -621,7 +621,7 @@ const strategistTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 11, skillRank: 2 },
-      { type: 'talent', talentId: 513 },
+      { type: 'talent', talentIds: [513] },
     ],
     descriptionShort: 'Reassign up to 2 skills/expertises from Erudition.',
     description: `You methodically search your mental archives.
@@ -637,7 +637,7 @@ const strategistTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 11, skillRank: 3 },
-      { type: 'talent', talentId: 513 },
+      { type: 'talent', talentIds: [513] },
     ],
     descriptionShort: "Spend 2 focus to remove Complication from ally's test within 20 feet.",
     description: `You prepare for anything that might derail your plans.
@@ -651,7 +651,7 @@ const strategistTalents: Talent[] = [
     code: 'keen-insight',
     name: 'Keen Insight',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 515 }],
+    prerequisites: [{ type: 'talent', talentIds: [515] }],
     descriptionShort:
       'After Gain Advantage, target gets disadvantage on next test unless they resist.',
     description: `Everyone has weaknesses—and you have a knack for exploiting them.
@@ -667,7 +667,7 @@ const strategistTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 8, skillRank: 3 },
-      { type: 'talent', talentId: 516 },
+      { type: 'talent', talentIds: [516] },
     ],
     descriptionShort: 'Once per scene, on success vs enemy leader, allies gain extra action.',
     description: `Battles often pivot on a single crucial moment.
@@ -687,7 +687,7 @@ const surgeonTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 12, skillRank: 1 },
-      { type: 'talent', talentId: 500 },
+      { type: 'talent', talentIds: [500] },
     ],
     descriptionShort: 'DC 15 Medicine test to heal a conscious character.',
     description: `You treat a minor wound by bandaging a gash, applying salves, or resetting a dislocated joint.
@@ -701,7 +701,7 @@ const surgeonTalents: Talent[] = [
     code: 'emotional-intelligence',
     name: 'Emotional Intelligence',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 500 }],
+    prerequisites: [{ type: 'talent', talentIds: [500] }],
     descriptionShort: 'Erudition can grant spiritual skills; gain Diagnosis expertise.',
     description: `You hone your intuition and understanding of others.
 
@@ -714,7 +714,7 @@ const surgeonTalents: Talent[] = [
     code: 'anatomical-insight',
     name: 'Anatomical Insight',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 521 }],
+    prerequisites: [{ type: 'talent', talentIds: [521] }],
     descriptionShort: 'On unarmed hit, spend 1 focus to apply Exhausted condition.',
     description: `Your knowledge of anatomy aids you in striking vital points.
 
@@ -727,7 +727,7 @@ const surgeonTalents: Talent[] = [
     code: 'collected-surgeon',
     name: 'Collected',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 522 }],
+    prerequisites: [{ type: 'talent', talentIds: [522] }],
     descriptionShort: '+2 Cognitive and +2 Spiritual defense.',
     description: `You've learned to be mindful of your immediate goals.
 
@@ -742,7 +742,7 @@ const surgeonTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 12, skillRank: 2 },
-      { type: 'talent', talentId: 521 },
+      { type: 'talent', talentIds: [521] },
     ],
     descriptionShort: 'Use Field Medicine as free action; heal extra = Medicine ranks.',
     description: `Your practiced hands quickly dress wounds.
@@ -758,7 +758,7 @@ const surgeonTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 11, skillRank: 2 },
-      { type: 'talent', talentId: 524 },
+      { type: 'talent', talentIds: [524] },
     ],
     descriptionShort: 'Heal extra = Lore ranks.',
     description: `Your broad foundation enhances your healing.
@@ -774,7 +774,7 @@ const surgeonTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 11, skillRank: 3 },
-      { type: 'talent', talentId: 525 },
+      { type: 'talent', talentIds: [525] },
     ],
     descriptionShort:
       'During rest, remove injury condition from ally; gain Mental Health Care expertise.',
@@ -791,7 +791,7 @@ const surgeonTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 12, skillRank: 3 },
-      { type: 'talent', talentId: 525 },
+      { type: 'talent', talentIds: [525] },
     ],
     descriptionShort: 'Spend 3 focus to revive Unconscious or recently dead character.',
     description: `You can pull mortally wounded creatures back from the brink.
@@ -827,7 +827,7 @@ const duelistTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 3, skillRank: 1 },
-      { type: 'talent', talentId: 600 },
+      { type: 'talent', talentIds: [600] },
     ],
     descriptionShort: 'Learn a combat stance; gain +1 to attack rolls while in it.',
     description: `Through endless practice, you've perfected the movements of a specific combat form.
@@ -841,7 +841,7 @@ const duelistTalents: Talent[] = [
     code: 'flamestance',
     name: 'Flamestance',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 601 }],
+    prerequisites: [{ type: 'talent', talentIds: [601] }],
     descriptionShort: 'Aggressive stance that increases damage dealt.',
     description: `The Flamestance is an aggressive combat form focused on overwhelming offense.
 
@@ -854,7 +854,7 @@ const duelistTalents: Talent[] = [
     code: 'windstance',
     name: 'Windstance',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 601 }],
+    prerequisites: [{ type: 'talent', talentIds: [601] }],
     descriptionShort: 'Balanced stance that improves both offense and defense.',
     description: `The Windstance balances attack and defense, flowing like the wind.
 
@@ -867,7 +867,7 @@ const duelistTalents: Talent[] = [
     code: 'stonestance',
     name: 'Stonestance',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 601 }],
+    prerequisites: [{ type: 'talent', talentIds: [601] }],
     descriptionShort: 'Defensive stance focused on protection.',
     description: `The Stonestance is a defensive form, rooted and immovable like stone.
 
@@ -882,7 +882,7 @@ const duelistTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 3, skillRank: 2 },
-      { type: 'talent', talentId: 602 },
+      { type: 'talent', talentIds: [602] },
     ],
     descriptionShort: 'Counterattack when an enemy misses you in melee.',
     description: `You exploit openings when enemies overextend.
@@ -896,7 +896,7 @@ const duelistTalents: Talent[] = [
     code: 'signature-weapon',
     name: 'Signature Weapon',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 605 }],
+    prerequisites: [{ type: 'talent', talentIds: [605] }],
     descriptionShort: 'Gain mastery with a specific weapon type.',
     description: `You've devoted yourself to mastering a specific weapon.
 
@@ -911,7 +911,7 @@ const duelistTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 3, skillRank: 3 },
-      { type: 'talent', talentId: 605 },
+      { type: 'talent', talentIds: [605] },
     ],
     descriptionShort: 'Move between attacks without provoking.',
     description: `You weave through combat with deadly grace.
@@ -927,7 +927,7 @@ const duelistTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 3, skillRank: 3 },
-      { type: 'talent', talentId: 606 },
+      { type: 'talent', talentIds: [606] },
     ],
     descriptionShort: 'Devastating attack that deals extra damage and applies a condition.',
     description: `You execute a devastating technique that leaves opponents reeling.
@@ -947,7 +947,7 @@ const shardbearerTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'narrative', description: 'Own a Shardblade or Shardplate' },
-      { type: 'talent', talentId: 600 },
+      { type: 'talent', talentIds: [600] },
     ],
     descriptionShort: 'Reduce summon time and gain proficiency with Shards.',
     description: `You've bonded deeply with your Shardweapon or Shardplate.
@@ -961,7 +961,7 @@ const shardbearerTalents: Talent[] = [
     code: 'shardplate-training',
     name: 'Shardplate Training',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 611 }],
+    prerequisites: [{ type: 'talent', talentIds: [611] }],
     descriptionShort: 'Move at full speed in Shardplate and enhance its protection.',
     description: `You've trained extensively in Shardplate, making its weight feel like nothing.
 
@@ -974,7 +974,7 @@ const shardbearerTalents: Talent[] = [
     code: 'shardblade-mastery',
     name: 'Shardblade Mastery',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 611 }],
+    prerequisites: [{ type: 'talent', talentIds: [611] }],
     descriptionShort: 'Shardblade attacks ignore armor and deal bonus damage.',
     description: `Your mastery of the Shardblade makes each strike devastating.
 
@@ -989,7 +989,7 @@ const shardbearerTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 9, skillRank: 2 },
-      { type: 'talent', talentId: 612 },
+      { type: 'talent', talentIds: [612] },
     ],
     descriptionShort: 'Recover Shardplate charges during combat.',
     description: `You've learned to draw upon Stormlight to repair your Shardplate quickly.
@@ -1005,7 +1005,7 @@ const shardbearerTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 3, skillRank: 2 },
-      { type: 'talent', talentId: 613 },
+      { type: 'talent', talentIds: [613] },
     ],
     descriptionShort: 'Attack all enemies in an arc with your Shardblade.',
     description: `You sweep your Shardblade in a devastating arc.
@@ -1020,8 +1020,8 @@ const shardbearerTalents: Talent[] = [
     name: 'Shard Sync',
     isKey: false,
     prerequisites: [
-      { type: 'talent', talentId: 614 },
-      { type: 'talent', talentId: 615 },
+      { type: 'talent', talentIds: [614] },
+      { type: 'talent', talentIds: [615] },
     ],
     descriptionShort: 'Blade and Plate work in harmony, enhancing both.',
     description: `Your Shardblade and Shardplate work together as extensions of your will.
@@ -1037,7 +1037,7 @@ const shardbearerTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 9, skillRank: 3 },
-      { type: 'talent', talentId: 616 },
+      { type: 'talent', talentIds: [616] },
     ],
     descriptionShort: 'Summon or dismiss Shardblade instantly.',
     description: `Your bond with your Shardblade is so strong it appears at mere thought.
@@ -1053,7 +1053,7 @@ const shardbearerTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 3, skillRank: 3 },
-      { type: 'talent', talentId: 616 },
+      { type: 'talent', talentIds: [616] },
     ],
     descriptionShort: 'Charge through enemies, attacking all in your path.',
     description: `You become an unstoppable juggernaut on the battlefield.
@@ -1073,7 +1073,7 @@ const soldierTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 2, skillRank: 1 },
-      { type: 'talent', talentId: 600 },
+      { type: 'talent', talentIds: [600] },
     ],
     descriptionShort: 'React faster in combat; gain additional reaction.',
     description: `Your battlefield experience has honed your reflexes to a razor's edge.
@@ -1087,7 +1087,7 @@ const soldierTalents: Talent[] = [
     code: 'hold-the-line',
     name: 'Hold the Line',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 621 }],
+    prerequisites: [{ type: 'talent', talentIds: [621] }],
     descriptionShort: 'Allies adjacent to you gain defensive bonus.',
     description: `You anchor your allies in combat, creating a defensive bulwark.
 
@@ -1100,7 +1100,7 @@ const soldierTalents: Talent[] = [
     code: 'spear-wall',
     name: 'Spear Wall',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 621 }],
+    prerequisites: [{ type: 'talent', talentIds: [621] }],
     descriptionShort: 'Attack enemies that approach you with reach weapons.',
     description: `You've trained to strike enemies before they can close.
 
@@ -1115,7 +1115,7 @@ const soldierTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 16, skillRank: 2 },
-      { type: 'talent', talentId: 622 },
+      { type: 'talent', talentIds: [622] },
     ],
     descriptionShort: "Can't be flanked; gain advantage on Perception in combat.",
     description: `You maintain constant awareness of threats from all directions.
@@ -1131,7 +1131,7 @@ const soldierTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 3, skillRank: 2 },
-      { type: 'talent', talentId: 622 },
+      { type: 'talent', talentIds: [622] },
     ],
     descriptionShort: 'Increase shield bonus and can attack with shields.',
     description: `You wield your shield as both protection and weapon.
@@ -1147,7 +1147,7 @@ const soldierTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 9, skillRank: 2 },
-      { type: 'talent', talentId: 624 },
+      { type: 'talent', talentIds: [624] },
     ],
     descriptionShort: 'Resist being incapacitated; stay standing at 0 health once per combat.',
     description: `Your determination keeps you fighting when others would fall.
@@ -1161,7 +1161,7 @@ const soldierTalents: Talent[] = [
     code: 'veterans-grit',
     name: "Veteran's Grit",
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 625 }],
+    prerequisites: [{ type: 'talent', talentIds: [625] }],
     descriptionShort: 'Reduce damage taken and resist conditions.',
     description: `Years of combat have toughened your body and mind.
 
@@ -1176,7 +1176,7 @@ const soldierTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'skill', skillId: 15, skillRank: 3 },
-      { type: 'talent', talentId: 626 },
+      { type: 'talent', talentIds: [626] },
     ],
     descriptionShort: 'Inspire allies, granting them temporary health and focus.',
     description: `Your battle cry inspires allies and strikes fear into enemies.
@@ -1207,7 +1207,7 @@ const singerTalents: Talent[] = [
     code: 'forms-of-finesse',
     name: 'Forms of Finesse',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 2001 }],
+    prerequisites: [{ type: 'talent', talentIds: [2001] }],
     descriptionShort:
       'Gain Artform (Awareness +1, creative bonuses) and Nimbleform (Speed +1, Focus +2).',
     description: `You gain two new singer forms—artform and nimbleform.
@@ -1222,7 +1222,7 @@ const singerTalents: Talent[] = [
     code: 'forms-of-resolve',
     name: 'Forms of Resolve',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 2001 }],
+    prerequisites: [{ type: 'talent', talentIds: [2001] }],
     descriptionShort:
       'Gain Warform (Strength +1, Deflect +1) and Workform (Willpower +1, ignore Exhausted).',
     description: `You gain two new singer forms—warform and workform.
@@ -1237,7 +1237,7 @@ const singerTalents: Talent[] = [
     code: 'forms-of-wisdom',
     name: 'Forms of Wisdom',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 2001 }],
+    prerequisites: [{ type: 'talent', talentIds: [2001] }],
     descriptionShort:
       'Gain Mediationform (Presence +1, free Aid) and Scholarform (Intellect +1, temp expertise).',
     description: `You gain two new singer forms—mediationform and scholarform.
@@ -1273,7 +1273,7 @@ const singerTalents: Talent[] = [
     code: 'forms-of-destruction',
     name: 'Forms of Destruction',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 2005 }],
+    prerequisites: [{ type: 'talent', talentIds: [2005] }],
     descriptionShort: 'Gain Direform (Strength +2, Deflect +2) and Stormform (lightning attacks).',
     description: `You gain two forms of power—direform and stormform.
 
@@ -1287,7 +1287,7 @@ const singerTalents: Talent[] = [
     code: 'forms-of-expansion',
     name: 'Forms of Expansion',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 2005 }],
+    prerequisites: [{ type: 'talent', talentIds: [2005] }],
     descriptionShort:
       'Gain Envoyform (know all languages) and Relayform (Speed +2, ignore Slowed).',
     description: `You gain two forms of power—envoyform and relayform.
@@ -1303,7 +1303,7 @@ const singerTalents: Talent[] = [
     name: 'Forms of Mystery',
     isKey: false,
     // Note: Nightform's "Intervening Premonitions" is a separate action (2009)
-    prerequisites: [{ type: 'talent', talentId: 2005 }],
+    prerequisites: [{ type: 'talent', talentIds: [2005] }],
     descriptionShort: 'Gain Decayform (prevent healing) and Nightform (precognitive visions).',
     description: `You gain two forms of power—decayform and nightform.
 
@@ -1376,7 +1376,7 @@ const windrunnerTalents: Talent[] = [
     code: 'invested',
     name: 'Invested',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 3003 }],
+    prerequisites: [{ type: 'talent', talentIds: [3003] }],
     descriptionShort: 'Max Investiture increases by your tier.',
     description: `You learn to hold greater quantities of Stormlight.
 
@@ -1388,7 +1388,7 @@ const windrunnerTalents: Talent[] = [
     code: 'wound-regeneration',
     name: 'Wound Regeneration',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 3005 }],
+    prerequisites: [{ type: 'talent', talentIds: [3005] }],
     descriptionShort: 'Spend Investiture when Regenerating to recover from injuries.',
     description: `Use Stormlight to rapidly recover from injuries.
 
@@ -1468,7 +1468,7 @@ const adhesionSurgeTalents: Talent[] = [
     code: 'distant-surgebinding',
     name: 'Distant Surgebinding',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 4001 }],
+    prerequisites: [{ type: 'talent', talentIds: [4001] }],
     descriptionShort: 'Use surges as though your reach is 20 feet.',
     description: `Infuse targets from a greater distance.
 
@@ -1481,7 +1481,7 @@ const adhesionSurgeTalents: Talent[] = [
     code: 'binding-shot',
     name: 'Binding Shot',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 4002 }],
+    prerequisites: [{ type: 'talent', talentIds: [4002] }],
     descriptionShort: 'Use Binding Strike with ranged attacks at any distance.',
     description: `"Paint" your ammunition with Adhesion.
 
@@ -1494,7 +1494,7 @@ const adhesionSurgeTalents: Talent[] = [
     code: 'extended-adhesion',
     name: 'Extended Adhesion',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 4003 }],
+    prerequisites: [{ type: 'talent', talentIds: [4003] }],
     descriptionShort: 'Full Lashings expend 1 Investiture per Adhesion ranks rounds.',
     description: `Your Full Lashings use less Stormlight.
 
@@ -1507,7 +1507,7 @@ const adhesionSurgeTalents: Talent[] = [
     code: 'adhesive-trap',
     name: 'Adhesive Trap',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 4004 }],
+    prerequisites: [{ type: 'talent', talentIds: [4004] }],
     descriptionShort: 'Infuse surfaces; characters touching become Fully Lashed.',
     description: `Infuse Adhesion into surfaces.
 
@@ -1520,7 +1520,7 @@ const adhesionSurgeTalents: Talent[] = [
     code: 'living-adhesion',
     name: 'Living Adhesion',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 4005 }],
+    prerequisites: [{ type: 'talent', talentIds: [4005] }],
     descriptionShort: 'Use Adhesion on characters; target becomes Restrained with disadvantage.',
     description: `Apply Adhesion directly to other living beings.
 
@@ -1534,7 +1534,7 @@ const adhesionSurgeTalents: Talent[] = [
     name: 'Superior Bond',
     isKey: false,
     prerequisites: [
-      { type: 'talent', talentId: 4006, description: 'Adhesive Trap or Extended Adhesion' },
+      { type: 'talent', talentIds: [4006], description: 'Adhesive Trap or Extended Adhesion' },
     ],
     descriptionShort: 'Auto-succeed vs low Strength characters breaking your Lashings.',
     description: `Your Full Lashings can be broken only by the strongest.
@@ -1581,7 +1581,7 @@ const gravitationSurgeTalents: Talent[] = [
     code: 'stable-flight',
     name: 'Stable Flight',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 4101 }],
+    prerequisites: [{ type: 'talent', talentIds: [4101] }],
     descriptionShort: 'No ranged disadvantage while flying.',
     description: `You're an expert in launching attacks from afar in mid-flight.
 
@@ -1594,7 +1594,7 @@ const gravitationSurgeTalents: Talent[] = [
     code: 'multiple-lashings',
     name: 'Multiple Lashings',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 4102 }],
+    prerequisites: [{ type: 'talent', talentIds: [4102] }],
     descriptionShort: 'Infuse unwilling targets with multiple Investiture; effect continues.',
     description: `Apply multiple Basic Lashings to an enemy.
 
@@ -1607,7 +1607,7 @@ const gravitationSurgeTalents: Talent[] = [
     code: 'lashing-shot',
     name: 'Lashing Shot',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 4102 }],
+    prerequisites: [{ type: 'talent', talentIds: [4102] }],
     descriptionShort: 'Propel object at target; deal 2d4 impact damage.',
     description: `Apply multiple Lashings to an object, launching it forcefully.
 
@@ -1620,7 +1620,7 @@ const gravitationSurgeTalents: Talent[] = [
     code: 'group-flight',
     name: 'Group Flight',
     isKey: false,
-    prerequisites: [{ type: 'talent', talentId: 4103 }],
+    prerequisites: [{ type: 'talent', talentIds: [4103] }],
     descriptionShort: 'Infuse multiple allies with flight out of combat.',
     description: `Infuse multiple allies with Gravitation at once.
 
@@ -1635,7 +1635,7 @@ const gravitationSurgeTalents: Talent[] = [
     isKey: false,
     prerequisites: [
       { type: 'narrative', description: 'Gravitation 3+' },
-      { type: 'talent', talentId: 4106 },
+      { type: 'talent', talentIds: [4106] },
     ],
     descriptionShort: 'Group Flight works in combat.',
     description: `You've trained your allies in aerial combat scenarios.
@@ -1650,7 +1650,7 @@ const gravitationSurgeTalents: Talent[] = [
     name: 'Master of the Skies',
     isKey: false,
     prerequisites: [
-      { type: 'talent', talentId: 4106, description: 'Group Flight or Lashing Shot' },
+      { type: 'talent', talentIds: [4106], description: 'Group Flight or Lashing Shot' },
     ],
     descriptionShort: 'Always infused with Gravitation while you have 1+ Investiture.',
     description: `You've become so efficient at infusing yourself with Gravitation.
@@ -1820,12 +1820,8 @@ function checkSinglePrerequisite(
 ): boolean {
   switch (prereq.type) {
     case 'talent':
-      // Single talent requirement (AND logic)
-      if (prereq.talentId !== undefined) {
-        return characterTalentIds.includes(prereq.talentId);
-      }
-      // Multiple talents requirement (OR logic - any of these)
-      if (prereq.talentIds !== undefined && prereq.talentIds.length > 0) {
+      // talentIds array with OR logic - any of these satisfies the requirement
+      if (prereq.talentIds?.length) {
         return prereq.talentIds.some((id) => characterTalentIds.includes(id));
       }
       return true;
@@ -1994,16 +1990,10 @@ export function getTalentPrerequisiteChain(talentId: number): Talent[] {
 
     if (talent.prerequisites && Array.isArray(talent.prerequisites)) {
       for (const prereq of talent.prerequisites) {
-        if (prereq.type === 'talent') {
-          // Handle single talentId
-          if (prereq.talentId) {
-            collectPrereqs(prereq.talentId);
-          }
-          // Handle OR logic with talentIds array (include all possible paths)
-          if (prereq.talentIds?.length) {
-            for (const prereqTalentId of prereq.talentIds) {
-              collectPrereqs(prereqTalentId);
-            }
+        if (prereq.type === 'talent' && prereq.talentIds?.length) {
+          // Include all possible paths from OR logic
+          for (const prereqTalentId of prereq.talentIds) {
+            collectPrereqs(prereqTalentId);
           }
         }
       }

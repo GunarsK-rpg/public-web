@@ -21,7 +21,13 @@
     </q-item-section>
     <q-item-section side top>
       <div class="column items-end q-gutter-xs">
-        <q-badge v-for="cost in actionCosts" :key="cost.label" :color="cost.color" outline>
+        <q-badge
+          v-for="cost in actionCosts"
+          :key="cost.label"
+          :color="cost.color"
+          :title="cost.title"
+          outline
+        >
           {{ cost.value }} {{ cost.label }}
         </q-badge>
       </div>
@@ -50,12 +56,17 @@ const iconUrl = computed(() => getIconUrl(activationType.value?.icon, 'actions')
 
 // Consolidate cost badges into a single array for cleaner template
 const actionCosts = computed(() => {
-  const costs: { value: number; label: string; color: string }[] = [];
+  const costs: { value: number; label: string; title: string; color: string }[] = [];
   if (props.action.focusCost > 0) {
-    costs.push({ value: props.action.focusCost, label: 'Focus', color: 'teal' });
+    costs.push({ value: props.action.focusCost, label: 'Focus', title: 'Focus', color: 'teal' });
   }
   if (props.action.investitureCost > 0) {
-    costs.push({ value: props.action.investitureCost, label: 'Inv', color: 'amber' });
+    costs.push({
+      value: props.action.investitureCost,
+      label: 'Inv',
+      title: 'Investiture',
+      color: 'amber',
+    });
   }
   return costs;
 });

@@ -182,7 +182,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById } from 'src/utils/arrayUtils';
+import { findById, buildIdNameMap } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -200,41 +200,12 @@ const activeSingerForm = computed(() =>
 );
 
 // Pre-computed lookup maps for null-safe template access
-const cultureNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const c of classifiers.cultures) map.set(c.id, c.name);
-  return map;
-});
-
-const goalStatusNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const s of classifiers.goalStatuses) map.set(s.id, s.name);
-  return map;
-});
-
-const connectionTypeNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const t of classifiers.connectionTypes) map.set(t.id, t.name);
-  return map;
-});
-
-const companionTypeNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const t of classifiers.companionTypes) map.set(t.id, t.name);
-  return map;
-});
-
-const conditionNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const c of classifiers.conditions) map.set(c.id, c.name);
-  return map;
-});
-
-const injuryNamesMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const i of classifiers.injuries) map.set(i.id, i.name);
-  return map;
-});
+const cultureNamesMap = computed(() => buildIdNameMap(classifiers.cultures));
+const goalStatusNamesMap = computed(() => buildIdNameMap(classifiers.goalStatuses));
+const connectionTypeNamesMap = computed(() => buildIdNameMap(classifiers.connectionTypes));
+const companionTypeNamesMap = computed(() => buildIdNameMap(classifiers.companionTypes));
+const conditionNamesMap = computed(() => buildIdNameMap(classifiers.conditions));
+const injuryNamesMap = computed(() => buildIdNameMap(classifiers.injuries));
 
 // Null-safe accessor functions
 function getCultureName(id: number): string {

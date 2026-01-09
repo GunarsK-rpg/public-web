@@ -74,7 +74,7 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
-import { groupByChainedKey } from 'src/utils/arrayUtils';
+import { groupByChainedKey, buildIdCodeMap } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -91,20 +91,14 @@ const skillsByAttrType = computed(() =>
 );
 
 // Pre-computed attribute code map for O(1) lookups
-const attributeCodeMap = computed(() => {
-  const map = new Map<number, string>();
-  for (const attr of classifiers.attributes) {
-    map.set(attr.id, attr.code.toUpperCase());
-  }
-  return map;
-});
+const attributeCodeMap = computed(() => buildIdCodeMap(classifiers.attributes));
 
 // Build skill groups with attribute abbreviations
 const skillGroups = computed(() => {
   return classifiers.attributeTypes.map((attrType) => {
     const skills = (skillsByAttrType.value[attrType.id] ?? []).map((skill) => ({
       ...skill,
-      attrAbbr: attributeCodeMap.value.get(skill.attrId) ?? '',
+      attrAbbr: (attributeCodeMap.value.get(skill.attrId) ?? '').toUpperCase(),
     }));
 
     return {

@@ -26,7 +26,7 @@ export function formatPrerequisite(
       // Use description if provided
       if (prereq.description) return prereq.description;
 
-      // Handle OR logic with talentIds
+      // Handle talentIds array (single or multiple with OR logic)
       if (prereq.talentIds?.length) {
         const names = prereq.talentIds
           .map((id) => lookups.getTalent(id)?.name)
@@ -35,9 +35,7 @@ export function formatPrerequisite(
         return names || 'Unknown talents';
       }
 
-      // Single talent
-      const talent = prereq.talentId !== undefined ? lookups.getTalent(prereq.talentId) : undefined;
-      return talent?.name ?? 'Unknown talent';
+      return 'Unknown talent';
     }
 
     case 'skill': {

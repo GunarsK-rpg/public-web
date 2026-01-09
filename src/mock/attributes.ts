@@ -1,4 +1,5 @@
 import type { Attribute, AttributeType } from 'src/types';
+import { findById } from 'src/utils/arrayUtils';
 
 /**
  * Attribute type classifiers
@@ -61,12 +62,12 @@ export const attributes: Attribute[] = [
  * Helper to get attribute type name from ID
  */
 export function getAttributeTypeName(attrTypeId: number): string {
-  return attributeTypes.find((t) => t.id === attrTypeId)?.name ?? 'Unknown';
+  return findById(attributeTypes, attrTypeId)?.name ?? 'Unknown';
 }
 
 /**
  * Helper to get attribute type code from ID
  */
 export function getAttributeTypeCode(attrTypeId: number): string {
-  return attributeTypes.find((t) => t.id === attrTypeId)?.code ?? 'unknown';
+  return findById(attributeTypes, attrTypeId)?.code ?? 'unknown';
 }

@@ -9,6 +9,9 @@ export type WizardMode = 'create' | 'edit' | 'levelup';
 // Helper to get step ID by code - avoids hardcoding step numbers
 function getStepIdByCode(code: StepCodeType): number {
   const step = WIZARD_STEPS.find((s) => s.code === code);
+  if (!step) {
+    logger.warn('Step code not found, defaulting to step 1', { code });
+  }
   return step?.id ?? 1;
 }
 

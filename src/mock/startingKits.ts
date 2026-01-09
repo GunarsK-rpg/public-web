@@ -1,4 +1,5 @@
 import type { StartingKit } from 'src/types';
+import { findByCode } from 'src/utils/arrayUtils';
 
 /**
  * Starting Kits - Equipment and resource bundles for character creation.
@@ -113,7 +114,7 @@ export const startingKits: StartingKit[] = [
  * Helper to get starting kit by code
  */
 export function getStartingKitByCode(code: string): StartingKit | undefined {
-  return startingKits.find((k) => k.code === code);
+  return findByCode(startingKits, code);
 }
 
 /**

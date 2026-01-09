@@ -22,6 +22,8 @@ export interface HeroGoal {
   /**
    * Importance value (1-5) indicating goal priority.
    * Higher values indicate more important goals.
+   * @minimum 1
+   * @maximum 5
    */
   value: number;
   statusId: number;

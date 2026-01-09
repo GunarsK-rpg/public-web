@@ -68,6 +68,33 @@ export function filterById<T extends { id: number }>(
 // =============================================================================
 
 /**
+ * Build a Map from item ID to name for O(1) lookups.
+ * Use in computed properties to avoid repeated array.find() calls.
+ * @param list - array of items with id and name properties
+ * @returns Map<number, string> for id -> name lookups
+ */
+export function buildIdNameMap<T extends { id: number; name: string }>(
+  list: T[]
+): Map<number, string> {
+  const map = new Map<number, string>();
+  for (const item of list) map.set(item.id, item.name);
+  return map;
+}
+
+/**
+ * Build a Map from item ID to code for O(1) lookups.
+ * @param list - array of items with id and code properties
+ * @returns Map<number, string> for id -> code lookups
+ */
+export function buildIdCodeMap<T extends { id: number; code: string }>(
+  list: T[]
+): Map<number, string> {
+  const map = new Map<number, string>();
+  for (const item of list) map.set(item.id, item.code);
+  return map;
+}
+
+/**
  * Build a lookup map from item ID to a specified property value.
  * Useful for O(1) lookups by ID.
  * @param list - array of items with id property
@@ -110,7 +137,7 @@ export function groupByKey<T, K extends PropertyKey>(
  * @param propName - property name containing the foreign key ID
  * @returns Record mapping IDs to arrays of items
  */
-export function groupByForeignKey<T extends { id: number }, K extends keyof T>(
+export function groupByForeignKey<T, K extends keyof T>(
   list: T[],
   propName: K
 ): Record<number, T[]> {

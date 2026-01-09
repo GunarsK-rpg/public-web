@@ -58,6 +58,7 @@
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'stores/campaigns';
+import { formatDate } from 'src/utils/dateUtils';
 
 const router = useRouter();
 const campaignStore = useCampaignStore();
@@ -77,19 +78,6 @@ function selectCampaign(id: number): void {
 
 function createStandaloneCharacter(): void {
   void router.push({ name: 'character-create-standalone' });
-}
-
-function formatDate(dateString: string | undefined): string {
-  if (!dateString) return 'Unknown';
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return 'Unknown';
-  // Use navigator.language for user's locale preference with SSR-safe fallback
-  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en-US';
-  return date.toLocaleDateString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 </script>
 

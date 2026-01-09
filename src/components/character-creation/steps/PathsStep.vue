@@ -618,8 +618,8 @@ function checkTalentPrerequisites(
 
     switch (prereq.type) {
       case 'talent':
-        if (prereq.talentId !== undefined) {
-          isMet = selectedTalentIds.includes(prereq.talentId);
+        if (prereq.talentIds?.length) {
+          isMet = prereq.talentIds.some((id) => selectedTalentIds.includes(id));
         }
         break;
       case 'skill':

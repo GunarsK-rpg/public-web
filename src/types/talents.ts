@@ -11,8 +11,11 @@ export type PrerequisiteType = 'talent' | 'skill' | 'narrative' | (string & NonN
  */
 export interface TalentPrerequisite {
   type: PrerequisiteType;
-  talentId?: number;
-  talentIds?: number[]; // For OR logic (any of these talents)
+  /**
+   * Talent prerequisite IDs with OR logic. Any one talent in the array satisfies the requirement.
+   * Single prerequisite: [101], Multiple (OR): [2002, 2003, 2004]
+   */
+  talentIds?: number[];
   skillId?: number;
   skillRank?: number;
   description?: string;

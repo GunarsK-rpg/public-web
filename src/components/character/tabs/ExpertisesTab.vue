@@ -8,7 +8,11 @@
     <div v-for="expType in classifiers.expertiseTypes" :key="expType.id" class="category-section">
       <div class="category-title">{{ expType.name }}</div>
       <template v-if="expertisesByTypeRecord[expType.id]?.length">
-        <q-chip v-for="heroExp in expertisesByTypeRecord[expType.id]" :key="heroExp.id">
+        <q-chip
+          v-for="heroExp in expertisesByTypeRecord[expType.id]"
+          :key="heroExp.id"
+          :aria-label="`${getExpertiseName(heroExp.expertiseId)} expertise`"
+        >
           {{ getExpertiseName(heroExp.expertiseId) }}
           <q-badge v-if="heroExp.source" color="grey" class="q-ml-xs">
             {{ heroExp.source.sourceType }}
@@ -24,7 +28,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { groupByChainedKey } from 'src/utils/arrayUtils';
+import { groupByChainedKey, buildIdNameMap } from 'src/utils/arrayUtils';
 import type { HeroExpertise } from 'src/types';
 
 const heroStore = useHeroStore();
@@ -43,13 +47,7 @@ const expertisesByTypeRecord = computed((): Record<number, HeroExpertise[]> => {
 });
 
 // Pre-compute expertise names to avoid repeated lookups in template
-const expertiseNamesMap = computed((): Map<number, string> => {
-  const map = new Map<number, string>();
-  for (const exp of classifiers.expertises) {
-    map.set(exp.id, exp.name);
-  }
-  return map;
-});
+const expertiseNamesMap = computed(() => buildIdNameMap(classifiers.expertises));
 
 function getExpertiseName(expertiseId: number): string {
   return expertiseNamesMap.value.get(expertiseId) ?? 'Unknown';

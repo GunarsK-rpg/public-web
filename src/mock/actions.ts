@@ -1,4 +1,5 @@
 import type { ActivationType, ActionType, Action, ActionLink } from 'src/types';
+import { findById, findByCode } from 'src/utils/arrayUtils';
 
 /**
  * Activation type classifiers - how an action is activated
@@ -1245,14 +1246,14 @@ export const actions: Action[] = [
  * Helper to get activation type name from ID
  */
 export function getActivationTypeName(activationTypeId: number): string {
-  return activationTypes.find((t) => t.id === activationTypeId)?.name ?? 'Unknown';
+  return findById(activationTypes, activationTypeId)?.name ?? 'Unknown';
 }
 
 /**
  * Helper to get action type name from ID
  */
 export function getActionTypeName(actionTypeId: number): string {
-  return actionTypes.find((t) => t.id === actionTypeId)?.name ?? 'Unknown';
+  return findById(actionTypes, actionTypeId)?.name ?? 'Unknown';
 }
 
 /**
@@ -1261,7 +1262,7 @@ export function getActionTypeName(actionTypeId: number): string {
  * This returns the first match. Use getActionById for precise lookups.
  */
 export function getActionByCode(code: string): Action | undefined {
-  return actions.find((a) => a.code === code);
+  return findByCode(actions, code);
 }
 
 /**
