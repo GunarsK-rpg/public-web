@@ -1,6 +1,102 @@
 // app global css in SCSS form
 
 // =============================================================================
+// Accessibility - Focus States (WCAG 2.4.7)
+// =============================================================================
+// Visible focus indicators for keyboard navigation
+
+// Focus-visible for all interactive elements
+button,
+[role='button'],
+[role='tab'],
+[role='radio'],
+[role='checkbox'],
+[role='menuitem'],
+[tabindex='0'],
+.q-btn,
+.q-tab,
+.q-item--clickable,
+.q-checkbox,
+.q-radio,
+.q-toggle,
+.q-field__native,
+.q-select,
+input,
+select,
+textarea,
+a[href] {
+  &:focus-visible {
+    outline: var(--app-focus-ring-width) solid var(--app-focus-ring-color);
+    outline-offset: var(--app-focus-ring-offset);
+  }
+
+  // Remove default outline since we're providing our own
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+// Cards with role attributes (selectable cards)
+.q-card[role='radio'],
+.q-card[role='checkbox'] {
+  &:focus-visible {
+    outline: var(--app-focus-ring-width) solid var(--app-focus-ring-color);
+    outline-offset: var(--app-focus-ring-offset);
+  }
+}
+
+// =============================================================================
+// Mobile Touch Targets (WCAG 2.5.5 - 44px minimum)
+// =============================================================================
+// Ensures interactive elements meet minimum touch target size on mobile
+
+$touch-target-min: 44px;
+
+// Apply minimum touch targets on mobile devices
+@media (max-width: 599px) {
+  // All buttons should meet minimum touch target
+  .q-btn {
+    min-height: $touch-target-min;
+    min-width: $touch-target-min;
+  }
+
+  // Icon-only buttons (round/dense) need explicit sizing
+  .q-btn--round,
+  .q-btn--dense {
+    min-height: $touch-target-min;
+    min-width: $touch-target-min;
+  }
+
+  // Checkbox and radio touch targets
+  .q-checkbox,
+  .q-radio {
+    min-height: $touch-target-min;
+
+    .q-checkbox__inner,
+    .q-radio__inner {
+      min-height: $touch-target-min;
+      min-width: $touch-target-min;
+    }
+  }
+
+  // List items should be tappable
+  .q-item--clickable {
+    min-height: $touch-target-min;
+  }
+
+  // Tab navigation
+  .q-tab {
+    min-height: $touch-target-min;
+  }
+}
+
+// Utility class for explicit touch target sizing
+.touch-target {
+  min-height: $touch-target-min;
+  min-width: $touch-target-min;
+}
+
+// =============================================================================
 // Global Utility Classes
 // =============================================================================
 

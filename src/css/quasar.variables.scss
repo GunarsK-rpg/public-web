@@ -83,6 +83,11 @@ $color-text-empty-dark: #9a9a9a; // 4.5:1 contrast on dark
 $color-text-on-color: #ffffff; // White text on colored backgrounds
 $color-text-on-warning: #1d1d1d; // Dark text on warning/yellow backgrounds
 
+// Focus states (accessibility)
+$color-focus-ring: $primary;
+$focus-ring-width: 3px;
+$focus-ring-offset: 2px;
+
 // UI Effects
 $color-shadow: rgba(0, 0, 0, 0.15); // Standard shadow color
 $color-shadow-dark: rgba(0, 0, 0, 0.25); // Stronger shadow
@@ -99,6 +104,11 @@ $color-background-dark: #1d1d1d; // Dark background (same as $dark)
 // These are exported as CSS variables for use in components
 
 :root {
+  // Focus ring (accessibility)
+  --app-focus-ring-color: #{$color-focus-ring};
+  --app-focus-ring-width: #{$focus-ring-width};
+  --app-focus-ring-offset: #{$focus-ring-offset};
+
   // Semantic color values (actual colors for CSS usage)
   --app-color-success: #{$color-success};
   --app-color-error: #{$color-error};
