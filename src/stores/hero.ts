@@ -47,6 +47,10 @@ export const useHeroStore = defineStore('hero', () => {
   const saving = ref(false);
   const error = ref<string | null>(null);
 
+  // Track pending load requests to handle race conditions
+  // Prevents stale responses from overwriting newer state
+  let loadRequestId = 0;
+
   // Temporary ID counter for new items (negative to distinguish from DB IDs)
   // Using ref ensures counter persists across HMR and is reactive
   const tempIdCounter = ref(-1);
@@ -137,6 +141,7 @@ export const useHeroStore = defineStore('hero', () => {
   // LOAD / SAVE / INIT
   // ===================
   async function loadHero(id: number): Promise<void> {
+    const requestId = ++loadRequestId;
     loading.value = true;
     error.value = null;
 
@@ -149,6 +154,14 @@ export const useHeroStore = defineStore('hero', () => {
       try {
         heroesModule = await import('src/mock/heroes');
       } catch (importErr) {
+        // Only update state if this is still the current request
+        if (requestId !== loadRequestId) {
+          logger.debug('Stale loadHero response ignored (import error)', {
+            requestId,
+            current: loadRequestId,
+          });
+          return;
+        }
         error.value = 'Failed to load hero data module';
         logger.error('Failed to import heroes module', {
           id,
@@ -157,6 +170,13 @@ export const useHeroStore = defineStore('hero', () => {
         });
         return;
       }
+
+      // Check if this request is still current after async operation
+      if (requestId !== loadRequestId) {
+        logger.debug('Stale loadHero response ignored', { requestId, current: loadRequestId });
+        return;
+      }
+
       const found = heroesModule.heroes.find((h) => h.id === id);
       if (found) {
         // Deep clone to avoid mutating shared mock data
@@ -167,6 +187,14 @@ export const useHeroStore = defineStore('hero', () => {
         logger.warn('Hero not found', { id });
       }
     } catch (err) {
+      // Only update state if this is still the current request
+      if (requestId !== loadRequestId) {
+        logger.debug('Stale loadHero response ignored (error)', {
+          requestId,
+          current: loadRequestId,
+        });
+        return;
+      }
       error.value = 'Failed to load hero';
       logger.error('Failed to load hero', {
         id,
@@ -174,7 +202,10 @@ export const useHeroStore = defineStore('hero', () => {
         stack: err instanceof Error ? err.stack : undefined,
       });
     } finally {
-      loading.value = false;
+      // Only update loading state if this is still the current request
+      if (requestId === loadRequestId) {
+        loading.value = false;
+      }
     }
   }
 

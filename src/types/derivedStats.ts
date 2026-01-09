@@ -19,13 +19,20 @@ export interface DerivedStatValue {
 }
 
 /**
- * Hero's derived stat value (hero_derived_stats table)
+ * Hero's derived stat value (derived_stats table)
+ *
+ * Note: The database only stores `modifier`. The `value` field is calculated
+ * client-side using formulas from cl_derived_stat_values and is included here
+ * for convenience in the UI layer.
  */
 export interface HeroDerivedStat {
   id: number;
   heroId: number;
   statId: number;
+  /** Calculated base value (not stored in DB - computed from formulas) */
   value: number;
+  /** Custom modifier stored in DB (from gear, talents, etc.) */
   modifier: number;
+  /** Optional unit reference for display (e.g., feet, pounds) */
   unitId?: number;
 }

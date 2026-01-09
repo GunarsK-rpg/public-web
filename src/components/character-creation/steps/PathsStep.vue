@@ -6,21 +6,14 @@
     <div class="text-subtitle2 q-mb-sm">Heroic Paths</div>
     <div class="row q-col-gutter-md q-mb-md" role="group" aria-label="Select heroic paths">
       <div v-for="path in heroicPaths" :key="path.id" class="col-12 col-sm-6 col-md-4">
-        <q-card
-          role="checkbox"
-          tabindex="0"
-          :aria-checked="isPathSelected(path.id)"
+        <SelectableCard
+          :title="path.name"
+          :subtitle="path.description ?? ''"
+          :selected="isPathSelected(path.id)"
           :aria-label="`${path.name} path`"
-          :class="['cursor-pointer', { 'card-selected': isPathSelected(path.id) }]"
-          @click="togglePath(path.id)"
-          @keydown.enter="togglePath(path.id)"
-          @keydown.space.prevent="togglePath(path.id)"
-        >
-          <q-card-section>
-            <div class="text-h6">{{ path.name }}</div>
-            <div class="text-body2">{{ path.description }}</div>
-          </q-card-section>
-        </q-card>
+          multi-select
+          @select="togglePath(path.id)"
+        />
       </div>
     </div>
 
@@ -83,6 +76,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useTalentPrerequisites } from 'src/composables/useTalentPrerequisites';
 import { findById } from 'src/utils/arrayUtils';
+import SelectableCard from '../shared/SelectableCard.vue';
 import HeroicPathPanel from '../shared/HeroicPathPanel.vue';
 import SingerAncestryPanel from '../shared/SingerAncestryPanel.vue';
 import RadiantPathPanel from '../shared/RadiantPathPanel.vue';

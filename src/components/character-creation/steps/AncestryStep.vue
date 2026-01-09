@@ -4,20 +4,13 @@
 
     <div class="row q-col-gutter-md" role="radiogroup" aria-label="Select ancestry">
       <div v-for="ancestry in ancestries" :key="ancestry.id" class="col-12 col-sm-6">
-        <q-card
-          role="radio"
-          tabindex="0"
-          :aria-checked="selectedAncestryId === ancestry.id"
-          :class="['cursor-pointer', { 'card-selected': selectedAncestryId === ancestry.id }]"
-          @click="selectAncestry(ancestry.id)"
-          @keydown.enter="selectAncestry(ancestry.id)"
-          @keydown.space.prevent="selectAncestry(ancestry.id)"
-        >
-          <q-card-section>
-            <div class="text-h6">{{ ancestry.name }}</div>
-            <div class="text-body2">{{ ancestry.description }}</div>
-          </q-card-section>
-        </q-card>
+        <SelectableCard
+          :title="ancestry.name"
+          :subtitle="ancestry.description ?? ''"
+          :selected="selectedAncestryId === ancestry.id"
+          :aria-label="`${ancestry.name} ancestry`"
+          @select="selectAncestry(ancestry.id)"
+        />
       </div>
     </div>
 
@@ -31,20 +24,13 @@
 
       <div class="row q-col-gutter-md" role="radiogroup" aria-label="Select singer form">
         <div v-for="form in availableForms" :key="form.id" class="col-12 col-sm-4">
-          <q-card
-            role="radio"
-            tabindex="0"
-            :aria-checked="selectedFormId === form.id"
-            :class="['cursor-pointer', { 'card-selected': selectedFormId === form.id }]"
-            @click="selectForm(form.id)"
-            @keydown.enter="selectForm(form.id)"
-            @keydown.space.prevent="selectForm(form.id)"
-          >
-            <q-card-section>
-              <div class="text-subtitle2">{{ form.name }}</div>
-              <div class="text-caption">{{ form.description }}</div>
-            </q-card-section>
-          </q-card>
+          <SelectableCard
+            :title="form.name"
+            :subtitle="form.description ?? ''"
+            :selected="selectedFormId === form.id"
+            :aria-label="`${form.name} form`"
+            @select="selectForm(form.id)"
+          />
         </div>
       </div>
     </template>
@@ -56,6 +42,7 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findByCode } from 'src/utils/arrayUtils';
+import SelectableCard from '../shared/SelectableCard.vue';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
