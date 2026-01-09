@@ -4,6 +4,7 @@
       <div
         v-for="step in steps"
         :key="step.id"
+        :id="`step-tab-${step.id}`"
         role="tab"
         :tabindex="currentStep === step.id ? 0 : -1"
         :aria-selected="currentStep === step.id"

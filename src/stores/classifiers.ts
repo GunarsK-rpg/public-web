@@ -151,6 +151,9 @@ export const useClassifierStore = defineStore('classifiers', () => {
 
   // Memoized lookup map for derived stat values: Map<derivedStatId, Map<attrValue, configValue>>
   // Cleared when data changes (via computed reactivity on derivedStatValues)
+  // Max attribute value per Cosmere RPG rules (attributes range 0-10)
+  const MAX_ATTRIBUTE_VALUE = 10;
+
   const derivedStatValueCache = computed(() => {
     const cache = new Map<number, Map<number, number>>();
     // Pre-build the cache for O(1) lookups
@@ -160,7 +163,7 @@ export const useClassifierStore = defineStore('classifiers', () => {
       }
       // Store for each attribute value in the range
       const statMap = cache.get(v.derivedStatId)!;
-      const maxVal = v.attrMax ?? 10; // Reasonable upper bound
+      const maxVal = v.attrMax ?? MAX_ATTRIBUTE_VALUE;
       for (let attr = v.attrMin; attr <= maxVal; attr++) {
         statMap.set(attr, v.value);
       }

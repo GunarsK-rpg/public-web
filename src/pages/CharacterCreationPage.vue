@@ -38,7 +38,13 @@
     </div>
 
     <!-- Step Content -->
-    <div v-else :id="`step-panel-${currentStep}`" class="q-pa-md step-content" role="tabpanel">
+    <div
+      v-else
+      :id="`step-panel-${currentStep}`"
+      :aria-labelledby="`step-tab-${currentStep}`"
+      class="q-pa-md step-content"
+      role="tabpanel"
+    >
       <component :is="currentStepComponent" />
     </div>
 

@@ -152,7 +152,11 @@ const derivedStatsList = computed(() => {
 });
 
 function setStatModifier(statId: number, value: string | number | null) {
-  if (value === null) return;
+  // Handle null and empty string - reset to 0
+  if (value === null || value === '') {
+    heroStore.setDerivedStatModifier(statId, 0);
+    return;
+  }
   const numValue = typeof value === 'string' ? Number(value) : value;
   if (Number.isNaN(numValue)) return;
   heroStore.setDerivedStatModifier(statId, numValue);

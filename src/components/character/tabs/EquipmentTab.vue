@@ -54,15 +54,18 @@ import type { HeroEquipment } from 'src/types';
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
+// Sentinel value for uninitialized tab state (equipment type IDs are always >= 1)
+const UNINITIALIZED_TAB = -1;
+
 // Active tab with sync to equipmentTypes (handles async classifier loading)
-const activeTab = ref(classifiers.equipmentTypes[0]?.id ?? 0);
+const activeTab = ref(classifiers.equipmentTypes[0]?.id ?? UNINITIALIZED_TAB);
 
 // Sync activeTab when equipmentTypes become available (async classifier init)
 watch(
   () => classifiers.equipmentTypes,
   (types) => {
     const firstType = types[0];
-    if (firstType && activeTab.value === 0) {
+    if (firstType && activeTab.value === UNINITIALIZED_TAB) {
       activeTab.value = firstType.id;
     }
   },

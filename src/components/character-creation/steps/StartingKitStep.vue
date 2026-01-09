@@ -127,7 +127,10 @@ function selectKit(kitId: number) {
 }
 
 function setStartingCurrency(val: string | number | null) {
-  if (val === null) return;
+  if (val === null || val === '') {
+    heroStore.setCurrency(0);
+    return;
+  }
   const numVal = typeof val === 'string' ? Number(val) : val;
   if (Number.isNaN(numVal)) return;
   heroStore.setCurrency(Math.max(0, Math.min(999999, numVal)));

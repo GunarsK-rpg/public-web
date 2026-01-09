@@ -127,11 +127,11 @@ function validateBasicSetup(name: string, level: number): StepValidation {
   return { isValid: errors.length === 0, errors, warnings };
 }
 
-function validateAncestry(ancestryId: number): StepValidation {
+function validateAncestry(ancestryId: number | null | undefined): StepValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!ancestryId) {
+  if (ancestryId == null) {
     errors.push('Ancestry is required');
   }
 
@@ -165,11 +165,11 @@ function validatePaths(levelData: Level | undefined, talents: HeroTalent[]): Ste
   return { isValid: errors.length === 0, errors, warnings };
 }
 
-function validateStartingKit(startingKitId: number | null): StepValidation {
+function validateStartingKit(startingKitId: number | null | undefined): StepValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!startingKitId) {
+  if (startingKitId == null) {
     errors.push('Starting kit is required');
   }
 

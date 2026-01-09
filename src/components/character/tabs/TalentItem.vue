@@ -1,7 +1,7 @@
 <template>
   <q-item class="talent-item">
     <q-item-section>
-      <q-item-label>{{ talent.name }}</q-item-label>
+      <q-item-label>{{ talent.name || 'Unknown Talent' }}</q-item-label>
       <q-item-label caption>{{
         talent.descriptionShort || talent.description || 'No description available'
       }}</q-item-label>
