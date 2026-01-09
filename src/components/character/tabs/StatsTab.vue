@@ -1,7 +1,7 @@
 <template>
   <div class="stats-tab" aria-live="polite" aria-atomic="false">
     <!-- Attributes Section -->
-    <div class="section-title">Attributes</div>
+    <div class="section-title section-title--lg">Attributes</div>
     <div class="row q-col-gutter-sm q-mb-md">
       <div v-for="attr in classifiers.attributes" :key="attr.id" class="col-6 col-sm-4 col-md-2">
         <q-card class="attribute-card">
@@ -20,7 +20,7 @@
     </div>
 
     <!-- Defenses Section -->
-    <div class="section-title">Defenses</div>
+    <div class="section-title section-title--lg">Defenses</div>
     <div class="row q-col-gutter-sm q-mb-md">
       <div v-for="attrType in classifiers.attributeTypes" :key="attrType.id" class="col-4">
         <q-card class="defense-card">
@@ -38,7 +38,7 @@
     </div>
 
     <!-- Other Stats -->
-    <div class="section-title">Other Stats</div>
+    <div class="section-title section-title--lg">Other Stats</div>
     <div class="row q-col-gutter-sm">
       <div v-for="stat in derivedStatsList" :key="stat.id" class="col-6 col-sm-3">
         <q-card flat bordered>
@@ -85,13 +85,6 @@ const derivedStatsList = computed(() => {
 </script>
 
 <style scoped>
-.section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  opacity: 0.8;
-}
-
 .attribute-card {
   height: 100%;
 }

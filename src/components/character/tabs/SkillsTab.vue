@@ -2,7 +2,7 @@
   <div class="skills-tab">
     <!-- Dynamic sections from attribute types classifier -->
     <div v-for="attrType in classifiers.attributeTypes" :key="attrType.id" class="skill-category">
-      <div class="category-title">{{ attrType.name }} Skills</div>
+      <div class="section-title section-title--md q-px-md q-py-sm">{{ attrType.name }} Skills</div>
       <q-list separator>
         <q-item v-for="skill in skillsByAttrType[attrType.id]" :key="skill.id">
           <q-item-section avatar>
@@ -67,15 +67,6 @@ function formatModifier(value: number): string {
 <style scoped>
 .skill-category {
   margin-bottom: 16px;
-}
-
-.category-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: 8px 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.7;
 }
 
 .rank-pips {

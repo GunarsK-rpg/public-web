@@ -22,7 +22,7 @@
           <!-- Key Talent -->
           <template v-if="keyTalentsByPath[path.id]">
             <div class="q-mb-md">
-              <div class="subsection-title">Key Talent</div>
+              <div class="section-title section-title--sm">Key Talent</div>
               <talent-item :talent="keyTalentsByPath[path.id]!" />
             </div>
           </template>
@@ -30,7 +30,7 @@
           <!-- General Path Talents (no specialty) -->
           <template v-if="generalTalentsByPath[path.id]?.length">
             <div class="q-mb-md">
-              <div class="subsection-title">Path Talents</div>
+              <div class="section-title section-title--sm">Path Talents</div>
               <talent-item
                 v-for="talent in generalTalentsByPath[path.id]"
                 :key="talent.id"
@@ -226,14 +226,6 @@ const surgeTalentsMap = computed((): Record<number, Talent[]> => {
 </script>
 
 <style scoped>
-.subsection-title {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  opacity: 0.6;
-  margin-bottom: 8px;
-}
-
 .specialty-section {
   margin-bottom: 16px;
   padding-left: 8px;

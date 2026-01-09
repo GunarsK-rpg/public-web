@@ -27,7 +27,7 @@
       <div v-else class="row q-col-gutter-md">
         <div v-for="campaign in campaigns" :key="campaign.id" class="col-12 col-sm-6 col-md-4">
           <q-card
-            class="campaign-card cursor-pointer"
+            class="card-interactive cursor-pointer"
             tabindex="0"
             role="button"
             :aria-label="`View campaign: ${campaign.name}`"
@@ -80,15 +80,3 @@ function createStandaloneCharacter(): void {
   void router.push({ name: 'character-create-standalone' });
 }
 </script>
-
-<style scoped>
-.campaign-card {
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-}
-
-.campaign-card:hover {
-  transform: translateY(-2px);
-}
-</style>

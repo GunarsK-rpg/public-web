@@ -37,9 +37,10 @@
       <q-spinner-dots size="50px" color="primary" aria-label="Loading character creation" />
     </div>
 
-    <!-- Step Content -->
+    <!-- Step Content (swipeable on mobile) -->
     <div
       v-else
+      ref="stepContentRef"
       :id="`step-panel-${currentStep}`"
       :aria-labelledby="`step-tab-${currentStep}`"
       class="q-pa-md step-content"
@@ -74,7 +75,9 @@ import { useQuasar } from 'quasar';
 import { useWizardStore } from 'stores/wizard';
 import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
+import { useSwipeNavigation } from 'src/composables/useSwipeNavigation';
 import { logger } from 'src/utils/logger';
+import { WIZARD_STEPS } from 'src/types';
 
 // Shared components
 import StepTabs from 'components/character-creation/shared/StepTabs.vue';
@@ -103,6 +106,26 @@ const classifierStore = useClassifierStore();
 const creating = ref(false);
 const showResetDialog = ref(false);
 const initializing = ref(true);
+const stepContentRef = ref<HTMLElement | null>(null);
+
+// Swipe navigation for mobile
+const totalSteps = WIZARD_STEPS.length;
+
+useSwipeNavigation(stepContentRef, {
+  onSwipeLeft: () => {
+    // Next step
+    if (currentStep.value < totalSteps) {
+      wizardStore.markStepCompleted(currentStep.value);
+      wizardStore.goToStep(currentStep.value + 1);
+    }
+  },
+  onSwipeRight: () => {
+    // Previous step
+    if (currentStep.value > 1) {
+      wizardStore.goToStep(currentStep.value - 1);
+    }
+  },
+});
 
 const stepComponents: Record<number, Component> = {
   1: BasicSetupStep,

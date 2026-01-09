@@ -6,7 +6,7 @@
 
     <!-- Dynamic sections from expertise types classifier -->
     <div v-for="expType in classifiers.expertiseTypes" :key="expType.id" class="category-section">
-      <div class="category-title">{{ expType.name }}</div>
+      <div class="section-title section-title--md">{{ expType.name }}</div>
       <template v-if="expertisesByTypeRecord[expType.id]?.length">
         <q-chip
           v-for="heroExp in expertisesByTypeRecord[expType.id]"
@@ -57,13 +57,5 @@ function getExpertiseName(expertiseId: number): string {
 <style scoped>
 .category-section {
   margin-bottom: 16px;
-}
-
-.category-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  opacity: 0.7;
-  margin-bottom: 8px;
 }
 </style>

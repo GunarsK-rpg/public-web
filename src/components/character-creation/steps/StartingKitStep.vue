@@ -12,7 +12,7 @@
           role="radio"
           tabindex="0"
           :aria-checked="selectedKitId === kit.id"
-          class="kit-card cursor-pointer"
+          class="kit-card card-interactive cursor-pointer"
           :class="{ 'card-selected': selectedKitId === kit.id }"
           @click="selectKit(kit.id)"
           @keydown.enter="selectKit(kit.id)"
@@ -155,15 +155,7 @@ function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
 <style scoped lang="scss">
 .kit-card {
   position: relative;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
   height: 100%;
-}
-
-.kit-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px $color-shadow;
 }
 
 .selection-indicator {

@@ -51,7 +51,7 @@
         <div v-else class="row q-col-gutter-md">
           <div v-for="hero in campaign.heroes" :key="hero.id" class="col-12 col-sm-6 col-md-4">
             <q-card
-              class="character-card cursor-pointer"
+              class="card-interactive cursor-pointer"
               tabindex="0"
               role="button"
               :aria-label="`View character: ${hero.name}`"
@@ -156,21 +156,3 @@ function createCharacter(): void {
   });
 }
 </script>
-
-<style scoped>
-.character-card {
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-}
-
-.character-card:hover,
-.character-card:focus {
-  transform: translateY(-2px);
-}
-
-.character-card:focus {
-  outline: 2px solid var(--q-primary);
-  outline-offset: 2px;
-}
-</style>
