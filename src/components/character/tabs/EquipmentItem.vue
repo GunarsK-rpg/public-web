@@ -21,7 +21,7 @@
         </q-badge>
         <q-badge
           v-if="heroEquipment.isPrimary"
-          color="amber"
+          :color="RPG_COLORS.equipmentPrimary"
           class="q-ml-xs"
           aria-label="Primary weapon"
         >
@@ -38,7 +38,7 @@
     <q-item-section side>
       <q-badge
         v-if="heroEquipment.amount > 1"
-        color="grey"
+        :color="RPG_COLORS.badgeMuted"
         :aria-label="`Quantity: ${heroEquipment.amount}`"
       >
         x{{ heroEquipment.amount }}
@@ -52,6 +52,7 @@ import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import { useChainedEntityIcon } from 'src/composables/useEntityIcon';
+import { RPG_COLORS } from 'src/constants/theme';
 import type { HeroEquipment, Equipment } from 'src/types';
 
 const props = defineProps<{

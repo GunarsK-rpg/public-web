@@ -58,7 +58,9 @@
                 <q-item-label v-if="goal.description" caption>{{ goal.description }}</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-badge color="grey">{{ getGoalStatusName(goal.statusId) }}</q-badge>
+                <q-badge :color="RPG_COLORS.badgeMuted">{{
+                  getGoalStatusName(goal.statusId)
+                }}</q-badge>
               </q-item-section>
             </q-item>
           </q-list>
@@ -83,7 +85,9 @@
                 <q-item-label v-if="conn.notes" caption>{{ conn.notes }}</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-badge color="grey">{{ getConnectionTypeName(conn.connTypeId) }}</q-badge>
+                <q-badge :color="RPG_COLORS.badgeMuted">{{
+                  getConnectionTypeName(conn.connTypeId)
+                }}</q-badge>
               </q-item-section>
             </q-item>
           </q-list>
@@ -108,7 +112,9 @@
                 <q-item-label v-if="comp.notes" caption>{{ comp.notes }}</q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-badge color="grey">{{ getCompanionTypeName(comp.compTypeId) }}</q-badge>
+                <q-badge :color="RPG_COLORS.badgeMuted">{{
+                  getCompanionTypeName(comp.compTypeId)
+                }}</q-badge>
               </q-item-section>
             </q-item>
           </q-list>
@@ -184,6 +190,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, buildIdNameMap } from 'src/utils/arrayUtils';
+import { RPG_COLORS } from 'src/constants/theme';
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();

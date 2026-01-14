@@ -12,7 +12,11 @@
     <q-item-section>
       <q-item-label>{{ action.name }}</q-item-label>
       <q-item-label caption>{{ action.description }}</q-item-label>
-      <q-item-label v-if="action.special" caption class="text-italic text-purple">
+      <q-item-label
+        v-if="action.special"
+        caption
+        :class="`text-italic text-${RPG_COLORS.specialAbility}`"
+      >
         {{ action.special }}
       </q-item-label>
       <q-item-label v-if="action.dice" caption class="text-weight-medium">
@@ -39,6 +43,7 @@
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
+import { RPG_COLORS } from 'src/constants/theme';
 import type { Action } from 'src/types';
 
 const props = defineProps<{
@@ -58,14 +63,19 @@ const { entity: activationType, iconUrl } = useEntityIcon(
 const actionCosts = computed(() => {
   const costs: { value: number; label: string; title: string; color: string }[] = [];
   if (props.action.focusCost > 0) {
-    costs.push({ value: props.action.focusCost, label: 'Focus', title: 'Focus', color: 'teal' });
+    costs.push({
+      value: props.action.focusCost,
+      label: 'Focus',
+      title: 'Focus',
+      color: RPG_COLORS.focusCost,
+    });
   }
   if (props.action.investitureCost > 0) {
     costs.push({
       value: props.action.investitureCost,
       label: 'Inv',
       title: 'Investiture',
-      color: 'amber',
+      color: RPG_COLORS.investitureCost,
     });
   }
   return costs;

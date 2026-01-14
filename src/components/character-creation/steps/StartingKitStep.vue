@@ -91,9 +91,9 @@
     </div>
 
     <!-- Special notes for prisoner kit -->
-    <q-banner v-if="isPrisonerKit" class="bg-amber-2 q-mt-md" rounded>
+    <q-banner v-if="isPrisonerKit" :class="`bg-${RPG_COLORS.bannerInfo} q-mt-md`" rounded>
       <template v-slot:avatar>
-        <q-icon name="auto_awesome" color="amber-8" aria-hidden="true" />
+        <q-icon name="auto_awesome" :color="RPG_COLORS.bannerInfoIcon" aria-hidden="true" />
       </template>
       <div class="text-caption">
         <strong>Prisoner Kit Special:</strong> You begin bonded to a Radiant spren at Ideal 1. You
@@ -109,6 +109,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode } from 'src/utils/arrayUtils';
+import { RPG_COLORS } from 'src/constants/theme';
 
 const heroStore = useHeroStore();
 const equipStore = useHeroEquipmentStore();
