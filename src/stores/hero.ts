@@ -100,8 +100,7 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   function getAttributeValue(attrCode: string): number {
     if (!hero.value?.attributes) return 0;
-    const classifiers = useClassifierStore();
-    const attr = findByCode(classifiers.attributes, attrCode);
+    const attr = findByCode(classifierStore.attributes, attrCode);
     if (!attr) return 0;
     const heroAttr = hero.value.attributes.find((a) => a.attrId === attr.id);
     return heroAttr?.value || 0;
@@ -115,8 +114,7 @@ export const useHeroStore = defineStore('hero', () => {
 
   function getDefenseValue(attrTypeCode: string): number {
     if (!hero.value?.defenses) return 10;
-    const classifiers = useClassifierStore();
-    const attrType = findByCode(classifiers.attributeTypes, attrTypeCode);
+    const attrType = findByCode(classifierStore.attributeTypes, attrTypeCode);
     if (!attrType) return 10;
     const defense = hero.value.defenses.find((d) => d.attrTypeId === attrType.id);
     return defense?.value || 10;
@@ -129,8 +127,7 @@ export const useHeroStore = defineStore('hero', () => {
   }
 
   function getSkillModifier(skillCode: string): number {
-    const classifiers = useClassifierStore();
-    const skillData = findByCode(classifiers.skills, skillCode);
+    const skillData = findByCode(classifierStore.skills, skillCode);
     if (!skillData || !hero.value) return 0;
     const attrValue = getAttributeValueById(skillData.attrId);
     const rank = getSkillRank(skillData.id);
@@ -263,13 +260,12 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   function setAncestry(ancestryId: number) {
     if (!hero.value) return;
-    const classifiers = useClassifierStore();
-    const singerAncestry = findByCode(classifiers.ancestries, 'singer');
+    const singerAncestry = findByCode(classifierStore.ancestries, 'singer');
 
     // Remove previous ancestry talents if changing ancestry
     if (hero.value.ancestryId) {
       const prevAncestryId = hero.value.ancestryId;
-      const prevAncestryTalentIds = classifiers.talents
+      const prevAncestryTalentIds = classifierStore.talents
         .filter((t) => t.ancestryId === prevAncestryId)
         .map((t) => t.id);
       hero.value.talents = hero.value.talents.filter(
@@ -284,7 +280,7 @@ export const useHeroStore = defineStore('hero', () => {
       hero.value.activeSingerFormId = null;
     } else {
       // Add singer key talent
-      const singerKeyTalent = classifiers.talents.find(
+      const singerKeyTalent = classifierStore.talents.find(
         (t) => t.ancestryId === singerAncestry.id && t.isKey
       );
       if (singerKeyTalent && !hero.value.talents.find((t) => t.talentId === singerKeyTalent.id)) {
@@ -325,8 +321,7 @@ export const useHeroStore = defineStore('hero', () => {
 
   function applyCulturalExpertise(cultureId: number) {
     if (!hero.value) return;
-    const classifiers = useClassifierStore();
-    const culture = findById(classifiers.cultures, cultureId);
+    const culture = findById(classifierStore.cultures, cultureId);
     if (!culture) return;
 
     addExpertise(culture.expertiseId, { sourceType: 'culture', sourceId: cultureId });
@@ -344,8 +339,7 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   function getHeroDerivedStat(statCode: string) {
     if (!hero.value?.derivedStats) return undefined;
-    const classifiers = useClassifierStore();
-    const stat = findByCode(classifiers.derivedStats, statCode);
+    const stat = findByCode(classifierStore.derivedStats, statCode);
     if (!stat) return undefined;
     return hero.value.derivedStats.find((s) => s.statId === stat.id);
   }
@@ -356,9 +350,8 @@ export const useHeroStore = defineStore('hero', () => {
 
   function getDerivedStatTotal(statCode: string): number {
     // Build attribute values map for formula calculation
-    const classifiers = useClassifierStore();
     const attrs: Record<string, number> = {};
-    for (const attr of classifiers.attributes) {
+    for (const attr of classifierStore.attributes) {
       attrs[attr.code] = getAttributeValue(attr.code);
     }
 
@@ -381,8 +374,9 @@ export const useHeroStore = defineStore('hero', () => {
   function getDerivedStatDisplay(statCode: string): string {
     const heroStat = getHeroDerivedStat(statCode);
     if (!heroStat) return '';
-    const classifiers = useClassifierStore();
-    const unit = heroStat.unitId ? (findById(classifiers.units, heroStat.unitId)?.code ?? '') : '';
+    const unit = heroStat.unitId
+      ? (findById(classifierStore.units, heroStat.unitId)?.code ?? '')
+      : '';
     const modifier = heroStat.modifier ?? 0;
     const total = heroStat.value + modifier;
     if (modifier) {
@@ -500,8 +494,7 @@ export const useHeroStore = defineStore('hero', () => {
   }
 
   function addKeyTalentForPath(pathId: number) {
-    const classifiers = useClassifierStore();
-    const keyTalent = classifiers.talents.find((t) => t.pathId === pathId && t.isKey);
+    const keyTalent = classifierStore.talents.find((t) => t.pathId === pathId && t.isKey);
     if (keyTalent) {
       addTalent(keyTalent.id);
     }
@@ -512,20 +505,19 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   function setRadiantOrder(orderId: number | null) {
     if (!hero.value) return;
-    const classifiers = useClassifierStore();
 
     // Remove all radiant talents from previous order
     if (hero.value.radiantOrderId) {
-      const prevOrder = findById(classifiers.radiantOrders, hero.value.radiantOrderId);
+      const prevOrder = findById(classifierStore.radiantOrders, hero.value.radiantOrderId);
       if (prevOrder) {
         // Get all talent IDs for this order (order talents + surge talents)
-        const orderTalentIds = classifiers.talents
+        const orderTalentIds = classifierStore.talents
           .filter((t) => t.radiantOrderId === prevOrder.id)
           .map((t) => t.id);
-        const surge1TalentIds = classifiers.talents
+        const surge1TalentIds = classifierStore.talents
           .filter((t) => t.surgeId === prevOrder.surge1Id)
           .map((t) => t.id);
-        const surge2TalentIds = classifiers.talents
+        const surge2TalentIds = classifierStore.talents
           .filter((t) => t.surgeId === prevOrder.surge2Id)
           .map((t) => t.id);
         const allRadiantTalentIds = [...orderTalentIds, ...surge1TalentIds, ...surge2TalentIds];
@@ -540,7 +532,9 @@ export const useHeroStore = defineStore('hero', () => {
       hero.value.radiantIdeal = 0;
     } else {
       // Add new radiant key talent
-      const keyTalent = classifiers.talents.find((t) => t.radiantOrderId === orderId && t.isKey);
+      const keyTalent = classifierStore.talents.find(
+        (t) => t.radiantOrderId === orderId && t.isKey
+      );
       if (keyTalent && !hero.value.talents.find((t) => t.talentId === keyTalent.id)) {
         hero.value.talents.push({
           id: nextTempId(),
@@ -567,8 +561,7 @@ export const useHeroStore = defineStore('hero', () => {
 
   function applyStartingKitBonuses(startingKitId: number) {
     if (!hero.value) return;
-    const classifiers = useClassifierStore();
-    const kitData = findById(classifiers.startingKits, startingKitId);
+    const kitData = findById(classifierStore.startingKits, startingKitId);
     if (!kitData) return;
 
     // Clear previous starting kit expertises
@@ -644,8 +637,7 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   function addGoal(name: string, description?: string) {
     if (!hero.value) return;
-    const classifiers = useClassifierStore();
-    const activeStatus = findByCode(classifiers.goalStatuses, 'active');
+    const activeStatus = findByCode(classifierStore.goalStatuses, 'active');
     hero.value.goals.push({
       id: nextTempId(),
       heroId: hero.value.id,
