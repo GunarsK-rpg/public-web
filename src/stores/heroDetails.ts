@@ -1,26 +1,36 @@
 import { defineStore } from 'pinia';
 import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
-import { findByCode, removeById } from 'src/utils/arrayUtils';
+import { findByCode, findById, removeById } from 'src/utils/arrayUtils';
 
 export const useHeroDetailsStore = defineStore('heroDetails', () => {
   const heroStore = useHeroStore();
   const classifierStore = useClassifierStore();
 
   // ===================
+  // CONSTANTS
+  // ===================
+  // Max lengths for text fields (match database constraints)
+  const MAX_NAME_LENGTH = 255;
+  const MAX_TEXT_LENGTH = 10000;
+
+  // ===================
   // GOALS
   // ===================
+
   function addGoal(name: string, description?: string) {
     if (!heroStore.hero) return;
     const activeStatus = findByCode(classifierStore.goalStatuses, 'active');
     if (!activeStatus) {
       console.warn('Active goal status not found in classifiers');
     }
+    const trimmedName = name.slice(0, MAX_NAME_LENGTH);
+    const trimmedDesc = description?.slice(0, MAX_TEXT_LENGTH);
     heroStore.hero.goals.push({
       id: heroStore.nextTempId(),
       heroId: heroStore.hero.id,
-      name,
-      ...(description && { description }),
+      name: trimmedName,
+      ...(trimmedDesc && { description: trimmedDesc }),
       value: 0,
       statusId: activeStatus?.id ?? 1,
     });
@@ -35,12 +45,20 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
   // ===================
   function addConnection(connTypeId: number, description: string, notes?: string) {
     if (!heroStore.hero) return;
+    // Validate connection type exists
+    const connType = findById(classifierStore.connectionTypes, connTypeId);
+    if (!connType) {
+      console.warn(`Connection type ${connTypeId} not found in classifiers`);
+      return;
+    }
+    const trimmedDesc = description.slice(0, MAX_TEXT_LENGTH);
+    const trimmedNotes = notes?.slice(0, MAX_TEXT_LENGTH);
     heroStore.hero.connections.push({
       id: heroStore.nextTempId(),
       heroId: heroStore.hero.id,
       connTypeId,
-      description,
-      ...(notes ? { notes } : {}),
+      description: trimmedDesc,
+      ...(trimmedNotes ? { notes: trimmedNotes } : {}),
     });
   }
 
@@ -51,9 +69,6 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
   // ===================
   // PERSONAL DETAILS
   // ===================
-  // Max lengths match database TEXT columns (practical limit for UI)
-  const MAX_TEXT_LENGTH = 10000;
-
   function setAppearance(appearance: string) {
     if (!heroStore.hero) return;
     heroStore.hero.appearance = appearance.slice(0, MAX_TEXT_LENGTH);

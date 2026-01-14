@@ -14,7 +14,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   // COMPUTED
   // ===================
   const levelData = computed(() => {
-    return findByProp(classifierStore.levels, 'level', heroStore.hero?.level || 1);
+    return findByProp(classifierStore.levels, 'level', heroStore.hero?.level ?? 1);
   });
 
   const tierData = computed(() => {
@@ -196,6 +196,13 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     );
   }
 
+  function removeExpertiseBySource(sourceType: string, sourceId: number) {
+    if (!heroStore.hero) return;
+    heroStore.hero.expertises = heroStore.hero.expertises.filter(
+      (e) => !(e.source?.sourceType === sourceType && e.source?.sourceId === sourceId)
+    );
+  }
+
   return {
     // Computed
     levelData,
@@ -223,5 +230,6 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     setDerivedStatModifier,
     addExpertise,
     removeExpertise,
+    removeExpertiseBySource,
   };
 });

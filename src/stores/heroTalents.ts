@@ -101,10 +101,8 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   }
 
   function removeCulturalExpertise(cultureId: number) {
-    if (!heroStore.hero) return;
-    heroStore.hero.expertises = heroStore.hero.expertises.filter(
-      (e) => !(e.source?.sourceType === 'culture' && e.source?.sourceId === cultureId)
-    );
+    // Delegate to attrStore for consistent expertise mutation ownership
+    attrStore.removeExpertiseBySource('culture', cultureId);
   }
 
   // ===================
