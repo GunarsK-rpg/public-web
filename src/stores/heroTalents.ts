@@ -38,11 +38,11 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     // Remove previous ancestry talents if changing ancestry
     if (heroStore.hero.ancestryId) {
       const prevAncestryId = heroStore.hero.ancestryId;
-      const prevAncestryTalentIds = classifierStore.talents
-        .filter((t) => t.ancestryId === prevAncestryId)
-        .map((t) => t.id);
+      const prevAncestryTalentIds = new Set(
+        classifierStore.talents.filter((t) => t.ancestryId === prevAncestryId).map((t) => t.id)
+      );
       heroStore.hero.talents = heroStore.hero.talents.filter(
-        (t) => !prevAncestryTalentIds.includes(t.talentId)
+        (t) => !prevAncestryTalentIds.has(t.talentId)
       );
     }
 

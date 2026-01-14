@@ -71,6 +71,14 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     }
   }
 
+  function setEquipmentPrimary(equipmentId: number, isPrimary: boolean) {
+    if (!heroStore.hero) return;
+    const item = heroStore.hero.equipment.find((e) => e.equipmentId === equipmentId);
+    if (item) {
+      item.isPrimary = isPrimary;
+    }
+  }
+
   // ===================
   // STARTING KIT
   // ===================
@@ -118,6 +126,7 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     addEquipment,
     removeEquipment,
     setEquipmentEquipped,
+    setEquipmentPrimary,
 
     // Starting Kit
     setStartingKit,

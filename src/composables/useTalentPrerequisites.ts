@@ -24,8 +24,8 @@ export function useTalentPrerequisites() {
   const talentStore = useHeroTalentsStore();
   const classifiers = useClassifierStore();
 
-  // Hero's selected talent IDs
-  const heroTalentIds = computed(() => heroStore.talents.map((t) => t.talentId));
+  // Hero's selected talent IDs as Set for O(1) lookups
+  const heroTalentIds = computed(() => new Set(heroStore.talents.map((t) => t.talentId)));
 
   // Build character skills map from hero
   const characterSkills = computed(() => {
@@ -47,7 +47,7 @@ export function useTalentPrerequisites() {
    */
   function checkTalentPrerequisites(
     talent: Talent,
-    selectedTalentIds: number[],
+    selectedTalentIds: Set<number>,
     skills: Map<number, number>
   ): { met: boolean; unmetPrereqs: TalentPrerequisite[] } {
     if (!talent.prerequisites || talent.prerequisites.length === 0) {
@@ -62,7 +62,7 @@ export function useTalentPrerequisites() {
       switch (prereq.type) {
         case 'talent':
           if (prereq.talentIds?.length) {
-            isMet = prereq.talentIds.some((id) => selectedTalentIds.includes(id));
+            isMet = prereq.talentIds.some((id) => selectedTalentIds.has(id));
           }
           break;
         case 'skill':
@@ -107,7 +107,7 @@ export function useTalentPrerequisites() {
    * Toggle a talent selection (add or remove from hero)
    */
   function toggleTalent(talentId: number, available: boolean) {
-    if (heroTalentIds.value.includes(talentId)) {
+    if (heroTalentIds.value.has(talentId)) {
       talentStore.removeTalent(talentId);
     } else if (available) {
       talentStore.addTalent(talentId);
@@ -118,7 +118,7 @@ export function useTalentPrerequisites() {
    * Check if a talent is currently selected
    */
   function isTalentSelected(talentId: number): boolean {
-    return heroTalentIds.value.includes(talentId);
+    return heroTalentIds.value.has(talentId);
   }
 
   // Prerequisite formatter bound to classifiers
