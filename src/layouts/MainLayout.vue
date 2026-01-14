@@ -34,7 +34,7 @@
           v-if="isAuthenticated"
         >
           <q-menu>
-            <q-list style="min-width: 150px">
+            <q-list class="account-menu">
               <q-item-label header>{{ username }}</q-item-label>
               <q-separator />
               <q-item clickable v-close-popup @click="goToCampaigns">
@@ -133,3 +133,9 @@ onMounted(() => {
   }
 });
 </script>
+
+<style scoped>
+.account-menu {
+  min-width: 150px;
+}
+</style>

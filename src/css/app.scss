@@ -310,7 +310,18 @@ $touch-target-min: 44px;
 
 // Compact number input for modifiers
 .modifier-input {
+  width: 70px;
   max-width: 70px;
+
+  :deep(.q-field__native) {
+    text-align: center;
+  }
+}
+
+// Centered value display for counters/sliders
+.value-display {
+  min-width: 30px;
+  text-align: center;
 }
 
 // =============================================================================

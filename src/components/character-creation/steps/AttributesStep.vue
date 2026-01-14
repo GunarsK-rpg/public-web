@@ -30,8 +30,7 @@
                 @click="decrementAttr(attr.id)"
               />
               <div
-                class="text-h5 q-mx-md"
-                style="min-width: 30px; text-align: center"
+                class="text-h5 q-mx-md value-display"
                 :aria-label="`${attr.name}: ${getAttrValue(attr.id)}`"
                 role="status"
               >

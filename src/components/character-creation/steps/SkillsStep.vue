@@ -31,8 +31,7 @@
                 @click="decrementSkill(skill.id)"
               />
               <div
-                class="text-body1 q-mx-sm"
-                style="min-width: 30px; text-align: center"
+                class="text-body1 q-mx-sm value-display"
                 role="status"
                 :aria-label="`${skill.name} rank: ${getSkillRank(skill.id)}`"
               >
@@ -139,13 +138,3 @@ function decrementSkill(skillId: number) {
   }
 }
 </script>
-
-<style scoped>
-.modifier-input {
-  width: 70px;
-}
-
-.modifier-input :deep(.q-field__native) {
-  text-align: center;
-}
-</style>
