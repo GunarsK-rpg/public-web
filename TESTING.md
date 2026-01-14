@@ -133,7 +133,7 @@ ci:all:
     - task: format:check
     - task: lint
     - task: typecheck
-    - task: test          # Unit tests
+    - task: test # Unit tests
     - task: build
     - task: security:audit
     - task: lint:markdown

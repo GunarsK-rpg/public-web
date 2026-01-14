@@ -294,6 +294,15 @@ describe('buildIdCodeMap', () => {
     const map = buildIdCodeMap([]);
     expect(map.size).toBe(0);
   });
+
+  it('handles duplicate ids (last wins)', () => {
+    const items = [
+      { id: 1, code: 'FIRST' },
+      { id: 1, code: 'SECOND' },
+    ];
+    const map = buildIdCodeMap(items);
+    expect(map.get(1)).toBe('SECOND');
+  });
 });
 
 describe('buildLookupMap', () => {
