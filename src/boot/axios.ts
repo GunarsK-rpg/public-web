@@ -1,5 +1,6 @@
 import { defineBoot } from '#q-app/wrappers';
-import axios, { type AxiosInstance } from 'axios';
+import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
+import { logger } from 'src/utils/logger';
 
 declare module 'vue' {
   interface ComponentCustomProperties {
@@ -15,6 +16,51 @@ declare module 'vue' {
 // "export default () => {}" function below (which runs individually
 // for each client)
 const api = axios.create({ baseURL: 'https://api.example.com' });
+
+// Extended config type for request timing
+interface RequestConfigWithMetadata extends InternalAxiosRequestConfig {
+  metadata?: { startTime: number };
+}
+
+// Request interceptor - log outgoing requests and track timing
+api.interceptors.request.use(
+  (config: RequestConfigWithMetadata) => {
+    config.metadata = { startTime: Date.now() };
+    logger.logRequest(config);
+    return config;
+  },
+  (error: unknown) => {
+    logger.error('Request setup failed', error instanceof Error ? error : { error: String(error) });
+    const err = error instanceof Error ? error : new Error(String(error));
+    return Promise.reject(err);
+  }
+);
+
+// Response interceptor - log responses and errors
+api.interceptors.response.use(
+  (response) => {
+    const config = response.config as RequestConfigWithMetadata;
+    const duration = config.metadata?.startTime
+      ? Date.now() - config.metadata.startTime
+      : undefined;
+
+    logger.logResponse({
+      status: response.status,
+      statusText: response.statusText,
+      config: { ...config, ...(duration !== undefined && { metadata: { duration } }) },
+    });
+    return response;
+  },
+  (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      logger.logError(error);
+    } else {
+      logger.error('Request failed', error instanceof Error ? error : { error: String(error) });
+    }
+    const err = error instanceof Error ? error : new Error(String(error));
+    return Promise.reject(err);
+  }
+);
 
 export default defineBoot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api

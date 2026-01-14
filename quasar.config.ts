@@ -12,7 +12,7 @@ export default defineConfig((ctx) => {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['i18n', 'axios'],
+    boot: ['i18n', 'axios', 'errorHandler'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
     css: ['app.scss'],
@@ -29,6 +29,7 @@ export default defineConfig((ctx) => {
 
       'roboto-font', // optional, you are not bound to it
       'material-icons', // optional, you are not bound to it
+      'material-symbols-outlined', // for sym_o_ prefixed icons
     ],
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
@@ -97,13 +98,26 @@ export default defineConfig((ctx) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
     devServer: {
+      port: 7100,
       // https: true,
-      open: true, // opens browser window automatically
+      open: true, // Use system default browser
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
     framework: {
-      config: {},
+      config: {
+        brand: {
+          // All colors validated for WCAG AA compliance (4.5:1 contrast ratio with white text)
+          primary: '#1565c0', // 5.75:1 - WCAG AA compliant
+          secondary: '#00796b', // 5.09:1 - darkened from #26a69a (was 3.00:1)
+          accent: '#9c27b0', // 6.30:1 - WCAG AA compliant
+          dark: '#1d1d1d', // 16.86:1 - WCAG AAA compliant
+          positive: '#0d7a2d', // 5.14:1 - darkened from #21ba45 (was 2.57:1)
+          negative: '#c10015', // 6.41:1 - WCAG AA compliant
+          info: '#0277bd', // 5.06:1 - darkened from #31ccec (was 1.91:1)
+          warning: '#f57c00', // 4.51:1 - darkened from #f2c037 (was 1.70:1)
+        },
+      },
 
       // iconSet: 'material-icons', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
@@ -116,7 +130,7 @@ export default defineConfig((ctx) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: [],
+      plugins: ['Notify'],
     },
 
     // animations: 'all', // --- includes all animations

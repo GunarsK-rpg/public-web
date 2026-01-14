@@ -1,0 +1,103 @@
+import type { Culture } from 'src/types';
+
+export const cultures: Culture[] = [
+  {
+    id: 1,
+    code: 'alethi',
+    name: 'Alethi',
+    expertiseId: 1,
+    description:
+      'A warrior nation ruled by a monarch and ten highprinces, driven by war and conquest.',
+  },
+  {
+    id: 2,
+    code: 'veden',
+    name: 'Veden',
+    expertiseId: 2,
+    description: 'A nation with four major ethnic groups, closely tied to Alethkar culturally.',
+  },
+  {
+    id: 3,
+    code: 'azish',
+    name: 'Azish',
+    expertiseId: 3,
+    description: 'A bureaucratic nation led by the Prime Aqasix and elite viziers.',
+  },
+  {
+    id: 4,
+    code: 'herdazian',
+    name: 'Herdazian',
+    expertiseId: 4,
+    description: 'A verdant nation famous for hog ranches, with large diasporas abroad.',
+  },
+  {
+    id: 5,
+    code: 'thaylen',
+    name: 'Thaylen',
+    expertiseId: 5,
+    description: 'An island trading nation ruled by elected monarchs and merchant councils.',
+  },
+  {
+    id: 6,
+    code: 'unkalaki',
+    name: 'Unkalaki (Horneater)',
+    expertiseId: 6,
+    description: 'Mountain people living around warm crater lakes, with ancient singer ancestry.',
+  },
+  {
+    id: 7,
+    code: 'shin',
+    name: 'Shin',
+    expertiseId: 7,
+    description: 'An isolated nation where farmers are esteemed and warriors are lowly.',
+  },
+  {
+    id: 8,
+    code: 'iriali',
+    name: 'Iriali',
+    expertiseId: 8,
+    description: 'Descendants of offworlders following the Long Trail through seven worlds.',
+  },
+  {
+    id: 9,
+    code: 'kharbranthian',
+    name: 'Kharbranthian',
+    expertiseId: 9,
+    description: 'The City of Bells - a center of academic and medical achievement.',
+  },
+  {
+    id: 10,
+    code: 'listener',
+    name: 'Listener',
+    expertiseId: 10,
+    description: 'Singers who defied Odium and retained their identity through oral tradition.',
+  },
+  {
+    id: 11,
+    code: 'reshi',
+    name: 'Reshi',
+    expertiseId: 11,
+    description: 'Island people who worship greatshell Tai-na as gods.',
+  },
+  {
+    id: 12,
+    code: 'natan',
+    name: 'Natan',
+    expertiseId: 12,
+    description: 'Remnants of a destroyed empire, some living as nomads.',
+  },
+  {
+    id: 13,
+    code: 'wayfarer',
+    name: 'Wayfarer',
+    expertiseId: 13,
+    description: 'Perpetual travelers familiar with routes, shelters, and international customs.',
+  },
+  {
+    id: 14,
+    code: 'high-society',
+    name: 'High Society',
+    expertiseId: 14,
+    description: 'The upper echelons of society across various nations.',
+  },
+];

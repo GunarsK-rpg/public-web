@@ -1,1 +1,355 @@
 // app global css in SCSS form
+
+// =============================================================================
+// Accessibility - Focus States (WCAG 2.4.7)
+// =============================================================================
+// Visible focus indicators for keyboard navigation
+
+// Focus-visible for all interactive elements
+button,
+[role='button'],
+[role='tab'],
+[role='radio'],
+[role='checkbox'],
+[role='menuitem'],
+[tabindex='0'],
+.q-btn,
+.q-tab,
+.q-item--clickable,
+.q-checkbox,
+.q-radio,
+.q-toggle,
+.q-field__native,
+.q-select,
+input,
+select,
+textarea,
+a[href] {
+  &:focus-visible {
+    outline: var(--app-focus-ring-width) solid var(--app-focus-ring-color);
+    outline-offset: var(--app-focus-ring-offset);
+  }
+
+  // Remove default outline since we're providing our own
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+// Cards with role attributes (selectable cards)
+.q-card[role='radio'],
+.q-card[role='checkbox'] {
+  &:focus-visible {
+    outline: var(--app-focus-ring-width) solid var(--app-focus-ring-color);
+    outline-offset: var(--app-focus-ring-offset);
+  }
+}
+
+// =============================================================================
+// Mobile Touch Targets (WCAG 2.5.5 - 44px minimum)
+// =============================================================================
+// Ensures interactive elements meet minimum touch target size on mobile
+
+$touch-target-min: 44px;
+
+// Apply minimum touch targets on mobile devices
+@media (max-width: 599px) {
+  // All buttons should meet minimum touch target
+  .q-btn {
+    min-height: $touch-target-min;
+    min-width: $touch-target-min;
+  }
+
+  // Icon-only buttons (round/dense) need explicit sizing
+  .q-btn--round,
+  .q-btn--dense {
+    min-height: $touch-target-min;
+    min-width: $touch-target-min;
+  }
+
+  // Checkbox and radio touch targets
+  .q-checkbox,
+  .q-radio {
+    min-height: $touch-target-min;
+
+    .q-checkbox__inner,
+    .q-radio__inner {
+      min-height: $touch-target-min;
+      min-width: $touch-target-min;
+    }
+  }
+
+  // List items should be tappable
+  .q-item--clickable {
+    min-height: $touch-target-min;
+  }
+
+  // Tab navigation
+  .q-tab {
+    min-height: $touch-target-min;
+  }
+}
+
+// Utility class for explicit touch target sizing
+.touch-target {
+  min-height: $touch-target-min;
+  min-width: $touch-target-min;
+}
+
+// =============================================================================
+// Global Utility Classes
+// =============================================================================
+
+// Selected/highlighted item background (theme-aware)
+.item-selected {
+  background-color: $color-selected-bg-light;
+
+  .body--dark & {
+    background-color: $color-selected-bg-dark;
+  }
+}
+
+// Disabled/locked item background (theme-aware)
+.item-disabled {
+  opacity: $color-disabled-opacity;
+  background-color: $color-disabled-bg-light;
+
+  .body--dark & {
+    background-color: $color-disabled-bg-dark;
+  }
+}
+
+// Card/option active selection (prominent highlight)
+.card-selected {
+  background-color: $primary !important;
+  color: $color-text-on-color !important;
+}
+
+// =============================================================================
+// Text Utilities
+// =============================================================================
+
+// Muted/placeholder text (theme-aware with WCAG-compliant contrast)
+.text-muted {
+  color: $color-text-muted-light;
+
+  .body--dark & {
+    color: $color-text-muted-dark;
+  }
+}
+
+// Secondary/caption text with reduced emphasis
+.text-secondary-emphasis {
+  opacity: 0.8;
+}
+
+// Empty state / placeholder messages (WCAG-compliant contrast)
+.text-empty {
+  color: $color-text-empty-light;
+
+  .body--dark & {
+    color: $color-text-empty-dark;
+  }
+}
+
+// =============================================================================
+// Banner/Alert Styles
+// =============================================================================
+
+// Info banner (contextual information)
+.banner-info {
+  background-color: $color-banner-info-light !important;
+  color: $color-text-on-color !important;
+
+  .body--dark & {
+    background-color: $color-banner-info-dark !important;
+  }
+}
+
+// Success banner (positive feedback)
+.banner-success {
+  background-color: $positive !important;
+  color: $color-text-on-color !important;
+}
+
+// Error banner (negative feedback)
+.banner-error {
+  background-color: $negative !important;
+  color: $color-text-on-color !important;
+}
+
+// Warning banner (dark text for contrast on yellow)
+.banner-warning {
+  background-color: $warning !important;
+  color: $color-text-on-warning !important;
+}
+
+// =============================================================================
+// RPG Banner/Highlight Styles (dark mode friendly)
+// =============================================================================
+
+// Key talent banner - subdued gold/amber
+.banner-key-talent {
+  background-color: $color-key-talent-light !important;
+  color: $color-text-on-color !important;
+
+  .body--dark & {
+    background-color: $color-key-talent-dark !important;
+  }
+}
+
+// Heroic path header - neutral blue-grey
+.banner-heroic-path {
+  background-color: $color-heroic-path-light !important;
+  color: $color-text-on-color !important;
+
+  .body--dark & {
+    background-color: $color-heroic-path-dark !important;
+  }
+}
+
+// Radiant path header - muted amber
+.banner-radiant-path {
+  background-color: $color-radiant-path-light !important;
+  color: $color-text-on-color !important;
+
+  .body--dark & {
+    background-color: $color-radiant-path-dark !important;
+  }
+}
+
+// Ancestry path header - muted teal
+.banner-ancestry-path {
+  background-color: $color-ancestry-path-light !important;
+  color: $color-text-on-color !important;
+
+  .body--dark & {
+    background-color: $color-ancestry-path-dark !important;
+  }
+}
+
+// =============================================================================
+// Expansion Header Styles
+// =============================================================================
+
+// Light text for colored expansion headers
+.expansion-header-light {
+  .q-item__label {
+    color: $color-text-on-color;
+  }
+
+  .q-expansion-item__toggle-icon {
+    color: $color-text-on-color;
+  }
+}
+
+// Dark text for light-colored expansion headers (e.g., warning/yellow)
+.expansion-header-dark {
+  .q-item__label {
+    color: $color-text-on-warning;
+  }
+
+  .q-expansion-item__toggle-icon {
+    color: $color-text-on-warning;
+  }
+}
+
+// =============================================================================
+// Interactive Card Effects
+// =============================================================================
+// Reusable hover/focus lift effect for clickable cards
+
+.card-interactive {
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  // Focus state for keyboard navigation
+  &:focus {
+    transform: translateY(-2px);
+  }
+}
+
+// =============================================================================
+// Section Title Utilities
+// =============================================================================
+// Consistent heading styles for content sections
+
+.section-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+
+  // Large section titles (e.g., stats sections)
+  &--lg {
+    font-size: 1rem;
+    opacity: 0.8;
+  }
+
+  // Medium section titles (e.g., skill/expertise categories)
+  &--md {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  // Small section titles (e.g., talent subsections)
+  &--sm {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+}
+
+// =============================================================================
+// Form Input Utilities
+// =============================================================================
+
+// Compact number input for modifiers
+.modifier-input {
+  max-width: 70px;
+}
+
+// =============================================================================
+// Icon Utilities
+// =============================================================================
+
+// Theme-aware icons - inverts dark icons in dark mode
+// NOTE: Use only for monochrome/grayscale icons. Colored icons will have
+// their colors inverted which produces unexpected results.
+.icon-theme-aware {
+  .body--dark & {
+    filter: invert(1);
+  }
+}
+
+// =============================================================================
+// Error Page Styles
+// =============================================================================
+
+.error-page {
+  min-height: calc(100vh - 4rem);
+  padding: 2.5rem 1.25rem;
+}
+
+.error-code {
+  font-size: 4.5rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+}
+
+.error-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 1rem 0 0 0;
+}
+
+.error-message {
+  font-size: 1.125rem;
+  max-width: 31.25rem;
+  margin: 1rem auto 0;
+}
