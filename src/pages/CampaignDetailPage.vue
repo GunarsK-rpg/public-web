@@ -94,6 +94,7 @@ import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'src/stores/campaigns';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { findById } from 'src/utils/arrayUtils';
 import { logger } from 'src/utils/logger';
 
@@ -104,6 +105,7 @@ const props = defineProps<{
 const router = useRouter();
 const campaignStore = useCampaignStore();
 const classifiers = useClassifierStore();
+const { showWarning } = useErrorHandler();
 
 const campaign = computed(() => campaignStore.currentCampaign);
 const loading = computed(() => campaignStore.loading);
@@ -129,7 +131,11 @@ onMounted(async () => {
       logger.error('Failed to initialize classifiers', {
         error: err instanceof Error ? err.message : String(err),
       });
-      // Continue loading campaign - radiant order names may be missing but page still works
+      showWarning(
+        'Some data unavailable',
+        'Character details like Radiant Order names may not display correctly.'
+      );
+      // Continue loading campaign - page still works with degraded functionality
     }
   }
   await campaignStore.selectCampaign(campaignId);
