@@ -9,8 +9,8 @@ RUN apk update && apk upgrade --no-cache
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (skip postinstall - quasar prepare is for IDE, not needed for build)
+RUN npm ci --ignore-scripts
 
 # Copy source code
 COPY . .
