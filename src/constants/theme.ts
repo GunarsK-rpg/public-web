@@ -112,6 +112,21 @@ export const RPG_COLORS = {
   // Banner backgrounds
   bannerInfo: 'amber-2',
   bannerInfoIcon: 'amber-8',
+
+  // Currency/spheres
+  currency: 'amber',
+
+  // Equipment states
+  equipmentPrimary: 'amber',
+
+  // Singer-specific
+  singerForm: 'purple',
+
+  // Special ability text
+  specialAbility: 'purple',
+
+  // Muted badges (status indicators, source labels)
+  badgeMuted: 'grey',
 } as const;
 
 /**

@@ -12,7 +12,11 @@
     <q-item-section>
       <q-item-label>{{ action.name }}</q-item-label>
       <q-item-label caption>{{ action.description }}</q-item-label>
-      <q-item-label v-if="action.special" caption class="text-italic text-purple">
+      <q-item-label
+        v-if="action.special"
+        caption
+        :class="`text-italic text-${RPG_COLORS.specialAbility}`"
+      >
         {{ action.special }}
       </q-item-label>
       <q-item-label v-if="action.dice" caption class="text-weight-medium">

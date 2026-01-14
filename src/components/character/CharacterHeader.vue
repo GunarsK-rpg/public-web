@@ -10,7 +10,7 @@
           <span v-if="cultureName">· {{ cultureName }}</span>
           <span v-if="orderName">· {{ orderName }}</span>
         </div>
-        <div v-if="activeSingerFormName" class="text-caption text-purple">
+        <div v-if="activeSingerFormName" :class="`text-caption text-${RPG_COLORS.singerForm}`">
           {{ activeSingerFormName }}
         </div>
       </div>

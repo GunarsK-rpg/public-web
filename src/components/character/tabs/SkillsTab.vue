@@ -6,7 +6,7 @@
       <q-list separator>
         <q-item v-for="skill in skillsByAttrType[attrType.id]" :key="skill.id">
           <q-item-section avatar>
-            <q-avatar color="grey" text-color="white" size="md">
+            <q-avatar :color="COLORS.muted" text-color="white" size="md">
               {{ formatModifier(attrStore.getSkillModifier(skill.code)) }}
             </q-avatar>
           </q-item-section>
@@ -42,6 +42,7 @@ import { computed } from 'vue';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { groupByChainedKey, buildIdCodeMap } from 'src/utils/arrayUtils';
+import { COLORS } from 'src/constants/theme';
 import type { Skill } from 'src/types';
 
 const attrStore = useHeroAttributesStore();
