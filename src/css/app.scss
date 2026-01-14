@@ -46,6 +46,15 @@ a[href] {
 }
 
 // =============================================================================
+// Typography Variables (CSS Custom Properties for component access)
+// =============================================================================
+$font-size-sm: 0.75rem; // Small labels, captions, secondary text
+
+:root {
+  --font-size-sm: #{$font-size-sm};
+}
+
+// =============================================================================
 // Mobile Touch Targets (WCAG 2.5.5 - 44px minimum)
 // =============================================================================
 // Ensures interactive elements meet minimum touch target size on mobile
@@ -298,7 +307,7 @@ $touch-target-min: 44px;
 
   // Small section titles (e.g., talent subsections)
   &--sm {
-    font-size: 0.75rem;
+    font-size: $font-size-sm;
     text-transform: uppercase;
     opacity: 0.6;
   }

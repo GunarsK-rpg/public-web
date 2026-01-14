@@ -62,7 +62,7 @@
               icon="sym_o_delete"
               color="negative"
               size="sm"
-              aria-label="Remove item"
+              :aria-label="`Remove ${getEquipmentName(item.equipmentId)}`"
               @click="removeItem(item.equipmentId)"
             />
           </q-item-section>

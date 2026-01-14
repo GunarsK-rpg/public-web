@@ -90,7 +90,7 @@ const derivedStatsList = computed(() => {
 }
 
 .attribute-abbr {
-  font-size: 0.75rem;
+  font-size: var(--font-size-sm);
   opacity: 0.6;
   text-transform: uppercase;
 }
@@ -101,7 +101,7 @@ const derivedStatsList = computed(() => {
 }
 
 .attribute-name {
-  font-size: 0.75rem;
+  font-size: var(--font-size-sm);
   opacity: 0.7;
 }
 
