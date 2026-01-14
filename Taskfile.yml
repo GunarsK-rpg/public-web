@@ -78,6 +78,22 @@ tasks:
       # Pattern src*/** covers both src/ and src-tauri/ for consistency with lint
       - npx prettier --check "src*/**/*.{ts,js,vue,json,md}"
 
+  # Testing
+  test:
+    desc: Run unit tests
+    cmds:
+      - npm run test
+
+  test:watch:
+    desc: Run unit tests in watch mode
+    cmds:
+      - npm run test:watch
+
+  test:coverage:
+    desc: Run unit tests with coverage
+    cmds:
+      - npm run test:coverage
+
   # Type checking
   typecheck:
     desc: Run TypeScript type checking
@@ -103,11 +119,12 @@ tasks:
 
   # CI/CD
   ci:all:
-    desc: Run all CI checks (format:check, lint, typecheck, build, security:audit, lint:markdown)
+    desc: Run all CI checks (format:check, lint, typecheck, test, build, security:audit, lint:markdown)
     cmds:
       - task: format:check
       - task: lint
       - task: typecheck
+      - task: test
       - task: build
       - task: security:audit
       - task: lint:markdown
