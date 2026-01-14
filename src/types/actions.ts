@@ -18,9 +18,9 @@ export type ActionType = Classifier;
 export interface Action extends Classifier {
   actionTypeId: number;
   activationTypeId: number;
-  damageTypeId?: number;
-  special?: string;
-  dice?: string;
+  damageTypeId?: number | null;
+  special?: string | null;
+  dice?: string | null;
   focusCost: number;
   investitureCost: number;
 }

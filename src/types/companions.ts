@@ -5,6 +5,6 @@ export interface HeroCompanion {
   id: number;
   heroId: number;
   compTypeId: number;
-  description?: string;
-  notes?: string;
+  description?: string | null;
+  notes?: string | null;
 }
