@@ -201,6 +201,6 @@ function removeItem(equipmentId: number) {
 
 <style scoped>
 .equipment-select {
-  max-width: 300px;
+  max-width: min(300px, 90vw);
 }
 </style>

@@ -310,8 +310,8 @@ $touch-target-min: 44px;
 
 // Compact number input for modifiers
 .modifier-input {
-  width: 70px;
-  max-width: 70px;
+  width: clamp(60px, 15vw, 80px);
+  max-width: 80px;
 
   :deep(.q-field__native) {
     text-align: center;

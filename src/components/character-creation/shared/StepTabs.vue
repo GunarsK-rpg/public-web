@@ -102,7 +102,6 @@ function navigateTabs(direction: number) {
 .step-tabs-container {
   overflow-x: auto;
   overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
   position: relative;
 
   &::-webkit-scrollbar {
@@ -115,7 +114,7 @@ function navigateTabs(direction: number) {
 }
 
 .step-tab {
-  min-width: 80px;
+  min-width: clamp(60px, 20vw, 100px);
   opacity: 0.6;
   transition:
     opacity 0.2s,
