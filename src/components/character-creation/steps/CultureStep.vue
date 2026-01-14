@@ -37,12 +37,13 @@
     </q-card>
 
     <!-- Cultural Expertises Info Banner -->
-    <q-banner v-if="culturalExpertiseNames.length > 0" class="banner-info q-mt-md">
-      <template v-slot:avatar>
-        <q-icon name="sym_o_workspace_premium" aria-hidden="true" />
-      </template>
-      <div><strong>Cultural Expertises:</strong> {{ culturalExpertiseNames.join(', ') }}</div>
-    </q-banner>
+    <InfoBanner
+      v-if="culturalExpertiseNames.length > 0"
+      icon="sym_o_workspace_premium"
+      title="Cultural Expertises"
+      :content="culturalExpertiseNames.join(', ')"
+      class="q-mt-md"
+    />
   </div>
 </template>
 
@@ -51,6 +52,7 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import InfoBanner from '../shared/InfoBanner.vue';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();

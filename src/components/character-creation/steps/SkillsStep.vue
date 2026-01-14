@@ -1,13 +1,12 @@
 <template>
   <div>
     <div class="text-subtitle1 q-mb-sm">Allocate skill ranks</div>
-    <div class="text-caption q-mb-md">
-      Points remaining:
-      <strong :class="pointsRemaining >= 0 ? 'text-positive' : 'text-negative'">{{
-        pointsRemaining
-      }}</strong>
-      / {{ pointsBudget }}
-    </div>
+    <BudgetDisplay
+      label="Points remaining"
+      :remaining="pointsRemaining"
+      :total="pointsBudget"
+      :show-total="true"
+    />
 
     <!-- Skill Groups by Attribute Type -->
     <div v-for="group in skillGroups" :key="group.typeId" class="q-mb-md">
@@ -75,6 +74,8 @@ import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { groupByChainedKey, buildIdCodeMap } from 'src/utils/arrayUtils';
+import { normalizeModifierInput } from 'src/composables/useModifierInput';
+import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -118,16 +119,10 @@ function getSkillModifier(skillId: number): number {
 }
 
 function setSkillModifier(skillId: number, value: string | number | null) {
-  // Handle null and empty string - reset to 0
-  if (value === null || value === '') {
-    heroStore.setSkillModifier(skillId, 0);
-    return;
+  const normalized = normalizeModifierInput(value, -10, 10);
+  if (normalized !== null) {
+    heroStore.setSkillModifier(skillId, normalized);
   }
-  const numValue = typeof value === 'string' ? Number(value) : value;
-  if (Number.isNaN(numValue)) return;
-  // Clamp value to min/max bounds
-  const clampedValue = Math.max(-10, Math.min(10, numValue));
-  heroStore.setSkillModifier(skillId, clampedValue);
 }
 
 function incrementSkill(skillId: number) {

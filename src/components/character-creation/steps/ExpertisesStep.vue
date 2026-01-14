@@ -1,37 +1,29 @@
 <template>
   <div>
     <div class="text-subtitle1 q-mb-sm">Select your expertises</div>
-    <div class="text-caption q-mb-md">
-      Free slots:
-      <strong :class="slotsRemaining >= 0 ? 'text-positive' : 'text-negative'">{{
-        slotsRemaining
-      }}</strong>
-      ({{ intellectScore }} from Intellect)
-    </div>
+    <BudgetDisplay
+      label="Free slots"
+      :remaining="slotsRemaining"
+      :suffix="`${intellectScore} from Intellect`"
+    />
 
     <!-- Cultural Expertises Banner -->
-    <q-banner v-if="culturalExpertises.length > 0" class="banner-info q-mb-md">
-      <template v-slot:avatar>
-        <q-icon name="sym_o_language" aria-hidden="true" />
-      </template>
-      <div>
-        <strong>Cultural Expertises:</strong>
-        {{ culturalExpertises.map((e) => e.name).join(', ') }}
-      </div>
-      <div class="text-caption text-muted">Auto-applied from your selected cultures</div>
-    </q-banner>
+    <InfoBanner
+      v-if="culturalExpertises.length > 0"
+      icon="sym_o_language"
+      title="Cultural Expertises"
+      :content="culturalExpertises.map((e) => e.name).join(', ')"
+      caption="Auto-applied from your selected cultures"
+    />
 
     <!-- Starting Kit Expertises Banner -->
-    <q-banner v-if="startingKitExpertises.length > 0" class="banner-info q-mb-md">
-      <template v-slot:avatar>
-        <q-icon name="sym_o_backpack" aria-hidden="true" />
-      </template>
-      <div>
-        <strong>Starting Kit Expertises:</strong>
-        {{ startingKitExpertises.map((e) => e.name).join(', ') }}
-      </div>
-      <div class="text-caption text-muted">Granted by your starting kit</div>
-    </q-banner>
+    <InfoBanner
+      v-if="startingKitExpertises.length > 0"
+      icon="sym_o_backpack"
+      title="Starting Kit Expertises"
+      :content="startingKitExpertises.map((e) => e.name).join(', ')"
+      caption="Granted by your starting kit"
+    />
 
     <!-- Category Tabs -->
     <q-tabs
@@ -87,6 +79,8 @@ import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { findById, findByCode } from 'src/utils/arrayUtils';
+import BudgetDisplay from '../shared/BudgetDisplay.vue';
+import InfoBanner from '../shared/InfoBanner.vue';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();

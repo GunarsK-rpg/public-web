@@ -38,8 +38,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById } from 'src/utils/arrayUtils';
-import { getIconUrl } from 'src/utils/iconUrl';
+import { useEntityIcon } from 'src/composables/useEntityIcon';
 import type { Action } from 'src/types';
 
 const props = defineProps<{
@@ -48,11 +47,12 @@ const props = defineProps<{
 
 const classifiers = useClassifierStore();
 
-const activationType = computed(() =>
-  findById(classifiers.activationTypes, props.action.activationTypeId)
+// Use entity icon composable for activation type lookup
+const { entity: activationType, iconUrl } = useEntityIcon(
+  computed(() => props.action.activationTypeId),
+  computed(() => classifiers.activationTypes),
+  'actions'
 );
-
-const iconUrl = computed(() => getIconUrl(activationType.value?.icon, 'actions'));
 
 // Consolidate cost badges into a single array for cleaner template
 const actionCosts = computed(() => {

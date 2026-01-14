@@ -38,12 +38,11 @@
     <q-separator class="q-my-md" />
 
     <!-- Equipment from Starting Kit -->
-    <q-banner v-if="startingKitEquipmentNames.length > 0" class="banner-info q-mb-md">
-      <template v-slot:avatar>
-        <q-icon name="sym_o_inventory_2" aria-hidden="true" />
-      </template>
-      Equipment from starting kit: {{ startingKitEquipmentNames.join(', ') }}
-    </q-banner>
+    <InfoBanner
+      v-if="startingKitEquipmentNames.length > 0"
+      icon="sym_o_inventory_2"
+      :content="`Equipment from starting kit: ${startingKitEquipmentNames.join(', ')}`"
+    />
 
     <!-- Equipment by Type -->
     <div v-for="eqType in equipmentTypesList" :key="eqType.id" class="q-mb-lg">
@@ -104,6 +103,8 @@ import { computed, reactive } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import { normalizeModifierInput } from 'src/composables/useModifierInput';
+import InfoBanner from '../shared/InfoBanner.vue';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -178,13 +179,10 @@ function getAvailableByType(typeId: number) {
 }
 
 function setCurrencyAmount(val: string | number | null) {
-  if (val === null || val === '') {
-    heroStore.setCurrency(0);
-    return;
+  const normalized = normalizeModifierInput(val, 0, 999999);
+  if (normalized !== null) {
+    heroStore.setCurrency(normalized);
   }
-  const numVal = typeof val === 'string' ? Number(val) : val;
-  if (Number.isNaN(numVal)) return;
-  heroStore.setCurrency(Math.max(0, Math.min(999999, numVal)));
 }
 
 function addItemOfType(typeId: number) {

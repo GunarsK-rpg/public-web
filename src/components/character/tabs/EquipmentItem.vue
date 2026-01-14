@@ -51,8 +51,8 @@
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
-import { getIconUrl } from 'src/utils/iconUrl';
-import type { HeroEquipment } from 'src/types';
+import { useChainedEntityIcon } from 'src/composables/useEntityIcon';
+import type { HeroEquipment, Equipment } from 'src/types';
 
 const props = defineProps<{
   heroEquipment: HeroEquipment;
@@ -60,13 +60,18 @@ const props = defineProps<{
 
 const classifiers = useClassifierStore();
 
-const equipment = computed(() => findById(classifiers.equipment, props.heroEquipment.equipmentId));
-
-const equipmentType = computed(() =>
-  findById(classifiers.equipmentTypes, equipment.value?.equipTypeId)
+// Use chained lookup: heroEquipment.equipmentId → equipment → equipmentType (for icon)
+const {
+  primaryEntity: equipment,
+  relatedEntity: equipmentType,
+  iconUrl,
+} = useChainedEntityIcon(
+  computed(() => props.heroEquipment.equipmentId),
+  computed(() => classifiers.equipment),
+  (eq: Equipment) => eq.equipTypeId,
+  computed(() => classifiers.equipmentTypes),
+  'equipment'
 );
-
-const iconUrl = computed(() => getIconUrl(equipmentType.value?.icon, 'equipment'));
 
 // Build details line from special properties
 const detailsLine = computed(() => {

@@ -1,13 +1,12 @@
 <template>
   <div>
     <div class="text-subtitle1 q-mb-sm">Allocate your attribute points</div>
-    <div class="text-caption q-mb-md" aria-live="polite" aria-atomic="true">
-      Points remaining:
-      <strong :class="pointsRemaining >= 0 ? 'text-positive' : 'text-negative'">{{
-        pointsRemaining
-      }}</strong>
-      / {{ pointsBudget }}
-    </div>
+    <BudgetDisplay
+      label="Points remaining"
+      :remaining="pointsRemaining"
+      :total="pointsBudget"
+      :show-total="true"
+    />
 
     <!-- Attribute Sliders -->
     <div class="row q-col-gutter-md">
@@ -103,6 +102,8 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { findById } from 'src/utils/arrayUtils';
+import { normalizeModifierInput } from 'src/composables/useModifierInput';
+import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -152,14 +153,10 @@ const derivedStatsList = computed(() => {
 });
 
 function setStatModifier(statId: number, value: string | number | null) {
-  // Handle null and empty string - reset to 0
-  if (value === null || value === '') {
-    heroStore.setDerivedStatModifier(statId, 0);
-    return;
+  const normalized = normalizeModifierInput(value);
+  if (normalized !== null) {
+    heroStore.setDerivedStatModifier(statId, normalized);
   }
-  const numValue = typeof value === 'string' ? Number(value) : value;
-  if (Number.isNaN(numValue)) return;
-  heroStore.setDerivedStatModifier(statId, numValue);
 }
 
 function getAttrValue(attrId: number): number {
