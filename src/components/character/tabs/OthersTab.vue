@@ -189,7 +189,7 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById, buildIdNameMap } from 'src/utils/arrayUtils';
+import { findById, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 
 const heroStore = useHeroStore();
@@ -208,36 +208,15 @@ const activeSingerForm = computed(() =>
   findById(classifiers.singerForms, heroStore.hero?.activeSingerFormId)
 );
 
-// Pre-computed lookup maps for null-safe template access
-const cultureNamesMap = computed(() => buildIdNameMap(classifiers.cultures));
-const goalStatusNamesMap = computed(() => buildIdNameMap(classifiers.goalStatuses));
-const connectionTypeNamesMap = computed(() => buildIdNameMap(classifiers.connectionTypes));
-const companionTypeNamesMap = computed(() => buildIdNameMap(classifiers.companionTypes));
-const conditionNamesMap = computed(() => buildIdNameMap(classifiers.conditions));
-const injuryNamesMap = computed(() => buildIdNameMap(classifiers.injuries));
-
-// Null-safe accessor functions
-function getCultureName(id: number): string {
-  return cultureNamesMap.value.get(id) ?? 'Unknown';
-}
-
-function getGoalStatusName(id: number): string {
-  return goalStatusNamesMap.value.get(id) ?? 'Unknown';
-}
-
-function getConnectionTypeName(id: number): string {
-  return connectionTypeNamesMap.value.get(id) ?? 'Unknown';
-}
-
-function getCompanionTypeName(id: number): string {
-  return companionTypeNamesMap.value.get(id) ?? 'Unknown';
-}
-
-function getConditionName(id: number): string {
-  return conditionNamesMap.value.get(id) ?? 'Unknown';
-}
-
-function getInjuryName(id: number): string {
-  return injuryNamesMap.value.get(id) ?? 'Unknown';
-}
+// Name getter functions using factory pattern
+const getCultureName = makeNameGetter(computed(() => buildIdNameMap(classifiers.cultures)));
+const getGoalStatusName = makeNameGetter(computed(() => buildIdNameMap(classifiers.goalStatuses)));
+const getConnectionTypeName = makeNameGetter(
+  computed(() => buildIdNameMap(classifiers.connectionTypes))
+);
+const getCompanionTypeName = makeNameGetter(
+  computed(() => buildIdNameMap(classifiers.companionTypes))
+);
+const getConditionName = makeNameGetter(computed(() => buildIdNameMap(classifiers.conditions)));
+const getInjuryName = makeNameGetter(computed(() => buildIdNameMap(classifiers.injuries)));
 </script>

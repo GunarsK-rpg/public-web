@@ -1,3 +1,5 @@
+import type { ComputedRef } from 'vue';
+
 /**
  * Generic array lookup and filter utilities.
  */
@@ -79,6 +81,24 @@ export function buildIdNameMap<T extends { id: number; name: string }>(
   const map = new Map<number, string>();
   for (const item of list) map.set(item.id, item.name);
   return map;
+}
+
+/**
+ * Factory function to create a name getter from a computed Map.
+ * Eliminates repetitive getter functions like getCultureName, getGoalStatusName, etc.
+ * @param map - computed ref containing a Map<number, string>
+ * @param fallback - optional fallback value (defaults to 'Unknown')
+ * @returns function that returns the name for a given ID
+ *
+ * @example
+ * const cultureNamesMap = computed(() => buildIdNameMap(classifiers.cultures));
+ * const getCultureName = makeNameGetter(cultureNamesMap);
+ */
+export function makeNameGetter(
+  map: ComputedRef<Map<number, string>>,
+  fallback = 'Unknown'
+): (id: number) => string {
+  return (id: number) => map.value.get(id) ?? fallback;
 }
 
 /**
