@@ -1,0 +1,204 @@
+import { defineStore } from 'pinia';
+import { computed } from 'vue';
+import { useHeroStore } from './hero';
+import { useClassifierStore } from './classifiers';
+import { useHeroAttributesStore } from './heroAttributes';
+import { findById, findByCode } from 'src/utils/arrayUtils';
+
+export const useHeroTalentsStore = defineStore('heroTalents', () => {
+  const heroStore = useHeroStore();
+  const classifierStore = useClassifierStore();
+  const attrStore = useHeroAttributesStore();
+
+  // ===================
+  // COMPUTED
+  // ===================
+  const isSinger = computed(() => {
+    if (!heroStore.hero) return false;
+    const singerAncestry = findByCode(classifierStore.ancestries, 'singer');
+    return heroStore.hero.ancestryId === singerAncestry?.id;
+  });
+
+  const isRadiant = computed(() => !!heroStore.hero?.radiantOrderId);
+
+  // ===================
+  // ANCESTRY
+  // ===================
+  function setAncestry(ancestryId: number) {
+    if (!heroStore.hero) return;
+    const singerAncestry = findByCode(classifierStore.ancestries, 'singer');
+
+    // Remove previous ancestry talents if changing ancestry
+    if (heroStore.hero.ancestryId) {
+      const prevAncestryId = heroStore.hero.ancestryId;
+      const prevAncestryTalentIds = classifierStore.talents
+        .filter((t) => t.ancestryId === prevAncestryId)
+        .map((t) => t.id);
+      heroStore.hero.talents = heroStore.hero.talents.filter(
+        (t) => !prevAncestryTalentIds.includes(t.talentId)
+      );
+    }
+
+    heroStore.hero.ancestryId = ancestryId;
+
+    // Reset singer form if not singer
+    if (ancestryId !== singerAncestry?.id) {
+      heroStore.hero.activeSingerFormId = null;
+    } else {
+      // Add singer key talent
+      const singerKeyTalent = classifierStore.talents.find(
+        (t) => t.ancestryId === singerAncestry.id && t.isKey
+      );
+      if (
+        singerKeyTalent &&
+        !heroStore.hero.talents.find((t) => t.talentId === singerKeyTalent.id)
+      ) {
+        heroStore.hero.talents.push({
+          id: heroStore.nextTempId(),
+          heroId: heroStore.hero.id,
+          talentId: singerKeyTalent.id,
+        });
+      }
+    }
+  }
+
+  function setSingerForm(singerFormId: number | null) {
+    if (!heroStore.hero) return;
+    heroStore.hero.activeSingerFormId = singerFormId;
+  }
+
+  // ===================
+  // CULTURE
+  // ===================
+  function addCulture(cultureId: number) {
+    if (!heroStore.hero) return;
+    if (!heroStore.hero.cultures.find((c) => c.cultureId === cultureId)) {
+      heroStore.hero.cultures.push({
+        id: heroStore.nextTempId(),
+        heroId: heroStore.hero.id,
+        cultureId,
+      });
+      applyCulturalExpertise(cultureId);
+    }
+  }
+
+  function removeCulture(cultureId: number) {
+    if (!heroStore.hero) return;
+    heroStore.hero.cultures = heroStore.hero.cultures.filter((c) => c.cultureId !== cultureId);
+    removeCulturalExpertise(cultureId);
+  }
+
+  function applyCulturalExpertise(cultureId: number) {
+    if (!heroStore.hero) return;
+    const culture = findById(classifierStore.cultures, cultureId);
+    if (!culture) return;
+
+    attrStore.addExpertise(culture.expertiseId, { sourceType: 'culture', sourceId: cultureId });
+  }
+
+  function removeCulturalExpertise(cultureId: number) {
+    if (!heroStore.hero) return;
+    heroStore.hero.expertises = heroStore.hero.expertises.filter(
+      (e) => !(e.source?.sourceType === 'culture' && e.source?.sourceId === cultureId)
+    );
+  }
+
+  // ===================
+  // TALENTS
+  // ===================
+  function addTalent(talentId: number) {
+    if (!heroStore.hero) return;
+    if (!heroStore.hero.talents.find((t) => t.talentId === talentId)) {
+      heroStore.hero.talents.push({
+        id: heroStore.nextTempId(),
+        heroId: heroStore.hero.id,
+        talentId,
+      });
+    }
+  }
+
+  function removeTalent(talentId: number) {
+    if (!heroStore.hero) return;
+    heroStore.hero.talents = heroStore.hero.talents.filter((t) => t.talentId !== talentId);
+  }
+
+  function addKeyTalentForPath(pathId: number) {
+    const keyTalent = classifierStore.talents.find((t) => t.pathId === pathId && t.isKey);
+    if (keyTalent) {
+      addTalent(keyTalent.id);
+    }
+  }
+
+  // ===================
+  // RADIANT
+  // ===================
+  function setRadiantOrder(orderId: number | null) {
+    if (!heroStore.hero) return;
+
+    // Remove all radiant talents from previous order
+    if (heroStore.hero.radiantOrderId) {
+      const prevOrder = findById(classifierStore.radiantOrders, heroStore.hero.radiantOrderId);
+      if (prevOrder) {
+        // Get all talent IDs for this order (order talents + surge talents)
+        const orderTalentIds = classifierStore.talents
+          .filter((t) => t.radiantOrderId === prevOrder.id)
+          .map((t) => t.id);
+        const surge1TalentIds = classifierStore.talents
+          .filter((t) => t.surgeId === prevOrder.surge1Id)
+          .map((t) => t.id);
+        const surge2TalentIds = classifierStore.talents
+          .filter((t) => t.surgeId === prevOrder.surge2Id)
+          .map((t) => t.id);
+        const allRadiantTalentIds = [...orderTalentIds, ...surge1TalentIds, ...surge2TalentIds];
+        heroStore.hero.talents = heroStore.hero.talents.filter(
+          (t) => !allRadiantTalentIds.includes(t.talentId)
+        );
+      }
+    }
+
+    heroStore.hero.radiantOrderId = orderId;
+    if (!orderId) {
+      heroStore.hero.radiantIdeal = 0;
+    } else {
+      // Add new radiant key talent
+      const keyTalent = classifierStore.talents.find(
+        (t) => t.radiantOrderId === orderId && t.isKey
+      );
+      if (keyTalent && !heroStore.hero.talents.find((t) => t.talentId === keyTalent.id)) {
+        heroStore.hero.talents.push({
+          id: heroStore.nextTempId(),
+          heroId: heroStore.hero.id,
+          talentId: keyTalent.id,
+        });
+      }
+    }
+  }
+
+  function setRadiantIdeal(level: number) {
+    if (!heroStore.hero) return;
+    heroStore.hero.radiantIdeal = level;
+  }
+
+  return {
+    // Computed
+    isSinger,
+    isRadiant,
+
+    // Ancestry
+    setAncestry,
+    setSingerForm,
+
+    // Culture
+    addCulture,
+    removeCulture,
+
+    // Talents
+    addTalent,
+    removeTalent,
+    addKeyTalentForPath,
+
+    // Radiant
+    setRadiantOrder,
+    setRadiantIdeal,
+  };
+});

@@ -87,6 +87,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useTalentPrerequisites } from 'src/composables/useTalentPrerequisites';
 import { findById } from 'src/utils/arrayUtils';
@@ -104,6 +105,7 @@ interface PathSelection {
 }
 
 const heroStore = useHeroStore();
+const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const { getPathKeyTalent, getSpecialtiesByPath, toggleTalent, formatPrereq } =
   useTalentPrerequisites();
@@ -119,8 +121,8 @@ const pathSpecialties = ref<Map<number, number>>(new Map());
 // Basic computed values
 const heroicPaths = computed(() => classifiers.paths);
 const radiantOrders = computed(() => classifiers.radiantOrders);
-const isRadiant = computed(() => heroStore.isRadiant);
-const isSinger = computed(() => heroStore.isSinger);
+const isRadiant = computed(() => talentStore.isRadiant);
+const isSinger = computed(() => talentStore.isSinger);
 const radiantOrderId = computed(() => heroStore.hero?.radiantOrderId ?? null);
 const idealLevel = computed(() => heroStore.hero?.radiantIdeal ?? 0);
 
@@ -184,11 +186,11 @@ function togglePath(pathId: number) {
     pathSpecialties.value.delete(pathId);
     const keyTalent = getPathKeyTalent(pathId);
     if (keyTalent) {
-      heroStore.removeTalent(keyTalent.id);
+      talentStore.removeTalent(keyTalent.id);
     }
   } else {
     selectedPathIds.value.push(pathId);
-    heroStore.addKeyTalentForPath(pathId);
+    talentStore.addKeyTalentForPath(pathId);
     const specialties = getSpecialtiesByPath(pathId);
     const firstSpecialty = specialties[0];
     if (firstSpecialty) {
@@ -206,20 +208,20 @@ function toggleRadiant(value: boolean) {
   if (value) {
     const firstOrder = classifiers.radiantOrders[0];
     if (firstOrder) {
-      heroStore.setRadiantOrder(firstOrder.id);
+      talentStore.setRadiantOrder(firstOrder.id);
     }
   } else {
-    heroStore.setRadiantOrder(null);
+    talentStore.setRadiantOrder(null);
   }
 }
 
 function setRadiantOrder(orderId: number) {
-  heroStore.setRadiantOrder(orderId);
+  talentStore.setRadiantOrder(orderId);
 }
 
 function setIdealLevel(level: number | null) {
   if (level !== null) {
-    heroStore.setRadiantIdeal(level);
+    talentStore.setRadiantIdeal(level);
   }
 }
 

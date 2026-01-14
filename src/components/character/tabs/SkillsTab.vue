@@ -7,26 +7,26 @@
         <q-item v-for="skill in skillsByAttrType[attrType.id]" :key="skill.id">
           <q-item-section avatar>
             <q-avatar color="grey" text-color="white" size="md">
-              {{ formatModifier(heroStore.getSkillModifier(skill.code)) }}
+              {{ formatModifier(attrStore.getSkillModifier(skill.code)) }}
             </q-avatar>
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ skill.name }}</q-item-label>
             <q-item-label caption>
-              {{ getAttributeCode(skill.attrId) }} + Rank {{ heroStore.getSkillRank(skill.id) }}
+              {{ getAttributeCode(skill.attrId) }} + Rank {{ attrStore.getSkillRank(skill.id) }}
             </q-item-label>
           </q-item-section>
           <q-item-section side>
             <div
               class="rank-pips"
               role="img"
-              :aria-label="`Rank ${heroStore.getSkillRank(skill.id)} of 5`"
+              :aria-label="`Rank ${attrStore.getSkillRank(skill.id)} of 5`"
             >
               <span
                 v-for="n in 5"
                 :key="n"
                 class="pip"
-                :class="{ filled: n <= heroStore.getSkillRank(skill.id) }"
+                :class="{ filled: n <= attrStore.getSkillRank(skill.id) }"
                 aria-hidden="true"
               />
             </div>
@@ -39,12 +39,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { groupByChainedKey, buildIdCodeMap } from 'src/utils/arrayUtils';
 import type { Skill } from 'src/types';
 
-const heroStore = useHeroStore();
+const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 
 // Skills grouped by attribute type (via skill.attrId -> attribute.attrTypeId)

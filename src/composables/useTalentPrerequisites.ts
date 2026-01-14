@@ -1,5 +1,6 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { createPrerequisiteFormatter } from 'src/utils/talentUtils';
 import { findById } from 'src/utils/arrayUtils';
@@ -20,6 +21,7 @@ export interface TalentWithStatus {
  */
 export function useTalentPrerequisites() {
   const heroStore = useHeroStore();
+  const talentStore = useHeroTalentsStore();
   const classifiers = useClassifierStore();
 
   // Hero's selected talent IDs
@@ -106,9 +108,9 @@ export function useTalentPrerequisites() {
    */
   function toggleTalent(talentId: number, available: boolean) {
     if (heroTalentIds.value.includes(talentId)) {
-      heroStore.removeTalent(talentId);
+      talentStore.removeTalent(talentId);
     } else if (available) {
-      heroStore.addTalent(talentId);
+      talentStore.addTalent(talentId);
     }
   }
 

@@ -9,9 +9,9 @@
             <div class="attribute-abbr">{{ attr.code.toUpperCase() }}</div>
             <div
               class="attribute-value"
-              :aria-label="`${attr.name}: ${heroStore.getAttributeValue(attr.code)}`"
+              :aria-label="`${attr.name}: ${attrStore.getAttributeValue(attr.code)}`"
             >
-              {{ heroStore.getAttributeValue(attr.code) }}
+              {{ attrStore.getAttributeValue(attr.code) }}
             </div>
             <div class="attribute-name">{{ attr.name }}</div>
           </q-card-section>
@@ -27,9 +27,9 @@
           <q-card-section class="text-center q-pa-sm">
             <div
               class="defense-value"
-              :aria-label="`${attrType.name} defense: ${heroStore.getDefenseValue(attrType.code)}`"
+              :aria-label="`${attrType.name} defense: ${attrStore.getDefenseValue(attrType.code)}`"
             >
-              {{ heroStore.getDefenseValue(attrType.code) }}
+              {{ attrStore.getDefenseValue(attrType.code) }}
             </div>
             <div class="defense-name">{{ attrType.name }}</div>
           </q-card-section>
@@ -59,17 +59,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { buildDerivedStatsList, type AttributeValues } from 'src/utils/derivedStats';
 
-const heroStore = useHeroStore();
+const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 
 const derivedStatsList = computed(() => {
   // Build attrs dynamically from classifier codes
   const attrs: AttributeValues = Object.fromEntries(
-    classifiers.attributes.map((attr) => [attr.code, heroStore.getAttributeValue(attr.code)])
+    classifiers.attributes.map((attr) => [attr.code, attrStore.getAttributeValue(attr.code)])
   );
 
   return buildDerivedStatsList(
@@ -77,9 +77,9 @@ const derivedStatsList = computed(() => {
     classifiers.derivedStatValues,
     classifiers.attributes,
     attrs,
-    heroStore.levelData,
-    heroStore.tierData,
-    (statId) => heroStore.getDerivedStatModifier(statId)
+    attrStore.levelData,
+    attrStore.tierData,
+    (statId) => attrStore.getDerivedStatModifier(statId)
   );
 });
 </script>

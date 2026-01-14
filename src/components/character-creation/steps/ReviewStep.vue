@@ -46,7 +46,7 @@
                 <div class="text-caption">Starting Kit</div>
                 <div>{{ startingKitName }}</div>
               </div>
-              <div v-if="heroStore.isRadiant" class="col-6">
+              <div v-if="talentStore.isRadiant" class="col-6">
                 <div class="text-caption">Radiant Order</div>
                 <div>{{ radiantOrderName }}</div>
               </div>
@@ -175,12 +175,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
+import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { findById } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
+const attrStore = useHeroAttributesStore();
+const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const { allStepsValidation } = useStepValidation();
 
@@ -210,7 +214,7 @@ const attributeDisplay = computed(() =>
   classifiers.attributes.map((attr) => ({
     code: attr.code,
     abbr: attr.code.slice(0, 3).toUpperCase(),
-    value: heroStore.getAttributeValue(attr.code),
+    value: attrStore.getAttributeValue(attr.code),
   }))
 );
 
@@ -219,7 +223,7 @@ const derivedStatsList = computed(() => {
   // Build attrs dynamically from classifier codes
   const attrs: Record<string, number> = {};
   for (const attr of classifiers.attributes) {
-    attrs[attr.code] = heroStore.getAttributeValue(attr.code);
+    attrs[attr.code] = attrStore.getAttributeValue(attr.code);
   }
 
   return buildDerivedStatsList(
@@ -227,9 +231,9 @@ const derivedStatsList = computed(() => {
     classifiers.derivedStatValues,
     classifiers.attributes,
     attrs,
-    heroStore.levelData,
-    heroStore.tierData,
-    heroStore.getDerivedStatModifier
+    attrStore.levelData,
+    attrStore.tierData,
+    attrStore.getDerivedStatModifier
   );
 });
 

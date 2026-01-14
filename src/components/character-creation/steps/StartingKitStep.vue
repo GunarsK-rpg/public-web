@@ -106,10 +106,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
+const equipStore = useHeroEquipmentStore();
 const classifiers = useClassifierStore();
 
 const startingKits = computed(() => classifiers.startingKits);
@@ -123,17 +125,17 @@ const isPrisonerKit = computed(() => {
 const startingCurrency = computed(() => heroStore.hero?.currency ?? 0);
 
 function selectKit(kitId: number) {
-  heroStore.setStartingKit(kitId);
+  equipStore.setStartingKit(kitId);
 }
 
 function setStartingCurrency(val: string | number | null) {
   if (val === null || val === '') {
-    heroStore.setCurrency(0);
+    equipStore.setCurrency(0);
     return;
   }
   const numVal = typeof val === 'string' ? Number(val) : val;
   if (Number.isNaN(numVal)) return;
-  heroStore.setCurrency(Math.max(0, Math.min(999999, numVal)));
+  equipStore.setCurrency(Math.max(0, Math.min(999999, numVal)));
 }
 
 function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {

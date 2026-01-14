@@ -20,7 +20,7 @@
           </div>
 
           <!-- Singer Form (if Singer) -->
-          <template v-if="heroStore.isSinger && activeSingerForm">
+          <template v-if="talentStore.isSinger && activeSingerForm">
             <div class="text-subtitle2 q-mb-sm">Current Form</div>
             <div class="row items-center q-mb-md">
               <q-chip>{{ activeSingerForm.name }}</q-chip>
@@ -181,10 +181,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, buildIdNameMap } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
+const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 
 // Biography fields - computed for consistency with other hero data access
