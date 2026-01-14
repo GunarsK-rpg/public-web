@@ -48,18 +48,32 @@
       />
     </div>
 
-    <!-- Radiant Order Selection & Talents -->
-    <q-list v-if="isRadiant" bordered class="rounded-borders q-mb-md">
-      <RadiantPathPanel
-        :order-id="radiantOrderId"
-        :ideal-level="idealLevel"
-        @remove="toggleRadiant(false)"
-        @update:order-id="setRadiantOrder"
-        @update:ideal-level="setIdealLevel"
-        @toggle-talent="handleToggleTalent"
-        @show-details="showTalentDetails"
-      />
-    </q-list>
+    <!-- Radiant Order Selection -->
+    <template v-if="isRadiant">
+      <div class="row q-col-gutter-md q-mb-md" role="group" aria-label="Select Radiant Order">
+        <div v-for="order in radiantOrders" :key="order.id" class="col-12 col-sm-6 col-md-4">
+          <SelectableCard
+            :title="order.name"
+            :subtitle="getOrderSubtitle(order)"
+            :selected="radiantOrderId === order.id"
+            :aria-label="`${order.name} order`"
+            @select="setRadiantOrder(order.id)"
+          />
+        </div>
+      </div>
+
+      <!-- Selected Radiant Order Panel -->
+      <q-list v-if="radiantOrderId" bordered class="rounded-borders q-mb-md">
+        <RadiantPathPanel
+          :order-id="radiantOrderId"
+          :ideal-level="idealLevel"
+          @remove="toggleRadiant(false)"
+          @update:ideal-level="setIdealLevel"
+          @toggle-talent="handleToggleTalent"
+          @show-details="showTalentDetails"
+        />
+      </q-list>
+    </template>
 
     <!-- Talent Detail Dialog -->
     <TalentDetailDialog
@@ -104,10 +118,19 @@ const pathSpecialties = ref<Map<number, number>>(new Map());
 
 // Basic computed values
 const heroicPaths = computed(() => classifiers.paths);
+const radiantOrders = computed(() => classifiers.radiantOrders);
 const isRadiant = computed(() => heroStore.isRadiant);
 const isSinger = computed(() => heroStore.isSinger);
 const radiantOrderId = computed(() => heroStore.hero?.radiantOrderId ?? null);
 const idealLevel = computed(() => heroStore.hero?.radiantIdeal ?? 0);
+
+function getOrderSubtitle(order: { surge1Id?: number | null; surge2Id?: number | null }): string {
+  const surge1 = order.surge1Id ? findById(classifiers.surges, order.surge1Id)?.name : null;
+  const surge2 = order.surge2Id ? findById(classifiers.surges, order.surge2Id)?.name : null;
+  if (surge1 && surge2) return `${surge1} · ${surge2}`;
+  if (surge1) return surge1;
+  return '';
+}
 
 // Sync local UI state from hero store (for edit mode)
 function syncLocalStateFromHero() {

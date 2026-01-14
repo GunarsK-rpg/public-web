@@ -51,20 +51,12 @@
         </div>
 
         <!-- Available Talents -->
-        <div class="text-caption q-mb-xs">Path Talents</div>
-        <q-list bordered separator class="rounded-borders">
-          <TalentListItem
-            v-for="talentInfo in talentsWithStatus"
-            :key="talentInfo.talent.id"
-            :talent="talentInfo.talent"
-            :selected="isTalentSelected(talentInfo.talent.id)"
-            :available="talentInfo.available"
-            :unmet-prereqs="talentInfo.unmetPrereqs"
-            :format-prereq="formatPrereq"
-            @toggle="$emit('toggleTalent', talentInfo.talent.id, talentInfo.available)"
-            @show-details="$emit('showDetails', $event)"
-          />
-        </q-list>
+        <TalentListPanel
+          label="Path Talents"
+          :talents="talentsWithStatus"
+          @toggle-talent="(id: number, available: boolean) => $emit('toggleTalent', id, available)"
+          @show-details="(talent: Talent) => $emit('showDetails', talent)"
+        />
       </q-card-section>
     </q-card>
   </q-expansion-item>
@@ -79,7 +71,7 @@ import {
 } from 'src/composables/useTalentPrerequisites';
 import { findById } from 'src/utils/arrayUtils';
 import KeyTalentBanner from './KeyTalentBanner.vue';
-import TalentListItem from './TalentListItem.vue';
+import TalentListPanel from './TalentListPanel.vue';
 import type { Talent } from 'src/types';
 
 const props = defineProps<{
@@ -103,7 +95,6 @@ const {
   getSpecialtiesByPath,
   mapTalentsWithStatus,
   isTalentSelected,
-  formatPrereq,
 } = useTalentPrerequisites();
 
 const pathName = computed(() => findById(classifiers.paths, props.pathId)?.name ?? 'Unknown');
