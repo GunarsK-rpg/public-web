@@ -28,7 +28,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { groupByChainedKey, buildIdNameMap } from 'src/utils/arrayUtils';
+import { groupByChainedKey, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 import type { HeroExpertise } from 'src/types';
 
@@ -47,12 +47,8 @@ const expertisesByTypeRecord = computed((): Record<number, HeroExpertise[]> => {
   );
 });
 
-// Pre-compute expertise names to avoid repeated lookups in template
-const expertiseNamesMap = computed(() => buildIdNameMap(classifiers.expertises));
-
-function getExpertiseName(expertiseId: number): string {
-  return expertiseNamesMap.value.get(expertiseId) ?? 'Unknown';
-}
+// Name getter using factory pattern
+const getExpertiseName = makeNameGetter(computed(() => buildIdNameMap(classifiers.expertises)));
 </script>
 
 <style scoped>
