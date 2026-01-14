@@ -1,8 +1,13 @@
 <template>
-  <q-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)">
-    <q-card style="min-width: min(400px, 90vw); max-width: 600px">
+  <q-dialog
+    :model-value="modelValue"
+    aria-modal="true"
+    aria-labelledby="talent-dialog-title"
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
+    <q-card style="min-width: min(400px, 90vw); max-width: 600px" role="dialog">
       <q-card-section class="row items-center">
-        <div class="text-h6">{{ talent?.name }}</div>
+        <div id="talent-dialog-title" class="text-h6">{{ talent?.name }}</div>
         <q-space />
         <q-btn icon="close" flat round dense aria-label="Close dialog" v-close-popup />
       </q-card-section>

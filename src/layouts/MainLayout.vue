@@ -56,7 +56,9 @@
     </q-header>
 
     <q-page-container>
-      <router-view />
+      <main>
+        <router-view />
+      </main>
     </q-page-container>
   </q-layout>
 </template>

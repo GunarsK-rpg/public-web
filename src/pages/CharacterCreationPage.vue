@@ -53,14 +53,14 @@
     <StepNavigation :creating="creating" @create="createCharacter" />
 
     <!-- Reset Confirmation Dialog -->
-    <q-dialog v-model="showResetDialog">
-      <q-card>
+    <q-dialog v-model="showResetDialog" aria-modal="true" aria-labelledby="reset-dialog-title">
+      <q-card role="dialog">
         <q-card-section>
-          <div class="text-h6">Reset Character Creation?</div>
+          <div id="reset-dialog-title" class="text-h6">Reset Character Creation?</div>
         </q-card-section>
         <q-card-section> This will clear all your progress. Are you sure? </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn flat label="Cancel" aria-label="Cancel and close dialog" v-close-popup />
           <q-btn flat label="Reset" color="negative" @click="resetWizard" v-close-popup />
         </q-card-actions>
       </q-card>
