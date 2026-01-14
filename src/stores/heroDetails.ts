@@ -19,8 +19,12 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
       console.warn('Active goal status not found in classifiers');
       return;
     }
-    const trimmedName = name.slice(0, MAX_NAME_LENGTH);
-    const trimmedDesc = description?.slice(0, MAX_TEXT_LENGTH);
+    const trimmedName = name.trim().slice(0, MAX_NAME_LENGTH);
+    if (!trimmedName) {
+      console.warn('Goal name cannot be empty');
+      return;
+    }
+    const trimmedDesc = description?.trim().slice(0, MAX_TEXT_LENGTH);
     heroStore.hero.goals.push({
       id: heroStore.nextTempId(),
       heroId: heroStore.hero.id,
@@ -46,8 +50,12 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
       console.warn(`Connection type ${connTypeId} not found in classifiers`);
       return;
     }
-    const trimmedDesc = description.slice(0, MAX_TEXT_LENGTH);
-    const trimmedNotes = notes?.slice(0, MAX_TEXT_LENGTH);
+    const trimmedDesc = description.trim().slice(0, MAX_TEXT_LENGTH);
+    if (!trimmedDesc) {
+      console.warn('Connection description cannot be empty');
+      return;
+    }
+    const trimmedNotes = notes?.trim().slice(0, MAX_TEXT_LENGTH);
     heroStore.hero.connections.push({
       id: heroStore.nextTempId(),
       heroId: heroStore.hero.id,
@@ -66,17 +74,17 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
   // ===================
   function setAppearance(appearance: string) {
     if (!heroStore.hero) return;
-    heroStore.hero.appearance = appearance.slice(0, MAX_TEXT_LENGTH);
+    heroStore.hero.appearance = appearance.trim().slice(0, MAX_TEXT_LENGTH);
   }
 
   function setBiography(biography: string) {
     if (!heroStore.hero) return;
-    heroStore.hero.biography = biography.slice(0, MAX_TEXT_LENGTH);
+    heroStore.hero.biography = biography.trim().slice(0, MAX_TEXT_LENGTH);
   }
 
   function setNotes(notes: string) {
     if (!heroStore.hero) return;
-    heroStore.hero.notes = notes.slice(0, MAX_TEXT_LENGTH);
+    heroStore.hero.notes = notes.trim().slice(0, MAX_TEXT_LENGTH);
   }
 
   return {

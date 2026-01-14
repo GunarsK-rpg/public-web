@@ -17,7 +17,7 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
   // ===================
   function setCurrency(amount: number) {
     if (!heroStore.hero) return;
-    heroStore.hero.currency = amount;
+    heroStore.hero.currency = Math.max(0, Math.floor(amount));
   }
 
   // ===================
