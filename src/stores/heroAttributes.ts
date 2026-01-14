@@ -142,15 +142,17 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
 
   function setSkillRank(skillId: number, rank: number) {
     if (!heroStore.hero) return;
+    const maxRank = levelData.value?.maxSkillRank ?? 2;
+    const clampedRank = Math.max(0, Math.min(maxRank, rank));
     const existing = heroStore.hero.skills.find((s) => s.skillId === skillId);
     if (existing) {
-      existing.rank = rank;
+      existing.rank = clampedRank;
     } else {
       heroStore.hero.skills.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
         skillId,
-        rank,
+        rank: clampedRank,
         modifier: 0,
       });
     }
@@ -158,16 +160,17 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
 
   function setSkillModifier(skillId: number, modifier: number) {
     if (!heroStore.hero) return;
+    const clampedModifier = Math.max(MIN_ATTRIBUTE_VALUE, Math.min(MAX_ATTRIBUTE_VALUE, modifier));
     const existing = heroStore.hero.skills.find((s) => s.skillId === skillId);
     if (existing) {
-      existing.modifier = modifier;
+      existing.modifier = clampedModifier;
     } else {
       heroStore.hero.skills.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
         skillId,
         rank: 0,
-        modifier,
+        modifier: clampedModifier,
       });
     }
   }

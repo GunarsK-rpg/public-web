@@ -17,6 +17,7 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
     const activeStatus = findByCode(classifierStore.goalStatuses, 'active');
     if (!activeStatus) {
       console.warn('Active goal status not found in classifiers');
+      return;
     }
     const trimmedName = name.slice(0, MAX_NAME_LENGTH);
     const trimmedDesc = description?.slice(0, MAX_TEXT_LENGTH);
@@ -26,7 +27,7 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
       name: trimmedName,
       ...(trimmedDesc && { description: trimmedDesc }),
       value: 0,
-      statusId: activeStatus?.id ?? 1,
+      statusId: activeStatus.id,
     });
   }
 
