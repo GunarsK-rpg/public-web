@@ -1713,7 +1713,7 @@ const keyTalentsByRadiantOrder = new Map<number, Talent>();
 
 // Build indexes on module load
 for (const talent of talents) {
-  if (talent.pathId !== undefined) {
+  if (talent.pathId != null) {
     const existing = talentsByPath.get(talent.pathId) ?? [];
     existing.push(talent);
     talentsByPath.set(talent.pathId, existing);
@@ -1721,7 +1721,7 @@ for (const talent of talents) {
       keyTalentsByPath.set(talent.pathId, talent);
     }
   }
-  if (talent.ancestryId !== undefined) {
+  if (talent.ancestryId != null) {
     const existing = talentsByAncestry.get(talent.ancestryId) ?? [];
     existing.push(talent);
     talentsByAncestry.set(talent.ancestryId, existing);
@@ -1729,7 +1729,7 @@ for (const talent of talents) {
       keyTalentsByAncestry.set(talent.ancestryId, talent);
     }
   }
-  if (talent.radiantOrderId !== undefined) {
+  if (talent.radiantOrderId != null) {
     const existing = talentsByRadiantOrder.get(talent.radiantOrderId) ?? [];
     existing.push(talent);
     talentsByRadiantOrder.set(talent.radiantOrderId, existing);

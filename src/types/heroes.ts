@@ -24,9 +24,9 @@ export interface Hero {
 
   name: string;
   level: number;
-  appearance?: string;
-  biography?: string;
-  notes?: string;
+  appearance?: string | null;
+  biography?: string | null;
+  notes?: string | null;
 
   currentHealth: number;
   currentFocus: number;

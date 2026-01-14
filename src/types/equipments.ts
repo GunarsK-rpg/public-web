@@ -30,13 +30,13 @@ export interface EquipmentSpecial {
  */
 export interface Equipment extends Classifier {
   equipTypeId: number;
-  damageTypeId?: number;
-  unitId?: number;
-  special?: EquipmentSpecial;
+  damageTypeId?: number | null;
+  unitId?: number | null;
+  special?: EquipmentSpecial | null;
   cost: number;
   isCustom: boolean;
-  heroId?: number;
-  attributes?: EquipmentAttributeMap[];
+  heroId?: number | null;
+  attributes?: EquipmentAttributeMap[]; // Frontend-only, populated from cl_equipment_attributes_map
 }
 
 /**
@@ -49,6 +49,6 @@ export interface HeroEquipment {
   amount: number;
   isEquipped: boolean;
   isPrimary: boolean;
-  notes?: string;
-  customName?: string;
+  notes?: string | null;
+  customName?: string | null;
 }

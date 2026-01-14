@@ -17,8 +17,8 @@ export interface HeroGoal {
   id: number;
   heroId: number;
   name: string;
-  description?: string;
-  notes?: string;
+  description?: string | null;
+  notes?: string | null;
   /**
    * Importance value (1-5) indicating goal priority.
    * Higher values indicate more important goals.
@@ -36,6 +36,6 @@ export interface HeroConnection {
   id: number;
   heroId: number;
   connTypeId: number;
-  description?: string;
-  notes?: string;
+  description?: string | null;
+  notes?: string | null;
 }

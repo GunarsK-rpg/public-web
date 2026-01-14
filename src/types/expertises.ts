@@ -33,6 +33,6 @@ export interface HeroExpertise {
   id: number;
   heroId: number;
   expertiseId: number;
-  notes?: string;
-  source?: ExpertiseSourceData; // JSONB: {source_type, source_id}
+  notes?: string | null;
+  source?: ExpertiseSourceData | null; // JSONB: {source_type, source_id}
 }

@@ -12,7 +12,7 @@ export interface HeroCondition {
   id: number;
   heroId: number;
   conditionId: number;
-  notes?: string;
+  notes?: string | null;
 }
 
 /**
@@ -27,5 +27,5 @@ export interface HeroInjury {
   id: number;
   heroId: number;
   injuryId: number;
-  notes?: string;
+  notes?: string | null;
 }

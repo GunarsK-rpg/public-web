@@ -26,14 +26,14 @@ export interface TalentPrerequisite {
  * Actions granted by talents are linked via cl_action_links
  */
 export interface Talent extends Classifier {
-  pathId?: number;
-  specialtyId?: number;
-  ancestryId?: number;
-  radiantOrderId?: number;
-  surgeId?: number;
-  descriptionShort?: string;
+  pathId?: number | null;
+  specialtyId?: number | null;
+  ancestryId?: number | null;
+  radiantOrderId?: number | null;
+  surgeId?: number | null;
+  descriptionShort?: string | null;
   isKey: boolean;
-  prerequisites?: TalentPrerequisite[];
+  prerequisites?: TalentPrerequisite[] | null; // JSONB
 }
 
 /**
@@ -43,5 +43,5 @@ export interface HeroTalent {
   id: number;
   heroId: number;
   talentId: number;
-  notes?: string;
+  notes?: string | null;
 }
