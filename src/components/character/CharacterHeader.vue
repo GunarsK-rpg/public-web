@@ -155,7 +155,7 @@ const totalSpheres = computed(() => hero.value?.currency ?? 0);
 }
 
 .resource-label {
-  font-size: 0.75rem;
+  font-size: var(--font-size-sm);
   text-transform: uppercase;
   opacity: 0.7;
 }

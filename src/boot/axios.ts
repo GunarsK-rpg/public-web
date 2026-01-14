@@ -15,7 +15,10 @@ declare module 'vue' {
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const api = axios.create({ baseURL: 'https://api.example.com' });
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
+  timeout: 30000, // 30 second timeout
+});
 
 // Extended config type for request timing
 interface RequestConfigWithMetadata extends InternalAxiosRequestConfig {
