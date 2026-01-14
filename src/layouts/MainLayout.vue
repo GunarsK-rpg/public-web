@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter, useRoute, isNavigationFailure, NavigationFailureType } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useAuthStore } from 'stores/auth';
 import { logger } from 'src/utils/logger';
@@ -102,8 +102,15 @@ function goBack(): void {
 async function goToCampaigns(): Promise<void> {
   try {
     await router.push({ name: 'campaigns' });
-  } catch {
-    // Navigation cancelled or duplicate navigation - ignore
+  } catch (err) {
+    // Only log unexpected navigation failures
+    if (
+      !isNavigationFailure(err, NavigationFailureType.duplicated | NavigationFailureType.cancelled)
+    ) {
+      logger.warn('Navigation to campaigns failed', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
 }
 
@@ -111,8 +118,15 @@ async function logout(): Promise<void> {
   authStore.logout();
   try {
     await router.push({ name: 'login' });
-  } catch {
-    // Navigation cancelled or duplicate navigation - ignore
+  } catch (err) {
+    // Only log unexpected navigation failures
+    if (
+      !isNavigationFailure(err, NavigationFailureType.duplicated | NavigationFailureType.cancelled)
+    ) {
+      logger.warn('Navigation to login failed', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
 }
 
