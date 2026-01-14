@@ -96,7 +96,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
@@ -104,7 +104,7 @@ import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
-const heroStore = useHeroStore();
+const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 const { budget } = useStepValidation();
 
@@ -137,7 +137,7 @@ const attributeList = computed(() =>
 const derivedStatsList = computed(() => {
   // Dynamically build attribute values from classifiers instead of hardcoding codes
   const attrs = Object.fromEntries(
-    classifiers.attributes.map((attr) => [attr.code, heroStore.getAttributeValue(attr.code)])
+    classifiers.attributes.map((attr) => [attr.code, attrStore.getAttributeValue(attr.code)])
   );
 
   return buildDerivedStatsList(
@@ -145,21 +145,21 @@ const derivedStatsList = computed(() => {
     classifiers.derivedStatValues,
     classifiers.attributes,
     attrs,
-    heroStore.levelData,
-    heroStore.tierData,
-    heroStore.getDerivedStatModifier
+    attrStore.levelData,
+    attrStore.tierData,
+    attrStore.getDerivedStatModifier
   );
 });
 
 function setStatModifier(statId: number, value: string | number | null) {
   const normalized = normalizeModifierInput(value);
   if (normalized !== null) {
-    heroStore.setDerivedStatModifier(statId, normalized);
+    attrStore.setDerivedStatModifier(statId, normalized);
   }
 }
 
 function getAttrValue(attrId: number): number {
-  return heroStore.hero?.attributes.find((a) => a.attrId === attrId)?.value ?? 0;
+  return attrStore.getAttributeValueById(attrId);
 }
 
 function setAttrValue(attrId: number, value: number | null) {
@@ -172,9 +172,9 @@ function setAttrValue(attrId: number, value: number | null) {
   if (pointsToSpend > 0 && pointsToSpend > pointsRemaining.value) {
     // Only allow spending what's available
     const maxAllowed = currentValue + pointsRemaining.value;
-    heroStore.setAttribute(attrId, Math.min(5, maxAllowed));
+    attrStore.setAttribute(attrId, Math.min(5, maxAllowed));
   } else {
-    heroStore.setAttribute(attrId, clampedValue);
+    attrStore.setAttribute(attrId, clampedValue);
   }
 }
 

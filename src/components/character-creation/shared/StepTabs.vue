@@ -71,7 +71,7 @@ const stepErrors = computed(() => {
 });
 
 function isStepDone(step: number): boolean {
-  return wizardStore.completedSteps.includes(step);
+  return wizardStore.isStepCompleted(step);
 }
 
 function hasStepErrors(stepCode: string): boolean {

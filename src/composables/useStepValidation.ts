@@ -1,5 +1,6 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useWizardStore } from 'src/stores/wizard';
 import { STEP_CODES } from 'src/types/wizard';
 import {
@@ -14,14 +15,15 @@ import {
 
 export function useStepValidation() {
   const heroStore = useHeroStore();
+  const attrStore = useHeroAttributesStore();
   const wizardStore = useWizardStore();
 
   const validationData = computed<HeroValidationData | null>(() => {
     if (!heroStore.hero) return null;
     return {
       hero: heroStore.hero,
-      levelData: heroStore.levelData,
-      intellectValue: heroStore.getAttributeValue('int'),
+      levelData: attrStore.levelData,
+      intellectValue: attrStore.getAttributeValue('int'),
     };
   });
 

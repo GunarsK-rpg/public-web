@@ -91,17 +91,21 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
+import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { buildLookupMap } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
+const attrStore = useHeroAttributesStore();
+const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 
 const hero = computed(() => heroStore.hero);
-const maxHealth = computed(() => heroStore.getDerivedStatTotal('max_health'));
-const maxFocus = computed(() => heroStore.getDerivedStatTotal('max_focus'));
-const maxInvestiture = computed(() => heroStore.getDerivedStatTotal('max_investiture'));
-const isRadiant = computed(() => heroStore.isRadiant);
+const maxHealth = computed(() => attrStore.getDerivedStatTotal('max_health'));
+const maxFocus = computed(() => attrStore.getDerivedStatTotal('max_focus'));
+const maxInvestiture = computed(() => attrStore.getDerivedStatTotal('max_investiture'));
+const isRadiant = computed(() => talentStore.isRadiant);
 
 // Progress bar helpers
 const clampProgress = (current: number, max: number) =>

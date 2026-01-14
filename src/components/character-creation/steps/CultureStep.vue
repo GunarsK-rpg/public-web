@@ -50,11 +50,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import InfoBanner from '../shared/InfoBanner.vue';
 
 const heroStore = useHeroStore();
+const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 
 // Hero cultures as array of cultureIds
@@ -96,18 +98,18 @@ function setCulture(oldId: number | null, newId: number | null, isPrimary: boole
   if (isPrimary && secondaryCultureId.value !== null) {
     const secondaryId = secondaryCultureId.value;
     // Remove both cultures
-    if (oldId !== null) heroStore.removeCulture(oldId);
-    heroStore.removeCulture(secondaryId);
+    if (oldId !== null) talentStore.removeCulture(oldId);
+    talentStore.removeCulture(secondaryId);
     // Re-add in correct order: new primary first, then secondary
-    if (newId !== null) heroStore.addCulture(newId);
-    heroStore.addCulture(secondaryId);
+    if (newId !== null) talentStore.addCulture(newId);
+    talentStore.addCulture(secondaryId);
   } else {
     // Simple case: no secondary or changing secondary
     if (oldId !== null) {
-      heroStore.removeCulture(oldId);
+      talentStore.removeCulture(oldId);
     }
     if (newId !== null) {
-      heroStore.addCulture(newId);
+      talentStore.addCulture(newId);
     }
   }
 }

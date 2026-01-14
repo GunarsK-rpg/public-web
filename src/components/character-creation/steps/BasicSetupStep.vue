@@ -57,15 +57,17 @@
 import { computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useCampaignStore } from 'src/stores/campaigns';
 import { logger } from 'src/utils/logger';
 
 const $q = useQuasar();
 const heroStore = useHeroStore();
+const attrStore = useHeroAttributesStore();
 const campaignStore = useCampaignStore();
 
 const currentLevel = computed(() => heroStore.hero?.level ?? 1);
-const levelData = computed(() => heroStore.levelData);
+const levelData = computed(() => attrStore.levelData);
 
 const campaignOptions = computed(() =>
   campaignStore.campaigns.map((c) => ({ value: c.id, label: c.name }))

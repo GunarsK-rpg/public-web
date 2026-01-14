@@ -58,7 +58,7 @@
 
     <!-- Radiant Order -->
     <q-expansion-item
-      v-if="heroStore.isRadiant && radiantOrder"
+      v-if="talentStore.isRadiant && radiantOrder"
       :label="radiantOrder.name"
       :aria-label="`${radiantOrder.name} radiant order talents`"
       default-opened
@@ -130,12 +130,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, groupByForeignKey } from 'src/utils/arrayUtils';
 import type { Talent, Path, Specialty, Surge } from 'src/types';
 import TalentItem from './TalentItem.vue';
 
 const heroStore = useHeroStore();
+const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 
 // Get all hero talents as Talent objects

@@ -162,11 +162,13 @@
 <script setup lang="ts">
 import { ref, computed, onUnmounted } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroDetailsStore } from 'src/stores/heroDetails';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { debounce } from 'src/utils/debounce';
 import { findById } from 'src/utils/arrayUtils';
 
 const heroStore = useHeroStore();
+const detailsStore = useHeroDetailsStore();
 const classifiers = useClassifierStore();
 
 // Goals and connections from hero
@@ -199,9 +201,9 @@ function createDebouncedHandler(setter: (val: string) => void) {
 }
 
 // Create debounced handlers for text inputs
-const biographyHandler = createDebouncedHandler((val) => heroStore.setBiography(val));
-const appearanceHandler = createDebouncedHandler((val) => heroStore.setAppearance(val));
-const notesHandler = createDebouncedHandler((val) => heroStore.setNotes(val));
+const biographyHandler = createDebouncedHandler((val) => detailsStore.setBiography(val));
+const appearanceHandler = createDebouncedHandler((val) => detailsStore.setAppearance(val));
+const notesHandler = createDebouncedHandler((val) => detailsStore.setNotes(val));
 
 // Export handlers for template use
 const setBiography = biographyHandler.handler;
@@ -217,19 +219,19 @@ onUnmounted(() => {
 
 function addGoal() {
   if (newGoalName.value) {
-    heroStore.addGoal(newGoalName.value, newGoalDescription.value || undefined);
+    detailsStore.addGoal(newGoalName.value, newGoalDescription.value || undefined);
     newGoalName.value = '';
     newGoalDescription.value = '';
   }
 }
 
 function removeGoal(goalId: number) {
-  heroStore.removeGoalById(goalId);
+  detailsStore.removeGoalById(goalId);
 }
 
 function addConnection() {
   if (newConnectionDescription.value && newConnectionType.value) {
-    heroStore.addConnection(
+    detailsStore.addConnection(
       newConnectionType.value,
       newConnectionDescription.value,
       newConnectionNotes.value || undefined
@@ -241,6 +243,6 @@ function addConnection() {
 }
 
 function removeConnection(connectionId: number) {
-  heroStore.removeConnectionById(connectionId);
+  detailsStore.removeConnectionById(connectionId);
 }
 </script>

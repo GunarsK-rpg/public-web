@@ -76,6 +76,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { findById, findByCode } from 'src/utils/arrayUtils';
@@ -83,12 +84,13 @@ import BudgetDisplay from '../shared/BudgetDisplay.vue';
 import InfoBanner from '../shared/InfoBanner.vue';
 
 const heroStore = useHeroStore();
+const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 const { budget } = useStepValidation();
 
 const selectedCategory = ref('all');
 
-const intellectScore = computed(() => heroStore.getAttributeValue('int'));
+const intellectScore = computed(() => attrStore.getAttributeValue('int'));
 const expertisesBudget = computed(() => budget('expertises'));
 const slotsRemaining = computed(() => expertisesBudget.value.remaining);
 
@@ -145,11 +147,11 @@ function toggleExpertise(expertiseId: number, checked: boolean) {
   if (checked) {
     // Defensive guard: prevent adding if already selected (edge case from rapid clicks)
     if (slotsRemaining.value > 0 && !isSelected(expertiseId)) {
-      heroStore.addExpertise(expertiseId, { sourceType: 'intellect' });
+      attrStore.addExpertise(expertiseId, { sourceType: 'intellect' });
     }
   } else if (!isReadOnly(expertiseId)) {
     // Don't remove read-only expertises
-    heroStore.removeExpertise(expertiseId);
+    attrStore.removeExpertise(expertiseId);
   }
 }
 

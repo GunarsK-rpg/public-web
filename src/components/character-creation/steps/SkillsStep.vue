@@ -70,6 +70,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { groupByChainedKey, buildIdCodeMap } from 'src/utils/arrayUtils';
@@ -77,6 +78,7 @@ import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
 const heroStore = useHeroStore();
+const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 const { budget } = useStepValidation();
 
@@ -110,7 +112,7 @@ const skillGroups = computed(() => {
 });
 
 function getSkillRank(skillId: number): number {
-  return heroStore.getSkillRank(skillId);
+  return attrStore.getSkillRank(skillId);
 }
 
 function getSkillModifier(skillId: number): number {
@@ -120,21 +122,21 @@ function getSkillModifier(skillId: number): number {
 function setSkillModifier(skillId: number, value: string | number | null) {
   const normalized = normalizeModifierInput(value, -10, 10);
   if (normalized !== null) {
-    heroStore.setSkillModifier(skillId, normalized);
+    attrStore.setSkillModifier(skillId, normalized);
   }
 }
 
 function incrementSkill(skillId: number) {
   const current = getSkillRank(skillId);
   if (current < maxSkillRank.value && pointsRemaining.value > 0) {
-    heroStore.setSkillRank(skillId, current + 1);
+    attrStore.setSkillRank(skillId, current + 1);
   }
 }
 
 function decrementSkill(skillId: number) {
   const current = getSkillRank(skillId);
   if (current > 0) {
-    heroStore.setSkillRank(skillId, current - 1);
+    attrStore.setSkillRank(skillId, current - 1);
   }
 }
 </script>

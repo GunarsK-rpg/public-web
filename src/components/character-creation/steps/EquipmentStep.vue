@@ -100,12 +100,14 @@
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import InfoBanner from '../shared/InfoBanner.vue';
 
 const heroStore = useHeroStore();
+const equipStore = useHeroEquipmentStore();
 const classifiers = useClassifierStore();
 
 // Equipment types list from classifiers
@@ -180,20 +182,20 @@ function getAvailableByType(typeId: number) {
 function setCurrencyAmount(val: string | number | null) {
   const normalized = normalizeModifierInput(val, 0, 999999);
   if (normalized !== null) {
-    heroStore.setCurrency(normalized);
+    equipStore.setCurrency(normalized);
   }
 }
 
 function addItemOfType(typeId: number) {
   const equipmentId = newEquipmentByType[typeId];
   if (equipmentId) {
-    heroStore.addEquipment(equipmentId, 1);
+    equipStore.addEquipment(equipmentId, 1);
     newEquipmentByType[typeId] = null;
   }
 }
 
 function removeItem(equipmentId: number) {
-  heroStore.removeEquipment(equipmentId);
+  equipStore.removeEquipment(equipmentId);
 }
 </script>
 
