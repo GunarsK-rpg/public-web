@@ -43,8 +43,21 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     }
   }
 
-  function removeEquipment(equipmentId: number) {
+  function removeEquipment(equipmentId: number, amount?: number) {
     if (!heroStore.hero) return;
+    // If amount specified, decrement stack; otherwise remove entirely
+    if (amount !== undefined) {
+      const existing = heroStore.hero.equipment.find((e) => e.equipmentId === equipmentId);
+      if (existing) {
+        existing.amount -= Math.max(1, Math.floor(amount));
+        if (existing.amount <= 0) {
+          heroStore.hero.equipment = heroStore.hero.equipment.filter(
+            (e) => e.equipmentId !== equipmentId
+          );
+        }
+        return;
+      }
+    }
     heroStore.hero.equipment = heroStore.hero.equipment.filter(
       (e) => e.equipmentId !== equipmentId
     );

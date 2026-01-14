@@ -96,7 +96,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
@@ -105,7 +104,6 @@ import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
-const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 const { budget } = useStepValidation();
@@ -161,7 +159,7 @@ function setStatModifier(statId: number, value: string | number | null) {
 }
 
 function getAttrValue(attrId: number): number {
-  return heroStore.hero?.attributes.find((a) => a.attrId === attrId)?.value ?? 0;
+  return attrStore.getAttributeValueById(attrId);
 }
 
 function setAttrValue(attrId: number, value: number | null) {

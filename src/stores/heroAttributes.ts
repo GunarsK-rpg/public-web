@@ -29,13 +29,13 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     const attr = findByCode(classifierStore.attributes, attrCode);
     if (!attr) return 0;
     const heroAttr = heroStore.hero.attributes.find((a) => a.attrId === attr.id);
-    return heroAttr?.value || 0;
+    return heroAttr?.value ?? 0;
   }
 
   function getAttributeValueById(attrId: number): number {
     if (!heroStore.hero?.attributes) return 0;
     const heroAttr = heroStore.hero.attributes.find((a) => a.attrId === attrId);
-    return heroAttr?.value || 0;
+    return heroAttr?.value ?? 0;
   }
 
   function getDefenseValue(attrTypeCode: string): number {
@@ -43,7 +43,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     const attrType = findByCode(classifierStore.attributeTypes, attrTypeCode);
     if (!attrType) return 10;
     const defense = heroStore.hero.defenses.find((d) => d.attrTypeId === attrType.id);
-    return defense?.value || 10;
+    return defense?.value ?? 10;
   }
 
   // ===================
@@ -52,7 +52,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   function getSkillRank(skillId: number): number {
     if (!heroStore.hero?.skills) return 0;
     const skill = heroStore.hero.skills.find((s) => s.skillId === skillId);
-    return skill?.rank || 0;
+    return skill?.rank ?? 0;
   }
 
   function getSkillModifier(skillCode: string): number {
@@ -103,9 +103,10 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
       ? (findById(classifierStore.units, heroStat.unitId)?.code ?? '')
       : '';
     const modifier = heroStat.modifier ?? 0;
-    const total = heroStat.value + modifier;
+    const total = getDerivedStatTotal(statCode);
     if (modifier) {
-      return `${total}${unit} (${heroStat.value} + ${modifier})`;
+      const baseValue = total - modifier;
+      return `${total}${unit} (${baseValue} + ${modifier})`;
     }
     return `${total}${unit}`;
   }

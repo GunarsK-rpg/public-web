@@ -13,13 +13,16 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
   function addGoal(name: string, description?: string) {
     if (!heroStore.hero) return;
     const activeStatus = findByCode(classifierStore.goalStatuses, 'active');
+    if (!activeStatus) {
+      console.warn('Active goal status not found in classifiers');
+    }
     heroStore.hero.goals.push({
       id: heroStore.nextTempId(),
       heroId: heroStore.hero.id,
       name,
       ...(description && { description }),
       value: 0,
-      statusId: activeStatus?.id || 1,
+      statusId: activeStatus?.id ?? 1,
     });
   }
 
@@ -48,19 +51,22 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
   // ===================
   // PERSONAL DETAILS
   // ===================
+  // Max lengths match database TEXT columns (practical limit for UI)
+  const MAX_TEXT_LENGTH = 10000;
+
   function setAppearance(appearance: string) {
     if (!heroStore.hero) return;
-    heroStore.hero.appearance = appearance;
+    heroStore.hero.appearance = appearance.slice(0, MAX_TEXT_LENGTH);
   }
 
   function setBiography(biography: string) {
     if (!heroStore.hero) return;
-    heroStore.hero.biography = biography;
+    heroStore.hero.biography = biography.slice(0, MAX_TEXT_LENGTH);
   }
 
   function setNotes(notes: string) {
     if (!heroStore.hero) return;
-    heroStore.hero.notes = notes;
+    heroStore.hero.notes = notes.slice(0, MAX_TEXT_LENGTH);
   }
 
   return {

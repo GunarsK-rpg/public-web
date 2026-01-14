@@ -21,6 +21,10 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
 
   const isRadiant = computed(() => !!heroStore.hero?.radiantOrderId);
 
+  // Radiant-specific computed values for consistent state derivation
+  const radiantOrderId = computed(() => heroStore.hero?.radiantOrderId ?? null);
+  const radiantIdeal = computed(() => heroStore.hero?.radiantIdeal ?? 0);
+
   // ===================
   // ANCESTRY
   // ===================
@@ -183,6 +187,8 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     // Computed
     isSinger,
     isRadiant,
+    radiantOrderId,
+    radiantIdeal,
 
     // Ancestry
     setAncestry,

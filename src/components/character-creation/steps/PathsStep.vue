@@ -123,8 +123,8 @@ const heroicPaths = computed(() => classifiers.paths);
 const radiantOrders = computed(() => classifiers.radiantOrders);
 const isRadiant = computed(() => talentStore.isRadiant);
 const isSinger = computed(() => talentStore.isSinger);
-const radiantOrderId = computed(() => heroStore.hero?.radiantOrderId ?? null);
-const idealLevel = computed(() => heroStore.hero?.radiantIdeal ?? 0);
+const radiantOrderId = computed(() => talentStore.radiantOrderId);
+const idealLevel = computed(() => talentStore.radiantIdeal);
 
 function getOrderSubtitle(order: { surge1Id?: number | null; surge2Id?: number | null }): string {
   const surge1 = order.surge1Id ? findById(classifiers.surges, order.surge1Id)?.name : null;

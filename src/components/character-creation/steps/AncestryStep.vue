@@ -67,8 +67,7 @@ const availableForms = computed(() =>
 function selectAncestry(id: number) {
   talentStore.setAncestry(id);
   // Auto-select dullform for Singer only if no form is already chosen
-  const singerAncestry = findByCode(classifiers.ancestries, 'singer');
-  if (id === singerAncestry?.id && !heroStore.hero?.activeSingerFormId) {
+  if (talentStore.isSinger && !heroStore.hero?.activeSingerFormId) {
     const dullform = findByCode(classifiers.singerForms, 'dullform');
     if (dullform) {
       talentStore.setSingerForm(dullform.id);
