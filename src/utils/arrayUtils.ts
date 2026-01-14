@@ -97,8 +97,9 @@ export function buildIdNameMap<T extends { id: number; name: string }>(
 export function makeNameGetter(
   map: ComputedRef<Map<number, string>>,
   fallback = 'Unknown'
-): (id: number) => string {
-  return (id: number) => map.value.get(id) ?? fallback;
+): (id: number | undefined | null) => string {
+  return (id: number | undefined | null) =>
+    (id != null ? map.value.get(id) : undefined) ?? fallback;
 }
 
 /**
