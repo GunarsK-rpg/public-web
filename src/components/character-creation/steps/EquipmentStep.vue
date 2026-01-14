@@ -81,8 +81,7 @@
           emit-value
           map-options
           clearable
-          class="col"
-          style="max-width: 300px"
+          class="col equipment-select"
           @update:model-value="(val) => (newEquipmentByType[eqType.id] = val)"
         />
         <q-btn
@@ -197,3 +196,9 @@ function removeItem(equipmentId: number) {
   heroStore.removeEquipment(equipmentId);
 }
 </script>
+
+<style scoped>
+.equipment-select {
+  max-width: 300px;
+}
+</style>

@@ -74,7 +74,7 @@
                 dense
                 :min="0"
                 :max="999999"
-                style="max-width: 150px"
+                class="currency-input"
                 @update:model-value="setStartingCurrency"
                 @click.stop
               />
@@ -162,5 +162,9 @@ function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
   position: absolute;
   top: 8px;
   right: 8px;
+}
+
+.currency-input {
+  max-width: 150px;
 }
 </style>

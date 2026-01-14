@@ -5,7 +5,7 @@
     aria-labelledby="talent-dialog-title"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <q-card style="min-width: min(400px, 90vw); max-width: 600px" role="dialog">
+    <q-card class="talent-dialog-card" role="dialog">
       <q-card-section class="row items-center">
         <div id="talent-dialog-title" class="text-h6">{{ talent?.name }}</div>
         <q-space />
@@ -13,7 +13,7 @@
       </q-card-section>
       <q-separator />
       <q-card-section v-if="talent">
-        <div class="text-body2" style="white-space: pre-wrap">
+        <div class="text-body2 talent-description">
           {{ talent.description }}
         </div>
         <template v-if="prerequisites.length">
@@ -44,3 +44,14 @@ defineEmits<{
 
 const prerequisites = computed(() => props.talent?.prerequisites ?? []);
 </script>
+
+<style scoped>
+.talent-dialog-card {
+  min-width: min(400px, 90vw);
+  max-width: 600px;
+}
+
+.talent-description {
+  white-space: pre-wrap;
+}
+</style>
