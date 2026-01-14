@@ -43,7 +43,7 @@
               <div class="resource-value">{{ hero?.currentFocus }} / {{ maxFocus }}</div>
               <q-linear-progress
                 :value="focusPercent"
-                color="teal"
+                :color="RPG_COLORS.focus"
                 track-color="grey-6"
                 role="progressbar"
                 :aria-valuenow="hero?.currentFocus ?? 0"
@@ -63,7 +63,7 @@
               </div>
               <q-linear-progress
                 :value="investiturePercent"
-                color="amber"
+                :color="RPG_COLORS.investiture"
                 track-color="grey-6"
                 role="progressbar"
                 :aria-valuenow="hero?.currentInvestiture ?? 0"
@@ -95,6 +95,7 @@ import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { buildLookupMap } from 'src/utils/arrayUtils';
+import { RPG_COLORS } from 'src/constants/theme';
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();

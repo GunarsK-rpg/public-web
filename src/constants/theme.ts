@@ -102,8 +102,16 @@ export const RPG_COLORS = {
 
   // Resource indicators
   health: 'negative',
-  focus: 'info',
-  investiture: 'warning',
+  focus: 'teal',
+  investiture: 'amber',
+
+  // Resource cost badges (for action costs)
+  focusCost: 'teal',
+  investitureCost: 'amber',
+
+  // Banner backgrounds
+  bannerInfo: 'amber-2',
+  bannerInfoIcon: 'amber-8',
 } as const;
 
 /**
