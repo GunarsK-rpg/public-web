@@ -4,6 +4,7 @@ import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { findById, findByCode, findByProp } from 'src/utils/arrayUtils';
 import { calculateFormulaStat } from 'src/utils/derivedStats';
+import { MIN_ATTRIBUTE_VALUE, MAX_ATTRIBUTE_VALUE } from 'src/constants';
 import type { ExpertiseSourceData } from 'src/types';
 
 export const useHeroAttributesStore = defineStore('heroAttributes', () => {
@@ -66,6 +67,15 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   // ===================
   // DERIVED STATS
   // ===================
+  // Memoized attribute values for derived stat calculations
+  const attributeValues = computed(() => {
+    const attrs: Record<string, number> = {};
+    for (const attr of classifierStore.attributes) {
+      attrs[attr.code] = getAttributeValue(attr.code);
+    }
+    return attrs;
+  });
+
   function getHeroDerivedStat(statCode: string) {
     if (!heroStore.hero?.derivedStats) return undefined;
     const stat = findByCode(classifierStore.derivedStats, statCode);
@@ -78,12 +88,12 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   }
 
   function getDerivedStatTotal(statCode: string): number {
-    const attrs: Record<string, number> = {};
-    for (const attr of classifierStore.attributes) {
-      attrs[attr.code] = getAttributeValue(attr.code);
-    }
-
-    const baseValue = calculateFormulaStat(statCode, attrs, levelData.value, tierData.value);
+    const baseValue = calculateFormulaStat(
+      statCode,
+      attributeValues.value,
+      levelData.value,
+      tierData.value
+    );
     const heroStat = getHeroDerivedStat(statCode);
     const modifier = heroStat?.modifier ?? 0;
 
@@ -116,15 +126,16 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   // ===================
   function setAttribute(attrId: number, value: number) {
     if (!heroStore.hero) return;
+    const clampedValue = Math.max(MIN_ATTRIBUTE_VALUE, Math.min(MAX_ATTRIBUTE_VALUE, value));
     const existing = heroStore.hero.attributes.find((a) => a.attrId === attrId);
     if (existing) {
-      existing.value = value;
+      existing.value = clampedValue;
     } else {
       heroStore.hero.attributes.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
         attrId,
-        value,
+        value: clampedValue,
       });
     }
   }

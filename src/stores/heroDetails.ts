@@ -2,17 +2,11 @@ import { defineStore } from 'pinia';
 import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { findByCode, findById, removeById } from 'src/utils/arrayUtils';
+import { MAX_NAME_LENGTH, MAX_TEXT_LENGTH } from 'src/constants';
 
 export const useHeroDetailsStore = defineStore('heroDetails', () => {
   const heroStore = useHeroStore();
   const classifierStore = useClassifierStore();
-
-  // ===================
-  // CONSTANTS
-  // ===================
-  // Max lengths for text fields (match database constraints)
-  const MAX_NAME_LENGTH = 255;
-  const MAX_TEXT_LENGTH = 10000;
 
   // ===================
   // GOALS

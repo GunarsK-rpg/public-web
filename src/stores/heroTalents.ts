@@ -31,6 +31,9 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   function setAncestry(ancestryId: number) {
     if (!heroStore.hero) return;
     const singerAncestry = findByCode(classifierStore.ancestries, 'singer');
+    if (!singerAncestry) {
+      console.warn('Singer ancestry not found in classifiers');
+    }
 
     // Remove previous ancestry talents if changing ancestry
     if (heroStore.hero.ancestryId) {
@@ -46,7 +49,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     heroStore.hero.ancestryId = ancestryId;
 
     // Reset singer form if not singer
-    if (ancestryId !== singerAncestry?.id) {
+    if (!singerAncestry || ancestryId !== singerAncestry.id) {
       heroStore.hero.activeSingerFormId = null;
     } else {
       // Add singer key talent
@@ -141,19 +144,19 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     if (heroStore.hero.radiantOrderId) {
       const prevOrder = findById(classifierStore.radiantOrders, heroStore.hero.radiantOrderId);
       if (prevOrder) {
-        // Get all talent IDs for this order (order talents + surge talents)
-        const orderTalentIds = classifierStore.talents
-          .filter((t) => t.radiantOrderId === prevOrder.id)
-          .map((t) => t.id);
-        const surge1TalentIds = classifierStore.talents
-          .filter((t) => t.surgeId === prevOrder.surge1Id)
-          .map((t) => t.id);
-        const surge2TalentIds = classifierStore.talents
-          .filter((t) => t.surgeId === prevOrder.surge2Id)
-          .map((t) => t.id);
-        const allRadiantTalentIds = [...orderTalentIds, ...surge1TalentIds, ...surge2TalentIds];
+        // Collect all talent IDs for this order in single pass
+        const allRadiantTalentIds = new Set<number>();
+        for (const talent of classifierStore.talents) {
+          if (
+            talent.radiantOrderId === prevOrder.id ||
+            talent.surgeId === prevOrder.surge1Id ||
+            talent.surgeId === prevOrder.surge2Id
+          ) {
+            allRadiantTalentIds.add(talent.id);
+          }
+        }
         heroStore.hero.talents = heroStore.hero.talents.filter(
-          (t) => !allRadiantTalentIds.includes(t.talentId)
+          (t) => !allRadiantTalentIds.has(t.talentId)
         );
       }
     }
