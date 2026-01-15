@@ -182,7 +182,7 @@ jobs:
         uses: trufflesecurity/trufflehog@v3.90.3
         with:
           path: ./
-          base: ""
+          base: ''
           head: ${{ github.ref_name }}
 
   # Summary job - require all to pass

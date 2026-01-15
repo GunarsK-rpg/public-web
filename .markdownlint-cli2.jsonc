@@ -2,6 +2,6 @@
   "globs": ["**/*.md"],
   "ignores": ["node_modules/**"],
   "config": {
-    "MD013": false
-  }
+    "MD013": false,
+  },
 }

@@ -17,4 +17,4 @@ reviews:
       enabled: false
 chat:
   auto_reply: true
-tone_instructions: "Focus on Vue 3 Composition API, Quasar components, TypeScript patterns, security (XSS, input validation), performance, and accessibility. Be specific with Vue/Quasar patterns and flag security issues immediately."
+tone_instructions: 'Focus on Vue 3 Composition API, Quasar components, TypeScript patterns, security (XSS, input validation), performance, and accessibility. Be specific with Vue/Quasar patterns and flag security issues immediately.'
