@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 export default defineConfig({
   plugins: [vue()],
   test: {
-    environment: 'happy-dom',
+    environment: 'jsdom',
     include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',

@@ -22,7 +22,7 @@ Character sheet manager for the Cosmere RPG tabletop game built with Vue.js.
 - **State Management**: Pinia
 - **HTTP Client**: Axios
 - **Routing**: Vue Router
-- **Testing**: Vitest + happy-dom
+- **Testing**: Vitest + jsdom
 
 ## Prerequisites
 
@@ -128,7 +128,7 @@ task ci:all              # Run all CI checks
 
 ## Testing
 
-Unit tests use Vitest with happy-dom. Tests are co-located with source files (`*.test.ts`).
+Unit tests use Vitest with jsdom. Tests are co-located with source files (`*.test.ts`).
 
 ```bash
 task test              # Run all tests

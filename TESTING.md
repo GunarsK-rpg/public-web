@@ -11,7 +11,7 @@ task test:coverage     # Run tests with coverage
 ## Test Environment
 
 - **Framework**: Vitest (fast, Vite-native test runner)
-- **DOM**: happy-dom (lightweight, Vue-compatible)
+- **DOM**: jsdom (full DOM emulation, Vue 3 compatible)
 - **Config**: See `vitest.config.ts` for full configuration
 - **CI**: Tests run automatically via `.github/workflows/ci.yml`
 

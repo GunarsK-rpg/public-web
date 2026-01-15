@@ -180,15 +180,31 @@ describe('setUserContext', () => {
   // Null/Undefined Handling
   // ---------------------------------------------------------------------------
   it('clears context when called with null', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
     setUserContext({ id: 123 });
     setUserContext(null);
-    // No error means context was cleared
+    logger.info('test');
+
+    expect(infoSpy.mock.calls[0]).toBeDefined();
+    const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+    expect(callArg).not.toHaveProperty('user');
+    infoSpy.mockRestore();
   });
 
   it('clears context when called with undefined', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
     setUserContext({ id: 123 });
     setUserContext(undefined);
-    // No error means context was cleared
+    logger.info('test');
+
+    expect(infoSpy.mock.calls[0]).toBeDefined();
+    const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+    expect(callArg).not.toHaveProperty('user');
+    infoSpy.mockRestore();
   });
 
   // ---------------------------------------------------------------------------
