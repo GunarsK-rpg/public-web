@@ -2,6 +2,7 @@ import pino from 'pino';
 
 // Determine log level based on environment
 function getLogLevel(): string {
+  if (import.meta.env.MODE === 'test') return 'silent';
   if (import.meta.env.DEV) return 'debug';
   if (import.meta.env.PROD) return 'info';
   return 'info';
