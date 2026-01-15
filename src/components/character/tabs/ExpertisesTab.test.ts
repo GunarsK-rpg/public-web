@@ -8,7 +8,9 @@ const mockExpertises = ref<HeroExpertise[]>([]);
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
-    expertises: mockExpertises.value,
+    get expertises() {
+      return mockExpertises.value;
+    },
   }),
 }));
 

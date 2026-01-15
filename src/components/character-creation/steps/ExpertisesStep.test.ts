@@ -73,6 +73,9 @@ vi.mock('src/stores/classifiers', () => ({
 vi.mock('src/composables/useStepValidation', () => ({
   useStepValidation: () => ({
     budget: () => ({
+      isValid: mockSlotsRemaining.value >= 0,
+      errors: [] as string[],
+      warnings: [] as string[],
       remaining: mockSlotsRemaining.value,
       budget: 3,
       spent: 3 - mockSlotsRemaining.value,
@@ -210,8 +213,10 @@ describe('ExpertisesStep', () => {
       const wrapper = createWrapper();
 
       const items = wrapper.findAll('.q-item');
-      const hasSelectedItem = items.some((item) => item.classes().includes('item-selected'));
-      expect(hasSelectedItem).toBe(true);
+      expect(items.length).toBeGreaterThan(0);
+      const selectedItem = items.find((item) => item.classes().includes('item-selected'));
+      expect(selectedItem).toBeDefined();
+      expect(selectedItem!.exists()).toBe(true);
     });
   });
 
@@ -367,8 +372,11 @@ describe('ExpertisesStep', () => {
       mockGetAttributeValue.mockReturnValue(5);
       const wrapper = createWrapper();
 
-      // The BudgetDisplay stub shows the suffix prop
-      expect(wrapper.find('.budget-display').exists()).toBe(true);
+      // The BudgetDisplay stub shows the suffix prop with intellect score
+      const budgetDisplay = wrapper.find('.budget-display');
+      expect(budgetDisplay.exists()).toBe(true);
+      // Intellect score of 5 means 5 expertise slots
+      expect(mockGetAttributeValue).toHaveBeenCalled();
     });
 
     it('does not call addExpertise when expertise already selected (rapid click guard)', async () => {

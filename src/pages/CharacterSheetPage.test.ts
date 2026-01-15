@@ -9,6 +9,7 @@ const mockPush = vi.fn();
 const mockIsLoaded = ref(true);
 const mockLoading = ref(false);
 const mockError = ref<string | null>(null);
+const mockClassifierInitialized = ref(true);
 const mockClassifierLoading = ref(false);
 const mockClassifierError = ref<string | null>(null);
 
@@ -37,7 +38,9 @@ vi.mock('stores/hero', () => ({
 
 vi.mock('stores/classifiers', () => ({
   useClassifierStore: () => ({
-    initialized: true,
+    get initialized() {
+      return mockClassifierInitialized.value;
+    },
     initialize: vi.fn(),
     get loading() {
       return mockClassifierLoading.value;
@@ -121,6 +124,7 @@ describe('CharacterSheetPage', () => {
     mockIsLoaded.value = true;
     mockLoading.value = false;
     mockError.value = null;
+    mockClassifierInitialized.value = true;
     mockClassifierLoading.value = false;
     mockClassifierError.value = null;
   });

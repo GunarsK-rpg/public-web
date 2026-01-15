@@ -512,10 +512,9 @@ describe('EquipmentStep', () => {
             b.attributes('aria-label')?.includes('Add') &&
             !b.attributes('aria-label')?.includes('Remove')
         );
-      if (addBtns.length > 0) {
-        await addBtns[0]!.trigger('click');
-        expect(mockAddEquipment).toHaveBeenCalledWith(1, 1);
-      }
+      expect(addBtns.length).toBeGreaterThan(0);
+      await addBtns[0]!.trigger('click');
+      expect(mockAddEquipment).toHaveBeenCalledWith(1, 1);
     });
 
     it('does not call addEquipment when no equipment selected', () => {

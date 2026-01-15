@@ -55,6 +55,7 @@ describe('ActionItem', () => {
           name: 'Strike',
           description: 'A basic attack',
           activationTypeId: 1,
+          actionTypeId: 1,
           focusCost: 0,
           investitureCost: 0,
           ...action,
@@ -297,8 +298,8 @@ describe('ActionItem', () => {
     it('handles empty special string as falsy', () => {
       const wrapper = createWrapper({ special: '' });
 
-      // Empty string should not show special section
-      expect(wrapper.text()).not.toContain('text-italic');
+      // Empty string should not show special section - check element doesn't exist
+      expect(wrapper.find('.text-italic').exists()).toBe(false);
     });
 
     it('handles empty dice string as falsy', () => {

@@ -322,8 +322,7 @@ describe('PathsStep', () => {
       mockIsRadiant.value = true;
       const wrapper = createWrapper();
 
-      // The SelectableCard stub receives the subtitle prop but doesn't render it
-      // Just verify the radiant orders are shown
+      // Verify radiant orders are shown - stub doesn't expose subtitle, verify cards exist
       const cards = wrapper.findAll('.selectable-card');
       const radiantCards = cards.filter(
         (c) =>
@@ -487,10 +486,11 @@ describe('PathsStep', () => {
       const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
       await warriorCard.trigger('click');
 
-      // Trigger specialty button in stub
+      // Trigger specialty button in stub - emits update:specialtyId event
       await wrapper.find('.heroic-path-panel .emit-specialty').trigger('click');
 
-      // Component should handle the specialty change
+      // Component handles the specialty change via v-model binding
+      // The event is emitted and should be handled without error
       expect(wrapper.exists()).toBe(true);
     });
 
@@ -689,7 +689,10 @@ describe('PathsStep', () => {
 
       const wrapper = createWrapper();
 
+      // Should render without error when specialty lookup fails
       expect(wrapper.exists()).toBe(true);
+      // Path should still be rendered
+      expect(wrapper.text()).toContain('Warrior');
     });
   });
 

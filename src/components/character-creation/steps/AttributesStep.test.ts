@@ -326,6 +326,7 @@ describe('AttributesStep', () => {
       const decrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Decrease'));
+      expect(decrementBtns.length).toBeGreaterThan(0);
       await decrementBtns[0]!.trigger('click');
 
       expect(mockSetAttribute).not.toHaveBeenCalled();
@@ -675,6 +676,8 @@ describe('AttributesStep', () => {
 
       const input = wrapper.find('.q-input');
       expect(input.exists()).toBe(true);
+      // Negative values don't need a prefix - verify the input has no prefix prop or empty prefix
+      expect(input.attributes('prefix')).toBeUndefined();
     });
   });
 

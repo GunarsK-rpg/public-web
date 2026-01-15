@@ -26,9 +26,15 @@ vi.mock('vue-router', () => ({
 
 vi.mock('src/stores/campaigns', () => ({
   useCampaignStore: () => ({
-    currentCampaign: mockCampaign.value,
-    loading: mockLoading.value,
-    error: mockError.value,
+    get currentCampaign() {
+      return mockCampaign.value;
+    },
+    get loading() {
+      return mockLoading.value;
+    },
+    get error() {
+      return mockError.value;
+    },
     selectCampaign: vi.fn(),
     setError: vi.fn(),
   }),

@@ -302,7 +302,8 @@ describe('PersonalDetailsStep', () => {
       const removeBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Remove goal'));
-      await removeBtns[0]?.trigger('click');
+      expect(removeBtns.length).toBeGreaterThan(0);
+      await removeBtns[0]!.trigger('click');
 
       expect(mockRemoveGoalById).toHaveBeenCalledWith(1);
     });

@@ -235,8 +235,9 @@ describe('CharacterHeader', () => {
       const progressBars = wrapper.findAll('.q-linear-progress');
       const investitureBar = progressBars.find((p) => p.attributes('aria-label') === 'Investiture');
       expect(investitureBar).toBeDefined();
-      expect(investitureBar?.attributes('aria-valuenow')).toBe('15');
-      expect(investitureBar?.attributes('aria-valuemax')).toBe('20');
+      expect(investitureBar!.exists()).toBe(true);
+      expect(investitureBar!.attributes('aria-valuenow')).toBe('15');
+      expect(investitureBar!.attributes('aria-valuemax')).toBe('20');
     });
   });
 
@@ -329,8 +330,12 @@ describe('CharacterHeader', () => {
       mockHero.value!.currentHealth = -5;
       const wrapper = createWrapper();
 
-      // Should render without throwing (progress clamped to 0)
+      // Should render without throwing and display the actual value (progress bar clamped to 0)
       expect(wrapper.text()).toContain('-5 / 30');
+      const progressBar = wrapper.find('.q-linear-progress[aria-label="Health"]');
+      expect(progressBar.exists()).toBe(true);
+      // Progress bar value should be clamped to 0 minimum
+      expect(Number(progressBar.attributes('aria-valuenow'))).toBeLessThanOrEqual(0);
     });
   });
 

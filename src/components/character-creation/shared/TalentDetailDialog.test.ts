@@ -114,6 +114,8 @@ describe('TalentDetailDialog', () => {
 
       // Should still render dialog without errors
       expect(wrapper.find('.q-dialog').exists()).toBe(true);
+      // Should not render talent content when talent is null
+      expect(wrapper.text()).not.toContain('Prerequisites:');
     });
   });
 

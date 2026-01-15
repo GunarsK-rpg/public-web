@@ -410,6 +410,7 @@ describe('BasicSetupStep', () => {
 
       // Find the second input (level input) and emit NaN string
       const buttons = wrapper.findAll('.emit-nan');
+      expect(buttons.length).toBeGreaterThan(1);
       await buttons[1]!.trigger('click');
 
       expect(mockSetLevel).not.toHaveBeenCalled();

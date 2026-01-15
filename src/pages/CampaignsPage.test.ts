@@ -182,6 +182,7 @@ describe('CampaignsPage', () => {
         .findAll('.q-btn')
         .find((b) => b.text().includes('Create Character'));
       expect(createBtn).toBeDefined();
+      expect(createBtn!.exists()).toBe(true);
       await createBtn!.trigger('click');
 
       expect(mockPush).toHaveBeenCalledWith({ name: 'character-create-standalone' });
