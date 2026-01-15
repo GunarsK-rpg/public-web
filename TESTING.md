@@ -38,19 +38,3 @@ task test:coverage     # Run tests with coverage
 4. Use `vi.useFakeTimers()` for time-dependent tests, restore with `vi.useRealTimers()`
 5. Use factory pattern for modules with Vite-specific APIs (see `iconUrl.ts` for example)
 6. Verify with `task test` before committing
-
-## Factory Pattern for Vite APIs
-
-Modules using `import.meta.glob` can't be easily mocked. Export a factory function that accepts dependencies, then use it with mock data in tests:
-
-```typescript
-// iconUrl.ts - Production uses real Vite imports
-export function createGetIconUrl(modules) {
-  /* logic */
-}
-export const getIconUrl = createGetIconUrl(iconModules);
-
-// iconUrl.test.ts - Tests use mock data
-const mockModules = { actions: { '...attack.svg': '/path.svg' } };
-const getIconUrl = createGetIconUrl(mockModules);
-```

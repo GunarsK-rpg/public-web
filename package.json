@@ -31,7 +31,7 @@
     "@eslint/js": "^9.39.2",
     "@intlify/unplugin-vue-i18n": "^11.0.3",
     "@quasar/app-vite": "^2.4.0",
-    "@types/node": "^25.0.8",
+    "@types/node": "^24",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.6.0",
     "autoprefixer": "^10.4.23",
@@ -48,7 +48,7 @@
     "happy-dom": "^20.1.0"
   },
   "engines": {
-    "node": "^26 || ^25 || ^22 || ^20",
+    "node": "^24 || ^22 || ^20",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
   }

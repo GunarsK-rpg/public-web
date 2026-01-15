@@ -214,15 +214,31 @@ describe('setUserContext', () => {
 
 describe('clearUserContext', () => {
   it('clears user context', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
     setUserContext({ id: 123 });
     clearUserContext();
-    // No error means context was cleared
+    logger.info('test');
+
+    expect(infoSpy.mock.calls[0]).toBeDefined();
+    const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+    expect(callArg).not.toHaveProperty('user');
+    infoSpy.mockRestore();
   });
 
   it('is safe to call when no user context exists', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
     clearUserContext();
     clearUserContext();
-    // Should not throw
+    logger.info('test');
+
+    expect(infoSpy.mock.calls[0]).toBeDefined();
+    const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+    expect(callArg).not.toHaveProperty('user');
+    infoSpy.mockRestore();
   });
 });
 
