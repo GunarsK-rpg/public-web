@@ -122,8 +122,16 @@ describe('Logger', () => {
       logger.setContext({ inherited: true });
       const child = logger.child({ childOnly: true });
 
-      // Child should have inherited context - verified by not throwing
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const childInfoSpy = vi.spyOn((child as any).pino, 'info');
+
       child.info('test message');
+
+      // Verify parent context is inherited (childOnly bindings are at pino level, not in context)
+      expect(childInfoSpy.mock.calls[0]).toBeDefined();
+      const callArg = childInfoSpy.mock.calls[0]![0] as Record<string, unknown>;
+      expect(callArg).toHaveProperty('inherited', true);
+      childInfoSpy.mockRestore();
     });
   });
 });
@@ -141,13 +149,31 @@ describe('setUserContext', () => {
   // Valid Inputs
   // ---------------------------------------------------------------------------
   it('sets user context with numeric id', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
     setUserContext({ id: 123 });
-    // No error means context was set
+    logger.info('test');
+
+    expect(infoSpy.mock.calls[0]).toBeDefined();
+    const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+    expect(callArg).toHaveProperty('user');
+    expect((callArg.user as { id: number }).id).toBe(123);
+    infoSpy.mockRestore();
   });
 
   it('sets user context with string id (converts to number)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
     setUserContext({ id: '456' });
-    // No error means context was set and converted
+    logger.info('test');
+
+    expect(infoSpy.mock.calls[0]).toBeDefined();
+    const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+    expect(callArg).toHaveProperty('user');
+    expect((callArg.user as { id: number }).id).toBe(456);
+    infoSpy.mockRestore();
   });
 
   // ---------------------------------------------------------------------------
