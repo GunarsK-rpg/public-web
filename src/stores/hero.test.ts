@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useHeroStore } from './hero';
 
-// Control flag for import failure tests
+// Control flag for import failure tests - reset in afterEach for isolation
 let shouldFailImport = false;
 
 // Mock the heroes module
@@ -61,6 +61,11 @@ describe('useHeroStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // Ensure import failure flag is reset for test isolation
+    shouldFailImport = false;
   });
 
   // ========================================
@@ -190,30 +195,30 @@ describe('useHeroStore', () => {
     it('handles race conditions by ignoring stale requests', async () => {
       const store = useHeroStore();
 
-      // Start two loads rapidly
+      // Start two loads rapidly - this tests that the store handles concurrent
+      // requests without crashing. The actual stale request ignoring is
+      // implementation-dependent and may not trigger in synchronous mock scenarios.
       const load1 = store.loadHero(1);
       const load2 = store.loadHero(1);
 
       await Promise.all([load1, load2]);
 
-      // Should still have a valid result
+      // Should still have a valid result (no corruption from concurrent access)
       expect(store.hero?.id).toBe(1);
       expect(store.loading).toBe(false);
     });
 
-    it('sets error on import failure', async () => {
+    it('sets error on module access failure', async () => {
       const store = useHeroStore();
-
-      // Enable import failure
       shouldFailImport = true;
 
       await store.loadHero(1);
 
       expect(store.hero).toBeNull();
+      // Note: The mock throws when accessing .heroes property (not during import),
+      // so this triggers the outer catch which sets 'Failed to load hero'
       expect(store.error).toBe('Failed to load hero');
-
-      // Reset for other tests
-      shouldFailImport = false;
+      // afterEach resets shouldFailImport
     });
   });
 

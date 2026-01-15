@@ -2,13 +2,15 @@ import { config } from '@vue/test-utils';
 import { vi, afterEach } from 'vitest';
 
 // ========================================
-// localStorage Mock
+// localStorage Mock (full Storage interface)
 // ========================================
 const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
+  length: 0,
+  key: vi.fn().mockReturnValue(null),
 };
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 

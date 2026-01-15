@@ -311,24 +311,26 @@ describe('useWizardStore', () => {
       expect(store.isActive).toBe(true);
     });
 
-    it('handles hero not found (sets error but still activates)', async () => {
+    it('returns false and resets when hero not found', async () => {
       const wizardStore = useWizardStore();
       const heroStore = useHeroStore();
 
-      await wizardStore.startEdit(999);
+      const result = await wizardStore.startEdit(999);
 
-      // loadHero doesn't throw, it sets error - wizard still activates
+      // Wizard should not activate when hero fails to load
       expect(heroStore.error).toBe('Hero not found');
-      expect(wizardStore.isActive).toBe(true);
+      expect(result).toBe(false);
+      expect(wizardStore.isActive).toBe(false);
     });
 
     it('returns false and resets on loadHero exception', async () => {
       const wizardStore = useWizardStore();
       const heroStore = useHeroStore();
 
-      // Mock loadHero to throw
-      const originalLoadHero = heroStore.loadHero;
-      heroStore.loadHero = vi.fn().mockRejectedValue(new Error('Network error'));
+      // Mock loadHero to throw using vi.spyOn for cleaner pattern
+      const loadHeroSpy = vi
+        .spyOn(heroStore, 'loadHero')
+        .mockRejectedValue(new Error('Network error'));
 
       const result = await wizardStore.startEdit(1);
 
@@ -336,7 +338,7 @@ describe('useWizardStore', () => {
       expect(wizardStore.isActive).toBe(false);
 
       // Restore original
-      heroStore.loadHero = originalLoadHero;
+      loadHeroSpy.mockRestore();
     });
   });
 
@@ -384,24 +386,26 @@ describe('useWizardStore', () => {
       expect(store.isActive).toBe(true);
     });
 
-    it('handles hero not found (sets error but still activates)', async () => {
+    it('returns false and resets when hero not found', async () => {
       const wizardStore = useWizardStore();
       const heroStore = useHeroStore();
 
-      await wizardStore.startLevelUp(999);
+      const result = await wizardStore.startLevelUp(999);
 
-      // loadHero doesn't throw, it sets error - wizard still activates
+      // Wizard should not activate when hero fails to load
       expect(heroStore.error).toBe('Hero not found');
-      expect(wizardStore.isActive).toBe(true);
+      expect(result).toBe(false);
+      expect(wizardStore.isActive).toBe(false);
     });
 
     it('returns false and resets on loadHero exception', async () => {
       const wizardStore = useWizardStore();
       const heroStore = useHeroStore();
 
-      // Mock loadHero to throw
-      const originalLoadHero = heroStore.loadHero;
-      heroStore.loadHero = vi.fn().mockRejectedValue(new Error('Network error'));
+      // Mock loadHero to throw using vi.spyOn for cleaner pattern
+      const loadHeroSpy = vi
+        .spyOn(heroStore, 'loadHero')
+        .mockRejectedValue(new Error('Network error'));
 
       const result = await wizardStore.startLevelUp(1);
 
@@ -409,7 +413,7 @@ describe('useWizardStore', () => {
       expect(wizardStore.isActive).toBe(false);
 
       // Restore original
-      heroStore.loadHero = originalLoadHero;
+      loadHeroSpy.mockRestore();
     });
   });
 

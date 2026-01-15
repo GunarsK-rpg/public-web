@@ -229,6 +229,14 @@ describe('useHeroDetailsStore', () => {
       expect(heroStore.hero!.connections.length).toBe(1);
       expect(heroStore.hero!.connections[0]!.description).toBe('Rival 1');
     });
+
+    it('returns false for non-existent id', () => {
+      const store = useHeroDetailsStore();
+
+      const result = store.removeConnectionById(999);
+
+      expect(result).toBe(false);
+    });
   });
 
   // ========================================
@@ -263,6 +271,15 @@ describe('useHeroDetailsStore', () => {
 
       expect(heroStore.hero?.biography).toBe('Born in a small village');
     });
+
+    it('trims whitespace', () => {
+      const store = useHeroDetailsStore();
+      const heroStore = useHeroStore();
+
+      store.setBiography('  Born in a village  ');
+
+      expect(heroStore.hero?.biography).toBe('Born in a village');
+    });
   });
 
   describe('setNotes', () => {
@@ -273,6 +290,15 @@ describe('useHeroDetailsStore', () => {
       store.setNotes('Remember to check inventory');
 
       expect(heroStore.hero?.notes).toBe('Remember to check inventory');
+    });
+
+    it('trims whitespace', () => {
+      const store = useHeroDetailsStore();
+      const heroStore = useHeroStore();
+
+      store.setNotes('  Check inventory  ');
+
+      expect(heroStore.hero?.notes).toBe('Check inventory');
     });
   });
 });

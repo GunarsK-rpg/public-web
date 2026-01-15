@@ -270,20 +270,32 @@ describe('useHeroAttributesStore', () => {
       // The total includes base calculation + modifier
       const total = store.getDerivedStatTotal('health');
       expect(typeof total).toBe('number');
+      expect(total).toBeGreaterThanOrEqual(0);
     });
 
-    it('returns base value when stat has no modifier', () => {
+    it('returns base calculation when stat has no modifier', () => {
       setupHeroWithAttributes();
       const heroStore = useHeroStore();
       const store = useHeroAttributesStore();
 
-      // Remove modifier
+      // Set stat with zero modifier
       if (heroStore.hero) {
         heroStore.hero.derivedStats = [{ id: 1, heroId: 0, statId: 1, value: 15, modifier: 0 }];
       }
 
       const total = store.getDerivedStatTotal('health');
+      // Total = calculateFormulaStat result + modifier (0)
+      // Note: The 'value' field is stored data, not used in total calculation
       expect(typeof total).toBe('number');
+      expect(total).toBeGreaterThanOrEqual(0);
+    });
+
+    it('returns 0 for unknown stat code', () => {
+      setupHeroWithAttributes();
+      const store = useHeroAttributesStore();
+
+      const total = store.getDerivedStatTotal('unknown');
+      expect(total).toBe(0);
     });
   });
 

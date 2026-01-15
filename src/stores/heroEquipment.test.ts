@@ -3,6 +3,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useHeroEquipmentStore } from './heroEquipment';
 import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
+import { MAX_EQUIPMENT_STACK } from 'src/constants';
 
 // Mock classifiers data
 const mockClassifiers = {
@@ -161,13 +162,13 @@ describe('useHeroEquipmentStore', () => {
       expect(heroStore.hero!.equipment[0]!.amount).toBe(5);
     });
 
-    it('caps at max stack size (999)', () => {
+    it('caps at max stack size', () => {
       const store = useHeroEquipmentStore();
       const heroStore = useHeroStore();
 
-      store.addEquipment(1, 1000);
+      store.addEquipment(1, MAX_EQUIPMENT_STACK + 1);
 
-      expect(heroStore.hero!.equipment[0]!.amount).toBe(999);
+      expect(heroStore.hero!.equipment[0]!.amount).toBe(MAX_EQUIPMENT_STACK);
     });
 
     it('caps stacking at max stack size', () => {
@@ -177,7 +178,7 @@ describe('useHeroEquipmentStore', () => {
       store.addEquipment(1, 500);
       store.addEquipment(1, 600);
 
-      expect(heroStore.hero!.equipment[0]!.amount).toBe(999);
+      expect(heroStore.hero!.equipment[0]!.amount).toBe(MAX_EQUIPMENT_STACK);
     });
 
     it('sets isEquipped to false by default', () => {

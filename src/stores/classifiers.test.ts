@@ -312,10 +312,10 @@ describe('useClassifierStore', () => {
       await store.initialize();
     });
 
-    it('provides O(1) lookups via cache', () => {
+    it('returns consistent values across multiple lookups', () => {
       const store = useClassifierStore();
 
-      // Multiple lookups should use cache
+      // Multiple lookups should return the same cached value
       const val1 = store.getDerivedStatValue(1, 5);
       const val2 = store.getDerivedStatValue(1, 5);
       const val3 = store.getDerivedStatValue(1, 5);

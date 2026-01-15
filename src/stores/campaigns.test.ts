@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useCampaignStore } from './campaigns';
 
-// Control flags for import failure tests
+// Control flag for import failure tests - reset in afterEach for isolation
 let shouldFailCampaignsImport = false;
 
 // Mock campaign data
@@ -57,6 +57,11 @@ describe('useCampaignStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // Ensure import failure flag is reset for test isolation
+    shouldFailCampaignsImport = false;
   });
 
   // ========================================
@@ -140,17 +145,13 @@ describe('useCampaignStore', () => {
 
     it('sets error on import failure', async () => {
       const store = useCampaignStore();
-
-      // Enable import failure
       shouldFailCampaignsImport = true;
 
       await store.fetchCampaigns();
 
       expect(store.campaigns).toEqual([]);
       expect(store.error).toBe('Failed to load campaigns');
-
-      // Reset for other tests
-      shouldFailCampaignsImport = false;
+      // afterEach resets shouldFailCampaignsImport
     });
   });
 
@@ -205,17 +206,13 @@ describe('useCampaignStore', () => {
 
     it('sets error on import failure', async () => {
       const store = useCampaignStore();
-
-      // Enable import failure
       shouldFailCampaignsImport = true;
 
       await store.selectCampaign(1);
 
       expect(store.currentCampaign).toBeNull();
       expect(store.error).toBe('Failed to load campaign');
-
-      // Reset for other tests
-      shouldFailCampaignsImport = false;
+      // afterEach resets shouldFailCampaignsImport
     });
   });
 

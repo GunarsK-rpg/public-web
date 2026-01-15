@@ -14,8 +14,8 @@ vi.mock('src/utils/logger', () => ({
   clearUserContext: vi.fn(),
 }));
 
-// Mock import.meta.env.DEV
-vi.stubGlobal('import.meta', { env: { DEV: true } });
+// Stub import.meta.env.DEV for mock login tests
+vi.stubEnv('DEV', true);
 
 describe('useAuthStore', () => {
   let localStorageMock: {
@@ -258,6 +258,9 @@ describe('useAuthStore', () => {
       const store = useAuthStore();
 
       const promise = store.login('testuser', 'password');
+
+      // Loading should be true during async operation
+      expect(store.loading).toBe(true);
 
       // After login completes, loading should be false
       await promise;
