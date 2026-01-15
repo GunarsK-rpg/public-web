@@ -84,9 +84,13 @@ vi.mock('src/utils/arrayUtils', () => ({
 }));
 
 vi.mock('src/composables/useModifierInput', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  normalizeModifierInput: (val: unknown, min?: number, max?: number) =>
-    mockNormalizeModifier.value(val),
+  normalizeModifierInput: (val: unknown, min?: number, max?: number) => {
+    const normalized = mockNormalizeModifier.value(val);
+    if (normalized === null) return null;
+    if (min !== undefined && normalized < min) return min;
+    if (max !== undefined && normalized > max) return max;
+    return normalized;
+  },
 }));
 
 describe('SkillsStep', () => {
@@ -259,6 +263,7 @@ describe('SkillsStep', () => {
       const incrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Increase'));
+      expect(incrementBtns.length).toBeGreaterThan(0);
       await incrementBtns[0]!.trigger('click');
 
       expect(mockSetSkillRank).toHaveBeenCalledWith(1, 2);
@@ -271,6 +276,7 @@ describe('SkillsStep', () => {
       const decrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Decrease'));
+      expect(decrementBtns.length).toBeGreaterThan(0);
       await decrementBtns[0]!.trigger('click');
 
       expect(mockSetSkillRank).toHaveBeenCalledWith(1, 0);
@@ -283,6 +289,7 @@ describe('SkillsStep', () => {
       const incrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Increase'));
+      expect(incrementBtns.length).toBeGreaterThan(0);
       await incrementBtns[0]!.trigger('click');
 
       expect(mockSetSkillRank).not.toHaveBeenCalled();
@@ -295,6 +302,7 @@ describe('SkillsStep', () => {
       const decrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Decrease'));
+      expect(decrementBtns.length).toBeGreaterThan(0);
       await decrementBtns[0]!.trigger('click');
 
       expect(mockSetSkillRank).not.toHaveBeenCalled();
@@ -329,30 +337,40 @@ describe('SkillsStep', () => {
       mockHeroData.value.hero!.skills = [{ skillId: 1, modifier: -3 }];
       const wrapper = createWrapper();
 
-      // The modifier input should show -3 without a '+' prefix
-      expect(wrapper.find('.q-input').exists()).toBe(true);
+      const input = wrapper.find('.q-input');
+      expect(input.exists()).toBe(true);
+      // Verify the input value reflects the negative modifier
+      expect((input.element as HTMLInputElement).value).toBe('-3');
     });
 
     it('shows positive modifier with plus prefix', () => {
       mockHeroData.value.hero!.skills = [{ skillId: 1, modifier: 5 }];
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.q-input').exists()).toBe(true);
+      const input = wrapper.find('.q-input');
+      expect(input.exists()).toBe(true);
+      // Verify the input value reflects the positive modifier
+      expect((input.element as HTMLInputElement).value).toBe('5');
     });
 
     it('returns 0 for skill not in hero skills array', () => {
       mockHeroData.value.hero!.skills = [{ skillId: 999, modifier: 5 }]; // Different skill
       const wrapper = createWrapper();
 
-      // Should use default value of 0
-      expect(wrapper.find('.q-input').exists()).toBe(true);
+      const input = wrapper.find('.q-input');
+      expect(input.exists()).toBe(true);
+      // Should use default value of 0 for skill not in array
+      expect((input.element as HTMLInputElement).value).toBe('0');
     });
 
     it('returns 0 when hero is null', () => {
       mockHeroData.value.hero = null;
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.q-input').exists()).toBe(true);
+      const input = wrapper.find('.q-input');
+      expect(input.exists()).toBe(true);
+      // Should default to 0 when hero is null
+      expect((input.element as HTMLInputElement).value).toBe('0');
     });
 
     it('returns 0 when hero.skills is undefined', () => {
@@ -361,7 +379,10 @@ describe('SkillsStep', () => {
       };
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.q-input').exists()).toBe(true);
+      const input = wrapper.find('.q-input');
+      expect(input.exists()).toBe(true);
+      // Should default to 0 when skills array is undefined
+      expect((input.element as HTMLInputElement).value).toBe('0');
     });
   });
 
@@ -389,6 +410,8 @@ describe('SkillsStep', () => {
 
       // Unknown Skill has attrId 999 which is not in the map
       expect(wrapper.text()).toContain('Unknown Skill');
+      // Should not show any attribute code for unknown attribute
+      expect(wrapper.text()).not.toContain('999');
     });
   });
 
@@ -403,7 +426,9 @@ describe('SkillsStep', () => {
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Increase'));
       expect(incrementBtns.length).toBeGreaterThan(0);
-      expect(incrementBtns[0]!.attributes('aria-label')).toContain('rank');
+      const ariaLabel = incrementBtns[0]!.attributes('aria-label');
+      expect(ariaLabel).toBeDefined();
+      expect(ariaLabel).toContain('rank');
     });
 
     it('has role="status" on value display', () => {
@@ -427,6 +452,7 @@ describe('SkillsStep', () => {
       const incrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Increase'));
+      expect(incrementBtns.length).toBeGreaterThan(0);
       await incrementBtns[0]!.trigger('click');
 
       expect(mockSetSkillRank).not.toHaveBeenCalled();
@@ -466,6 +492,7 @@ describe('SkillsStep', () => {
       const incrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Increase'));
+      expect(incrementBtns.length).toBeGreaterThan(0);
       await incrementBtns[0]!.trigger('click');
 
       expect(mockSetSkillRank).toHaveBeenCalledWith(1, 2);
@@ -479,6 +506,7 @@ describe('SkillsStep', () => {
       const decrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Decrease'));
+      expect(decrementBtns.length).toBeGreaterThan(0);
       await decrementBtns[0]!.trigger('click');
 
       expect(mockSetSkillRank).not.toHaveBeenCalled();

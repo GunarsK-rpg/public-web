@@ -82,13 +82,8 @@ describe('HeroicPathPanel', () => {
             template: '<span class="q-icon" />',
           },
           QBtn: {
-            template: '<button class="q-btn" @click="handleClick"><slot /></button>',
+            template: '<button class="q-btn" @click="$emit(\'click\')"><slot /></button>',
             emits: ['click'],
-            methods: {
-              handleClick() {
-                (this as unknown as { $emit: (event: string) => void }).$emit('click');
-              },
-            },
           },
           QTooltip: {
             template: '<span class="q-tooltip"><slot /></span>',
@@ -200,7 +195,8 @@ describe('HeroicPathPanel', () => {
       const wrapper = createWrapper({ pathId: 1, specialtyId: undefined });
 
       const buttons = wrapper.findAll('.q-btn-toggle button');
-      await buttons[0]?.trigger('click');
+      expect(buttons.length).toBeGreaterThan(0);
+      await buttons[0]!.trigger('click');
 
       expect(wrapper.emitted('update:specialtyId')).toBeTruthy();
       expect(wrapper.emitted('update:specialtyId')?.[0]).toEqual([10]);
@@ -287,7 +283,9 @@ describe('HeroicPathPanel', () => {
       const wrapper = createWrapper({ pathId: 1, specialtyId: undefined });
 
       // Check that remove button has accessible label via tooltip
-      expect(wrapper.text()).toContain('Remove path');
+      const tooltip = wrapper.find('.q-tooltip');
+      expect(tooltip.exists()).toBe(true);
+      expect(tooltip.text()).toContain('Remove path');
     });
   });
 
@@ -309,6 +307,10 @@ describe('HeroicPathPanel', () => {
       // mapTalentsWithStatus should be called with non-key talents only
       expect(mockMapTalentsWithStatus).toHaveBeenCalledWith(
         expect.arrayContaining([expect.objectContaining({ id: 2, isKey: false })])
+      );
+      // Verify key talent was excluded
+      expect(mockMapTalentsWithStatus).not.toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ id: 1, isKey: true })])
       );
     });
   });

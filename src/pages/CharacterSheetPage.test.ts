@@ -20,9 +20,15 @@ vi.mock('vue-router', () => ({
 
 vi.mock('stores/hero', () => ({
   useHeroStore: () => ({
-    isLoaded: mockIsLoaded.value,
-    loading: mockLoading.value,
-    error: mockError.value,
+    get isLoaded() {
+      return mockIsLoaded.value;
+    },
+    get loading() {
+      return mockLoading.value;
+    },
+    get error() {
+      return mockError.value;
+    },
     loadHero: vi.fn(),
     clearHero: vi.fn(),
     setError: vi.fn(),
@@ -33,8 +39,12 @@ vi.mock('stores/classifiers', () => ({
   useClassifierStore: () => ({
     initialized: true,
     initialize: vi.fn(),
-    loading: mockClassifierLoading.value,
-    error: mockClassifierError.value,
+    get loading() {
+      return mockClassifierLoading.value;
+    },
+    get error() {
+      return mockClassifierError.value;
+    },
   }),
 }));
 

@@ -77,13 +77,8 @@ describe('RadiantPathPanel', () => {
             template: '<span class="q-icon" />',
           },
           QBtn: {
-            template: '<button class="q-btn" @click="handleClick"><slot /></button>',
+            template: '<button class="q-btn" @click="$emit(\'click\')"><slot /></button>',
             emits: ['click'],
-            methods: {
-              handleClick() {
-                (this as unknown as { $emit: (event: string) => void }).$emit('click');
-              },
-            },
           },
           QTooltip: {
             template: '<span class="q-tooltip"><slot /></span>',
@@ -330,7 +325,7 @@ describe('RadiantPathPanel', () => {
   // Talent Filtering
   // ========================================
   describe('talent filtering', () => {
-    it('filters out key talents from order list', () => {
+    it('filters out key talents from order list', async () => {
       mockGetTalentsByRadiantOrder.mockReturnValue([
         { id: 1, isKey: true },
         { id: 2, isKey: false },
@@ -339,10 +334,21 @@ describe('RadiantPathPanel', () => {
         talents.map((t) => ({ talent: t, available: true, unmetPrereqs: [] }))
       );
 
-      createWrapper({ orderId: 1, idealLevel: 3 });
+      const wrapper = createWrapper({ orderId: 1, idealLevel: 3 });
 
-      // Should filter out key talents when showing order talents
-      // This is tested indirectly through the component behavior
+      // Switch to order tab to trigger orderTalentsWithStatus computed
+      const orderTabBtn = wrapper.find('.q-btn-toggle button');
+      expect(orderTabBtn.exists()).toBe(true);
+      await orderTabBtn.trigger('click');
+
+      // mapTalentsWithStatus should be called with non-key talents only
+      expect(mockMapTalentsWithStatus).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ id: 2, isKey: false })])
+      );
+      // Verify key talent was excluded
+      expect(mockMapTalentsWithStatus).not.toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ id: 1, isKey: true })])
+      );
     });
   });
 
@@ -355,9 +361,11 @@ describe('RadiantPathPanel', () => {
 
       const wrapper = createWrapper({ orderId: 1, idealLevel: 3 });
 
-      // TalentListPanel receives emptyMessage prop
+      // TalentListPanel receives emptyMessage prop and renders
       const panel = wrapper.find('.talent-list-panel');
       expect(panel.exists()).toBe(true);
+      // Verify component doesn't crash with empty talent list
+      expect(wrapper.text()).toContain('0 talents selected');
     });
   });
 });

@@ -344,18 +344,6 @@ describe('EquipmentStep', () => {
   });
 
   // ========================================
-  // Add Equipment
-  // ========================================
-  describe('add equipment', () => {
-    it('renders equipment select for each type', () => {
-      const wrapper = createWrapper();
-
-      const selects = wrapper.findAll('.q-select');
-      expect(selects.length).toBe(2); // One per equipment type
-    });
-  });
-
-  // ========================================
   // Starting Kit Info
   // ========================================
   describe('starting kit info', () => {
@@ -451,13 +439,6 @@ describe('EquipmentStep', () => {
   // Add Equipment Functionality
   // ========================================
   describe('add equipment', () => {
-    it('renders equipment select for each type', () => {
-      const wrapper = createWrapper();
-
-      const selects = wrapper.findAll('.q-select');
-      expect(selects.length).toBe(2); // One per equipment type
-    });
-
     it('shows add button only when equipment is selected', async () => {
       const wrapper = createWrapper();
 

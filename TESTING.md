@@ -17,7 +17,7 @@ task test:coverage     # Run tests with coverage
 
 ## Test Files
 
-65 test files, 1651 tests
+65 test files, 1654 tests
 
 ### Utility Tests (8 files, 183 tests)
 
@@ -108,14 +108,14 @@ task test:coverage     # Run tests with coverage
 | `TalentItem.test.ts`      | 13    | Talent card, prerequisites, type badge                         |
 | `TalentsTab.test.ts`      | 31    | Talent list, path/radiant/surge talents, edge cases            |
 
-#### Page Components (8 files, 72 tests)
+#### Page Components (8 files, 75 tests)
 
 | File                            | Tests | Coverage                                        |
 | ------------------------------- | ----- | ----------------------------------------------- |
 | `ErrorNotFound.test.ts`         | 7     | 404 display, navigation, accessibility          |
 | `ErrorForbidden.test.ts`        | 6     | 403 display, navigation, accessibility          |
 | `ErrorServer.test.ts`           | 7     | 500 display, retry button, accessibility        |
-| `LoginPage.test.ts`             | 8     | Form submission, redirect validation            |
+| `LoginPage.test.ts`             | 11    | Form submission, redirect validation            |
 | `CampaignsPage.test.ts`         | 9     | Campaign list, navigation, loading/error states |
 | `CampaignDetailPage.test.ts`    | 13    | Character cards, health bar, navigation         |
 | `CharacterSheetPage.test.ts`    | 11    | Tab navigation, loading/error states            |

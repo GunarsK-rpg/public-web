@@ -56,10 +56,10 @@ describe('ExpertisesTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExpertises.value = [
-      { id: 1, expertiseId: 1, source: { sourceType: 'culture', sourceId: 1 } },
-      { id: 2, expertiseId: 2, source: null },
-      { id: 3, expertiseId: 3, source: { sourceType: 'talent', sourceId: 5 } },
-      { id: 4, expertiseId: 6, source: { sourceType: 'culture', sourceId: 1 } },
+      { id: 1, heroId: 1, expertiseId: 1, source: { sourceType: 'culture', sourceId: 1 } },
+      { id: 2, heroId: 1, expertiseId: 2, source: null },
+      { id: 3, heroId: 1, expertiseId: 3, source: { sourceType: 'talent', sourceId: 5 } },
+      { id: 4, heroId: 1, expertiseId: 6, source: { sourceType: 'culture', sourceId: 1 } },
     ] as HeroExpertise[];
   });
 

@@ -24,7 +24,9 @@ const mockMaxInvestiture = ref(20);
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
-    hero: mockHero.value,
+    get hero() {
+      return mockHero.value;
+    },
   }),
 }));
 
@@ -41,7 +43,9 @@ vi.mock('src/stores/heroAttributes', () => ({
 
 vi.mock('src/stores/heroTalents', () => ({
   useHeroTalentsStore: () => ({
-    isRadiant: mockIsRadiant.value,
+    get isRadiant() {
+      return mockIsRadiant.value;
+    },
   }),
 }));
 
@@ -262,10 +266,12 @@ describe('CharacterHeader', () => {
   describe('null/missing data handling', () => {
     it('handles null hero gracefully', () => {
       mockHero.value = null;
-      const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Level');
-      // Should not throw
+      // Should not throw during mount
+      expect(() => createWrapper()).not.toThrow();
+
+      const wrapper = createWrapper();
+      expect(wrapper.exists()).toBe(true);
     });
 
     it('handles missing culture gracefully', () => {

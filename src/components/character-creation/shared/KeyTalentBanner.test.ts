@@ -104,6 +104,8 @@ describe('KeyTalentBanner', () => {
       const wrapper = createWrapper({ talent: undefined });
 
       expect(wrapper.exists()).toBe(true);
+      // Should show label but no talent name
+      expect(wrapper.text()).toContain('Key Talent:');
     });
   });
 

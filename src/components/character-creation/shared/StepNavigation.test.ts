@@ -134,8 +134,9 @@ describe('StepNavigation', () => {
       const wrapper = createWrapper();
       const buttons = wrapper.findAll('.q-btn');
       const backButton = buttons.find((b) => b.text().includes('Back'));
+      expect(backButton).toBeDefined();
 
-      await backButton?.trigger('click');
+      await backButton!.trigger('click');
 
       expect(mockPreviousStep).toHaveBeenCalled();
     });
@@ -144,8 +145,9 @@ describe('StepNavigation', () => {
       const wrapper = createWrapper();
       const buttons = wrapper.findAll('.q-btn');
       const nextButton = buttons.find((b) => b.text().includes('Next'));
+      expect(nextButton).toBeDefined();
 
-      await nextButton?.trigger('click');
+      await nextButton!.trigger('click');
 
       expect(mockNextStep).toHaveBeenCalled();
     });
@@ -157,8 +159,9 @@ describe('StepNavigation', () => {
       const wrapper = createWrapper();
       const buttons = wrapper.findAll('.q-btn');
       const createButton = buttons.find((b) => b.text().includes('Create'));
+      expect(createButton).toBeDefined();
 
-      await createButton?.trigger('click');
+      await createButton!.trigger('click');
 
       expect(wrapper.emitted('create')).toBeTruthy();
     });

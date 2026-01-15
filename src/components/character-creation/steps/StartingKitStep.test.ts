@@ -290,17 +290,6 @@ describe('StartingKitStep', () => {
   });
 
   // ========================================
-  // Prisoner Kit Banner
-  // ========================================
-  describe('prisoner kit banner', () => {
-    it('does not show prisoner banner when adventurer kit selected', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).not.toContain('Prisoner Kit Special');
-    });
-  });
-
-  // ========================================
   // Accessibility
   // ========================================
   describe('accessibility', () => {
@@ -350,6 +339,12 @@ describe('StartingKitStep', () => {
   // Prisoner Kit Banner
   // ========================================
   describe('prisoner kit banner', () => {
+    it('does not show prisoner banner when adventurer kit selected', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).not.toContain('Prisoner Kit Special');
+    });
+
     it('shows prisoner banner when prisoner kit is selected', () => {
       mockHero.value = { startingKitId: 2, currency: 0 };
       const wrapper = createWrapper();

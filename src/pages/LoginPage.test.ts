@@ -111,7 +111,7 @@ describe('LoginPage', () => {
 
       // Set username and password
       const inputs = wrapper.findAll('.q-input');
-      expect(inputs.length).toBeGreaterThan(1);
+      expect(inputs.length).toBeGreaterThanOrEqual(2);
       await inputs[0]!.setValue('testuser');
       await inputs[1]!.setValue('password123');
 
@@ -121,17 +121,30 @@ describe('LoginPage', () => {
       expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123');
     });
 
-    it('redirects on successful login', async () => {
+    it('redirects to home on successful login', async () => {
       mockLogin.mockResolvedValue(true);
       const wrapper = createWrapper();
 
       const inputs = wrapper.findAll('.q-input');
-      expect(inputs.length).toBeGreaterThan(1);
+      expect(inputs.length).toBeGreaterThanOrEqual(2);
       await inputs[0]!.setValue('testuser');
       await inputs[1]!.setValue('password123');
       await wrapper.find('.q-form').trigger('submit');
 
-      expect(mockPush).toHaveBeenCalled();
+      expect(mockPush).toHaveBeenCalledWith('/');
+    });
+
+    it('does not redirect on failed login', async () => {
+      mockLogin.mockResolvedValue(false);
+      const wrapper = createWrapper();
+
+      const inputs = wrapper.findAll('.q-input');
+      expect(inputs.length).toBeGreaterThanOrEqual(2);
+      await inputs[0]!.setValue('testuser');
+      await inputs[1]!.setValue('wrongpassword');
+      await wrapper.find('.q-form').trigger('submit');
+
+      expect(mockPush).not.toHaveBeenCalled();
     });
   });
 
@@ -143,6 +156,18 @@ describe('LoginPage', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.find('.q-card').exists()).toBe(true);
+    });
+
+    it('has form element', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('.q-form').exists()).toBe(true);
+    });
+
+    it('has page container', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('.q-page').exists()).toBe(true);
     });
   });
 });

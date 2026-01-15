@@ -22,9 +22,15 @@ vi.mock('vue-router', () => ({
 
 vi.mock('stores/campaigns', () => ({
   useCampaignStore: () => ({
-    campaigns: mockCampaigns.value,
-    loading: mockLoading.value,
-    error: mockError.value,
+    get campaigns() {
+      return mockCampaigns.value;
+    },
+    get loading() {
+      return mockLoading.value;
+    },
+    get error() {
+      return mockError.value;
+    },
     fetchCampaigns: mockFetchCampaigns,
   }),
 }));
@@ -175,9 +181,16 @@ describe('CampaignsPage', () => {
       const createBtn = wrapper
         .findAll('.q-btn')
         .find((b) => b.text().includes('Create Character'));
-      await createBtn?.trigger('click');
+      expect(createBtn).toBeDefined();
+      await createBtn!.trigger('click');
 
       expect(mockPush).toHaveBeenCalledWith({ name: 'character-create-standalone' });
+    });
+
+    it('fetches campaigns on mount', () => {
+      createWrapper();
+
+      expect(mockFetchCampaigns).toHaveBeenCalled();
     });
   });
 
@@ -189,7 +202,17 @@ describe('CampaignsPage', () => {
       const wrapper = createWrapper();
 
       const cards = wrapper.findAll('.q-card[role="button"]');
-      expect(cards.length).toBe(2);
+      // Should match number of campaigns in mock data
+      expect(cards.length).toBe(mockCampaigns.value.length);
+    });
+
+    it('campaign cards are keyboard accessible', () => {
+      const wrapper = createWrapper();
+
+      const cards = wrapper.findAll('.q-card[role="button"]');
+      expect(cards.length).toBeGreaterThan(0);
+      // Verify tabindex is set for keyboard navigation
+      expect(cards[0]!.attributes('tabindex')).toBe('0');
     });
   });
 });

@@ -17,13 +17,17 @@ const mockEquipmentTypes = ref([
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
-    hero: mockHero.value,
+    get hero() {
+      return mockHero.value;
+    },
   }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
-    equipmentTypes: mockEquipmentTypes.value,
+    get equipmentTypes() {
+      return mockEquipmentTypes.value;
+    },
     equipment: [
       { id: 1, name: 'Longsword', equipTypeId: 1 },
       { id: 2, name: 'Longbow', equipTypeId: 1 },

@@ -57,14 +57,8 @@ describe('TalentListItem', () => {
           },
           QIcon: { template: '<span class="q-icon" />' },
           QBtn: {
-            template: '<button class="q-btn" @click="onClick"><slot /></button>',
+            template: '<button class="q-btn" @click="$emit(\'click\')"><slot /></button>',
             emits: ['click'],
-            methods: {
-              onClick() {
-                // Don't call stopPropagation - just emit the event
-                (this as unknown as { $emit: (event: string) => void }).$emit('click');
-              },
-            },
           },
           QTooltip: { template: '<span class="q-tooltip"><slot /></span>' },
         },

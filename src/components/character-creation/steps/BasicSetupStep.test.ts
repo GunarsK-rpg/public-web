@@ -294,20 +294,21 @@ describe('BasicSetupStep', () => {
       mockHasCampaigns.value = true;
       createWrapper();
 
-      // Wait for mount
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      expect(mockFetchCampaigns).not.toHaveBeenCalled();
+      // Wait for mount using flushPromises pattern
+      await vi.waitFor(() => {
+        // Component should not call fetch when campaigns already loaded
+        expect(mockFetchCampaigns).not.toHaveBeenCalled();
+      });
     });
 
     it('fetches campaigns if not loaded', async () => {
       mockHasCampaigns.value = false;
       createWrapper();
 
-      // Wait for mount
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      expect(mockFetchCampaigns).toHaveBeenCalled();
+      // Wait for mount using flushPromises pattern
+      await vi.waitFor(() => {
+        expect(mockFetchCampaigns).toHaveBeenCalled();
+      });
     });
   });
 
@@ -426,10 +427,10 @@ describe('BasicSetupStep', () => {
 
       createWrapper();
 
-      // Wait for mount and async operations
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(mockLoggerError.fn).toHaveBeenCalledWith('Failed to fetch campaigns', testError);
+      // Wait for async error handling
+      await vi.waitFor(() => {
+        expect(mockLoggerError.fn).toHaveBeenCalledWith('Failed to fetch campaigns', testError);
+      });
       expect(mockNotify.fn).toHaveBeenCalledWith({
         type: 'warning',
         message: 'Could not load campaigns. You can continue without selecting one.',
@@ -443,10 +444,10 @@ describe('BasicSetupStep', () => {
 
       createWrapper();
 
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(mockLoggerError.fn).toHaveBeenCalledWith('Failed to fetch campaigns', {
-        error: 'string error',
+      await vi.waitFor(() => {
+        expect(mockLoggerError.fn).toHaveBeenCalledWith('Failed to fetch campaigns', {
+          error: 'string error',
+        });
       });
       expect(mockNotify.fn).toHaveBeenCalled();
     });
@@ -515,6 +516,8 @@ describe('BasicSetupStep', () => {
 
       // The template uses heroStore.hero?.name ?? '' which should work
       expect(wrapper.exists()).toBe(true);
+      // Verify the name input exists and renders without crashing
+      expect(wrapper.find('.q-input').exists()).toBe(true);
     });
 
     it('handles null hero.level with fallback to 1', () => {
@@ -522,6 +525,8 @@ describe('BasicSetupStep', () => {
 
       // The template uses heroStore.hero?.level ?? 1
       expect(wrapper.exists()).toBe(true);
+      // Verify multiple inputs exist (name and level)
+      expect(wrapper.findAll('.q-input').length).toBeGreaterThanOrEqual(2);
     });
   });
 });

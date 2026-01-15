@@ -4,13 +4,11 @@ import StatsTab from './StatsTab.vue';
 
 const mockGetAttributeValue = vi.fn();
 const mockGetDefenseValue = vi.fn();
-const mockGetDerivedStatModifier = vi.fn();
 
 vi.mock('src/stores/heroAttributes', () => ({
   useHeroAttributesStore: () => ({
     getAttributeValue: mockGetAttributeValue,
     getDefenseValue: mockGetDefenseValue,
-    getDerivedStatModifier: mockGetDerivedStatModifier,
     levelData: { level: 5, tier: 2 },
     tierData: { tier: 2, name: 'Journeyman' },
   }),
@@ -102,12 +100,11 @@ describe('StatsTab', () => {
     mockGetDefenseValue.mockImplementation((code: string) => {
       const values: Record<string, number> = {
         physical: 12,
-        cognitive: 10,
+        cognitive: 14,
         spiritual: 11,
       };
       return values[code] ?? 0;
     });
-    mockGetDerivedStatModifier.mockReturnValue(0);
   });
 
   // ========================================
@@ -202,7 +199,7 @@ describe('StatsTab', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('12'); // physical
-      expect(wrapper.text()).toContain('10'); // cognitive
+      expect(wrapper.text()).toContain('14'); // cognitive
       expect(wrapper.text()).toContain('11'); // spiritual
     });
 
@@ -250,8 +247,9 @@ describe('StatsTab', () => {
       // Deflect has hasModifier: false and modifier: 0
       // Should just show '10' without breakdown
       const text = wrapper.text();
-      // Count occurrences of '10' - should appear but without breakdown
       expect(text).toContain('10');
+      // Verify no breakdown like "(10 +0)" or "(10 -0)" appears for Deflect
+      expect(text).not.toMatch(/\(10\s*[+-]\s*0\)/);
     });
   });
 
@@ -264,6 +262,8 @@ describe('StatsTab', () => {
 
       const attrValues = wrapper.findAll('[aria-label*="Strength"]');
       expect(attrValues.length).toBeGreaterThan(0);
+      // Verify the aria-label contains the attribute value
+      expect(attrValues[0]!.attributes('aria-label')).toMatch(/3/);
     });
 
     it('has aria-label on defense values', () => {
@@ -271,6 +271,8 @@ describe('StatsTab', () => {
 
       const defenseValues = wrapper.findAll('[aria-label*="Physical defense"]');
       expect(defenseValues.length).toBeGreaterThan(0);
+      // Verify the aria-label contains the defense value
+      expect(defenseValues[0]!.attributes('aria-label')).toMatch(/12/);
     });
   });
 
@@ -294,11 +296,27 @@ describe('StatsTab', () => {
       expect(wrapper.text()).toContain('0');
     });
 
-    it('handles negative modifiers', () => {
-      // The mock already returns stats with positive modifiers
-      // This test verifies the component renders correctly
+    it('handles negative modifiers', async () => {
+      // Override the buildDerivedStatsList mock for this test
+      const { buildDerivedStatsList } = await import('src/utils/derivedStats');
+      vi.mocked(buildDerivedStatsList).mockReturnValueOnce([
+        {
+          id: 1,
+          code: 'debuffed',
+          name: 'Debuffed Stat',
+          baseValue: 30,
+          baseDisplay: '30',
+          modifier: -5,
+          totalValue: 25,
+          totalDisplay: '25',
+          hasModifier: true,
+        },
+      ]);
       const wrapper = createWrapper();
-      expect(wrapper.exists()).toBe(true);
+
+      expect(wrapper.text()).toContain('Debuffed Stat');
+      expect(wrapper.text()).toContain('25');
+      expect(wrapper.text()).toContain('(30 -5)');
     });
   });
 });

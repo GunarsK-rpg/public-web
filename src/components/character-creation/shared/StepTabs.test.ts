@@ -1,16 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+import { ref } from 'vue';
 import StepTabs from './StepTabs.vue';
 
 // Mock the wizard store
 const mockGoToStep = vi.fn();
 const mockMarkStepCompleted = vi.fn();
 const mockIsStepCompleted = vi.fn();
+const mockCurrentStep = ref(1);
 
 vi.mock('src/stores/wizard', () => ({
   useWizardStore: () => ({
-    currentStep: 1,
+    get currentStep() {
+      return mockCurrentStep.value;
+    },
     goToStep: mockGoToStep,
     markStepCompleted: mockMarkStepCompleted,
     isStepCompleted: mockIsStepCompleted,
@@ -46,7 +50,8 @@ describe('StepTabs', () => {
             template: '<span class="q-icon" :aria-label="$attrs[\'aria-label\']" />',
           },
           QLinearProgress: {
-            template: '<div class="q-linear-progress" :style="{ width: value * 100 + \'%\' }" />',
+            template:
+              '<div class="q-linear-progress" aria-hidden="true" :style="{ width: value * 100 + \'%\' }" />',
             props: ['value'],
           },
         },
@@ -56,6 +61,7 @@ describe('StepTabs', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    mockCurrentStep.value = 1;
     mockIsStepCompleted.mockReturnValue(false);
     mockValidate.mockReturnValue({ isValid: true, errors: [], warnings: [] });
   });
@@ -285,15 +291,17 @@ describe('StepTabs', () => {
       await wrapper.find('#step-tab-1').trigger('keydown.left');
 
       // Should not call goToStep for out-of-bounds navigation
-      // (actual behavior depends on implementation - this tests boundaries)
+      expect(mockGoToStep).not.toHaveBeenCalled();
     });
 
     it('does not navigate past last step', async () => {
+      mockCurrentStep.value = 5;
       const wrapper = createWrapper();
 
       await wrapper.find('#step-tab-5').trigger('keydown.right');
 
       // Should not call goToStep for out-of-bounds navigation
+      expect(mockGoToStep).not.toHaveBeenCalled();
     });
   });
 
