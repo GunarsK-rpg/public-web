@@ -67,16 +67,30 @@ tasks:
       - task: format:fix
 
   format:fix:
-    desc: Format code with Prettier (auto-fix, covers src/ and src-tauri/)
+    desc: Format code with Prettier (auto-fix)
     cmds:
-      # Pattern src*/** covers both src/ and src-tauri/ for consistency with lint:fix
-      - npx prettier --write "src*/**/*.{ts,js,vue,json,md}"
+      - npx prettier --write "**/*.{ts,js,vue,json,md}" --ignore-path .gitignore
 
   format:check:
-    desc: Check code formatting (covers src/ and src-tauri/)
+    desc: Check code formatting
     cmds:
-      # Pattern src*/** covers both src/ and src-tauri/ for consistency with lint
-      - npx prettier --check "src*/**/*.{ts,js,vue,json,md}"
+      - npx prettier --check "**/*.{ts,js,vue,json,md}" --ignore-path .gitignore
+
+  # Testing
+  test:
+    desc: Run unit tests
+    cmds:
+      - npm run test
+
+  test:watch:
+    desc: Run unit tests in watch mode
+    cmds:
+      - npm run test:watch
+
+  test:coverage:
+    desc: Run unit tests with coverage
+    cmds:
+      - npm run test:coverage
 
   # Type checking
   typecheck:
@@ -103,11 +117,12 @@ tasks:
 
   # CI/CD
   ci:all:
-    desc: Run all CI checks (format:check, lint, typecheck, build, security:audit, lint:markdown)
+    desc: Run all CI checks (format:check, lint, typecheck, test, build, security:audit, lint:markdown)
     cmds:
       - task: format:check
       - task: lint
       - task: typecheck
+      - task: test
       - task: build
       - task: security:audit
       - task: lint:markdown
