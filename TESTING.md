@@ -17,7 +17,7 @@ task test:coverage     # Run tests with coverage
 
 ## Test Files
 
-17 test files, 506 tests
+23 test files, 734 tests
 
 ### Utility Tests (8 files, 183 tests)
 
@@ -45,6 +45,17 @@ task test:coverage     # Run tests with coverage
 | `heroEquipment.test.ts`  | 30    | addEquipment, removeEquipment, stacking, equipped/primary states        |
 | `heroTalents.test.ts`    | 35    | addCulture, removeCulture, addTalent, removeTalent, addKeyTalentForPath |
 | `wizard.test.ts`         | 48    | startCreate, startEdit, startLevelUp, navigation, step completion       |
+
+### Composable Tests (6 files, 228 tests)
+
+| File                             | Tests | Coverage                                                                   |
+| -------------------------------- | ----- | -------------------------------------------------------------------------- |
+| `useModifierInput.test.ts`       | 58    | normalizeModifierInput, useIncrementDecrement, min/max/budget constraints  |
+| `useEntityIcon.test.ts`          | 28    | useEntityIcon, useChainedEntityIcon, entity/icon resolution, reactivity    |
+| `useErrorHandler.test.ts`        | 45    | HTTP error handling (401-500), auto-retry, XSS sanitization, notifications |
+| `useSwipeNavigation.test.ts`     | 23    | touch event handling, swipe detection, threshold/direction, lifecycle      |
+| `useStepValidation.test.ts`      | 31    | validate, budget, currentStepCode, currentValidation, allStepsValidation   |
+| `useTalentPrerequisites.test.ts` | 43    | prerequisite checking, talent lookups, formatPrereq, toggleTalent          |
 
 ## Contributing Tests
 
