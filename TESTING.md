@@ -17,7 +17,9 @@ task test:coverage     # Run tests with coverage
 
 ## Test Files
 
-8 test files, 183 tests
+17 test files, 500 tests
+
+### Utility Tests (8 files, 183 tests)
 
 | File                          | Tests | Coverage                                                                 |
 | ----------------------------- | ----- | ------------------------------------------------------------------------ |
@@ -29,6 +31,20 @@ task test:coverage     # Run tests with coverage
 | `iconUrl.test.ts`             | 8     | createGetIconUrl factory, icon resolution, undefined/empty handling      |
 | `logger.test.ts`              | 29    | context management, child loggers, HTTP request/response logging         |
 | `talentUtils.test.ts`         | 23    | formatPrerequisite (all types), createPrerequisiteFormatter              |
+
+### Store Tests (9 files, 317 tests)
+
+| File                     | Tests | Coverage                                                                |
+| ------------------------ | ----- | ----------------------------------------------------------------------- |
+| `auth.test.ts`           | 32    | login, logout, setAuth, reset, token handling, localStorage             |
+| `campaigns.test.ts`      | 23    | fetchCampaigns, selectCampaign, loading states, error handling          |
+| `classifiers.test.ts`    | 27    | getDerivedStatValue, cache, initialize, reset, lookups                  |
+| `hero.test.ts`           | 47    | initNewHero, loadHero, setName, setLevel, updateResources, tempId       |
+| `heroAttributes.test.ts` | 57    | setAttribute, setSkillRank, addExpertise, removeExpertise, clamping     |
+| `heroDetails.test.ts`    | 18    | addGoal, removeGoal, addConnection, removeConnection, setAppearance     |
+| `heroEquipment.test.ts`  | 30    | addEquipment, removeEquipment, stacking, equipped/primary states        |
+| `heroTalents.test.ts`    | 35    | addCulture, removeCulture, addTalent, removeTalent, addKeyTalentForPath |
+| `wizard.test.ts`         | 48    | startCreate, startEdit, startLevelUp, navigation, step completion       |
 
 ## Contributing Tests
 
