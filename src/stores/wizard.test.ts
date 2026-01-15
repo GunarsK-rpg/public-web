@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useWizardStore } from './wizard';
 import { useHeroStore } from './hero';
-import { WIZARD_STEPS } from 'src/types/wizard';
+import { WIZARD_STEPS, STEP_CODES } from 'src/types/wizard';
+
+// Helper to get step by code - avoids hardcoding step numbers
+const getStepByCode = (code: string) => WIZARD_STEPS.find((s) => s.code === code);
 
 // Mock the heroes module for loadHero
 vi.mock('src/mock/heroes', () => ({
@@ -362,22 +365,29 @@ describe('useWizardStore', () => {
       expect(store.mode).toBe('levelup');
     });
 
-    it('starts at attributes step (step 4)', async () => {
+    it('starts at attributes step', async () => {
       const store = useWizardStore();
+      const attributesStep = getStepByCode(STEP_CODES.ATTRIBUTES);
+
       await store.startLevelUp(1);
-      expect(store.currentStep).toBe(4); // attributes step
+
+      expect(store.currentStep).toBe(attributesStep!.id);
     });
 
     it('marks steps before attributes as completed', async () => {
       const store = useWizardStore();
+      const attributesStep = getStepByCode(STEP_CODES.ATTRIBUTES);
+
       await store.startLevelUp(1);
 
-      // Steps 1-3 should be completed
-      expect(store.isStepCompleted(1)).toBe(true);
-      expect(store.isStepCompleted(2)).toBe(true);
-      expect(store.isStepCompleted(3)).toBe(true);
-      // Step 4 should not be completed
-      expect(store.isStepCompleted(4)).toBe(false);
+      // All steps before attributes should be completed
+      for (const step of WIZARD_STEPS) {
+        if (step.id < attributesStep!.id) {
+          expect(store.isStepCompleted(step.id)).toBe(true);
+        }
+      }
+      // Attributes step itself should not be completed
+      expect(store.isStepCompleted(attributesStep!.id)).toBe(false);
     });
 
     it('sets isActive to true', async () => {

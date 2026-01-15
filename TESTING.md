@@ -17,7 +17,7 @@ task test:coverage     # Run tests with coverage
 
 ## Test Files
 
-17 test files, 500 tests
+17 test files, 506 tests
 
 ### Utility Tests (8 files, 183 tests)
 
@@ -32,7 +32,7 @@ task test:coverage     # Run tests with coverage
 | `logger.test.ts`              | 29    | context management, child loggers, HTTP request/response logging         |
 | `talentUtils.test.ts`         | 23    | formatPrerequisite (all types), createPrerequisiteFormatter              |
 
-### Store Tests (9 files, 317 tests)
+### Store Tests (9 files, 323 tests)
 
 | File                     | Tests | Coverage                                                                |
 | ------------------------ | ----- | ----------------------------------------------------------------------- |
@@ -40,8 +40,8 @@ task test:coverage     # Run tests with coverage
 | `campaigns.test.ts`      | 23    | fetchCampaigns, selectCampaign, loading states, error handling          |
 | `classifiers.test.ts`    | 27    | getDerivedStatValue, cache, initialize, reset, lookups                  |
 | `hero.test.ts`           | 47    | initNewHero, loadHero, setName, setLevel, updateResources, tempId       |
-| `heroAttributes.test.ts` | 57    | setAttribute, setSkillRank, addExpertise, removeExpertise, clamping     |
-| `heroDetails.test.ts`    | 18    | addGoal, removeGoal, addConnection, removeConnection, setAppearance     |
+| `heroAttributes.test.ts` | 58    | setAttribute, setSkillRank, addExpertise, removeExpertise, clamping     |
+| `heroDetails.test.ts`    | 23    | addGoal, removeGoal, addConnection, removeConnection, truncation        |
 | `heroEquipment.test.ts`  | 30    | addEquipment, removeEquipment, stacking, equipped/primary states        |
 | `heroTalents.test.ts`    | 35    | addCulture, removeCulture, addTalent, removeTalent, addKeyTalentForPath |
 | `wizard.test.ts`         | 48    | startCreate, startEdit, startLevelUp, navigation, step completion       |

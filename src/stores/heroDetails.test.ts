@@ -3,6 +3,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useHeroDetailsStore } from './heroDetails';
 import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
+import { MAX_TEXT_LENGTH } from 'src/constants';
 
 // Mock classifiers data
 const mockClassifiers = {
@@ -280,6 +281,16 @@ describe('useHeroDetailsStore', () => {
 
       expect(heroStore.hero?.biography).toBe('Born in a village');
     });
+
+    it('truncates to MAX_TEXT_LENGTH', () => {
+      const store = useHeroDetailsStore();
+      const heroStore = useHeroStore();
+
+      const longText = 'x'.repeat(MAX_TEXT_LENGTH + 100);
+      store.setBiography(longText);
+
+      expect(heroStore.hero?.biography?.length).toBe(MAX_TEXT_LENGTH);
+    });
   });
 
   describe('setNotes', () => {
@@ -299,6 +310,16 @@ describe('useHeroDetailsStore', () => {
       store.setNotes('  Check inventory  ');
 
       expect(heroStore.hero?.notes).toBe('Check inventory');
+    });
+
+    it('truncates to MAX_TEXT_LENGTH', () => {
+      const store = useHeroDetailsStore();
+      const heroStore = useHeroStore();
+
+      const longText = 'x'.repeat(MAX_TEXT_LENGTH + 100);
+      store.setNotes(longText);
+
+      expect(heroStore.hero?.notes?.length).toBe(MAX_TEXT_LENGTH);
     });
   });
 });
