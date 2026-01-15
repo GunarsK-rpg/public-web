@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { logger, setUserContext, clearUserContext } from './logger';
 
 // =============================================================================
@@ -16,49 +16,93 @@ describe('Logger', () => {
   // ---------------------------------------------------------------------------
   describe('setContext', () => {
     it('sets context that persists across log calls', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
       logger.setContext({ requestId: 'abc-123' });
+      logger.info('test');
 
-      // Context is internal, but we can verify it merges by setting more
-      logger.setContext({ userId: 42 });
-
-      // Both should be set (verified via clearContext behavior)
-      logger.clearContext('requestId');
-      // userId should still be set - clearing one key preserves others
+      expect(infoSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ requestId: 'abc-123' }),
+        'test'
+      );
+      infoSpy.mockRestore();
     });
 
     it('merges new context with existing', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
       logger.setContext({ a: 1 });
       logger.setContext({ b: 2 });
+      logger.info('test');
 
-      // Clear only 'a', 'b' should remain
-      logger.clearContext('a');
-      // No error means context operations work correctly
+      expect(infoSpy).toHaveBeenCalledWith(expect.objectContaining({ a: 1, b: 2 }), 'test');
+      infoSpy.mockRestore();
     });
   });
 
   describe('clearContext', () => {
     it('clears all context when called with null', () => {
-      logger.setContext({ a: 1, b: 2, c: 3 });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
+      logger.setContext({ a: 1, b: 2 });
       logger.clearContext(null);
-      // No error means clear succeeded
+      logger.info('test');
+
+      // Context should not contain cleared keys
+      expect(infoSpy.mock.calls[0]).toBeDefined();
+      const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+      expect(callArg).not.toHaveProperty('a');
+      expect(callArg).not.toHaveProperty('b');
+      infoSpy.mockRestore();
     });
 
     it('clears all context when called with no arguments', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
       logger.setContext({ a: 1, b: 2 });
       logger.clearContext();
-      // No error means clear succeeded
+      logger.info('test');
+
+      expect(infoSpy.mock.calls[0]).toBeDefined();
+      const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+      expect(callArg).not.toHaveProperty('a');
+      expect(callArg).not.toHaveProperty('b');
+      infoSpy.mockRestore();
     });
 
     it('clears single key when passed string', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
       logger.setContext({ keep: 'yes', remove: 'no' });
       logger.clearContext('remove');
-      // No error means single key clear succeeded
+      logger.info('test');
+
+      expect(infoSpy).toHaveBeenCalledWith(expect.objectContaining({ keep: 'yes' }), 'test');
+      expect(infoSpy.mock.calls[0]).toBeDefined();
+      const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+      expect(callArg).not.toHaveProperty('remove');
+      infoSpy.mockRestore();
     });
 
     it('clears multiple keys when passed array', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const infoSpy = vi.spyOn((logger as any).pino, 'info');
+
       logger.setContext({ a: 1, b: 2, c: 3 });
       logger.clearContext(['a', 'b']);
-      // No error means array key clear succeeded
+      logger.info('test');
+
+      expect(infoSpy).toHaveBeenCalledWith(expect.objectContaining({ c: 3 }), 'test');
+      expect(infoSpy.mock.calls[0]).toBeDefined();
+      const callArg = infoSpy.mock.calls[0]![0] as Record<string, unknown>;
+      expect(callArg).not.toHaveProperty('a');
+      expect(callArg).not.toHaveProperty('b');
+      infoSpy.mockRestore();
     });
   });
 
@@ -213,17 +257,31 @@ describe('Logger HTTP methods', () => {
   });
 
   it('logRequest sanitizes sensitive headers', () => {
-    expect(() =>
-      logger.logRequest({
-        method: 'POST',
-        url: '/api/auth',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer secret-token',
-          'X-API-Key': 'api-key-123',
-        },
-      })
-    ).not.toThrow();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const debugSpy = vi.spyOn((logger as any).pino, 'debug');
+
+    logger.logRequest({
+      method: 'POST',
+      url: '/api/auth',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer secret-token',
+        'X-API-Key': 'api-key-123',
+      },
+    });
+
+    expect(debugSpy.mock.calls[0]).toBeDefined();
+    const loggedData = debugSpy.mock.calls[0]![0] as Record<string, unknown>;
+    const http = loggedData.http as { headers: Record<string, string> };
+
+    // Sensitive headers should be redacted
+    expect(http.headers.Authorization).toBe('[REDACTED]');
+    expect(http.headers['X-API-Key']).toBe('[REDACTED]');
+
+    // Non-sensitive headers should be preserved
+    expect(http.headers['Content-Type']).toBe('application/json');
+
+    debugSpy.mockRestore();
   });
 
   it('logResponse does not throw', () => {

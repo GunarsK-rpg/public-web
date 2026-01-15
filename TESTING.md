@@ -8,9 +8,16 @@ task test:watch        # Run tests in watch mode
 task test:coverage     # Run tests with coverage
 ```
 
+## Test Environment
+
+- **Framework**: Vitest (fast, Vite-native test runner)
+- **DOM**: happy-dom (lightweight, Vue-compatible)
+- **Config**: See `vitest.config.ts` for full configuration
+- **CI**: Tests run automatically via `.github/workflows/ci.yml`
+
 ## Test Files
 
-8 test files, 184 tests
+8 test files, 183 tests
 
 | File                          | Tests | Coverage                                                                 |
 | ----------------------------- | ----- | ------------------------------------------------------------------------ |
@@ -19,7 +26,7 @@ task test:coverage     # Run tests with coverage
 | `dateUtils.test.ts`           | 5     | formatDate for ISO strings, date-only, undefined, empty, invalid         |
 | `debounce.test.ts`            | 6     | delay execution, argument passing, timer reset, cancel functionality     |
 | `derivedStats.test.ts`        | 25    | calculateFormulaStat, buildDerivedStatsList, display formatting          |
-| `iconUrl.test.ts`             | 9     | getIconUrl for actions/equipment types, undefined/empty handling         |
+| `iconUrl.test.ts`             | 8     | createGetIconUrl factory, icon resolution, undefined/empty handling      |
 | `logger.test.ts`              | 29    | context management, child loggers, HTTP request/response logging         |
 | `talentUtils.test.ts`         | 23    | formatPrerequisite (all types), createPrerequisiteFormatter              |
 
@@ -28,4 +35,6 @@ task test:coverage     # Run tests with coverage
 1. Name test files `<filename>.test.ts` next to source file
 2. Group tests with `describe` blocks by function, then by scenario
 3. Test both success and error cases, including edge cases (null, undefined, empty)
-4. Verify with `task test` before committing
+4. Use `vi.useFakeTimers()` for time-dependent tests, restore with `vi.useRealTimers()`
+5. Use factory pattern for modules with Vite-specific APIs (import.meta.glob)
+6. Verify with `task test` before committing

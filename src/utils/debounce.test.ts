@@ -11,7 +11,7 @@ describe('debounce', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   // ---------------------------------------------------------------------------

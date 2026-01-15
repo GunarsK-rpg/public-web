@@ -1,50 +1,26 @@
-import { describe, it, expect, vi } from 'vitest';
-
-// Mock the glob imports before importing the module
-vi.mock('../assets/icons/actions/*.svg', () => ({}));
-vi.mock('../assets/icons/equipment/*.svg', () => ({}));
-
-// We need to mock import.meta.glob results
-const mockActionIcons: Record<string, string> = {
-  '../assets/icons/actions/attack.svg': '/assets/icons/actions/attack.abc123.svg',
-  '../assets/icons/actions/defend.svg': '/assets/icons/actions/defend.def456.svg',
-};
-
-const mockEquipmentIcons: Record<string, string> = {
-  '../assets/icons/equipment/sword.svg': '/assets/icons/equipment/sword.xyz789.svg',
-  '../assets/icons/equipment/shield.svg': '/assets/icons/equipment/shield.uvw012.svg',
-};
-
-// Mock import.meta.glob by mocking the module
-vi.mock('./iconUrl', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-
-  return {
-    ...actual,
-    getIconUrl: (iconName: string | undefined, iconType: 'actions' | 'equipment'): string => {
-      if (!iconName) return '';
-
-      const modules: Record<string, Record<string, string>> = {
-        actions: mockActionIcons,
-        equipment: mockEquipmentIcons,
-      };
-
-      const iconModules = modules[iconType];
-      if (!iconModules) return '';
-
-      const key = `../assets/icons/${iconType}/${iconName}`;
-      return iconModules[key] ?? '';
-    },
-  };
-});
-
-import { getIconUrl, type IconType } from './iconUrl';
+import { describe, it, expect } from 'vitest';
+import { createGetIconUrl, type IconType } from './iconUrl';
 
 // =============================================================================
-// getIconUrl
+// createGetIconUrl - Factory for Icon URL Resolution
 // =============================================================================
 
-describe('getIconUrl', () => {
+// Mock icon modules for testing
+const mockModules: Record<IconType, Record<string, string>> = {
+  actions: {
+    '../assets/icons/actions/attack.svg': '/assets/icons/actions/attack.abc123.svg',
+    '../assets/icons/actions/defend.svg': '/assets/icons/actions/defend.def456.svg',
+  },
+  equipment: {
+    '../assets/icons/equipment/sword.svg': '/assets/icons/equipment/sword.xyz789.svg',
+    '../assets/icons/equipment/shield.svg': '/assets/icons/equipment/shield.uvw012.svg',
+  },
+};
+
+// Create testable getIconUrl using factory with mock data
+const getIconUrl = createGetIconUrl(mockModules);
+
+describe('createGetIconUrl', () => {
   // ---------------------------------------------------------------------------
   // Valid Inputs
   // ---------------------------------------------------------------------------
@@ -100,17 +76,23 @@ describe('getIconUrl', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // IconType
+  // Factory Isolation
   // ---------------------------------------------------------------------------
-  describe('IconType', () => {
-    it('accepts actions as valid icon type', () => {
-      const iconType: IconType = 'actions';
-      expect(iconType).toBe('actions');
-    });
+  describe('factory isolation', () => {
+    it('creates independent instances with different modules', () => {
+      const customModules: Record<IconType, Record<string, string>> = {
+        actions: {
+          '../assets/icons/actions/custom.svg': '/custom/path.svg',
+        },
+        equipment: {},
+      };
+      const customGetIconUrl = createGetIconUrl(customModules);
 
-    it('accepts equipment as valid icon type', () => {
-      const iconType: IconType = 'equipment';
-      expect(iconType).toBe('equipment');
+      // Custom instance has custom icon
+      expect(customGetIconUrl('custom.svg', 'actions')).toBe('/custom/path.svg');
+
+      // Original instance doesn't have custom icon
+      expect(getIconUrl('custom.svg', 'actions')).toBe('');
     });
   });
 });
