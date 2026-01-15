@@ -92,6 +92,12 @@ export const useWizardStore = defineStore('wizard', () => {
     const heroStore = useHeroStore();
     try {
       await heroStore.loadHero(heroId);
+      // Check if hero was actually loaded
+      if (!heroStore.hero) {
+        logger.warn('Hero not found for editing', { heroId });
+        reset();
+        return false;
+      }
       mode.value = 'edit';
       currentStep.value = 1;
       // In edit mode, consider all steps completed initially
@@ -112,6 +118,12 @@ export const useWizardStore = defineStore('wizard', () => {
     const heroStore = useHeroStore();
     try {
       await heroStore.loadHero(heroId);
+      // Check if hero was actually loaded
+      if (!heroStore.hero) {
+        logger.warn('Hero not found for level up', { heroId });
+        reset();
+        return false;
+      }
       mode.value = 'levelup';
       // Start at attributes step for level up - use step codes to avoid hardcoding numbers
       const attributesStepId = getStepIdByCode(STEP_CODES.ATTRIBUTES);

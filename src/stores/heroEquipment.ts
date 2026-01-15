@@ -3,14 +3,12 @@ import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { useHeroAttributesStore } from './heroAttributes';
 import { findById } from 'src/utils/arrayUtils';
+import { MAX_EQUIPMENT_STACK } from 'src/constants';
 
 export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
   const heroStore = useHeroStore();
   const classifierStore = useClassifierStore();
   const attrStore = useHeroAttributesStore();
-
-  // Maximum stack size for equipment items
-  const MAX_EQUIPMENT_STACK = 999;
 
   // ===================
   // CURRENCY
