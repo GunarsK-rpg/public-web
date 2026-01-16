@@ -1,6 +1,6 @@
 # Cosmere RPG - Character Sheet Manager
 
-![CI](https://github.com/GunarsK/cosmere-rpg/workflows/CI/badge.svg)
+![CI](https://github.com/GunarsK-rpg/public-web/workflows/CI/badge.svg)
 [![codecov](https://codecov.io/gh/GunarsK-rpg/public-web/graph/badge.svg)](https://codecov.io/gh/GunarsK-rpg/public-web)
 [![CodeRabbit](https://img.shields.io/coderabbit/prs/github/GunarsK-rpg/public-web?label=CodeRabbit&color=2ea44f)](https://coderabbit.ai)
 
