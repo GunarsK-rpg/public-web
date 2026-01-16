@@ -462,7 +462,7 @@ describe('PersonalDetailsStep', () => {
               props: ['modelValue'],
               emits: ['update:modelValue'],
             },
-            QSelect: { template: '<select class="q-select" />' },
+            QSelect: { template: '<div class="q-select" />', props: ['modelValue', 'options'] },
             QList: { template: '<div class="q-list"><slot /></div>' },
             QItem: { template: '<div class="q-item"><slot /></div>' },
             QItemSection: { template: '<div class="q-item-section"><slot /></div>' },

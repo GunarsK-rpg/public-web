@@ -46,6 +46,13 @@ vi.mock('vue-router', () => ({
 export { mockRouter, mockRoute, localStorageMock };
 
 // ========================================
+// Quasar Directives
+// ========================================
+config.global.directives = {
+  'close-popup': {},
+};
+
+// ========================================
 // Quasar Component Stubs
 // ========================================
 config.global.stubs = {
