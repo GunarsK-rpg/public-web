@@ -104,7 +104,7 @@ describe('PersonalDetailsStep', () => {
             template: `<select
               class="q-select"
               :value="modelValue"
-              @change="$emit('update:modelValue', Number($event.target.value) || null)"
+              @change="$emit('update:modelValue', $event.target.value === '' ? null : Number($event.target.value))"
             >
               <option :value="null">Select...</option>
               <option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
@@ -351,7 +351,8 @@ describe('PersonalDetailsStep', () => {
       const removeBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Remove connection'));
-      await removeBtns[0]?.trigger('click');
+      expect(removeBtns.length).toBeGreaterThan(0);
+      await removeBtns[0]!.trigger('click');
 
       expect(mockRemoveConnectionById).toHaveBeenCalledWith(1);
     });

@@ -16,7 +16,7 @@ describe('TalentDetailDialog', () => {
 
   const defaultFormatPrereq = (prereq: TalentPrerequisite) => {
     if (prereq.type === 'skill') return `Skill ${prereq.skillId} Rank ${prereq.skillRank}`;
-    if (prereq.type === 'talent') return `Talent ${prereq.talentIds?.join(', ')}`;
+    if (prereq.type === 'talent') return `Talent ${prereq.talentIds?.join(', ') ?? 'N/A'}`;
     return 'Unknown';
   };
 
@@ -32,6 +32,8 @@ describe('TalentDetailDialog', () => {
       },
       global: {
         stubs: {
+          // Note: Accessibility attributes (role, aria-modal) are provided by Quasar's QDialog.
+          // This stub includes them for accessibility test coverage of dialog structure.
           QDialog: {
             template: `<div v-if="modelValue" class="q-dialog" role="dialog" aria-modal="true">
               <slot />
