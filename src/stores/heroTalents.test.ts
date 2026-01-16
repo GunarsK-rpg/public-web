@@ -484,4 +484,182 @@ describe('useHeroTalentsStore', () => {
       expect(heroStore.hero?.radiantIdeal).toBe(5);
     });
   });
+
+  // ========================================
+  // Edge Cases
+  // ========================================
+  describe('edge cases', () => {
+    it('does not duplicate singer key talent when set to singer twice', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+
+      // Set to singer first time
+      store.setAncestry(2);
+      const talentCount1 = heroStore.hero!.talents.length;
+
+      // Set to singer again - should not duplicate key talent
+      store.setAncestry(2);
+      const talentCount2 = heroStore.hero!.talents.length;
+
+      expect(talentCount1).toBe(talentCount2);
+    });
+
+    it('handles setAncestry when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      // Should not throw
+      store.setAncestry(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('handles setSingerForm when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      // Should not throw
+      store.setSingerForm(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('handles addCulture when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      // Should not throw
+      store.addCulture(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('handles removeCulture when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      // Should not throw
+      store.removeCulture(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('handles addTalent when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      // Should not throw
+      store.addTalent(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('handles removeTalent when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      // Should not throw
+      store.removeTalent(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('handles setRadiantOrder when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      // Should not throw
+      store.setRadiantOrder(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('handles setRadiantIdeal when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      // Should not throw
+      store.setRadiantIdeal(3);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('handles addKeyTalentForPath when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      // Should not throw
+      store.addKeyTalentForPath(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('isSinger returns false when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      expect(store.isSinger).toBe(false);
+    });
+
+    it('isRadiant returns false when hero is null', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      expect(store.isRadiant).toBe(false);
+    });
+
+    it('warns when singer ancestry not found in classifiers', () => {
+      const store = useHeroTalentsStore();
+      const classifierStore = useClassifierStore();
+
+      // Temporarily remove singer ancestry from classifiers
+      const originalAncestries = [...classifierStore.ancestries];
+      classifierStore.ancestries.length = 0;
+      classifierStore.ancestries.push({ id: 1, code: 'human', name: 'Human' });
+
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      store.setAncestry(1);
+
+      expect(warnSpy).toHaveBeenCalledWith('Singer ancestry not found in classifiers');
+
+      // Restore ancestries
+      classifierStore.ancestries.length = 0;
+      originalAncestries.forEach((a) => classifierStore.ancestries.push(a));
+      warnSpy.mockRestore();
+    });
+
+    it('does not add duplicate singer key talent when already present', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+
+      // Manually add the singer key talent first
+      heroStore.hero!.talents.push({
+        id: -999,
+        heroId: heroStore.hero!.id,
+        talentId: 7, // singer key talent
+      });
+
+      const initialCount = heroStore.hero!.talents.length;
+
+      // Set to singer - should NOT add duplicate
+      store.setAncestry(2);
+
+      // Count singer key talents
+      const singerKeyTalents = heroStore.hero!.talents.filter((t) => t.talentId === 7);
+      expect(singerKeyTalents.length).toBe(1);
+      expect(heroStore.hero!.talents.length).toBe(initialCount);
+    });
+  });
 });

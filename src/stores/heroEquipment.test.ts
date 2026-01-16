@@ -48,6 +48,19 @@ const mockClassifiers = {
         { equipmentId: 2, quantity: 1 },
       ],
     },
+    {
+      id: 2,
+      code: 'empty',
+      name: 'Empty Kit',
+      // No expertises or equipment arrays
+    },
+    {
+      id: 3,
+      code: 'null-arrays',
+      name: 'Null Arrays Kit',
+      expertises: null,
+      equipment: null,
+    },
   ],
   ancestries: [],
   cultures: [],
@@ -282,6 +295,47 @@ describe('useHeroEquipmentStore', () => {
 
       expect(heroStore.hero!.equipment.length).toBe(1);
     });
+
+    it('does nothing when no hero loaded', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      store.removeEquipment(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('does nothing when amount specified but equipment not found', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(1, 5);
+      store.removeEquipment(999, 2); // Non-existent equipment with amount
+
+      expect(heroStore.hero!.equipment.length).toBe(1);
+      expect(heroStore.hero!.equipment[0]!.amount).toBe(5);
+    });
+
+    it('floors decimal amounts when decrementing', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(1, 5);
+      store.removeEquipment(1, 2.7);
+
+      expect(heroStore.hero!.equipment[0]!.amount).toBe(3);
+    });
+
+    it('treats negative amount as 1 when decrementing', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(1, 5);
+      store.removeEquipment(1, -3);
+
+      expect(heroStore.hero!.equipment[0]!.amount).toBe(4);
+    });
   });
 
   // ========================================
@@ -318,6 +372,16 @@ describe('useHeroEquipmentStore', () => {
 
       expect(heroStore.hero!.equipment[0]!.isEquipped).toBe(false);
     });
+
+    it('does nothing when no hero loaded', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      store.setEquipmentEquipped(1, true);
+
+      expect(heroStore.hero).toBeNull();
+    });
   });
 
   describe('setEquipmentPrimary', () => {
@@ -340,6 +404,26 @@ describe('useHeroEquipmentStore', () => {
       store.setEquipmentPrimary(1, false);
 
       expect(heroStore.hero!.equipment[0]!.isPrimary).toBe(false);
+    });
+
+    it('does nothing for non-existent equipment', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(1);
+      store.setEquipmentPrimary(999, true);
+
+      expect(heroStore.hero!.equipment[0]!.isPrimary).toBe(false);
+    });
+
+    it('does nothing when no hero loaded', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      store.setEquipmentPrimary(1, true);
+
+      expect(heroStore.hero).toBeNull();
     });
   });
 
@@ -419,6 +503,66 @@ describe('useHeroEquipmentStore', () => {
       // Kit id is set, but no equipment/expertises applied
       expect(heroStore.hero?.startingKitId).toBe(999);
       expect(heroStore.hero!.equipment.length).toBe(0);
+    });
+
+    it('does nothing when no hero loaded', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      store.setStartingKit(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+
+    it('handles kit with no expertises array', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.setStartingKit(2); // Empty kit
+
+      expect(heroStore.hero?.startingKitId).toBe(2);
+      expect(heroStore.hero!.equipment.length).toBe(0);
+      expect(heroStore.hero!.expertises.length).toBe(0);
+    });
+
+    it('handles kit with null expertises/equipment', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.setStartingKit(3); // Null arrays kit
+
+      expect(heroStore.hero?.startingKitId).toBe(3);
+      expect(heroStore.hero!.equipment.length).toBe(0);
+    });
+
+    it('does nothing in applyStartingKitBonuses when no hero', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      // Set kit first, then clear hero
+      store.setStartingKit(1);
+      heroStore.clearHero();
+
+      // Call setStartingKit again - should return early
+      store.setStartingKit(1);
+
+      expect(heroStore.hero).toBeNull();
+    });
+  });
+
+  // ========================================
+  // Add Equipment - No Hero
+  // ========================================
+  describe('addEquipment edge cases', () => {
+    it('does nothing when no hero loaded', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+      heroStore.clearHero();
+
+      store.addEquipment(1);
+
+      expect(heroStore.hero).toBeNull();
     });
   });
 });

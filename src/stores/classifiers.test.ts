@@ -12,6 +12,7 @@ const mockClassifiers = {
   derivedStats: [
     { id: 1, code: 'health', name: 'Health', attributeId: 1 },
     { id: 2, code: 'focus', name: 'Focus', attributeId: 2 },
+    { id: 3, code: 'special', name: 'Special', attributeId: 1 },
   ],
   derivedStatValues: [
     { id: 1, derivedStatId: 1, attrMin: 0, attrMax: 2, value: 10 },
@@ -19,6 +20,8 @@ const mockClassifiers = {
     { id: 3, derivedStatId: 1, attrMin: 6, attrMax: 10, value: 20 },
     { id: 4, derivedStatId: 2, attrMin: 0, attrMax: 4, value: 5 },
     { id: 5, derivedStatId: 2, attrMin: 5, attrMax: 10, value: 10 },
+    // Entry with null attrMax (should default to MAX_ATTRIBUTE_VALUE=10)
+    { id: 6, derivedStatId: 3, attrMin: 0, attrMax: null, value: 100 },
   ],
   skills: [{ id: 1, code: 'athletics', name: 'Athletics', attributeId: 1 }],
   expertiseTypes: [{ id: 1, code: 'general', name: 'General' }],
@@ -199,12 +202,12 @@ describe('useClassifierStore', () => {
 
     it('returns derivedStats', () => {
       const store = useClassifierStore();
-      expect(store.derivedStats.length).toBe(2);
+      expect(store.derivedStats.length).toBe(3);
     });
 
     it('returns derivedStatValues', () => {
       const store = useClassifierStore();
-      expect(store.derivedStatValues.length).toBe(5);
+      expect(store.derivedStatValues.length).toBe(6);
     });
   });
 
@@ -258,6 +261,15 @@ describe('useClassifierStore', () => {
       const store = useClassifierStore();
       // No values defined for attr > 10
       expect(store.getDerivedStatValue(1, 11)).toBeUndefined();
+    });
+
+    it('handles null attrMax by defaulting to MAX_ATTRIBUTE_VALUE', () => {
+      const store = useClassifierStore();
+      // derivedStatId 3 has attrMax: null, should default to 10
+      expect(store.getDerivedStatValue(3, 0)).toBe(100);
+      expect(store.getDerivedStatValue(3, 5)).toBe(100);
+      expect(store.getDerivedStatValue(3, 10)).toBe(100);
+      expect(store.getDerivedStatValue(3, 11)).toBeUndefined();
     });
   });
 
@@ -323,6 +335,163 @@ describe('useClassifierStore', () => {
       expect(val1).toBe(15);
       expect(val2).toBe(15);
       expect(val3).toBe(15);
+    });
+  });
+
+  // ========================================
+  // All Computed Getters Fallback
+  // ========================================
+  describe('all computed getters return empty arrays when data is null', () => {
+    it('returns empty attributeTypes', () => {
+      const store = useClassifierStore();
+      expect(store.attributeTypes).toEqual([]);
+    });
+
+    it('returns empty derivedStats', () => {
+      const store = useClassifierStore();
+      expect(store.derivedStats).toEqual([]);
+    });
+
+    it('returns empty derivedStatValues', () => {
+      const store = useClassifierStore();
+      expect(store.derivedStatValues).toEqual([]);
+    });
+
+    it('returns empty expertiseTypes', () => {
+      const store = useClassifierStore();
+      expect(store.expertiseTypes).toEqual([]);
+    });
+
+    it('returns empty activationTypes', () => {
+      const store = useClassifierStore();
+      expect(store.activationTypes).toEqual([]);
+    });
+
+    it('returns empty actionTypes', () => {
+      const store = useClassifierStore();
+      expect(store.actionTypes).toEqual([]);
+    });
+
+    it('returns empty actions', () => {
+      const store = useClassifierStore();
+      expect(store.actions).toEqual([]);
+    });
+
+    it('returns empty actionLinks', () => {
+      const store = useClassifierStore();
+      expect(store.actionLinks).toEqual([]);
+    });
+
+    it('returns empty paths', () => {
+      const store = useClassifierStore();
+      expect(store.paths).toEqual([]);
+    });
+
+    it('returns empty specialties', () => {
+      const store = useClassifierStore();
+      expect(store.specialties).toEqual([]);
+    });
+
+    it('returns empty surges', () => {
+      const store = useClassifierStore();
+      expect(store.surges).toEqual([]);
+    });
+
+    it('returns empty radiantOrders', () => {
+      const store = useClassifierStore();
+      expect(store.radiantOrders).toEqual([]);
+    });
+
+    it('returns empty singerForms', () => {
+      const store = useClassifierStore();
+      expect(store.singerForms).toEqual([]);
+    });
+
+    it('returns empty talents', () => {
+      const store = useClassifierStore();
+      expect(store.talents).toEqual([]);
+    });
+
+    it('returns empty units', () => {
+      const store = useClassifierStore();
+      expect(store.units).toEqual([]);
+    });
+
+    it('returns empty equipmentTypes', () => {
+      const store = useClassifierStore();
+      expect(store.equipmentTypes).toEqual([]);
+    });
+
+    it('returns empty damageTypes', () => {
+      const store = useClassifierStore();
+      expect(store.damageTypes).toEqual([]);
+    });
+
+    it('returns empty equipmentAttributes', () => {
+      const store = useClassifierStore();
+      expect(store.equipmentAttributes).toEqual([]);
+    });
+
+    it('returns empty equipment', () => {
+      const store = useClassifierStore();
+      expect(store.equipment).toEqual([]);
+    });
+
+    it('returns empty conditions', () => {
+      const store = useClassifierStore();
+      expect(store.conditions).toEqual([]);
+    });
+
+    it('returns empty injuries', () => {
+      const store = useClassifierStore();
+      expect(store.injuries).toEqual([]);
+    });
+
+    it('returns empty goalStatuses', () => {
+      const store = useClassifierStore();
+      expect(store.goalStatuses).toEqual([]);
+    });
+
+    it('returns empty connectionTypes', () => {
+      const store = useClassifierStore();
+      expect(store.connectionTypes).toEqual([]);
+    });
+
+    it('returns empty companionTypes', () => {
+      const store = useClassifierStore();
+      expect(store.companionTypes).toEqual([]);
+    });
+
+    it('returns empty startingKits', () => {
+      const store = useClassifierStore();
+      expect(store.startingKits).toEqual([]);
+    });
+
+    it('returns empty tiers', () => {
+      const store = useClassifierStore();
+      expect(store.tiers).toEqual([]);
+    });
+
+    it('returns empty levels', () => {
+      const store = useClassifierStore();
+      expect(store.levels).toEqual([]);
+    });
+  });
+
+  // ========================================
+  // Initialize Error Handling
+  // ========================================
+  describe('initialize error handling', () => {
+    it('allows retry after failure', async () => {
+      const store = useClassifierStore();
+
+      // Manually simulate a failed state
+      store.error = 'Previous failure';
+
+      // Should be able to reinitialize
+      await store.initialize();
+
+      expect(store.initialized).toBe(true);
     });
   });
 });
