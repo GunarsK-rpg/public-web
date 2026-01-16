@@ -10,6 +10,7 @@ export default defineConfig({
     setupFiles: ['src/__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
+      reporter: ['text', 'clover'],
       include: [
         'src/utils/**/*.ts',
         'src/stores/**/*.ts',

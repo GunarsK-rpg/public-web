@@ -71,8 +71,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unit tests
-        run: npm test
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: GunarsK-rpg/public-web
+          files: ./coverage/clover.xml
+          fail_ci_if_error: true
+          verbose: true
 
   # Job 4: Build application
   build:
