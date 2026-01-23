@@ -88,12 +88,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function login(username: string, password: string): Promise<boolean> {
-    // Environment guard: prevent mock auth in production
-    if (!import.meta.env.DEV) {
-      logger.error('Mock authentication attempted in production');
-      throw new Error('Mock authentication is disabled in production');
-    }
-
     loading.value = true;
     try {
       // TODO: Replace with actual API call
