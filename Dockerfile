@@ -21,8 +21,8 @@ RUN npm run build
 # Production stage
 FROM nginx:1.29-alpine
 
-# Security update
-RUN apk upgrade --no-cache
+# Security update - ensure package index is refreshed
+RUN apk update && apk upgrade --no-cache
 
 # Copy built assets
 COPY --from=builder /app/dist/spa /usr/share/nginx/html
