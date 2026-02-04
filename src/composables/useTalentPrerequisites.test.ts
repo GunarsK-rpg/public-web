@@ -1,151 +1,171 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { useTalentPrerequisites } from './useTalentPrerequisites';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import type { Talent, TalentPrerequisite } from 'src/types';
 
-// Mock the heroes module
-vi.mock('src/mock/heroes', () => ({
-  heroes: [
-    {
-      id: 1,
-      userId: 1,
-      campaignId: 1,
-      ancestryId: 1,
-      startingKitId: null,
-      activeSingerFormId: null,
-      radiantOrderId: 1,
-      radiantIdeal: 3,
-      name: 'Test Hero',
-      level: 5,
-      currentHealth: 20,
-      currentFocus: 10,
-      currentInvestiture: 5,
-      attributes: [],
-      defenses: [],
-      derivedStats: [],
-      skills: [
-        { id: 1, heroId: 1, skillId: 1, rank: 3 },
-        { id: 2, heroId: 1, skillId: 2, rank: 5 },
-      ],
-      talents: [
-        { id: 1, heroId: 1, talentId: 100 },
-        { id: 2, heroId: 1, talentId: 101 },
-      ],
-      expertises: [],
-      equipment: [],
-      currency: 100,
-      conditions: [],
-      injuries: [],
-      goals: [],
-      connections: [],
-      companions: [],
-      cultures: [],
-    },
+// Mock hero data
+const mockHero = {
+  id: 1,
+  userId: 1,
+  campaignId: 1,
+  ancestryId: 1,
+  startingKitId: null,
+  activeSingerFormId: null,
+  radiantOrderId: 1,
+  radiantIdeal: 3,
+  name: 'Test Hero',
+  level: 5,
+  currentHealth: 20,
+  currentFocus: 10,
+  currentInvestiture: 5,
+  attributes: [],
+  defenses: [],
+  derivedStats: [],
+  skills: [
+    { id: 1, heroId: 1, skillId: 1, rank: 3 },
+    { id: 2, heroId: 1, skillId: 2, rank: 5 },
   ],
+  talents: [
+    { id: 1, heroId: 1, talentId: 100 },
+    { id: 2, heroId: 1, talentId: 101 },
+  ],
+  expertises: [],
+  equipment: [],
+  currency: 100,
+  conditions: [],
+  injuries: [],
+  goals: [],
+  connections: [],
+  companions: [],
+  cultures: [],
+};
+
+const { mockGetSheet, mockGetAllClassifiers } = vi.hoisted(() => ({
+  mockGetSheet: vi.fn(),
+  mockGetAllClassifiers: vi.fn(),
 }));
 
-// Mock classifiers
-vi.mock('src/mock/classifiers', () => ({
-  classifiers: {
-    attributes: [],
-    skills: [
-      { id: 1, code: 'athletics', name: 'Athletics' },
-      { id: 2, code: 'acrobatics', name: 'Acrobatics' },
-      { id: 3, code: 'arcana', name: 'Arcana' },
-    ],
-    derivedStats: [],
-    levelData: [],
-    ancestries: [{ id: 1, code: 'human', name: 'Human' }],
-    cultures: [],
-    startingKits: [],
-    equipmentTypes: [],
-    equipment: [],
-    talents: [
-      // Base talents
-      { id: 100, code: 'power-strike', name: 'Power Strike', pathId: 1 },
-      { id: 101, code: 'quick-dodge', name: 'Quick Dodge', pathId: 1 },
-      // Talent with talent prerequisite
-      {
-        id: 102,
-        code: 'mighty-blow',
-        name: 'Mighty Blow',
-        pathId: 1,
-        prerequisites: [{ type: 'talent', talentIds: [100] }],
-      },
-      // Talent with skill prerequisite
-      {
-        id: 103,
-        code: 'expert-climber',
-        name: 'Expert Climber',
-        pathId: 1,
-        prerequisites: [{ type: 'skill', skillId: 1, skillRank: 3 }],
-      },
-      // Talent with ideal prerequisite
-      {
-        id: 104,
-        code: 'radiant-surge',
-        name: 'Radiant Surge',
-        pathId: null,
-        radiantOrderId: 1,
-        prerequisites: [{ type: 'ideal', skillRank: 2 }],
-      },
-      // Talent with level prerequisite
-      {
-        id: 105,
-        code: 'veteran-skill',
-        name: 'Veteran Skill',
-        pathId: 1,
-        prerequisites: [{ type: 'level', skillRank: 5 }],
-      },
-      // Talent with multiple prerequisites (all must be met)
-      {
-        id: 106,
-        code: 'master-warrior',
-        name: 'Master Warrior',
-        pathId: 1,
-        prerequisites: [
-          { type: 'talent', talentIds: [100, 101] },
-          { type: 'skill', skillId: 2, skillRank: 4 },
-        ],
-      },
-      // Key talents
-      { id: 200, code: 'path-key', name: 'Path Key Talent', pathId: 1, isKey: true },
-      { id: 201, code: 'ancestry-key', name: 'Ancestry Key', ancestryId: 1, isKey: true },
-      { id: 202, code: 'order-key', name: 'Order Key', radiantOrderId: 1, isKey: true },
-      // Specialty talents
-      { id: 300, code: 'specialty-1', name: 'Specialty Talent 1', pathId: 1, specialtyId: 10 },
-      { id: 301, code: 'specialty-2', name: 'Specialty Talent 2', pathId: 1, specialtyId: 10 },
-      // Ancestry talents
-      { id: 400, code: 'human-1', name: 'Human Talent 1', ancestryId: 1 },
-      { id: 401, code: 'human-2', name: 'Human Talent 2', ancestryId: 1 },
-      // Radiant order talents
-      { id: 500, code: 'order-1', name: 'Order Talent 1', radiantOrderId: 1 },
-      { id: 501, code: 'order-2', name: 'Order Talent 2', radiantOrderId: 1 },
-      // Surge talents
-      { id: 600, code: 'surge-1', name: 'Surge Talent 1', surgeId: 5 },
-      { id: 601, code: 'surge-2', name: 'Surge Talent 2', surgeId: 5 },
-    ],
-    talentTypes: [],
-    paths: [{ id: 1, code: 'warrior', name: 'Warrior' }],
-    specialties: [
-      { id: 10, pathId: 1, code: 'berserker', name: 'Berserker' },
-      { id: 11, pathId: 1, code: 'guardian', name: 'Guardian' },
-    ],
-    heroicPaths: [],
-    radiantOrders: [{ id: 1, code: 'windrunner', name: 'Windrunner' }],
-    singerForms: [],
-    surges: [{ id: 5, code: 'gravitation', name: 'Gravitation' }],
-    connectionTypes: [],
-    goalStatuses: [],
-    expertises: [],
-    actionCategories: [],
-    actions: [],
-    conditionTypes: [],
-    injuryTypes: [],
-    derivedStatValueRanges: [],
-    defenseTypes: [],
+vi.mock('src/services/heroService', () => ({
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    getSheet: mockGetSheet,
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getSubResource: vi.fn(),
+    upsertSubResource: vi.fn(),
+    deleteSubResource: vi.fn(),
+  },
+}));
+
+// Mock classifiers data
+const mockClassifiers = {
+  attributes: [],
+  skills: [
+    { id: 1, code: 'athletics', name: 'Athletics' },
+    { id: 2, code: 'acrobatics', name: 'Acrobatics' },
+    { id: 3, code: 'arcana', name: 'Arcana' },
+  ],
+  derivedStats: [],
+  levelData: [],
+  ancestries: [{ id: 1, code: 'human', name: 'Human' }],
+  cultures: [],
+  startingKits: [],
+  equipmentTypes: [],
+  equipment: [],
+  talents: [
+    // Base talents
+    { id: 100, code: 'power-strike', name: 'Power Strike', pathId: 1 },
+    { id: 101, code: 'quick-dodge', name: 'Quick Dodge', pathId: 1 },
+    // Talent with talent prerequisite
+    {
+      id: 102,
+      code: 'mighty-blow',
+      name: 'Mighty Blow',
+      pathId: 1,
+      prerequisites: [{ type: 'talent', talentIds: [100] }],
+    },
+    // Talent with skill prerequisite
+    {
+      id: 103,
+      code: 'expert-climber',
+      name: 'Expert Climber',
+      pathId: 1,
+      prerequisites: [{ type: 'skill', skillId: 1, skillRank: 3 }],
+    },
+    // Talent with ideal prerequisite
+    {
+      id: 104,
+      code: 'radiant-surge',
+      name: 'Radiant Surge',
+      pathId: null,
+      radiantOrderId: 1,
+      prerequisites: [{ type: 'ideal', skillRank: 2 }],
+    },
+    // Talent with level prerequisite
+    {
+      id: 105,
+      code: 'veteran-skill',
+      name: 'Veteran Skill',
+      pathId: 1,
+      prerequisites: [{ type: 'level', skillRank: 5 }],
+    },
+    // Talent with multiple prerequisites (all must be met)
+    {
+      id: 106,
+      code: 'master-warrior',
+      name: 'Master Warrior',
+      pathId: 1,
+      prerequisites: [
+        { type: 'talent', talentIds: [100, 101] },
+        { type: 'skill', skillId: 2, skillRank: 4 },
+      ],
+    },
+    // Key talents
+    { id: 200, code: 'path-key', name: 'Path Key Talent', pathId: 1, isKey: true },
+    { id: 201, code: 'ancestry-key', name: 'Ancestry Key', ancestryId: 1, isKey: true },
+    { id: 202, code: 'order-key', name: 'Order Key', radiantOrderId: 1, isKey: true },
+    // Specialty talents
+    { id: 300, code: 'specialty-1', name: 'Specialty Talent 1', pathId: 1, specialtyId: 10 },
+    { id: 301, code: 'specialty-2', name: 'Specialty Talent 2', pathId: 1, specialtyId: 10 },
+    // Ancestry talents
+    { id: 400, code: 'human-1', name: 'Human Talent 1', ancestryId: 1 },
+    { id: 401, code: 'human-2', name: 'Human Talent 2', ancestryId: 1 },
+    // Radiant order talents
+    { id: 500, code: 'order-1', name: 'Order Talent 1', radiantOrderId: 1 },
+    { id: 501, code: 'order-2', name: 'Order Talent 2', radiantOrderId: 1 },
+    // Surge talents
+    { id: 600, code: 'surge-1', name: 'Surge Talent 1', surgeId: 5 },
+    { id: 601, code: 'surge-2', name: 'Surge Talent 2', surgeId: 5 },
+  ],
+  talentTypes: [],
+  paths: [{ id: 1, code: 'warrior', name: 'Warrior' }],
+  specialties: [
+    { id: 10, pathId: 1, code: 'berserker', name: 'Berserker' },
+    { id: 11, pathId: 1, code: 'guardian', name: 'Guardian' },
+  ],
+  heroicPaths: [],
+  radiantOrders: [{ id: 1, code: 'windrunner', name: 'Windrunner' }],
+  singerForms: [],
+  surges: [{ id: 5, code: 'gravitation', name: 'Gravitation' }],
+  connectionTypes: [],
+  goalStatuses: [],
+  expertises: [],
+  actionCategories: [],
+  actions: [],
+  conditionTypes: [],
+  injuryTypes: [],
+  derivedStatValueRanges: [],
+  defenseTypes: [],
+};
+
+vi.mock('src/services/classifierService', () => ({
+  default: {
+    getAll: mockGetAllClassifiers,
   },
 }));
 
@@ -159,10 +179,25 @@ vi.mock('src/utils/logger', () => ({
   },
 }));
 
+function axiosError(status: number): AxiosError {
+  return new AxiosError('Request failed', String(status), undefined, undefined, {
+    status,
+    data: null,
+    statusText: '',
+    headers: {},
+    config: { headers: {} } as InternalAxiosRequestConfig,
+  } as AxiosResponse);
+}
+
 describe('useTalentPrerequisites', () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    mockGetAllClassifiers.mockResolvedValue({ data: mockClassifiers });
+    mockGetSheet.mockImplementation((id: number) => {
+      if (id === 1) return Promise.resolve({ data: structuredClone(mockHero) });
+      return Promise.reject(axiosError(404));
+    });
     // Initialize classifier store with mock data
     const classifierStore = useClassifierStore();
     await classifierStore.initialize();

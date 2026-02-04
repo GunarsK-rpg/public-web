@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { WIZARD_STEPS, STEP_CODES, type StepCodeType } from 'src/types/wizard';
 import { useHeroStore } from './hero';
 import { logger } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
 
 export type WizardMode = 'create' | 'edit' | 'levelup';
 
@@ -105,10 +106,7 @@ export const useWizardStore = defineStore('wizard', () => {
       isActive.value = true;
       return true;
     } catch (error) {
-      logger.error(
-        'Failed to load hero for editing',
-        error instanceof Error ? error : { error: String(error) }
-      );
+      logger.error('Failed to load hero for editing', toError(error));
       reset();
       return false;
     }
@@ -135,10 +133,7 @@ export const useWizardStore = defineStore('wizard', () => {
       isActive.value = true;
       return true;
     } catch (error) {
-      logger.error(
-        'Failed to load hero for level up',
-        error instanceof Error ? error : { error: String(error) }
-      );
+      logger.error('Failed to load hero for level up', toError(error));
       reset();
       return false;
     }

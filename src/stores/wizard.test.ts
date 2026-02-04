@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { useWizardStore } from './wizard';
 import { useHeroStore } from './hero';
 import { WIZARD_STEPS, STEP_CODES } from 'src/types/wizard';
@@ -7,39 +8,52 @@ import { WIZARD_STEPS, STEP_CODES } from 'src/types/wizard';
 // Helper to get step by code - avoids hardcoding step numbers
 const getStepByCode = (code: string) => WIZARD_STEPS.find((s) => s.code === code);
 
-// Mock the heroes module for loadHero
-vi.mock('src/mock/heroes', () => ({
-  heroes: [
-    {
-      id: 1,
-      userId: 1,
-      campaignId: 1,
-      ancestryId: 1,
-      startingKitId: null,
-      activeSingerFormId: null,
-      radiantOrderId: null,
-      radiantIdeal: 0,
-      name: 'Test Hero',
-      level: 5,
-      currentHealth: 20,
-      currentFocus: 10,
-      currentInvestiture: 5,
-      attributes: [],
-      defenses: [],
-      derivedStats: [],
-      skills: [],
-      talents: [],
-      expertises: [],
-      equipment: [],
-      currency: 100,
-      conditions: [],
-      injuries: [],
-      goals: [],
-      connections: [],
-      companions: [],
-      cultures: [],
-    },
-  ],
+const mockHero = {
+  id: 1,
+  userId: 1,
+  campaignId: 1,
+  ancestryId: 1,
+  startingKitId: null,
+  activeSingerFormId: null,
+  radiantOrderId: null,
+  radiantIdeal: 0,
+  name: 'Test Hero',
+  level: 5,
+  currentHealth: 20,
+  currentFocus: 10,
+  currentInvestiture: 5,
+  attributes: [],
+  defenses: [],
+  derivedStats: [],
+  skills: [],
+  talents: [],
+  expertises: [],
+  equipment: [],
+  currency: 100,
+  conditions: [],
+  injuries: [],
+  goals: [],
+  connections: [],
+  companions: [],
+  cultures: [],
+};
+
+const { mockGetSheet } = vi.hoisted(() => ({
+  mockGetSheet: vi.fn(),
+}));
+
+vi.mock('src/services/heroService', () => ({
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    getSheet: mockGetSheet,
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getSubResource: vi.fn(),
+    upsertSubResource: vi.fn(),
+    deleteSubResource: vi.fn(),
+  },
 }));
 
 // Mock logger
@@ -52,10 +66,24 @@ vi.mock('src/utils/logger', () => ({
   },
 }));
 
+function axiosError(status: number): AxiosError {
+  return new AxiosError('Request failed', String(status), undefined, undefined, {
+    status,
+    data: null,
+    statusText: '',
+    headers: {},
+    config: { headers: {} } as InternalAxiosRequestConfig,
+  } as AxiosResponse);
+}
+
 describe('useWizardStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    mockGetSheet.mockImplementation((id: number) => {
+      if (id === 1) return Promise.resolve({ data: mockHero });
+      return Promise.reject(axiosError(404));
+    });
   });
 
   // ========================================

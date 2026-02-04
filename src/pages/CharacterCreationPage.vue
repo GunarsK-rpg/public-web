@@ -77,6 +77,7 @@ import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
 import { useSwipeNavigation } from 'src/composables/useSwipeNavigation';
 import { logger } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
 import { WIZARD_STEPS } from 'src/types';
 
 // Shared components
@@ -176,7 +177,7 @@ async function createCharacter(): Promise<void> {
     heroStore.clearHero();
     void router.push('/campaigns');
   } catch (err) {
-    logger.error('Failed to create character', err instanceof Error ? err : { error: String(err) });
+    logger.error('Failed to create character', toError(err));
     $q.notify({
       type: 'negative',
       message: 'Failed to create character',
@@ -213,10 +214,7 @@ onMounted(async () => {
       wizardStore.startCreate();
     }
   } catch (error) {
-    logger.error(
-      'Failed to initialize character creation',
-      error instanceof Error ? error : { error: String(error) }
-    );
+    logger.error('Failed to initialize character creation', toError(error));
     $q.notify({
       type: 'negative',
       message: 'Failed to initialize',

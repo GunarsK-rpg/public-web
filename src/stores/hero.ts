@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Hero } from 'src/types';
 import { logger } from 'src/utils/logger';
+import heroService from 'src/services/heroService';
+import { handleError } from 'src/utils/errorHandling';
 
 /**
  * Default empty Hero for new character creation
@@ -83,40 +85,15 @@ export const useHeroStore = defineStore('hero', () => {
     hero.value = null;
 
     try {
-      // TODO: Replace with actual API call
-      let heroesModule;
-      try {
-        heroesModule = await import('src/mock/heroes');
-      } catch (importErr) {
-        if (requestId !== loadRequestId) {
-          logger.debug('Stale loadHero response ignored (import error)', {
-            requestId,
-            current: loadRequestId,
-          });
-          return;
-        }
-        error.value = 'Failed to load hero data module';
-        logger.error('Failed to import heroes module', {
-          id,
-          error: importErr instanceof Error ? importErr.message : String(importErr),
-          stack: importErr instanceof Error ? importErr.stack : undefined,
-        });
-        return;
-      }
+      const response = await heroService.getSheet(id);
 
       if (requestId !== loadRequestId) {
         logger.debug('Stale loadHero response ignored', { requestId, current: loadRequestId });
         return;
       }
 
-      const found = heroesModule.heroes.find((h) => h.id === id);
-      if (found) {
-        hero.value = structuredClone(found);
-        logger.info('Hero loaded', { id, name: found.name, level: found.level });
-      } else {
-        error.value = 'Hero not found';
-        logger.warn('Hero not found', { id });
-      }
+      hero.value = response.data;
+      logger.info('Hero loaded', { id, name: response.data.name, level: response.data.level });
     } catch (err) {
       if (requestId !== loadRequestId) {
         logger.debug('Stale loadHero response ignored (error)', {
@@ -125,11 +102,11 @@ export const useHeroStore = defineStore('hero', () => {
         });
         return;
       }
-      error.value = 'Failed to load hero';
-      logger.error('Failed to load hero', {
-        id,
-        error: err instanceof Error ? err.message : String(err),
-        stack: err instanceof Error ? err.stack : undefined,
+      handleError(err, {
+        errorRef: error,
+        message: 'Failed to load hero',
+        notFoundMessage: 'Hero not found',
+        context: { id },
       });
     } finally {
       if (requestId === loadRequestId) {
@@ -210,11 +187,9 @@ export const useHeroStore = defineStore('hero', () => {
       }
       return { success: true };
     } catch (err) {
-      error.value = 'Failed to update resources';
-      logger.error('Failed to update resources', {
-        error: err instanceof Error ? err.message : String(err),
-      });
-      return { success: false, error: error.value };
+      const msg = 'Failed to update resources';
+      handleError(err, { errorRef: error, message: msg });
+      return { success: false, error: msg };
     } finally {
       saving.value = false;
     }

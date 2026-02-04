@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import authService from 'src/services/auth';
 import { Level, LevelValues, type LevelKey } from 'src/constants/permissions';
 import { logger, setUserContext, clearUserContext } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
@@ -46,9 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
       isAuthenticated.value = false;
       username.value = '';
       scopes.value = {};
-      logger.warn('Auth status check failed', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logger.warn('Auth status check failed', { error: toError(error).message });
       return false;
     }
   }
@@ -69,7 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       return true;
     } catch (error) {
-      logger.error('Login failed', error instanceof Error ? error : { error: String(error) });
+      logger.error('Login failed', toError(error));
       return false;
     } finally {
       loading.value = false;
@@ -82,7 +81,7 @@ export const useAuthStore = defineStore('auth', () => {
       logger.info('User logged out');
     } catch (error) {
       logger.warn('Logout request failed, clearing local state anyway', {
-        error: error instanceof Error ? error.message : String(error),
+        error: toError(error).message,
       });
     } finally {
       isAuthenticated.value = false;

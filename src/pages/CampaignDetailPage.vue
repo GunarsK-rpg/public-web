@@ -97,6 +97,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { findById } from 'src/utils/arrayUtils';
 import { logger } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
 
 const props = defineProps<{
   campaignId: string;
@@ -128,9 +129,7 @@ onMounted(async () => {
     try {
       await classifiers.initialize();
     } catch (err) {
-      logger.error('Failed to initialize classifiers', {
-        error: err instanceof Error ? err.message : String(err),
-      });
+      logger.error('Failed to initialize classifiers', { error: toError(err).message });
       showWarning(
         'Some data unavailable',
         'Character details like Radiant Order names may not display correctly.'

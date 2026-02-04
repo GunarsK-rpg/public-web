@@ -1,6 +1,7 @@
 import { defineBoot } from '#q-app/wrappers';
 import { Notify } from 'quasar';
 import { logger } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
 
 /**
  * Global Vue error handler boot file.
@@ -9,7 +10,7 @@ import { logger } from 'src/utils/logger';
 export default defineBoot(({ app }) => {
   // Vue component error handler
   app.config.errorHandler = (err, instance, info) => {
-    const error = err instanceof Error ? err : new Error(String(err));
+    const error = toError(err);
     const componentName = instance?.$options?.name || 'Anonymous';
 
     logger.error('Unhandled Vue error', {
@@ -52,7 +53,7 @@ export default defineBoot(({ app }) => {
 
   // Global unhandled promise rejection handler
   window.addEventListener('unhandledrejection', (event) => {
-    const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+    const error = toError(event.reason);
 
     logger.error('Unhandled promise rejection', {
       error: {
