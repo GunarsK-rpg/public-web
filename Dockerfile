@@ -15,6 +15,10 @@ RUN npm ci --ignore-scripts
 # Copy source code
 COPY . .
 
+# Accept build-time environment variables for Vite
+ARG VITE_API_URL
+ARG VITE_AUTH_URL
+
 # Build for production (Quasar SPA)
 RUN npm run build
 

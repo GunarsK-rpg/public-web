@@ -21,9 +21,7 @@ export default defineRouter(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   });
 
-  // Navigation guard for authentication
-  Router.beforeEach((to, _from, next) => {
-    // Skip auth check during SSR (localStorage not available)
+  Router.beforeEach(async (to, _from, next) => {
     if (process.env.SERVER) {
       next();
       return;
@@ -31,26 +29,20 @@ export default defineRouter(function (/* { store, ssrContext } */) {
 
     const authStore = useAuthStore();
 
-    // Initialize auth state if not done
-    if (!authStore.initialized) {
-      authStore.initialize();
-    }
-
-    // Check if route requires authentication
     const requiresAuth =
       to.matched.some((record) => record.meta.requiresAuth) &&
       !to.matched.some((record) => record.meta.public);
 
-    if (requiresAuth && !authStore.isAuthenticated) {
-      next({
-        name: 'login',
-        query: { redirect: to.fullPath },
-      });
-      return;
-    }
-
-    // Redirect authenticated users away from login
-    if (to.name === 'login' && authStore.isAuthenticated) {
+    if (requiresAuth) {
+      // Trust local state; only verify with server on cold start
+      if (!authStore.isAuthenticated) {
+        const isValid = await authStore.checkAuthStatus();
+        if (!isValid) {
+          next({ name: 'login', query: { redirect: to.fullPath } });
+          return;
+        }
+      }
+    } else if (to.name === 'login' && authStore.isAuthenticated) {
       next({ name: 'campaigns' });
       return;
     }

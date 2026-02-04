@@ -203,7 +203,7 @@ export function useErrorHandler() {
   function handle401(skipLogout = false): void {
     if (!skipLogout) {
       // Clear auth state before redirecting to prevent redirect loops
-      authStore.logout();
+      void authStore.logout();
 
       $q.notify({
         type: 'warning',

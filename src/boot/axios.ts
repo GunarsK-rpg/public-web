@@ -1,5 +1,9 @@
 import { defineBoot } from '#q-app/wrappers';
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
+import { env } from 'src/config/env';
+import { API_TIMEOUTS } from 'src/config/api';
+import { add401Interceptor, setAuthFailureCallback } from 'src/services/tokenRefresh';
+import { useAuthStore } from 'stores/auth';
 import { logger } from 'src/utils/logger';
 
 declare module 'vue' {
@@ -9,15 +13,10 @@ declare module 'vue' {
   }
 }
 
-// Be careful when using SSR for cross-request state pollution
-// due to creating a Singleton instance here;
-// If any client changes this (global) instance, it might be a
-// good idea to move this instance creation inside of the
-// "export default () => {}" function below (which runs individually
-// for each client)
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
-  timeout: 30000, // 30 second timeout
+  baseURL: env.apiUrl,
+  timeout: API_TIMEOUTS.DEFAULT,
+  withCredentials: true,
 });
 
 // Extended config type for request timing
@@ -65,16 +64,16 @@ api.interceptors.response.use(
   }
 );
 
+// Add 401 → refresh → retry interceptor
+add401Interceptor(api);
+
 export default defineBoot(({ app }) => {
-  // for use inside Vue files (Options API) through this.$axios and this.$api
-
   app.config.globalProperties.$axios = axios;
-  // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
-  //       so you won't necessarily have to import axios in each vue file
-
   app.config.globalProperties.$api = api;
-  // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
-  //       so you can easily perform requests against your app's API
+
+  // Wire auth failure callback (refresh failed → logout)
+  const authStore = useAuthStore();
+  setAuthFailureCallback(() => void authStore.logout());
 });
 
 export { api };
