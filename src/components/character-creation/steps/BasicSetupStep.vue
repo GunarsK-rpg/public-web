@@ -60,6 +60,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useCampaignStore } from 'src/stores/campaigns';
 import { logger } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
 
 const $q = useQuasar();
 const heroStore = useHeroStore();
@@ -78,10 +79,7 @@ onMounted(async () => {
     try {
       await campaignStore.fetchCampaigns();
     } catch (err) {
-      logger.error(
-        'Failed to fetch campaigns',
-        err instanceof Error ? err : { error: String(err) }
-      );
+      logger.error('Failed to fetch campaigns', toError(err));
       $q.notify({
         type: 'warning',
         message: 'Could not load campaigns. You can continue without selecting one.',

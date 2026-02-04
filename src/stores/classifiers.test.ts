@@ -53,8 +53,14 @@ const mockClassifiers = {
   levels: [],
 };
 
-vi.mock('src/mock/classifiers', () => ({
-  classifiers: mockClassifiers,
+const { mockGetAll } = vi.hoisted(() => ({
+  mockGetAll: vi.fn(),
+}));
+
+vi.mock('src/services/classifierService', () => ({
+  default: {
+    getAll: mockGetAll,
+  },
 }));
 
 vi.mock('src/utils/logger', () => ({
@@ -70,6 +76,7 @@ describe('useClassifierStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    mockGetAll.mockResolvedValue({ data: mockClassifiers });
   });
 
   // ========================================
@@ -122,6 +129,7 @@ describe('useClassifierStore', () => {
 
       expect(store.data).not.toBeNull();
       expect(store.initialized).toBe(true);
+      expect(mockGetAll).toHaveBeenCalledOnce();
     });
 
     it('sets loading state during load', async () => {
@@ -144,6 +152,7 @@ describe('useClassifierStore', () => {
       // Call again - should return immediately
       await store.initialize();
       expect(store.initialized).toBe(true);
+      expect(mockGetAll).toHaveBeenCalledOnce();
     });
 
     it('handles concurrent calls (concurrency lock)', async () => {
@@ -158,6 +167,7 @@ describe('useClassifierStore', () => {
 
       // Should only have loaded once
       expect(store.initialized).toBe(true);
+      expect(mockGetAll).toHaveBeenCalledOnce();
     });
   });
 
@@ -482,13 +492,26 @@ describe('useClassifierStore', () => {
   // Initialize Error Handling
   // ========================================
   describe('initialize error handling', () => {
-    it('allows retry after failure', async () => {
+    it('sets error on API failure', async () => {
+      mockGetAll.mockRejectedValue(new Error('Network error'));
       const store = useClassifierStore();
 
-      // Manually simulate a failed state
-      store.error = 'Previous failure';
+      await store.initialize();
 
-      // Should be able to reinitialize
+      expect(store.error).toBe('Failed to load classifiers');
+      expect(store.initialized).toBe(false);
+    });
+
+    it('allows retry after failure', async () => {
+      mockGetAll.mockRejectedValueOnce(new Error('Network error'));
+      const store = useClassifierStore();
+
+      await store.initialize();
+      expect(store.error).toBe('Failed to load classifiers');
+      expect(store.initialized).toBe(false);
+
+      // Retry should work
+      mockGetAll.mockResolvedValue({ data: mockClassifiers });
       await store.initialize();
 
       expect(store.initialized).toBe(true);

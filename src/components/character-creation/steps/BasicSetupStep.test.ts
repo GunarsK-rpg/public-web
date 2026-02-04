@@ -446,9 +446,10 @@ describe('BasicSetupStep', () => {
       createWrapper();
 
       await vi.waitFor(() => {
-        expect(mockLoggerError.fn).toHaveBeenCalledWith('Failed to fetch campaigns', {
-          error: 'string error',
-        });
+        expect(mockLoggerError.fn).toHaveBeenCalledWith(
+          'Failed to fetch campaigns',
+          expect.objectContaining({ message: 'string error' })
+        );
       });
       expect(mockNotify.fn).toHaveBeenCalled();
     });

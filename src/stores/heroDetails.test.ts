@@ -44,12 +44,28 @@ const mockClassifiers = {
   levels: [],
 };
 
-vi.mock('src/mock/classifiers', () => ({
-  classifiers: mockClassifiers,
+const { mockGetAllClassifiers } = vi.hoisted(() => ({
+  mockGetAllClassifiers: vi.fn(),
 }));
 
-vi.mock('src/mock/heroes', () => ({
-  heroes: [],
+vi.mock('src/services/classifierService', () => ({
+  default: {
+    getAll: mockGetAllClassifiers,
+  },
+}));
+
+vi.mock('src/services/heroService', () => ({
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    getSheet: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getSubResource: vi.fn(),
+    upsertSubResource: vi.fn(),
+    deleteSubResource: vi.fn(),
+  },
 }));
 
 vi.mock('src/utils/logger', () => ({
@@ -65,6 +81,7 @@ describe('useHeroDetailsStore', () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    mockGetAllClassifiers.mockResolvedValue({ data: mockClassifiers });
 
     // Initialize classifiers and hero for all tests
     const classifierStore = useClassifierStore();

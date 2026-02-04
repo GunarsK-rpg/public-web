@@ -1,9 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useCampaignStore } from './campaigns';
-
-// Control flag for import failure tests - reset in afterEach for isolation
-let shouldFailCampaignsImport = false;
+import { axiosError } from 'src/test-utils/axiosHelpers';
 
 // Mock campaign data
 const mockCampaigns = [
@@ -11,36 +9,35 @@ const mockCampaigns = [
   { id: 2, name: 'Campaign Two', description: 'Second campaign' },
 ];
 
-const mockCampaignsWithHeroes = [
-  {
-    id: 1,
-    name: 'Campaign One',
-    description: 'First campaign',
-    heroes: [{ id: 1, name: 'Hero A' }],
-  },
-  {
-    id: 2,
-    name: 'Campaign Two',
-    description: 'Second campaign',
-    heroes: [
-      { id: 2, name: 'Hero B' },
-      { id: 3, name: 'Hero C' },
-    ],
-  },
-];
+const mockCampaignWithHeroes1 = {
+  id: 1,
+  name: 'Campaign One',
+  description: 'First campaign',
+  heroes: [{ id: 1, name: 'Hero A' }],
+};
 
-vi.mock('src/mock/campaigns', () => ({
-  get campaigns() {
-    if (shouldFailCampaignsImport) {
-      throw new Error('Import failed');
-    }
-    return mockCampaigns;
-  },
-  get campaignsWithHeroes() {
-    if (shouldFailCampaignsImport) {
-      throw new Error('Import failed');
-    }
-    return mockCampaignsWithHeroes;
+const mockCampaignWithHeroes2 = {
+  id: 2,
+  name: 'Campaign Two',
+  description: 'Second campaign',
+  heroes: [
+    { id: 2, name: 'Hero B' },
+    { id: 3, name: 'Hero C' },
+  ],
+};
+
+const { mockGetAll, mockGetById } = vi.hoisted(() => ({
+  mockGetAll: vi.fn(),
+  mockGetById: vi.fn(),
+}));
+
+vi.mock('src/services/campaignService', () => ({
+  default: {
+    getAll: mockGetAll,
+    getById: mockGetById,
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -57,11 +54,12 @@ describe('useCampaignStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    // Ensure import failure flag is reset for test isolation
-    shouldFailCampaignsImport = false;
+    mockGetAll.mockResolvedValue({ data: mockCampaigns });
+    mockGetById.mockImplementation((id: number) => {
+      if (id === 1) return Promise.resolve({ data: mockCampaignWithHeroes1 });
+      if (id === 2) return Promise.resolve({ data: mockCampaignWithHeroes2 });
+      return Promise.reject(axiosError(404));
+    });
   });
 
   // ========================================
@@ -143,15 +141,14 @@ describe('useCampaignStore', () => {
       expect(store.loading).toBe(false);
     });
 
-    it('sets error on import failure', async () => {
+    it('sets error on API failure', async () => {
+      mockGetAll.mockRejectedValue(new Error('Network error'));
       const store = useCampaignStore();
-      shouldFailCampaignsImport = true;
 
       await store.fetchCampaigns();
 
       expect(store.campaigns).toEqual([]);
       expect(store.error).toBe('Failed to load campaigns');
-      // afterEach resets shouldFailCampaignsImport
     });
   });
 
@@ -204,15 +201,14 @@ describe('useCampaignStore', () => {
       expect(store.loading).toBe(false);
     });
 
-    it('sets error on import failure', async () => {
+    it('sets error on API failure', async () => {
+      mockGetById.mockRejectedValue(new Error('Network error'));
       const store = useCampaignStore();
-      shouldFailCampaignsImport = true;
 
       await store.selectCampaign(1);
 
       expect(store.currentCampaign).toBeNull();
       expect(store.error).toBe('Failed to load campaign');
-      // afterEach resets shouldFailCampaignsImport
     });
   });
 

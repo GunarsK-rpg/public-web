@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { logger } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
 import { useAuthStore } from 'src/stores/auth';
 
 /**
@@ -139,7 +140,7 @@ export function useErrorHandler() {
           logger.debug('Retry attempt failed', {
             retryKey,
             attempt: attempts + 1,
-            error: retryError instanceof Error ? retryError.message : String(retryError),
+            error: toError(retryError).message,
           });
         });
     }, delay);
@@ -204,9 +205,7 @@ export function useErrorHandler() {
     if (!skipLogout) {
       // Clear auth state before redirecting to prevent redirect loops
       authStore.logout().catch((err: unknown) => {
-        logger.debug('Logout during 401 handling failed', {
-          error: err instanceof Error ? err.message : String(err),
-        });
+        logger.debug('Logout during 401 handling failed', { error: toError(err).message });
       });
 
       $q.notify({

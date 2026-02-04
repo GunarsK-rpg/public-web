@@ -1,51 +1,56 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useHeroStore } from './hero';
+import { axiosError } from 'src/test-utils/axiosHelpers';
 
-// Control flag for import failure tests - reset in afterEach for isolation
-let shouldFailImport = false;
+// Mock hero data
+const mockHero = {
+  id: 1,
+  userId: 1,
+  campaignId: 1,
+  ancestryId: 1,
+  startingKitId: null,
+  activeSingerFormId: null,
+  radiantOrderId: null,
+  radiantIdeal: 0,
+  name: 'Test Hero',
+  level: 5,
+  currentHealth: 20,
+  currentFocus: 10,
+  currentInvestiture: 5,
+  attributes: [],
+  defenses: [],
+  derivedStats: [],
+  skills: [],
+  talents: [],
+  expertises: [],
+  equipment: [],
+  currency: 100,
+  conditions: [],
+  injuries: [],
+  goals: [],
+  connections: [],
+  companions: [],
+  cultures: [],
+};
 
-// Mock the heroes module
-vi.mock('src/mock/heroes', () => {
-  return {
-    get heroes() {
-      if (shouldFailImport) {
-        throw new Error('Import failed');
-      }
-      return [
-        {
-          id: 1,
-          userId: 1,
-          campaignId: 1,
-          ancestryId: 1,
-          startingKitId: null,
-          activeSingerFormId: null,
-          radiantOrderId: null,
-          radiantIdeal: 0,
-          name: 'Test Hero',
-          level: 5,
-          currentHealth: 20,
-          currentFocus: 10,
-          currentInvestiture: 5,
-          attributes: [],
-          defenses: [],
-          derivedStats: [],
-          skills: [],
-          talents: [],
-          expertises: [],
-          equipment: [],
-          currency: 100,
-          conditions: [],
-          injuries: [],
-          goals: [],
-          connections: [],
-          companions: [],
-          cultures: [],
-        },
-      ];
-    },
-  };
-});
+const { mockGetSheet } = vi.hoisted(() => ({
+  mockGetSheet: vi.fn(),
+}));
+
+vi.mock('src/services/heroService', () => ({
+  default: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    getSheet: mockGetSheet,
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getSubResource: vi.fn(),
+    upsertSubResource: vi.fn(),
+    deleteSubResource: vi.fn(),
+  },
+}));
 
 // Mock logger to suppress output during tests
 vi.mock('src/utils/logger', () => ({
@@ -61,11 +66,10 @@ describe('useHeroStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    // Ensure import failure flag is reset for test isolation
-    shouldFailImport = false;
+    mockGetSheet.mockImplementation((id: number) => {
+      if (id === 1) return Promise.resolve({ data: structuredClone(mockHero) });
+      return Promise.reject(axiosError(404));
+    });
   });
 
   // ========================================
@@ -208,17 +212,14 @@ describe('useHeroStore', () => {
       expect(store.loading).toBe(false);
     });
 
-    it('sets error on module access failure', async () => {
+    it('sets error on API failure', async () => {
+      mockGetSheet.mockRejectedValue(new Error('Network error'));
       const store = useHeroStore();
-      shouldFailImport = true;
 
       await store.loadHero(1);
 
       expect(store.hero).toBeNull();
-      // Note: The mock throws when accessing .heroes property (not during import),
-      // so this triggers the outer catch which sets 'Failed to load hero'
       expect(store.error).toBe('Failed to load hero');
-      // afterEach resets shouldFailImport
     });
   });
 

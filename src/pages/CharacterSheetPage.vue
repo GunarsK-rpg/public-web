@@ -55,6 +55,7 @@ import { useRouter } from 'vue-router';
 import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
 import { logger } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
 import CharacterHeader from 'components/character/CharacterHeader.vue';
 import StatsTab from 'components/character/tabs/StatsTab.vue';
 import SkillsTab from 'components/character/tabs/SkillsTab.vue';
@@ -122,7 +123,7 @@ onMounted(async () => {
     }
     await heroStore.loadHero(characterId);
   } catch (err: unknown) {
-    logger.error('Failed to load character', err instanceof Error ? err : { error: String(err) });
+    logger.error('Failed to load character', toError(err));
     heroStore.setError('Failed to load character');
   }
 });

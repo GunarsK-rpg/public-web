@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { logger } from 'src/utils/logger';
+import classifierService from 'src/services/classifierService';
+import { handleError } from 'src/utils/errorHandling';
 import type {
   AttributeType,
   Attribute,
@@ -209,21 +211,12 @@ export const useClassifierStore = defineStore('classifiers', () => {
       error.value = null;
 
       try {
-        // TODO: Replace with actual API call
-        // const response = await classifierService.getAll();
-        // data.value = response.data;
-
-        // Mock: Import from mock data
-        const mockData = await import('src/mock/classifiers');
-        data.value = mockData.classifiers;
+        const response = await classifierService.getAll();
+        data.value = response.data;
         initialized.value = true;
         logger.info('Classifiers loaded');
       } catch (err) {
-        error.value = 'Failed to load classifiers';
-        logger.error('Failed to load classifiers', {
-          error: err instanceof Error ? err.message : String(err),
-          stack: err instanceof Error ? err.stack : undefined,
-        });
+        handleError(err, { errorRef: error, message: 'Failed to load classifiers' });
         // Reset promise on failure to allow retry
         initPromise = null;
       } finally {

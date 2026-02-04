@@ -69,6 +69,7 @@ import { useRouter, useRoute, isNavigationFailure, NavigationFailureType } from 
 import { useQuasar } from 'quasar';
 import { useAuthStore } from 'stores/auth';
 import { logger } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
 
 const router = useRouter();
 const route = useRoute();
@@ -107,9 +108,7 @@ async function goToCampaigns(): Promise<void> {
     if (
       !isNavigationFailure(err, NavigationFailureType.duplicated | NavigationFailureType.cancelled)
     ) {
-      logger.warn('Navigation to campaigns failed', {
-        error: err instanceof Error ? err.message : String(err),
-      });
+      logger.warn('Navigation to campaigns failed', { error: toError(err).message });
     }
   }
 }
@@ -129,9 +128,7 @@ onMounted(() => {
     }
   } catch (err) {
     // localStorage may be unavailable (private browsing, etc.)
-    logger.debug('localStorage unavailable for dark mode', {
-      error: err instanceof Error ? err.message : String(err),
-    });
+    logger.debug('localStorage unavailable for dark mode', { error: toError(err).message });
   }
 });
 </script>
