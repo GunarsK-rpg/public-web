@@ -3,8 +3,6 @@ import { authApi } from './authApi';
 
 interface QueueItem {
   resolve: (value: boolean) => void;
-  reject: (error: Error) => void;
-  error: Error;
 }
 
 interface RetryableConfig extends InternalAxiosRequestConfig {
@@ -17,12 +15,8 @@ let onAuthFailureCallback: (() => void) | null = null;
 const registeredInstances = new WeakSet<AxiosInstance>();
 
 function processQueue(success: boolean): void {
-  failedQueue.forEach(({ resolve, reject, error }) => {
-    if (success) {
-      resolve(true);
-    } else {
-      reject(error);
-    }
+  failedQueue.forEach(({ resolve }) => {
+    resolve(success);
   });
   failedQueue = [];
 }
@@ -33,8 +27,8 @@ export function setAuthFailureCallback(callback: () => void): void {
 
 export async function refreshToken(): Promise<boolean> {
   if (isRefreshing) {
-    return new Promise((resolve, reject) => {
-      failedQueue.push({ resolve, reject, error: new Error('Refresh in progress') });
+    return new Promise((resolve) => {
+      failedQueue.push({ resolve });
     });
   }
 
@@ -69,9 +63,15 @@ export function add401Interceptor(axiosInstance: AxiosInstance): void {
       }
 
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject, error: error as Error });
-        }).then(() => axiosInstance(originalRequest));
+        originalRequest._retry = true;
+        return new Promise<boolean>((resolve) => {
+          failedQueue.push({ resolve });
+        }).then((success) => {
+          if (success) {
+            return axiosInstance(originalRequest);
+          }
+          return Promise.reject(error);
+        });
       }
 
       originalRequest._retry = true;

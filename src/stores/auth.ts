@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import authService from 'src/services/auth';
-import { Level, LevelValues } from 'src/constants/permissions';
+import { Level, LevelValues, type LevelKey } from 'src/constants/permissions';
 import { logger, setUserContext, clearUserContext } from 'src/utils/logger';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -13,10 +13,14 @@ export const useAuthStore = defineStore('auth', () => {
   const scopes = ref<Record<string, string>>({});
   const loading = ref(false);
 
+  function isLevelKey(value: string): value is LevelKey {
+    return value in LevelValues;
+  }
+
   function hasPermission(resource: string, required: string): boolean {
     const userLevel = scopes.value[resource] || Level.NONE;
-    const userValue = LevelValues[userLevel] ?? 0;
-    const requiredValue = LevelValues[required] ?? Infinity;
+    const userValue = isLevelKey(userLevel) ? LevelValues[userLevel] : 0;
+    const requiredValue = isLevelKey(required) ? LevelValues[required] : Infinity;
     return userValue >= requiredValue;
   }
 
@@ -27,16 +31,17 @@ export const useAuthStore = defineStore('auth', () => {
   async function checkAuthStatus(): Promise<boolean> {
     try {
       const response = await authService.tokenStatus();
-      isAuthenticated.value = response.data.valid;
-      if (response.data.valid) {
-        if (response.data.username) {
-          username.value = response.data.username;
-        }
-        if (response.data.scopes) {
-          scopes.value = response.data.scopes;
-        }
+      const isValid = response.data.valid;
+      isAuthenticated.value = isValid;
+      if (isValid) {
+        username.value = response.data.username ?? '';
+        scopes.value = response.data.scopes ?? {};
+      } else {
+        username.value = '';
+        scopes.value = {};
+        clearUserContext();
       }
-      return response.data.valid;
+      return isValid;
     } catch (error) {
       isAuthenticated.value = false;
       username.value = '';

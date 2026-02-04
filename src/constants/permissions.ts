@@ -5,7 +5,9 @@ export const Level = {
   DELETE: 'delete',
 } as const;
 
-export const LevelValues: Record<string, number> = {
+export type LevelKey = (typeof Level)[keyof typeof Level];
+
+export const LevelValues: Record<LevelKey, number> = {
   [Level.NONE]: 0,
   [Level.READ]: 1,
   [Level.EDIT]: 2,
