@@ -76,7 +76,7 @@ const $q = useQuasar();
 const authStore = useAuthStore();
 
 const isAuthenticated = computed(() => authStore.isAuthenticated);
-const username = computed(() => authStore.currentUser?.username || 'User');
+const username = computed(() => authStore.username || 'User');
 
 const pageTitle = computed(() => {
   return (route.meta?.title as string) || 'Cosmere RPG';
@@ -115,19 +115,7 @@ async function goToCampaigns(): Promise<void> {
 }
 
 async function logout(): Promise<void> {
-  authStore.logout();
-  try {
-    await router.push({ name: 'login' });
-  } catch (err) {
-    // Only log unexpected navigation failures
-    if (
-      !isNavigationFailure(err, NavigationFailureType.duplicated | NavigationFailureType.cancelled)
-    ) {
-      logger.warn('Navigation to login failed', {
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }
+  await authStore.logout();
 }
 
 // Initialize dark mode from storage (in onMounted for SSR safety)

@@ -1,155 +1,109 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import type { User } from 'src/types';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import authService from 'src/services/auth';
+import { Level, LevelValues, type LevelKey } from 'src/constants/permissions';
 import { logger, setUserContext, clearUserContext } from 'src/utils/logger';
 
-const STORAGE_KEY = 'cosmere_auth';
-
-// Security Note: localStorage is vulnerable to XSS attacks.
-// For production, authentication should use httpOnly cookies set by the backend.
-// This implementation is for development/mock purposes only.
-// TODO: Replace with secure cookie-based auth when backend is implemented
-
-// Mock token expiry: 24 hours in development
-const MOCK_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
-
-interface StoredAuth {
-  token: string;
-  user: User;
-  expiresAt?: number; // Timestamp when token expires
-}
-
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(null);
-  const token = ref<string | null>(null);
-  const initialized = ref(false);
+  const router = useRouter();
+
+  const isAuthenticated = ref(false);
+  const username = ref('');
+  const scopes = ref<Record<string, string>>({});
   const loading = ref(false);
 
-  const isAuthenticated = computed(() => !!token.value && !!user.value);
-
-  const currentUser = computed(() => user.value);
-
-  function initialize(): void {
-    if (initialized.value) return;
-
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const data: StoredAuth = JSON.parse(stored);
-          // Validate stored data structure
-          const isValidStructure =
-            data &&
-            typeof data.token === 'string' &&
-            data.token.length > 0 &&
-            data.user &&
-            typeof data.user.id === 'number' &&
-            typeof data.user.username === 'string' &&
-            typeof data.user.email === 'string';
-
-          // Check if token is expired (mock tokens have expiry)
-          const isExpired = data.expiresAt && Date.now() > data.expiresAt;
-
-          if (isValidStructure && !isExpired) {
-            token.value = data.token;
-            user.value = data.user;
-            // Restore logger context for restored sessions
-            setUserContext(data.user);
-          } else {
-            if (isExpired) {
-              logger.info('Session expired, clearing stored auth');
-            }
-            localStorage.removeItem(STORAGE_KEY);
-          }
-        } catch {
-          localStorage.removeItem(STORAGE_KEY);
-        }
-      }
-    } catch {
-      // localStorage may be unavailable (SSR, private browsing, etc.)
-    }
-    initialized.value = true;
+  function isLevelKey(value: string): value is LevelKey {
+    return (Object.values(Level) as string[]).includes(value);
   }
 
-  function setAuth(newToken: string, newUser: User, expiresAt?: number): void {
-    token.value = newToken;
-    user.value = newUser;
-    setUserContext(newUser);
+  function hasPermission(resource: string, required: string): boolean {
+    const userLevel = scopes.value[resource] || Level.NONE;
+    const userValue = isLevelKey(userLevel) ? LevelValues[userLevel] : 0;
+    const requiredValue = isLevelKey(required) ? LevelValues[required] : Infinity;
+    return userValue >= requiredValue;
+  }
+
+  const canRead = (resource: string) => hasPermission(resource, Level.READ);
+  const canEdit = (resource: string) => hasPermission(resource, Level.EDIT);
+  const canDelete = (resource: string) => hasPermission(resource, Level.DELETE);
+
+  async function checkAuthStatus(): Promise<boolean> {
     try {
-      const authData: StoredAuth = { token: newToken, user: newUser };
-      if (expiresAt) {
-        authData.expiresAt = expiresAt;
+      const response = await authService.tokenStatus();
+      const isValid = response.data.valid;
+      isAuthenticated.value = isValid;
+      if (isValid) {
+        username.value = response.data.username ?? '';
+        scopes.value = response.data.scopes ?? {};
+      } else {
+        username.value = '';
+        scopes.value = {};
+        clearUserContext();
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(authData));
-    } catch {
-      // localStorage may be unavailable (SSR, private browsing, etc.)
+      return isValid;
+    } catch (error) {
+      isAuthenticated.value = false;
+      username.value = '';
+      scopes.value = {};
+      logger.warn('Auth status check failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return false;
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async function login(username: string, password: string): Promise<boolean> {
+  async function login(loginUsername: string, password: string): Promise<boolean> {
     loading.value = true;
     try {
-      // TODO: Replace with actual API call
-      // const response = await authService.login(username, password);
-      // setAuth(response.token, response.user);
+      const response = await authService.login(loginUsername, password);
+      isAuthenticated.value = true;
+      username.value = response.data.username || loginUsername;
+      scopes.value = response.data.scopes || {};
 
-      // Mock login for development only
-      await Promise.resolve();
-      const mockUser: User = {
-        id: 1,
-        username,
-        email: `${username}@example.com`,
-      };
-      const expiresAt = Date.now() + MOCK_TOKEN_EXPIRY_MS;
-      setAuth('mock-token-' + Date.now(), mockUser, expiresAt);
-      logger.info('User logged in', { userId: mockUser.id });
+      logger.info('User logged in', { username: loginUsername });
+
+      if (response.data.user_id) {
+        setUserContext({ id: response.data.user_id });
+      }
+
       return true;
-    } catch (err) {
-      logger.error('Login failed', err instanceof Error ? err : { error: String(err) });
+    } catch (error) {
+      logger.error('Login failed', error instanceof Error ? error : { error: String(error) });
       return false;
     } finally {
       loading.value = false;
     }
   }
 
-  function logout(): void {
-    const userId = user.value?.id;
-    token.value = null;
-    user.value = null;
-    clearUserContext();
-    logger.info('User logged out', { userId });
+  async function logout(): Promise<void> {
     try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // localStorage may be unavailable (SSR, private browsing, etc.)
-    }
-  }
-
-  function reset(): void {
-    user.value = null;
-    token.value = null;
-    initialized.value = false;
-    loading.value = false;
-    clearUserContext();
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // localStorage may be unavailable
+      await authService.logout();
+      logger.info('User logged out');
+    } catch (error) {
+      logger.warn('Logout request failed, clearing local state anyway', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      isAuthenticated.value = false;
+      username.value = '';
+      scopes.value = {};
+      clearUserContext();
+      void router.push({ name: 'login' });
     }
   }
 
   return {
-    user,
-    token,
-    initialized,
-    loading,
     isAuthenticated,
-    currentUser,
-    initialize,
-    setAuth,
+    username,
+    scopes,
+    loading,
+    hasPermission,
+    canRead,
+    canEdit,
+    canDelete,
+    checkAuthStatus,
     login,
     logout,
-    reset,
   };
 });

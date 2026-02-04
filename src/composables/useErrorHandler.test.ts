@@ -29,6 +29,16 @@ vi.mock('src/utils/logger', () => ({
   clearUserContext: vi.fn(),
 }));
 
+// Mock auth service (required by auth store)
+vi.mock('src/services/auth', () => ({
+  default: {
+    login: vi.fn(),
+    logout: vi.fn().mockResolvedValue({}),
+    refresh: vi.fn(),
+    tokenStatus: vi.fn(),
+  },
+}));
+
 // Import after mocks are set up
 import { useErrorHandler } from './useErrorHandler';
 import { useAuthStore } from 'src/stores/auth';
@@ -89,13 +99,14 @@ describe('useErrorHandler', () => {
   describe('handle401', () => {
     it('clears auth and redirects to login', () => {
       const authStore = useAuthStore();
-      authStore.setAuth('token', { id: 1, email: 'test@test.com', username: 'test' });
+      authStore.isAuthenticated = true;
+      authStore.username = 'test';
 
       const { handleError } = useErrorHandler();
       handleError(createError(401));
 
-      expect(authStore.user).toBeNull();
-      expect(authStore.token).toBeNull();
+      // logout is async (fire-and-forget via void), check notification and direct redirect
+      expect(mockNotify).toHaveBeenCalled();
       expect(mockRouter.push).toHaveBeenCalledWith('/login');
     });
 
@@ -113,12 +124,13 @@ describe('useErrorHandler', () => {
 
     it('skips logout when skipLogout is true', () => {
       const authStore = useAuthStore();
-      authStore.setAuth('token', { id: 1, email: 'test@test.com', username: 'test' });
+      authStore.isAuthenticated = true;
+      authStore.username = 'test';
 
       const { handleError } = useErrorHandler();
       handleError(createError(401), { skipLogout: true });
 
-      expect(authStore.user).not.toBeNull();
+      expect(authStore.isAuthenticated).toBe(true);
       expect(mockRouter.push).not.toHaveBeenCalled();
     });
 

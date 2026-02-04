@@ -2,6 +2,28 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAuthStore } from './auth';
 
+// Mock vue-router
+const mockPush = vi.fn();
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
+// Mock auth service with hoisted fns to avoid unbound-method lint errors
+const { mockLogin, mockLogout, mockTokenStatus } = vi.hoisted(() => ({
+  mockLogin: vi.fn(),
+  mockLogout: vi.fn(),
+  mockTokenStatus: vi.fn(),
+}));
+
+vi.mock('src/services/auth', () => ({
+  default: {
+    login: mockLogin,
+    logout: mockLogout,
+    refresh: vi.fn(),
+    tokenStatus: mockTokenStatus,
+  },
+}));
+
 // Mock logger
 vi.mock('src/utils/logger', () => ({
   logger: {
@@ -14,30 +36,9 @@ vi.mock('src/utils/logger', () => ({
   clearUserContext: vi.fn(),
 }));
 
-// Stub import.meta.env.DEV for mock login tests
-vi.stubEnv('DEV', true);
-
 describe('useAuthStore', () => {
-  let localStorageMock: {
-    getItem: ReturnType<typeof vi.fn>;
-    setItem: ReturnType<typeof vi.fn>;
-    removeItem: ReturnType<typeof vi.fn>;
-  };
-
   beforeEach(() => {
     setActivePinia(createPinia());
-
-    // Reset localStorage mock for each test
-    localStorageMock = {
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-    };
-    Object.defineProperty(window, 'localStorage', {
-      value: localStorageMock,
-      writable: true,
-    });
-
     vi.clearAllMocks();
   });
 
@@ -45,234 +46,86 @@ describe('useAuthStore', () => {
   // Initial State
   // ========================================
   describe('initial state', () => {
-    it('starts with null user', () => {
+    it('starts not authenticated', () => {
       const store = useAuthStore();
-      expect(store.user).toBeNull();
+      expect(store.isAuthenticated).toBe(false);
     });
 
-    it('starts with null token', () => {
+    it('starts with empty username', () => {
       const store = useAuthStore();
-      expect(store.token).toBeNull();
+      expect(store.username).toBe('');
     });
 
-    it('starts not initialized', () => {
+    it('starts with empty scopes', () => {
       const store = useAuthStore();
-      expect(store.initialized).toBe(false);
+      expect(store.scopes).toEqual({});
     });
 
     it('starts not loading', () => {
       const store = useAuthStore();
       expect(store.loading).toBe(false);
     });
-
-    it('isAuthenticated is false when no token/user', () => {
-      const store = useAuthStore();
-      expect(store.isAuthenticated).toBe(false);
-    });
   });
 
   // ========================================
-  // Initialize
-  // ========================================
-  describe('initialize', () => {
-    it('sets initialized to true', () => {
-      const store = useAuthStore();
-      store.initialize();
-      expect(store.initialized).toBe(true);
-    });
-
-    it('restores user from localStorage if valid', () => {
-      const storedAuth = {
-        token: 'valid-token',
-        user: { id: 1, username: 'testuser', email: 'test@example.com' },
-        expiresAt: Date.now() + 100000, // Not expired
-      };
-      localStorageMock.getItem.mockReturnValue(JSON.stringify(storedAuth));
-
-      const store = useAuthStore();
-      store.initialize();
-
-      expect(store.user).toEqual(storedAuth.user);
-      expect(store.token).toBe('valid-token');
-      expect(store.isAuthenticated).toBe(true);
-    });
-
-    it('clears expired token from localStorage', () => {
-      const storedAuth = {
-        token: 'expired-token',
-        user: { id: 1, username: 'testuser', email: 'test@example.com' },
-        expiresAt: Date.now() - 100000, // Already expired
-      };
-      localStorageMock.getItem.mockReturnValue(JSON.stringify(storedAuth));
-
-      const store = useAuthStore();
-      store.initialize();
-
-      expect(store.user).toBeNull();
-      expect(store.token).toBeNull();
-      expect(localStorageMock.removeItem).toHaveBeenCalled();
-    });
-
-    it('clears invalid stored data', () => {
-      localStorageMock.getItem.mockReturnValue('invalid-json{');
-
-      const store = useAuthStore();
-      store.initialize();
-
-      expect(store.user).toBeNull();
-      expect(localStorageMock.removeItem).toHaveBeenCalled();
-    });
-
-    it('clears incomplete user data', () => {
-      const storedAuth = {
-        token: 'valid-token',
-        user: { id: 1 }, // Missing username and email
-      };
-      localStorageMock.getItem.mockReturnValue(JSON.stringify(storedAuth));
-
-      const store = useAuthStore();
-      store.initialize();
-
-      expect(store.user).toBeNull();
-      expect(localStorageMock.removeItem).toHaveBeenCalled();
-    });
-
-    it('returns early if already initialized', () => {
-      const store = useAuthStore();
-      store.initialize();
-      localStorageMock.getItem.mockClear();
-
-      store.initialize();
-
-      // Should not call getItem again
-      expect(localStorageMock.getItem).not.toHaveBeenCalled();
-    });
-
-    it('handles localStorage unavailable', () => {
-      localStorageMock.getItem.mockImplementation(() => {
-        throw new Error('localStorage unavailable');
-      });
-
-      const store = useAuthStore();
-      // Should not throw
-      expect(() => store.initialize()).not.toThrow();
-      expect(store.initialized).toBe(true);
-    });
-  });
-
-  // ========================================
-  // setAuth
-  // ========================================
-  describe('setAuth', () => {
-    it('sets token and user', () => {
-      const store = useAuthStore();
-      const user = { id: 1, username: 'testuser', email: 'test@example.com' };
-
-      store.setAuth('new-token', user);
-
-      expect(store.token).toBe('new-token');
-      expect(store.user).toEqual(user);
-    });
-
-    it('sets isAuthenticated to true', () => {
-      const store = useAuthStore();
-      const user = { id: 1, username: 'testuser', email: 'test@example.com' };
-
-      store.setAuth('new-token', user);
-
-      expect(store.isAuthenticated).toBe(true);
-    });
-
-    it('saves to localStorage', () => {
-      const store = useAuthStore();
-      const user = { id: 1, username: 'testuser', email: 'test@example.com' };
-
-      store.setAuth('new-token', user);
-
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'cosmere_auth',
-        expect.stringContaining('new-token')
-      );
-    });
-
-    it('saves expiresAt when provided', () => {
-      const store = useAuthStore();
-      const user = { id: 1, username: 'testuser', email: 'test@example.com' };
-      const expiresAt = Date.now() + 100000;
-
-      store.setAuth('new-token', user, expiresAt);
-
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'cosmere_auth',
-        expect.stringContaining(String(expiresAt))
-      );
-    });
-
-    it('handles localStorage unavailable', () => {
-      localStorageMock.setItem.mockImplementation(() => {
-        throw new Error('localStorage unavailable');
-      });
-
-      const store = useAuthStore();
-      const user = { id: 1, username: 'testuser', email: 'test@example.com' };
-
-      // Should not throw
-      expect(() => store.setAuth('new-token', user)).not.toThrow();
-      // State should still be set
-      expect(store.token).toBe('new-token');
-      expect(store.user).toEqual(user);
-    });
-  });
-
-  // ========================================
-  // login (mock dev login)
+  // login
   // ========================================
   describe('login', () => {
-    it('sets user and token on success', async () => {
-      const store = useAuthStore();
+    it('sets state on successful login', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: { heroes: 'edit' }, user_id: 1 },
+      });
 
+      const store = useAuthStore();
       const result = await store.login('testuser', 'password');
 
       expect(result).toBe(true);
-      expect(store.user?.username).toBe('testuser');
-      expect(store.token).toContain('mock-token');
-    });
-
-    it('sets isAuthenticated to true on success', async () => {
-      const store = useAuthStore();
-
-      await store.login('testuser', 'password');
-
       expect(store.isAuthenticated).toBe(true);
+      expect(store.username).toBe('testuser');
+      expect(store.scopes).toEqual({ heroes: 'edit' });
     });
 
-    it('generates email from username', async () => {
+    it('falls back to login username when response has no username', async () => {
+      mockLogin.mockResolvedValue({
+        data: { scopes: {} },
+      });
+
       const store = useAuthStore();
+      await store.login('fallbackuser', 'password');
 
-      await store.login('testuser', 'password');
+      expect(store.username).toBe('fallbackuser');
+    });
 
-      expect(store.user?.email).toBe('testuser@example.com');
+    it('returns false on login failure', async () => {
+      mockLogin.mockRejectedValue(new Error('Network error'));
+
+      const store = useAuthStore();
+      const result = await store.login('testuser', 'password');
+
+      expect(result).toBe(false);
+      expect(store.isAuthenticated).toBe(false);
     });
 
     it('sets loading during login', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: {} },
+      });
+
       const store = useAuthStore();
-
       const promise = store.login('testuser', 'password');
-
-      // Loading should be true during async operation
       expect(store.loading).toBe(true);
 
-      // After login completes, loading should be false
       await promise;
       expect(store.loading).toBe(false);
     });
 
-    it('saves auth to localStorage', async () => {
-      const store = useAuthStore();
+    it('resets loading on failure', async () => {
+      mockLogin.mockRejectedValue(new Error('fail'));
 
+      const store = useAuthStore();
       await store.login('testuser', 'password');
 
-      expect(localStorageMock.setItem).toHaveBeenCalled();
+      expect(store.loading).toBe(false);
     });
   });
 
@@ -280,104 +133,125 @@ describe('useAuthStore', () => {
   // logout
   // ========================================
   describe('logout', () => {
-    it('clears user and token', async () => {
+    it('clears state and navigates to login', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: { heroes: 'edit' } },
+      });
+      mockLogout.mockResolvedValue({});
+
       const store = useAuthStore();
       await store.login('testuser', 'password');
       expect(store.isAuthenticated).toBe(true);
 
-      store.logout();
+      await store.logout();
 
-      expect(store.user).toBeNull();
-      expect(store.token).toBeNull();
+      expect(store.isAuthenticated).toBe(false);
+      expect(store.username).toBe('');
+      expect(store.scopes).toEqual({});
+      expect(mockPush).toHaveBeenCalledWith({ name: 'login' });
     });
 
-    it('sets isAuthenticated to false', async () => {
+    it('clears state even when logout request fails', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: {} },
+      });
+      mockLogout.mockRejectedValue(new Error('Network error'));
+
       const store = useAuthStore();
       await store.login('testuser', 'password');
 
-      store.logout();
+      await store.logout();
 
+      expect(store.isAuthenticated).toBe(false);
+      expect(store.username).toBe('');
+    });
+  });
+
+  // ========================================
+  // checkAuthStatus
+  // ========================================
+  describe('checkAuthStatus', () => {
+    it('sets state when token is valid', async () => {
+      mockTokenStatus.mockResolvedValue({
+        data: { valid: true, username: 'testuser', scopes: { heroes: 'read' } },
+      });
+
+      const store = useAuthStore();
+      const result = await store.checkAuthStatus();
+
+      expect(result).toBe(true);
+      expect(store.isAuthenticated).toBe(true);
+      expect(store.username).toBe('testuser');
+      expect(store.scopes).toEqual({ heroes: 'read' });
+    });
+
+    it('returns false when token is invalid', async () => {
+      mockTokenStatus.mockResolvedValue({
+        data: { valid: false },
+      });
+
+      const store = useAuthStore();
+      const result = await store.checkAuthStatus();
+
+      expect(result).toBe(false);
       expect(store.isAuthenticated).toBe(false);
     });
 
-    it('removes from localStorage', async () => {
+    it('returns false and clears state on error', async () => {
+      mockTokenStatus.mockRejectedValue(new Error('Network error'));
+
       const store = useAuthStore();
-      await store.login('testuser', 'password');
-      localStorageMock.removeItem.mockClear();
+      const result = await store.checkAuthStatus();
 
-      store.logout();
-
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('cosmere_auth');
-    });
-
-    it('handles localStorage unavailable', async () => {
-      const store = useAuthStore();
-      await store.login('testuser', 'password');
-
-      localStorageMock.removeItem.mockImplementation(() => {
-        throw new Error('localStorage unavailable');
-      });
-
-      // Should not throw
-      expect(() => store.logout()).not.toThrow();
-      expect(store.user).toBeNull();
+      expect(result).toBe(false);
+      expect(store.isAuthenticated).toBe(false);
+      expect(store.username).toBe('');
+      expect(store.scopes).toEqual({});
     });
   });
 
   // ========================================
-  // reset
+  // Permissions
   // ========================================
-  describe('reset', () => {
-    it('clears user and token', async () => {
+  describe('permissions', () => {
+    it('hasPermission returns true when user level meets required', () => {
       const store = useAuthStore();
-      await store.login('testuser', 'password');
+      store.scopes = { heroes: 'edit' };
 
-      store.reset();
-
-      expect(store.user).toBeNull();
-      expect(store.token).toBeNull();
+      expect(store.hasPermission('heroes', 'read')).toBe(true);
+      expect(store.hasPermission('heroes', 'edit')).toBe(true);
+      expect(store.hasPermission('heroes', 'delete')).toBe(false);
     });
 
-    it('sets initialized to false', () => {
+    it('hasPermission returns false for unknown resource', () => {
       const store = useAuthStore();
-      store.initialize();
+      store.scopes = { heroes: 'edit' };
 
-      store.reset();
-
-      expect(store.initialized).toBe(false);
+      expect(store.hasPermission('unknown', 'read')).toBe(false);
     });
 
-    it('sets loading to false', () => {
+    it('canRead checks read permission', () => {
       const store = useAuthStore();
+      store.scopes = { heroes: 'read' };
 
-      store.reset();
-
-      expect(store.loading).toBe(false);
+      expect(store.canRead('heroes')).toBe(true);
+      expect(store.canRead('campaigns')).toBe(false);
     });
 
-    it('removes from localStorage', () => {
+    it('canEdit checks edit permission', () => {
       const store = useAuthStore();
+      store.scopes = { heroes: 'edit' };
 
-      store.reset();
-
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('cosmere_auth');
-    });
-  });
-
-  // ========================================
-  // currentUser
-  // ========================================
-  describe('currentUser', () => {
-    it('returns null when not logged in', () => {
-      const store = useAuthStore();
-      expect(store.currentUser).toBeNull();
+      expect(store.canEdit('heroes')).toBe(true);
+      expect(store.canEdit('campaigns')).toBe(false);
     });
 
-    it('returns user when logged in', async () => {
+    it('canDelete checks delete permission', () => {
       const store = useAuthStore();
-      await store.login('testuser', 'password');
+      store.scopes = { heroes: 'delete' };
 
-      expect(store.currentUser?.username).toBe('testuser');
+      expect(store.canDelete('heroes')).toBe(true);
+      expect(store.canDelete('campaigns')).toBe(false);
     });
   });
 });

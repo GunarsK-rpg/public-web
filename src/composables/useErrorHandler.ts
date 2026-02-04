@@ -203,7 +203,11 @@ export function useErrorHandler() {
   function handle401(skipLogout = false): void {
     if (!skipLogout) {
       // Clear auth state before redirecting to prevent redirect loops
-      authStore.logout();
+      authStore.logout().catch((err: unknown) => {
+        logger.debug('Logout during 401 handling failed', {
+          error: err instanceof Error ? err.message : String(err),
+        });
+      });
 
       $q.notify({
         type: 'warning',
