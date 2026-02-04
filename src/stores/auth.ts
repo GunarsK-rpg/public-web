@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false);
 
   function isLevelKey(value: string): value is LevelKey {
-    return value in LevelValues;
+    return (Object.values(Level) as string[]).includes(value);
   }
 
   function hasPermission(resource: string, required: string): boolean {
