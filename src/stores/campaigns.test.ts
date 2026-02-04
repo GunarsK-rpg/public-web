@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { useCampaignStore } from './campaigns';
+import { axiosError } from 'src/test-utils/axiosHelpers';
 
 // Mock campaign data
 const mockCampaigns = [
@@ -49,16 +49,6 @@ vi.mock('src/utils/logger', () => ({
     debug: vi.fn(),
   },
 }));
-
-function axiosError(status: number): AxiosError {
-  return new AxiosError('Request failed', String(status), undefined, undefined, {
-    status,
-    data: null,
-    statusText: '',
-    headers: {},
-    config: { headers: {} } as InternalAxiosRequestConfig,
-  } as AxiosResponse);
-}
 
 describe('useCampaignStore', () => {
   beforeEach(() => {

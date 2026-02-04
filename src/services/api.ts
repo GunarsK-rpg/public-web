@@ -26,7 +26,7 @@ api.interceptors.request.use(
   (error: unknown) => {
     const err = toError(error);
     logger.logError(err);
-    return Promise.reject(err);
+    return Promise.reject(error instanceof Error ? error : err);
   }
 );
 
@@ -48,7 +48,7 @@ api.interceptors.response.use(
   (error: unknown) => {
     const err = toError(error);
     logger.logError(err);
-    return Promise.reject(err);
+    return Promise.reject(error instanceof Error ? error : err);
   }
 );
 

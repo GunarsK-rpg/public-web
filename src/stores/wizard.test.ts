@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { useWizardStore } from './wizard';
+import { axiosError } from 'src/test-utils/axiosHelpers';
 import { useHeroStore } from './hero';
 import { WIZARD_STEPS, STEP_CODES } from 'src/types/wizard';
 
@@ -65,16 +65,6 @@ vi.mock('src/utils/logger', () => ({
     debug: vi.fn(),
   },
 }));
-
-function axiosError(status: number): AxiosError {
-  return new AxiosError('Request failed', String(status), undefined, undefined, {
-    status,
-    data: null,
-    statusText: '',
-    headers: {},
-    config: { headers: {} } as InternalAxiosRequestConfig,
-  } as AxiosResponse);
-}
 
 describe('useWizardStore', () => {
   beforeEach(() => {
