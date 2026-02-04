@@ -71,7 +71,7 @@ describe('useWizardStore', () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     mockGetSheet.mockImplementation((id: number) => {
-      if (id === 1) return Promise.resolve({ data: mockHero });
+      if (id === 1) return Promise.resolve({ data: structuredClone(mockHero) });
       return Promise.reject(axiosError(404));
     });
   });

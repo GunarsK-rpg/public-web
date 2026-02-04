@@ -9,6 +9,8 @@ on:
 
 env:
   NODE_VERSION: '22'
+  VITE_API_URL: http://localhost:3001
+  VITE_AUTH_URL: http://localhost:3002
 
 jobs:
   # Job 1: Lint code
