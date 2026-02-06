@@ -584,7 +584,7 @@ describe('EquipmentStep', () => {
         },
       ];
       mockEquipment.value = [
-        { id: 1, equipment: { id: 9999, code: 'unknown', name: 'Unknown' }, amount: 1 },
+        { id: 1, equipment: { id: 9999, code: 'mystery', name: 'Mystery' }, amount: 1 },
       ];
       const wrapper = createWrapper();
 

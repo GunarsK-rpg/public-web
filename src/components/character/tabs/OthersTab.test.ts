@@ -64,36 +64,36 @@ vi.mock('src/stores/heroTalents', () => ({
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
     ancestries: [
-      { id: 1, name: 'Human', description: 'Humans are adaptable' },
-      { id: 2, name: 'Singer', description: 'Singers can change forms' },
+      { id: 1, code: 'human', name: 'Human', description: 'Humans are adaptable' },
+      { id: 2, code: 'singer', name: 'Singer', description: 'Singers can change forms' },
     ],
     singerForms: [
-      { id: 1, name: 'Workform', description: 'For labor' },
-      { id: 2, name: 'Warform', description: 'For battle' },
+      { id: 1, code: 'workform', name: 'Workform', description: 'For labor' },
+      { id: 2, code: 'warform', name: 'Warform', description: 'For battle' },
     ],
     cultures: [
-      { id: 1, name: 'Alethi' },
-      { id: 2, name: 'Thaylen' },
+      { id: 1, code: 'alethi', name: 'Alethi' },
+      { id: 2, code: 'thaylen', name: 'Thaylen' },
     ],
     goalStatuses: [
-      { id: 1, name: 'Active' },
-      { id: 2, name: 'Completed' },
+      { id: 1, code: 'active', name: 'Active' },
+      { id: 2, code: 'completed', name: 'Completed' },
     ],
     connectionTypes: [
-      { id: 1, name: 'Ally' },
-      { id: 2, name: 'Enemy' },
+      { id: 1, code: 'ally', name: 'Ally' },
+      { id: 2, code: 'enemy', name: 'Enemy' },
     ],
     companionTypes: [
-      { id: 1, name: 'Pet' },
-      { id: 2, name: 'Spren' },
+      { id: 1, code: 'pet', name: 'Pet' },
+      { id: 2, code: 'spren', name: 'Spren' },
     ],
     conditions: [
-      { id: 1, name: 'Exhausted' },
-      { id: 2, name: 'Frightened' },
+      { id: 1, code: 'exhausted', name: 'Exhausted' },
+      { id: 2, code: 'frightened', name: 'Frightened' },
     ],
     injuries: [
-      { id: 1, name: 'Broken Arm' },
-      { id: 2, name: 'Concussion' },
+      { id: 1, code: 'broken-arm', name: 'Broken Arm' },
+      { id: 2, code: 'concussion', name: 'Concussion' },
     ],
   }),
 }));

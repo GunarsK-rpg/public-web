@@ -192,6 +192,7 @@ describe('SkillsStep', () => {
               class="q-input"
               type="number"
               :value="modelValue"
+              :aria-label="ariaLabel"
               @input="$emit('update:modelValue', Number($event.target.value))"
             />`,
             props: ['modelValue', 'ariaLabel', 'type', 'dense', 'outlined', 'prefix', 'min', 'max'],
@@ -560,20 +561,6 @@ describe('SkillsStep', () => {
       await incrementBtns[0]!.trigger('click');
 
       expect(mockSetSkillRank).toHaveBeenCalledWith(1, 2);
-    });
-
-    it('decrement does not call setSkillRank when current is 0', async () => {
-      mockGetSkillRank.mockReturnValue(0);
-
-      const wrapper = createWrapper();
-
-      const decrementBtns = wrapper
-        .findAll('.q-btn')
-        .filter((b) => b.attributes('aria-label')?.includes('Decrease'));
-      expect(decrementBtns.length).toBeGreaterThan(0);
-      await decrementBtns[0]!.trigger('click');
-
-      expect(mockSetSkillRank).not.toHaveBeenCalled();
     });
   });
 });

@@ -277,21 +277,6 @@ describe('ActionItem', () => {
       expect(img.exists()).toBe(false);
     });
 
-    it('uses fallback "Action" for alt/title when activationType is null', () => {
-      mockEntityIconData.value = {
-        entity: null,
-        iconUrl: null,
-      };
-
-      const wrapper = createWrapper({
-        activationType: { id: 999, code: 'at999', name: 'ActType999' },
-      });
-
-      // Icon should not render when entity is null (no icon property)
-      const img = wrapper.find('img');
-      expect(img.exists()).toBe(false);
-    });
-
     it('uses "Action" fallback in alt when entity name is undefined', () => {
       mockEntityIconData.value = {
         entity: { id: 1, code: 'test', name: undefined as unknown as string, icon: 'test.svg' },
@@ -322,8 +307,8 @@ describe('ActionItem', () => {
     it('handles activationType with id 0', () => {
       const wrapper = createWrapper({ activationType: { id: 0, code: 'at0', name: 'ActType0' } });
 
-      // Should render without crashing
       expect(wrapper.exists()).toBe(true);
+      expect(wrapper.text()).toContain('Strike');
     });
 
     it('handles undefined activationType', () => {

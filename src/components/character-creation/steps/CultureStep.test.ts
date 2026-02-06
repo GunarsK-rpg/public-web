@@ -63,8 +63,8 @@ const mockClassifierData = {
       expertise: { id: number; code: string; name: string } | null;
     }[],
     expertises: [
-      { id: 10, name: 'Vorin Expertise' },
-      { id: 20, name: 'Shin Expertise' },
+      { id: 10, code: 'vorin-exp', name: 'Vorin Expertise' },
+      { id: 20, code: 'shin-exp', name: 'Shin Expertise' },
     ],
   },
 };
@@ -155,8 +155,8 @@ describe('CultureStep', () => {
         },
       ],
       expertises: [
-        { id: 10, name: 'Vorin Expertise' },
-        { id: 20, name: 'Shin Expertise' },
+        { id: 10, code: 'vorin-exp', name: 'Vorin Expertise' },
+        { id: 20, code: 'shin-exp', name: 'Shin Expertise' },
       ],
     };
   });

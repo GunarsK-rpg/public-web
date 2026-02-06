@@ -83,8 +83,8 @@ vi.mock('src/stores/classifiers', () => ({
       { id: 4, code: 'gear', name: 'Gear', icon: 'gear.svg' },
     ],
     damageTypes: [
-      { id: 1, name: 'Slashing' },
-      { id: 2, name: 'Piercing' },
+      { id: 1, code: 'slashing', name: 'Slashing' },
+      { id: 2, code: 'piercing', name: 'Piercing' },
     ],
   }),
 }));
@@ -174,7 +174,12 @@ vi.mock('src/constants/theme', () => ({
   },
 }));
 
-const eqRef = (id: number) => ({ id, code: `e${id}`, name: `Equip${id}` });
+const eqRef = (id: number) => {
+  const eq = equipmentMap[id];
+  return eq
+    ? { id: eq.id, code: eq.code, name: eq.name }
+    : { id, code: `e${id}`, name: `Equip${id}` };
+};
 
 describe('EquipmentItem', () => {
   const createWrapper = (heroEquipment: Partial<HeroEquipment>) =>
@@ -395,8 +400,8 @@ describe('EquipmentItem', () => {
     it('handles unknown equipment ID gracefully', () => {
       const wrapper = createWrapper({ equipment: eqRef(999) });
 
-      // Should not crash
       expect(wrapper.exists()).toBe(true);
+      expect(wrapper.find('img').exists()).toBe(false);
     });
 
     it('handles zero amount', () => {
