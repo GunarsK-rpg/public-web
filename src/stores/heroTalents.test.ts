@@ -13,8 +13,18 @@ const mockClassifiers = {
   skills: [],
   expertiseTypes: [],
   expertises: [
-    { id: 1, code: 'alethi_culture', name: 'Alethi Culture', skillId: 1 },
-    { id: 2, code: 'thaylen_culture', name: 'Thaylen Culture', skillId: 1 },
+    {
+      id: 1,
+      code: 'alethi_culture',
+      name: 'Alethi Culture',
+      expertiseType: { id: 1, code: 'general', name: 'General' },
+    },
+    {
+      id: 2,
+      code: 'thaylen_culture',
+      name: 'Thaylen Culture',
+      expertiseType: { id: 1, code: 'general', name: 'General' },
+    },
   ],
   activationTypes: [],
   actionTypes: [],
@@ -31,22 +41,114 @@ const mockClassifiers = {
     { id: 3, code: 'division', name: 'Division' },
   ],
   radiantOrders: [
-    { id: 1, code: 'windrunner', name: 'Windrunner', surge1Id: 1, surge2Id: 2 },
-    { id: 2, code: 'dustbringer', name: 'Dustbringer', surge1Id: 3, surge2Id: 1 },
+    {
+      id: 1,
+      code: 'windrunner',
+      name: 'Windrunner',
+      surge1: { id: 1, code: 'gravitation', name: 'Gravitation' },
+      surge2: { id: 2, code: 'adhesion', name: 'Adhesion' },
+    },
+    {
+      id: 2,
+      code: 'dustbringer',
+      name: 'Dustbringer',
+      surge1: { id: 3, code: 'division', name: 'Division' },
+      surge2: { id: 1, code: 'gravitation', name: 'Gravitation' },
+    },
   ],
   singerForms: [
     { id: 1, code: 'warform', name: 'Warform' },
     { id: 2, code: 'workform', name: 'Workform' },
   ],
   talents: [
-    { id: 1, code: 'warrior_key', name: 'Warrior Key', pathId: 1, isKey: true },
-    { id: 2, code: 'warrior_talent', name: 'Warrior Talent', pathId: 1, isKey: false },
-    { id: 3, code: 'scholar_key', name: 'Scholar Key', pathId: 2, isKey: true },
-    { id: 4, code: 'windrunner_key', name: 'Windrunner Key', radiantOrderId: 1, isKey: true },
-    { id: 5, code: 'gravitation_talent', name: 'Gravitation Talent', surgeId: 1 },
-    { id: 6, code: 'adhesion_talent', name: 'Adhesion Talent', surgeId: 2 },
-    { id: 7, code: 'singer_key', name: 'Singer Key', ancestryId: 2, isKey: true },
-    { id: 8, code: 'human_talent', name: 'Human Talent', ancestryId: 1 },
+    {
+      id: 1,
+      code: 'warrior_key',
+      name: 'Warrior Key',
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: true,
+    },
+    {
+      id: 2,
+      code: 'warrior_talent',
+      name: 'Warrior Talent',
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
+    },
+    {
+      id: 3,
+      code: 'scholar_key',
+      name: 'Scholar Key',
+      path: { id: 2, code: 'scholar', name: 'Scholar' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: true,
+    },
+    {
+      id: 4,
+      code: 'windrunner_key',
+      name: 'Windrunner Key',
+      path: null,
+      specialties: [],
+      ancestry: null,
+      radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+      surge: null,
+      isKey: true,
+    },
+    {
+      id: 5,
+      code: 'gravitation_talent',
+      name: 'Gravitation Talent',
+      path: null,
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: { id: 1, code: 'gravitation', name: 'Gravitation' },
+      isKey: false,
+    },
+    {
+      id: 6,
+      code: 'adhesion_talent',
+      name: 'Adhesion Talent',
+      path: null,
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: { id: 2, code: 'adhesion', name: 'Adhesion' },
+      isKey: false,
+    },
+    {
+      id: 7,
+      code: 'singer_key',
+      name: 'Singer Key',
+      path: null,
+      specialties: [],
+      ancestry: { id: 2, code: 'singer', name: 'Singer' },
+      radiantOrder: null,
+      surge: null,
+      isKey: true,
+    },
+    {
+      id: 8,
+      code: 'human_talent',
+      name: 'Human Talent',
+      path: null,
+      specialties: [],
+      ancestry: { id: 1, code: 'human', name: 'Human' },
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
+    },
   ],
   units: [],
   equipmentTypes: [],
@@ -64,8 +166,18 @@ const mockClassifiers = {
     { id: 2, code: 'singer', name: 'Singer' },
   ],
   cultures: [
-    { id: 1, code: 'alethi', name: 'Alethi', expertiseId: 1 },
-    { id: 2, code: 'thaylen', name: 'Thaylen', expertiseId: 2 },
+    {
+      id: 1,
+      code: 'alethi',
+      name: 'Alethi',
+      expertise: { id: 1, code: 'alethi_culture', name: 'Alethi Culture' },
+    },
+    {
+      id: 2,
+      code: 'thaylen',
+      name: 'Thaylen',
+      expertise: { id: 2, code: 'thaylen_culture', name: 'Thaylen Culture' },
+    },
   ],
   tiers: [],
   levels: [],
@@ -126,7 +238,7 @@ describe('useHeroTalentsStore', () => {
       const store = useHeroTalentsStore();
       const heroStore = useHeroStore();
 
-      heroStore.hero!.ancestryId = 1; // human
+      heroStore.hero!.ancestry = { id: 1, code: 'human', name: 'Human' };
 
       expect(store.isSinger).toBe(false);
     });
@@ -135,7 +247,7 @@ describe('useHeroTalentsStore', () => {
       const store = useHeroTalentsStore();
       const heroStore = useHeroStore();
 
-      heroStore.hero!.ancestryId = 2; // singer
+      heroStore.hero!.ancestry = { id: 2, code: 'singer', name: 'Singer' };
 
       expect(store.isSinger).toBe(true);
     });
@@ -150,7 +262,7 @@ describe('useHeroTalentsStore', () => {
       const store = useHeroTalentsStore();
       const heroStore = useHeroStore();
 
-      heroStore.hero!.radiantOrderId = 1;
+      heroStore.hero!.radiantOrder = { id: 1, code: 'windrunner', name: 'Windrunner' };
 
       expect(store.isRadiant).toBe(true);
     });
@@ -165,7 +277,7 @@ describe('useHeroTalentsStore', () => {
       const store = useHeroTalentsStore();
       const heroStore = useHeroStore();
 
-      heroStore.hero!.radiantOrderId = 1;
+      heroStore.hero!.radiantOrder = { id: 1, code: 'windrunner', name: 'Windrunner' };
 
       expect(store.radiantOrderId).toBe(1);
     });
@@ -196,7 +308,7 @@ describe('useHeroTalentsStore', () => {
 
       store.setAncestry(1);
 
-      expect(heroStore.hero?.ancestryId).toBe(1);
+      expect(heroStore.hero?.ancestry.id).toBe(1);
     });
 
     it('adds singer key talent when setting singer ancestry', () => {
@@ -205,7 +317,7 @@ describe('useHeroTalentsStore', () => {
 
       store.setAncestry(2); // singer
 
-      const hasSingerKey = heroStore.hero!.talents.some((t) => t.talentId === 7);
+      const hasSingerKey = heroStore.hero!.talents.some((t) => t.talent.id === 7);
       expect(hasSingerKey).toBe(true);
     });
 
@@ -214,11 +326,11 @@ describe('useHeroTalentsStore', () => {
       const heroStore = useHeroStore();
 
       store.setAncestry(2); // singer
-      heroStore.hero!.activeSingerFormId = 1;
+      heroStore.hero!.activeSingerForm = { id: 1, code: 'warform', name: 'Warform' };
 
       store.setAncestry(1); // human
 
-      expect(heroStore.hero?.activeSingerFormId).toBeNull();
+      expect(heroStore.hero?.activeSingerForm).toBeNull();
     });
 
     it('removes previous ancestry talents when changing ancestry', () => {
@@ -226,11 +338,11 @@ describe('useHeroTalentsStore', () => {
       const heroStore = useHeroStore();
 
       store.setAncestry(2); // singer - adds singer key talent
-      expect(heroStore.hero!.talents.some((t) => t.talentId === 7)).toBe(true);
+      expect(heroStore.hero!.talents.some((t) => t.talent.id === 7)).toBe(true);
 
       store.setAncestry(1); // human - should remove singer talents
 
-      expect(heroStore.hero!.talents.some((t) => t.talentId === 7)).toBe(false);
+      expect(heroStore.hero!.talents.some((t) => t.talent.id === 7)).toBe(false);
     });
   });
 
@@ -241,7 +353,7 @@ describe('useHeroTalentsStore', () => {
 
       store.setSingerForm(1);
 
-      expect(heroStore.hero?.activeSingerFormId).toBe(1);
+      expect(heroStore.hero?.activeSingerForm?.id).toBe(1);
     });
 
     it('clears singer form when set to null', () => {
@@ -251,7 +363,7 @@ describe('useHeroTalentsStore', () => {
       store.setSingerForm(1);
       store.setSingerForm(null);
 
-      expect(heroStore.hero?.activeSingerFormId).toBeNull();
+      expect(heroStore.hero?.activeSingerForm).toBeNull();
     });
   });
 
@@ -266,7 +378,7 @@ describe('useHeroTalentsStore', () => {
       store.addCulture(1);
 
       expect(heroStore.hero!.cultures.length).toBe(1);
-      expect(heroStore.hero!.cultures[0]!.cultureId).toBe(1);
+      expect(heroStore.hero!.cultures[0]!.culture.id).toBe(1);
     });
 
     it('does not duplicate culture', () => {
@@ -286,7 +398,7 @@ describe('useHeroTalentsStore', () => {
       store.addCulture(1); // Alethi has expertiseId 1
 
       const hasExpertise = heroStore.hero!.expertises.some(
-        (e) => e.expertiseId === 1 && e.source?.sourceType === 'culture'
+        (e) => e.expertise.id === 1 && e.source?.sourceType === 'culture'
       );
       expect(hasExpertise).toBe(true);
     });
@@ -313,7 +425,7 @@ describe('useHeroTalentsStore', () => {
       store.removeCulture(1);
 
       expect(heroStore.hero!.cultures.length).toBe(1);
-      expect(heroStore.hero!.cultures[0]!.cultureId).toBe(2);
+      expect(heroStore.hero!.cultures[0]!.culture.id).toBe(2);
     });
 
     it('removes cultural expertise', () => {
@@ -342,7 +454,7 @@ describe('useHeroTalentsStore', () => {
       store.addTalent(1);
 
       expect(heroStore.hero!.talents.length).toBe(1);
-      expect(heroStore.hero!.talents[0]!.talentId).toBe(1);
+      expect(heroStore.hero!.talents[0]!.talent.id).toBe(1);
     });
 
     it('does not duplicate talent', () => {
@@ -377,7 +489,7 @@ describe('useHeroTalentsStore', () => {
       store.removeTalent(1);
 
       expect(heroStore.hero!.talents.length).toBe(1);
-      expect(heroStore.hero!.talents[0]!.talentId).toBe(2);
+      expect(heroStore.hero!.talents[0]!.talent.id).toBe(2);
     });
   });
 
@@ -388,7 +500,7 @@ describe('useHeroTalentsStore', () => {
 
       store.addKeyTalentForPath(1); // warrior path
 
-      expect(heroStore.hero!.talents.some((t) => t.talentId === 1)).toBe(true);
+      expect(heroStore.hero!.talents.some((t) => t.talent.id === 1)).toBe(true);
     });
 
     it('does nothing for path without key talent', () => {
@@ -411,7 +523,7 @@ describe('useHeroTalentsStore', () => {
 
       store.setRadiantOrder(1);
 
-      expect(heroStore.hero?.radiantOrderId).toBe(1);
+      expect(heroStore.hero?.radiantOrder?.id).toBe(1);
     });
 
     it('adds radiant key talent', () => {
@@ -420,7 +532,7 @@ describe('useHeroTalentsStore', () => {
 
       store.setRadiantOrder(1); // windrunner
 
-      expect(heroStore.hero!.talents.some((t) => t.talentId === 4)).toBe(true);
+      expect(heroStore.hero!.talents.some((t) => t.talent.id === 4)).toBe(true);
     });
 
     it('clears radiant order when set to null', () => {
@@ -430,7 +542,7 @@ describe('useHeroTalentsStore', () => {
       store.setRadiantOrder(1);
       store.setRadiantOrder(null);
 
-      expect(heroStore.hero?.radiantOrderId).toBeNull();
+      expect(heroStore.hero?.radiantOrder).toBeNull();
     });
 
     it('resets radiant ideal to 0 when clearing order', () => {
@@ -450,11 +562,11 @@ describe('useHeroTalentsStore', () => {
       const heroStore = useHeroStore();
 
       store.setRadiantOrder(1); // windrunner - adds windrunner key (id 4)
-      expect(heroStore.hero!.talents.some((t) => t.talentId === 4)).toBe(true);
+      expect(heroStore.hero!.talents.some((t) => t.talent.id === 4)).toBe(true);
 
       store.setRadiantOrder(2); // dustbringer - should remove windrunner talents
 
-      expect(heroStore.hero!.talents.some((t) => t.talentId === 4)).toBe(false);
+      expect(heroStore.hero!.talents.some((t) => t.talent.id === 4)).toBe(false);
     });
 
     it('removes surge talents from previous order', () => {
@@ -468,8 +580,8 @@ describe('useHeroTalentsStore', () => {
       store.setRadiantOrder(null);
 
       // Should remove surge talents
-      expect(heroStore.hero!.talents.some((t) => t.talentId === 5)).toBe(false);
-      expect(heroStore.hero!.talents.some((t) => t.talentId === 6)).toBe(false);
+      expect(heroStore.hero!.talents.some((t) => t.talent.id === 5)).toBe(false);
+      expect(heroStore.hero!.talents.some((t) => t.talent.id === 6)).toBe(false);
     });
   });
 
@@ -665,7 +777,7 @@ describe('useHeroTalentsStore', () => {
       heroStore.hero!.talents.push({
         id: -999,
         heroId: heroStore.hero!.id,
-        talentId: 7, // singer key talent
+        talent: { id: 7, code: 'singer_key', name: 'Singer Key' },
       });
 
       const initialCount = heroStore.hero!.talents.length;
@@ -674,7 +786,7 @@ describe('useHeroTalentsStore', () => {
       store.setAncestry(2);
 
       // Count singer key talents
-      const singerKeyTalents = heroStore.hero!.talents.filter((t) => t.talentId === 7);
+      const singerKeyTalents = heroStore.hero!.talents.filter((t) => t.talent.id === 7);
       expect(singerKeyTalents.length).toBe(1);
       expect(heroStore.hero!.talents.length).toBe(initialCount);
     });

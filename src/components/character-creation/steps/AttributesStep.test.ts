@@ -24,10 +24,16 @@ const mockClassifierData = {
         id: 1,
         code: 'str',
         name: 'Strength',
-        attrTypeId: 1,
+        attrType: { id: 1, code: 'physical', name: 'Physical' },
         description: 'Physical power',
       },
-      { id: 2, code: 'dex', name: 'Dexterity', attrTypeId: 1, description: 'Agility' },
+      {
+        id: 2,
+        code: 'dex',
+        name: 'Dexterity',
+        attrType: { id: 1, code: 'physical', name: 'Physical' },
+        description: 'Agility',
+      },
     ],
     attributeTypes: [{ id: 1, code: 'physical', name: 'Physical' }] as {
       id: number;
@@ -181,10 +187,16 @@ describe('AttributesStep', () => {
           id: 1,
           code: 'str',
           name: 'Strength',
-          attrTypeId: 1,
+          attrType: { id: 1, code: 'physical', name: 'Physical' },
           description: 'Physical power',
         },
-        { id: 2, code: 'dex', name: 'Dexterity', attrTypeId: 1, description: 'Agility' },
+        {
+          id: 2,
+          code: 'dex',
+          name: 'Dexterity',
+          attrType: { id: 1, code: 'physical', name: 'Physical' },
+          description: 'Agility',
+        },
       ],
       attributeTypes: [{ id: 1, code: 'physical', name: 'Physical' }],
       derivedStats: [],
@@ -449,7 +461,13 @@ describe('AttributesStep', () => {
 
     it('uses grey color for unknown attribute type', () => {
       mockClassifierData.value.attributes = [
-        { id: 1, code: 'str', name: 'Strength', attrTypeId: 999, description: 'Physical power' },
+        {
+          id: 1,
+          code: 'str',
+          name: 'Strength',
+          attrType: { id: 999, code: 'unknown', name: 'Unknown' },
+          description: 'Physical power',
+        },
       ];
       mockClassifierData.value.attributeTypes = [];
 
@@ -461,7 +479,13 @@ describe('AttributesStep', () => {
 
     it('uses grey color for attribute type without matching color', () => {
       mockClassifierData.value.attributes = [
-        { id: 1, code: 'str', name: 'Strength', attrTypeId: 1, description: 'Physical power' },
+        {
+          id: 1,
+          code: 'str',
+          name: 'Strength',
+          attrType: { id: 1, code: 'physical', name: 'Physical' },
+          description: 'Physical power',
+        },
       ];
       mockClassifierData.value.attributeTypes = [{ id: 1, code: 'unknown_type', name: 'Unknown' }];
 
@@ -476,7 +500,7 @@ describe('AttributesStep', () => {
           id: 1,
           code: 'str',
           name: 'Strength',
-          attrTypeId: 1,
+          attrType: { id: 1, code: 'physical', name: 'Physical' },
           description: undefined as unknown as string,
         },
       ];

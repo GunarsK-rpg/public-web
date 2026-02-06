@@ -52,6 +52,7 @@
         <q-item-section avatar>
           <q-checkbox
             :model-value="isSelected(expertise.id)"
+            :aria-label="`Toggle ${expertise.name}`"
             :disable="
               isReadOnly(expertise.id) || (!isSelected(expertise.id) && slotsRemaining <= 0)
             "
@@ -100,11 +101,28 @@ const specialistTypeId = computed(() => findByCode(classifiers.expertiseTypes, '
 // Hero's current expertises
 const heroExpertises = computed(() => heroStore.expertises);
 
+// Pre-computed Maps for O(1) lookups in template (avoids O(n) per item in v-for)
+const selectedSet = computed(
+  () =>
+    new Set(
+      heroExpertises.value.map((e) => e.expertise?.id).filter((id): id is number => id != null)
+    )
+);
+const sourceMap = computed(() => {
+  const map = new Map<number, string>();
+  for (const e of heroExpertises.value) {
+    if (e.expertise?.id != null && e.source?.sourceType) {
+      map.set(e.expertise.id, e.source.sourceType);
+    }
+  }
+  return map;
+});
+
 // Helper to get expertises by source type
 function getExpertisesBySource(sourceType: string) {
   return heroExpertises.value
     .filter((e) => e.source?.sourceType === sourceType)
-    .map((e) => findById(classifiers.expertises, e.expertiseId))
+    .map((e) => findById(classifiers.expertises, e.expertise?.id))
     .filter((e): e is NonNullable<typeof e> => e !== undefined);
 }
 
@@ -125,11 +143,11 @@ const filteredExpertises = computed(() => {
   }
   const typeId = getExpertiseTypeId(selectedCategory.value);
   if (!typeId) return [];
-  return classifiers.expertises.filter((e) => e.expertiseTypeId === typeId);
+  return classifiers.expertises.filter((e) => e.expertiseType?.id === typeId);
 });
 
 function isSelected(expertiseId: number): boolean {
-  return heroExpertises.value.some((e) => e.expertiseId === expertiseId);
+  return selectedSet.value.has(expertiseId);
 }
 
 function isReadOnly(expertiseId: number): boolean {
@@ -139,8 +157,7 @@ function isReadOnly(expertiseId: number): boolean {
 }
 
 function getSource(expertiseId: number): string | null {
-  const heroExp = heroExpertises.value.find((e) => e.expertiseId === expertiseId);
-  return heroExp?.source?.sourceType ?? null;
+  return sourceMap.value.get(expertiseId) ?? null;
 }
 
 function toggleExpertise(expertiseId: number, checked: boolean) {
@@ -159,6 +176,6 @@ function toggleExpertise(expertiseId: number, checked: boolean) {
 function isSpecialist(expertiseId: number): boolean {
   if (!specialistTypeId.value) return false;
   const expertise = findById(classifiers.expertises, expertiseId);
-  return expertise?.expertiseTypeId === specialistTypeId.value;
+  return expertise?.expertiseType?.id === specialistTypeId.value;
 }
 </script>

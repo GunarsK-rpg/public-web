@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import ActionItem from './ActionItem.vue';
-import type { Action } from 'src/types';
+import type { Action, ClassifierRef } from 'src/types';
 
 // Reactive mock data
 const mockEntityIconData = {
@@ -54,8 +54,8 @@ describe('ActionItem', () => {
           id: 1,
           name: 'Strike',
           description: 'A basic attack',
-          activationTypeId: 1,
-          actionTypeId: 1,
+          activationType: { id: 1, code: 'action', name: 'Action' },
+          actionType: { id: 1, code: 'action-type', name: 'Action Type' },
           focusCost: 0,
           investitureCost: 0,
           ...action,
@@ -222,10 +222,17 @@ describe('ActionItem', () => {
     });
 
     it('handles missing activation type gracefully', () => {
-      const wrapper = createWrapper({ activationTypeId: 999 });
+      mockEntityIconData.value = {
+        entity: null,
+        iconUrl: null,
+      };
 
-      // Should render without crashing
+      const wrapper = createWrapper({
+        activationType: { id: 999, code: 'at999', name: 'ActType999' },
+      });
+
       expect(wrapper.exists()).toBe(true);
+      expect(wrapper.find('img').exists()).toBe(false);
     });
 
     it('renders action with all optional fields', () => {
@@ -262,21 +269,10 @@ describe('ActionItem', () => {
         iconUrl: null,
       };
 
-      const wrapper = createWrapper({ activationTypeId: 4 });
+      const wrapper = createWrapper({
+        activationType: { id: 4, code: 'no-icon', name: 'No Icon' },
+      });
 
-      const img = wrapper.find('img');
-      expect(img.exists()).toBe(false);
-    });
-
-    it('uses fallback "Action" for alt/title when activationType is null', () => {
-      mockEntityIconData.value = {
-        entity: null,
-        iconUrl: null,
-      };
-
-      const wrapper = createWrapper({ activationTypeId: 999 });
-
-      // Icon should not render when entity is null (no icon property)
       const img = wrapper.find('img');
       expect(img.exists()).toBe(false);
     });
@@ -308,15 +304,17 @@ describe('ActionItem', () => {
       expect(wrapper.text()).not.toContain('Dice:');
     });
 
-    it('handles activationTypeId of 0', () => {
-      const wrapper = createWrapper({ activationTypeId: 0 });
+    it('handles activationType with id 0', () => {
+      const wrapper = createWrapper({ activationType: { id: 0, code: 'at0', name: 'ActType0' } });
 
-      // Should render without crashing
       expect(wrapper.exists()).toBe(true);
+      expect(wrapper.text()).toContain('Strike');
     });
 
-    it('handles undefined activationTypeId', () => {
-      const wrapper = createWrapper({ activationTypeId: undefined as unknown as number });
+    it('handles undefined activationType', () => {
+      const wrapper = createWrapper({
+        activationType: undefined as unknown as ClassifierRef,
+      });
 
       expect(wrapper.exists()).toBe(true);
     });

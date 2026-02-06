@@ -11,8 +11,15 @@ const mockCampaign = ref({
   name: 'Test Campaign',
   description: 'Campaign description',
   heroes: [
-    { id: 1, name: 'Hero 1', level: 5, currentHealth: 20, maxHealth: 30, radiantOrderId: null },
-    { id: 2, name: 'Hero 2', level: 3, currentHealth: 15, maxHealth: 15, radiantOrderId: 1 },
+    { id: 1, name: 'Hero 1', level: 5, currentHealth: 20, maxHealth: 30, radiantOrder: null },
+    {
+      id: 2,
+      name: 'Hero 2',
+      level: 3,
+      currentHealth: 15,
+      maxHealth: 15,
+      radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+    },
   ],
 });
 const mockLoading = ref(false);
@@ -119,8 +126,15 @@ describe('CampaignDetailPage', () => {
       name: 'Test Campaign',
       description: 'Campaign description',
       heroes: [
-        { id: 1, name: 'Hero 1', level: 5, currentHealth: 20, maxHealth: 30, radiantOrderId: null },
-        { id: 2, name: 'Hero 2', level: 3, currentHealth: 15, maxHealth: 15, radiantOrderId: 1 },
+        { id: 1, name: 'Hero 1', level: 5, currentHealth: 20, maxHealth: 30, radiantOrder: null },
+        {
+          id: 2,
+          name: 'Hero 2',
+          level: 3,
+          currentHealth: 15,
+          maxHealth: 15,
+          radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+        },
       ],
     };
     mockLoading.value = false;
@@ -180,10 +194,10 @@ describe('CampaignDetailPage', () => {
       expect(wrapper.text()).toContain('Windrunner');
     });
 
-    it('shows health progress bar', () => {
+    it('shows health display', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.q-linear-progress').exists()).toBe(true);
+      expect(wrapper.text()).toContain('HP: 20');
     });
   });
 

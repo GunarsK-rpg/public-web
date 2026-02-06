@@ -73,7 +73,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
-import { groupByChainedKey, buildIdCodeMap } from 'src/utils/arrayUtils';
+import { groupByKey, buildIdCodeMap } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
@@ -88,9 +88,14 @@ const pointsBudget = computed(() => skillsBudget.value.budget);
 const maxSkillRank = computed(() => skillsBudget.value.maxRank);
 
 // Group skills by attribute type using chained FK lookup (skill -> attribute -> attributeType)
-const skillsByAttrType = computed(() =>
-  groupByChainedKey(classifiers.skills, 'attrId', classifiers.attributes, 'attrTypeId')
-);
+const skillsByAttrType = computed(() => {
+  // Build lookup: attribute.id -> attribute.attrType.id
+  const attrToTypeMap: Record<number, number> = {};
+  for (const attr of classifiers.attributes) {
+    attrToTypeMap[attr.id] = attr.attrType.id;
+  }
+  return groupByKey(classifiers.skills, (skill) => attrToTypeMap[skill.attr.id] ?? 0);
+});
 
 // Pre-computed attribute code map for O(1) lookups
 const attributeCodeMap = computed(() => buildIdCodeMap(classifiers.attributes));
@@ -100,7 +105,7 @@ const skillGroups = computed(() => {
   return classifiers.attributeTypes.map((attrType) => {
     const skills = (skillsByAttrType.value[attrType.id] ?? []).map((skill) => ({
       ...skill,
-      attrAbbr: (attributeCodeMap.value.get(skill.attrId) ?? '').toUpperCase(),
+      attrAbbr: (attributeCodeMap.value.get(skill.attr.id) ?? '').toUpperCase(),
     }));
 
     return {
@@ -116,7 +121,7 @@ function getSkillRank(skillId: number): number {
 }
 
 function getSkillModifier(skillId: number): number {
-  return heroStore.hero?.skills?.find((s) => s.skillId === skillId)?.modifier ?? 0;
+  return heroStore.skills.find((s) => s.skill.id === skillId)?.modifier ?? 0;
 }
 
 function setSkillModifier(skillId: number, value: string | number | null) {

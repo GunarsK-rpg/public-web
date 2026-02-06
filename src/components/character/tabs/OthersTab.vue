@@ -38,7 +38,7 @@
           <q-list v-else separator class="q-mb-md">
             <q-item v-for="heroCulture in heroStore.cultures" :key="heroCulture.id" dense>
               <q-item-section>
-                <q-item-label>{{ getCultureName(heroCulture.cultureId) }}</q-item-label>
+                <q-item-label>{{ getCultureName(heroCulture.culture?.id) }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -59,7 +59,7 @@
               </q-item-section>
               <q-item-section side>
                 <q-badge :color="RPG_COLORS.badgeMuted">{{
-                  getGoalStatusName(goal.statusId)
+                  getGoalStatusName(goal.status?.id)
                 }}</q-badge>
               </q-item-section>
             </q-item>
@@ -86,7 +86,7 @@
               </q-item-section>
               <q-item-section side>
                 <q-badge :color="RPG_COLORS.badgeMuted">{{
-                  getConnectionTypeName(conn.connTypeId)
+                  getConnectionTypeName(conn.connectionType?.id)
                 }}</q-badge>
               </q-item-section>
             </q-item>
@@ -113,7 +113,7 @@
               </q-item-section>
               <q-item-section side>
                 <q-badge :color="RPG_COLORS.badgeMuted">{{
-                  getCompanionTypeName(comp.compTypeId)
+                  getCompanionTypeName(comp.companionType?.id)
                 }}</q-badge>
               </q-item-section>
             </q-item>
@@ -164,7 +164,7 @@
           </div>
           <div v-else class="q-mb-md">
             <q-chip v-for="cond in heroStore.conditions" :key="cond.id">
-              {{ getConditionName(cond.conditionId) }}
+              {{ getConditionName(cond.condition?.id) }}
             </q-chip>
           </div>
 
@@ -173,7 +173,7 @@
           <q-list v-else dense>
             <q-item v-for="injury in heroStore.injuries" :key="injury.id">
               <q-item-section>
-                <q-item-label>{{ getInjuryName(injury.injuryId) }}</q-item-label>
+                <q-item-label>{{ getInjuryName(injury.injury?.id) }}</q-item-label>
                 <q-item-label v-if="injury.notes" caption>{{ injury.notes }}</q-item-label>
               </q-item-section>
             </q-item>
@@ -202,10 +202,10 @@ const heroBiography = computed(() => heroStore.hero?.biography ?? 'No biography'
 const heroNotes = computed(() => heroStore.hero?.notes ?? 'No notes');
 
 // Ancestry & Singer Form
-const ancestry = computed(() => findById(classifiers.ancestries, heroStore.hero?.ancestryId));
+const ancestry = computed(() => findById(classifiers.ancestries, heroStore.hero?.ancestry?.id));
 
 const activeSingerForm = computed(() =>
-  findById(classifiers.singerForms, heroStore.hero?.activeSingerFormId)
+  findById(classifiers.singerForms, heroStore.hero?.activeSingerForm?.id)
 );
 
 // Name getter functions using factory pattern

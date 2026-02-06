@@ -126,9 +126,12 @@ const isSinger = computed(() => talentStore.isSinger);
 const radiantOrderId = computed(() => talentStore.radiantOrderId);
 const idealLevel = computed(() => talentStore.radiantIdeal);
 
-function getOrderSubtitle(order: { surge1Id?: number | null; surge2Id?: number | null }): string {
-  const surge1 = order.surge1Id ? findById(classifiers.surges, order.surge1Id)?.name : null;
-  const surge2 = order.surge2Id ? findById(classifiers.surges, order.surge2Id)?.name : null;
+function getOrderSubtitle(order: {
+  surge1?: { id: number } | null;
+  surge2?: { id: number } | null;
+}): string {
+  const surge1 = order.surge1?.id ? findById(classifiers.surges, order.surge1.id)?.name : null;
+  const surge2 = order.surge2?.id ? findById(classifiers.surges, order.surge2.id)?.name : null;
   if (surge1 && surge2) return `${surge1} · ${surge2}`;
   if (surge1) return surge1;
   return '';
@@ -140,13 +143,14 @@ function syncLocalStateFromHero() {
   const specialties = new Map<number, number>();
 
   for (const ht of heroStore.talents) {
-    const talent = findById(classifiers.talents, ht.talentId);
-    if (talent?.pathId) {
-      pathIds.add(talent.pathId);
-      if (talent.specialtyId) {
-        const specialty = findById(classifiers.specialties, talent.specialtyId);
-        if (specialty?.pathId) {
-          specialties.set(specialty.pathId, talent.specialtyId);
+    const talent = findById(classifiers.talents, ht.talent.id);
+    if (talent?.path?.id) {
+      pathIds.add(talent.path.id);
+      const firstSpecialty = talent.specialties?.[0];
+      if (firstSpecialty) {
+        const specialty = findById(classifiers.specialties, firstSpecialty.id);
+        if (specialty?.path.id) {
+          specialties.set(specialty.path.id, firstSpecialty.id);
         }
       }
     }

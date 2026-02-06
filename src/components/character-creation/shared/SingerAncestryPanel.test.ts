@@ -43,6 +43,11 @@ describe('SingerAncestryPanel', () => {
     name: 'Singer Heritage',
     description: 'Key talent for singer ancestry',
     isKey: true,
+    path: null,
+    specialties: [],
+    ancestry: null,
+    radiantOrder: null,
+    surge: null,
   });
 
   const createWrapper = () =>

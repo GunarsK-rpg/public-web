@@ -132,7 +132,7 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById, groupByForeignKey } from 'src/utils/arrayUtils';
+import { findById, groupByKey } from 'src/utils/arrayUtils';
 import type { Talent, Path, Specialty, Surge } from 'src/types';
 import TalentItem from './TalentItem.vue';
 
@@ -143,14 +143,14 @@ const classifiers = useClassifierStore();
 // Get all hero talents as Talent objects
 const heroTalents = computed((): Talent[] => {
   return heroStore.talents
-    .map((t) => findById(classifiers.talents, t.talentId))
+    .map((t) => findById(classifiers.talents, t.talent.id))
     .filter((t): t is Talent => t !== undefined);
 });
 
 // Get unique paths that have talents
 const pathsWithTalents = computed((): Path[] => {
   const pathIds = new Set(
-    heroTalents.value.map((t) => t.pathId).filter((id): id is number => id !== undefined)
+    heroTalents.value.map((t) => t.path?.id).filter((id): id is number => id !== undefined)
   );
   return Array.from(pathIds)
     .map((id) => findById(classifiers.paths, id))
@@ -159,20 +159,18 @@ const pathsWithTalents = computed((): Path[] => {
 
 // Get radiant order details
 const radiantOrder = computed(() =>
-  findById(classifiers.radiantOrders, heroStore.hero?.radiantOrderId)
+  findById(classifiers.radiantOrders, heroStore.hero?.radiantOrder?.id)
 );
 
 // Ancestry talents (e.g., singer talents)
-const ancestryTalents = computed(() => heroTalents.value.filter((t) => t.ancestryId !== undefined));
-const ancestryTalentName = computed(
-  () => findById(classifiers.ancestries, ancestryTalents.value[0]?.ancestryId)?.name
-);
+const ancestryTalents = computed(() => heroTalents.value.filter((t) => t.ancestry !== null));
+const ancestryTalentName = computed(() => ancestryTalents.value[0]?.ancestry?.name);
 
 // Pre-computed lookups to avoid repeated filter calls in template
 const keyTalentsByPath = computed((): Record<number, Talent | undefined> => {
   const result: Record<number, Talent | undefined> = {};
   for (const path of pathsWithTalents.value) {
-    result[path.id] = heroTalents.value.find((t) => t.pathId === path.id && t.isKey);
+    result[path.id] = heroTalents.value.find((t) => t.path?.id === path.id && t.isKey);
   }
   return result;
 });
@@ -181,7 +179,7 @@ const generalTalentsByPath = computed((): Record<number, Talent[]> => {
   const result: Record<number, Talent[]> = {};
   for (const path of pathsWithTalents.value) {
     result[path.id] = heroTalents.value.filter(
-      (t) => t.pathId === path.id && !t.isKey && !t.specialtyId
+      (t) => t.path?.id === path.id && !t.isKey && t.specialties.length === 0
     );
   }
   return result;
@@ -189,13 +187,15 @@ const generalTalentsByPath = computed((): Record<number, Talent[]> => {
 
 // All specialties grouped by path (for paths that have talents)
 const specialtiesByPath = computed((): Record<number, Specialty[]> => {
-  return groupByForeignKey(classifiers.specialties, 'pathId');
+  return groupByKey(classifiers.specialties, (s) => s.path.id);
 });
 
 const talentsBySpecialty = computed((): Record<number, Talent[]> => {
   const result: Record<number, Talent[]> = {};
   for (const specialty of classifiers.specialties) {
-    const talents = heroTalents.value.filter((t) => t.specialtyId === specialty.id);
+    const talents = heroTalents.value.filter((t) =>
+      t.specialties.some((s) => s.id === specialty.id)
+    );
     if (talents.length > 0) {
       result[specialty.id] = talents;
     }
@@ -206,22 +206,22 @@ const talentsBySpecialty = computed((): Record<number, Talent[]> => {
 // Get the two surges for the radiant order
 const orderSurges = computed((): Surge[] => {
   if (!radiantOrder.value) return [];
-  const surge1 = findById(classifiers.surges, radiantOrder.value.surge1Id);
-  const surge2 = findById(classifiers.surges, radiantOrder.value.surge2Id);
+  const surge1 = findById(classifiers.surges, radiantOrder.value.surge1.id);
+  const surge2 = findById(classifiers.surges, radiantOrder.value.surge2.id);
   return [surge1, surge2].filter((s): s is Surge => s !== undefined);
 });
 
 // Get radiant order talents that are for the order itself (not surge-specific)
 const sprenBondTalents = computed((): Talent[] => {
   if (!radiantOrder.value) return [];
-  return heroTalents.value.filter((t) => t.radiantOrderId === radiantOrder.value?.id && !t.surgeId);
+  return heroTalents.value.filter((t) => t.radiantOrder?.id === radiantOrder.value?.id && !t.surge);
 });
 
 // Pre-computed surge talents map
 const surgeTalentsMap = computed((): Record<number, Talent[]> => {
   const result: Record<number, Talent[]> = {};
   for (const surge of orderSurges.value) {
-    result[surge.id] = heroTalents.value.filter((t) => t.surgeId === surge.id);
+    result[surge.id] = heroTalents.value.filter((t) => t.surge?.id === surge.id);
   }
   return result;
 });

@@ -13,7 +13,14 @@ const mockClassifiers = {
   derivedStatValues: [],
   skills: [],
   expertiseTypes: [],
-  expertises: [{ id: 1, code: 'climbing', name: 'Climbing', skillId: 1 }],
+  expertises: [
+    {
+      id: 1,
+      code: 'climbing',
+      name: 'Climbing',
+      expertiseType: { id: 1, code: 'general', name: 'General' },
+    },
+  ],
   activationTypes: [],
   actionTypes: [],
   actions: [],
@@ -42,22 +49,25 @@ const mockClassifiers = {
       id: 1,
       code: 'warrior',
       name: 'Warrior Kit',
-      expertises: [{ expertiseId: 1 }],
+      startingSpheres: '',
+      expertises: [{ id: 1, code: 'climbing', name: 'Climbing' }],
       equipment: [
-        { equipmentId: 1, quantity: 1 },
-        { equipmentId: 2, quantity: 1 },
+        { id: 1, code: 'sword', name: 'Sword', quantity: 1 },
+        { id: 2, code: 'shield', name: 'Shield', quantity: 1 },
       ],
     },
     {
       id: 2,
       code: 'empty',
       name: 'Empty Kit',
+      startingSpheres: '',
       // No expertises or equipment arrays
     },
     {
       id: 3,
       code: 'null-arrays',
       name: 'Null Arrays Kit',
+      startingSpheres: '',
       expertises: null,
       equipment: null,
     },
@@ -168,7 +178,7 @@ describe('useHeroEquipmentStore', () => {
       store.addEquipment(1);
 
       expect(heroStore.hero!.equipment.length).toBe(1);
-      expect(heroStore.hero!.equipment[0]!.equipmentId).toBe(1);
+      expect(heroStore.hero!.equipment[0]!.equipment.id).toBe(1);
       expect(heroStore.hero!.equipment[0]!.amount).toBe(1);
     });
 
@@ -454,7 +464,7 @@ describe('useHeroEquipmentStore', () => {
 
       store.setStartingKit(1);
 
-      expect(heroStore.hero?.startingKitId).toBe(1);
+      expect(heroStore.hero?.startingKit?.id).toBe(1);
     });
 
     it('applies kit equipment', () => {
@@ -465,8 +475,8 @@ describe('useHeroEquipmentStore', () => {
 
       // Warrior kit has sword and shield
       expect(heroStore.hero!.equipment.length).toBe(2);
-      expect(heroStore.hero!.equipment.find((e) => e.equipmentId === 1)).toBeTruthy();
-      expect(heroStore.hero!.equipment.find((e) => e.equipmentId === 2)).toBeTruthy();
+      expect(heroStore.hero!.equipment.find((e) => e.equipment.id === 1)).toBeTruthy();
+      expect(heroStore.hero!.equipment.find((e) => e.equipment.id === 2)).toBeTruthy();
     });
 
     it('clears previous equipment when applying kit', () => {
@@ -479,7 +489,7 @@ describe('useHeroEquipmentStore', () => {
       store.setStartingKit(1);
 
       // Should only have kit equipment, not stacked with previous
-      const sword = heroStore.hero!.equipment.find((e) => e.equipmentId === 1);
+      const sword = heroStore.hero!.equipment.find((e) => e.equipment.id === 1);
       expect(sword?.amount).toBe(1);
     });
 
@@ -491,7 +501,7 @@ describe('useHeroEquipmentStore', () => {
 
       // Warrior kit has climbing expertise
       const hasClimbingExpertise = heroStore.hero!.expertises.some(
-        (e) => e.expertiseId === 1 && e.source?.sourceType === 'starting_kit'
+        (e) => e.expertise.id === 1 && e.source?.sourceType === 'starting_kit'
       );
       expect(hasClimbingExpertise).toBe(true);
     });
@@ -517,8 +527,8 @@ describe('useHeroEquipmentStore', () => {
 
       store.setStartingKit(999);
 
-      // Kit id is set, but no equipment/expertises applied
-      expect(heroStore.hero?.startingKitId).toBe(999);
+      // Kit not found — startingKit stays null, no equipment/expertises applied
+      expect(heroStore.hero?.startingKit).toBeNull();
       expect(heroStore.hero!.equipment.length).toBe(0);
     });
 
@@ -538,7 +548,7 @@ describe('useHeroEquipmentStore', () => {
 
       store.setStartingKit(2); // Empty kit
 
-      expect(heroStore.hero?.startingKitId).toBe(2);
+      expect(heroStore.hero?.startingKit?.id).toBe(2);
       expect(heroStore.hero!.equipment.length).toBe(0);
       expect(heroStore.hero!.expertises.length).toBe(0);
     });
@@ -549,7 +559,7 @@ describe('useHeroEquipmentStore', () => {
 
       store.setStartingKit(3); // Null arrays kit
 
-      expect(heroStore.hero?.startingKitId).toBe(3);
+      expect(heroStore.hero?.startingKit?.id).toBe(3);
       expect(heroStore.hero!.equipment.length).toBe(0);
     });
 

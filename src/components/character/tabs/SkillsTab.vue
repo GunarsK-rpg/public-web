@@ -13,7 +13,7 @@
           <q-item-section>
             <q-item-label>{{ skill.name }}</q-item-label>
             <q-item-label caption>
-              {{ getAttributeCode(skill.attrId) }} + Rank {{ attrStore.getSkillRank(skill.id) }}
+              {{ getAttributeCode(skill) }} + Rank {{ attrStore.getSkillRank(skill.id) }}
             </q-item-label>
           </q-item-section>
           <q-item-section side>
@@ -41,23 +41,25 @@
 import { computed } from 'vue';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { groupByChainedKey, buildIdCodeMap } from 'src/utils/arrayUtils';
+import { groupByKey } from 'src/utils/arrayUtils';
 import { COLORS } from 'src/constants/theme';
 import type { Skill } from 'src/types';
 
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 
-// Skills grouped by attribute type (via skill.attrId -> attribute.attrTypeId)
+// Skills grouped by attribute type (via skill.attr.id -> attribute.attrType.id)
 const skillsByAttrType = computed((): Record<number, Skill[]> => {
-  return groupByChainedKey(classifiers.skills, 'attrId', classifiers.attributes, 'attrTypeId');
+  const attrTypeMap = new Map<number, number>();
+  for (const attr of classifiers.attributes) {
+    attrTypeMap.set(attr.id, attr.attrType.id);
+  }
+  // Falls back to 0 (unmapped bucket, filtered out by template) when attr.id has no matching attribute type
+  return groupByKey(classifiers.skills, (skill) => attrTypeMap.get(skill.attr?.id ?? 0) ?? 0);
 });
 
-// Pre-computed attribute code lookup for O(1) access
-const attributeCodeMap = computed(() => buildIdCodeMap(classifiers.attributes));
-
-function getAttributeCode(attrId: number): string {
-  return (attributeCodeMap.value.get(attrId) ?? '').toUpperCase();
+function getAttributeCode(skill: Skill): string {
+  return (skill.attr?.code ?? '').toUpperCase();
 }
 
 function formatModifier(value: number): string {

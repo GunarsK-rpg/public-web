@@ -93,15 +93,11 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
-import { useClassifierStore } from 'src/stores/classifiers';
-import { buildLookupMap } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
-const classifiers = useClassifierStore();
-
 const hero = computed(() => heroStore.hero);
 const maxHealth = computed(() => attrStore.getDerivedStatTotal('max_health'));
 const maxFocus = computed(() => attrStore.getDerivedStatTotal('max_focus'));
@@ -122,28 +118,11 @@ const investiturePercent = computed(() =>
   hero.value ? clampProgress(hero.value.currentInvestiture, maxInvestiture.value) : 0
 );
 
-// Pre-computed lookup maps for O(1) classifier name access
-const radiantOrderNamesMap = computed(() => buildLookupMap(classifiers.radiantOrders, 'name'));
-const ancestryNamesMap = computed(() => buildLookupMap(classifiers.ancestries, 'name'));
-const singerFormNamesMap = computed(() => buildLookupMap(classifiers.singerForms, 'name'));
-const cultureNamesMap = computed(() => buildLookupMap(classifiers.cultures, 'name'));
-
-// Classifier name lookups using cached maps
-const orderName = computed(() =>
-  hero.value?.radiantOrderId ? radiantOrderNamesMap.value[hero.value.radiantOrderId] : undefined
-);
-const ancestryName = computed(() =>
-  hero.value?.ancestryId ? ancestryNamesMap.value[hero.value.ancestryId] : undefined
-);
-const activeSingerFormName = computed(() =>
-  hero.value?.activeSingerFormId
-    ? singerFormNamesMap.value[hero.value.activeSingerFormId]
-    : undefined
-);
-const cultureName = computed(() => {
-  const cultureId = hero.value?.cultures?.[0]?.cultureId;
-  return cultureId ? cultureNamesMap.value[cultureId] : undefined;
-});
+// Classifier name lookups using nested ClassifierRef objects
+const orderName = computed(() => hero.value?.radiantOrder?.name);
+const ancestryName = computed(() => hero.value?.ancestry?.name);
+const activeSingerFormName = computed(() => hero.value?.activeSingerForm?.name);
+const cultureName = computed(() => hero.value?.cultures?.[0]?.culture?.name);
 const totalSpheres = computed(() => hero.value?.currency ?? 0);
 </script>
 

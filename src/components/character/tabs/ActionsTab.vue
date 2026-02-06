@@ -53,7 +53,7 @@ const actionLinksMap = computed(() => {
     if (!map.has(link.objectId)) {
       map.set(link.objectId, new Set());
     }
-    map.get(link.objectId)!.add(link.actionId);
+    map.get(link.objectId)!.add(link.action.id);
   }
   return map;
 });
@@ -74,12 +74,13 @@ function getActionTypeByCode(code: string) {
 
 // Configuration map for extracting hero object IDs by action type
 const heroObjectExtractors: Record<string, () => number[]> = {
-  equipment: () => (heroStore.hero?.equipment || []).map((e) => e.equipmentId),
-  talent: () => (heroStore.hero?.talents || []).map((t) => t.talentId),
+  equipment: () => (heroStore.hero?.equipment || []).map((e) => e.equipment.id),
+  talent: () => (heroStore.hero?.talents || []).map((t) => t.talent.id),
   surge: () => {
-    if (!heroStore.hero?.radiantOrderId) return [];
-    const order = findById(classifiers.radiantOrders, heroStore.hero.radiantOrderId);
-    return order ? [order.surge1Id, order.surge2Id] : [];
+    const order = heroStore.hero?.radiantOrder;
+    if (!order) return [];
+    const fullOrder = findById(classifiers.radiantOrders, order.id);
+    return fullOrder ? [fullOrder.surge1.id, fullOrder.surge2.id] : [];
   },
 };
 
@@ -100,7 +101,7 @@ function getActionsByTypeId(actionTypeId: number): Action[] {
   // Basic actions - everyone has all of them
   const basicType = getActionTypeByCode('basic');
   if (basicType && actionTypeId === basicType.id) {
-    return classifiers.actions.filter((a) => a.actionTypeId === actionTypeId);
+    return classifiers.actions.filter((a) => a.actionType.id === actionTypeId);
   }
 
   // Other action types - filter by actionLinks using pre-computed map
@@ -114,7 +115,7 @@ function getActionsByTypeId(actionTypeId: number): Action[] {
     if (actionIds) {
       for (const actionId of actionIds) {
         const action = findById(classifiers.actions, actionId);
-        if (action?.actionTypeId === actionTypeId) {
+        if (action?.actionType.id === actionTypeId) {
           linkedActionIds.add(actionId);
         }
       }

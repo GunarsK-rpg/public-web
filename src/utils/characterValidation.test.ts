@@ -6,7 +6,7 @@ import {
 } from './characterValidation';
 import { STEP_CODES } from 'src/types/wizard';
 import type {
-  Hero,
+  HeroSheet,
   Level,
   HeroAttribute,
   HeroSkill,
@@ -21,10 +21,8 @@ import type {
 
 const createLevel = (overrides: Partial<Level> = {}): Level => ({
   id: 1,
-  code: 'level_1',
-  name: 'Level 1',
   level: 1,
-  tierId: 1,
+  tier: { id: 1, code: 'test', name: 'Test' },
   attributePoints: 12,
   healthBase: 10,
   maxSkillRank: 2,
@@ -36,7 +34,7 @@ const createLevel = (overrides: Partial<Level> = {}): Level => ({
 const createAttribute = (overrides: Partial<HeroAttribute> = {}): HeroAttribute => ({
   id: 1,
   heroId: 1,
-  attrId: 1,
+  attribute: { id: 1, code: 'test', name: 'Test' },
   value: 2,
   ...overrides,
 });
@@ -44,7 +42,7 @@ const createAttribute = (overrides: Partial<HeroAttribute> = {}): HeroAttribute 
 const createSkill = (overrides: Partial<HeroSkill> = {}): HeroSkill => ({
   id: 1,
   heroId: 1,
-  skillId: 1,
+  skill: { id: 1, code: 'test', name: 'Test' },
   rank: 1,
   modifier: 0,
   ...overrides,
@@ -53,32 +51,34 @@ const createSkill = (overrides: Partial<HeroSkill> = {}): HeroSkill => ({
 const createExpertise = (overrides: Partial<HeroExpertise> = {}): HeroExpertise => ({
   id: 1,
   heroId: 1,
-  expertiseId: 1,
+  expertise: { id: 1, code: 'test', name: 'Test' },
   ...overrides,
 });
 
 const createTalent = (overrides: Partial<HeroTalent> = {}): HeroTalent => ({
   id: 1,
   heroId: 1,
-  talentId: 1,
+  talent: { id: 1, code: 'test', name: 'Test' },
   ...overrides,
 });
 
 const createCulture = (overrides: Partial<HeroCulture> = {}): HeroCulture => ({
   id: 1,
   heroId: 1,
-  cultureId: 1,
+  culture: { id: 1, code: 'test', name: 'Test' },
   ...overrides,
 });
 
-const createHero = (overrides: Partial<Hero> = {}): Hero => ({
+const createHero = (overrides: Partial<HeroSheet> = {}): HeroSheet => ({
   id: 1,
   userId: 1,
+  user: { id: 1, username: 'test' },
   campaignId: null,
-  ancestryId: 1,
-  startingKitId: 1,
-  activeSingerFormId: null,
-  radiantOrderId: null,
+  campaign: { id: 0, code: 'none', name: 'None' },
+  ancestry: { id: 1, code: 'test', name: 'Test' },
+  startingKit: { id: 1, code: 'test', name: 'Test' },
+  activeSingerForm: null,
+  radiantOrder: null,
   radiantIdeal: 0,
   name: 'Test Hero',
   level: 1,
@@ -175,7 +175,7 @@ describe('getStepValidation', () => {
   describe('ANCESTRY step', () => {
     it('validates with selected ancestry', () => {
       const data = createValidationData({
-        hero: createHero({ ancestryId: 1 }),
+        hero: createHero({ ancestry: { id: 1, code: 'test', name: 'Test' } }),
       });
       const result = getStepValidation(STEP_CODES.ANCESTRY, data);
 
@@ -185,7 +185,9 @@ describe('getStepValidation', () => {
 
     it('fails with null ancestry', () => {
       const data = createValidationData({
-        hero: createHero({ ancestryId: null as unknown as number }),
+        hero: createHero({
+          ancestry: null as unknown as { id: number; code: string; name: string },
+        }),
       });
       const result = getStepValidation(STEP_CODES.ANCESTRY, data);
 
@@ -222,12 +224,12 @@ describe('getStepValidation', () => {
   describe('ATTRIBUTES step', () => {
     it('validates when budget is exactly spent', () => {
       const attributes = [
-        createAttribute({ attrId: 1, value: 2 }),
-        createAttribute({ attrId: 2, value: 2 }),
-        createAttribute({ attrId: 3, value: 2 }),
-        createAttribute({ attrId: 4, value: 2 }),
-        createAttribute({ attrId: 5, value: 2 }),
-        createAttribute({ attrId: 6, value: 2 }),
+        createAttribute({ attribute: { id: 1, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ attribute: { id: 2, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ attribute: { id: 3, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ attribute: { id: 4, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ attribute: { id: 5, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ attribute: { id: 6, code: 'test', name: 'Test' }, value: 2 }),
       ]; // Total: 12
       const data = createValidationData({
         hero: createHero({ attributes }),
@@ -241,9 +243,9 @@ describe('getStepValidation', () => {
 
     it('fails when budget is exceeded', () => {
       const attributes = [
-        createAttribute({ attrId: 1, value: 5 }),
-        createAttribute({ attrId: 2, value: 5 }),
-        createAttribute({ attrId: 3, value: 5 }),
+        createAttribute({ attribute: { id: 1, code: 'test', name: 'Test' }, value: 5 }),
+        createAttribute({ attribute: { id: 2, code: 'test', name: 'Test' }, value: 5 }),
+        createAttribute({ attribute: { id: 3, code: 'test', name: 'Test' }, value: 5 }),
       ]; // Total: 15
       const data = createValidationData({
         hero: createHero({ attributes }),
@@ -257,8 +259,8 @@ describe('getStepValidation', () => {
 
     it('warns when budget is not fully spent', () => {
       const attributes = [
-        createAttribute({ attrId: 1, value: 2 }),
-        createAttribute({ attrId: 2, value: 2 }),
+        createAttribute({ attribute: { id: 1, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ attribute: { id: 2, code: 'test', name: 'Test' }, value: 2 }),
       ]; // Total: 4
       const data = createValidationData({
         hero: createHero({ attributes }),
@@ -271,7 +273,9 @@ describe('getStepValidation', () => {
     });
 
     it('fails with attribute value above 5', () => {
-      const attributes = [createAttribute({ attrId: 1, value: 6 })];
+      const attributes = [
+        createAttribute({ attribute: { id: 1, code: 'test', name: 'Test' }, value: 6 }),
+      ];
       const data = createValidationData({
         hero: createHero({ attributes }),
         levelData: createLevel({ attributePoints: 12 }),
@@ -283,7 +287,9 @@ describe('getStepValidation', () => {
     });
 
     it('fails with negative attribute value', () => {
-      const attributes = [createAttribute({ attrId: 1, value: -1 })];
+      const attributes = [
+        createAttribute({ attribute: { id: 1, code: 'test', name: 'Test' }, value: -1 }),
+      ];
       const data = createValidationData({
         hero: createHero({ attributes }),
         levelData: createLevel({ attributePoints: 12 }),
@@ -301,10 +307,10 @@ describe('getStepValidation', () => {
   describe('SKILLS step', () => {
     it('validates when skill budget is exactly spent', () => {
       const skills = [
-        createSkill({ skillId: 1, rank: 2 }),
-        createSkill({ skillId: 2, rank: 2 }),
-        createSkill({ skillId: 3, rank: 2 }),
-        createSkill({ skillId: 4, rank: 2 }),
+        createSkill({ skill: { id: 1, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 2, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 3, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 4, code: 'test', name: 'Test' }, rank: 2 }),
       ]; // Total: 8
       const data = createValidationData({
         hero: createHero({ skills }),
@@ -318,11 +324,11 @@ describe('getStepValidation', () => {
 
     it('fails when skill budget is exceeded', () => {
       const skills = [
-        createSkill({ skillId: 1, rank: 2 }),
-        createSkill({ skillId: 2, rank: 2 }),
-        createSkill({ skillId: 3, rank: 2 }),
-        createSkill({ skillId: 4, rank: 2 }),
-        createSkill({ skillId: 5, rank: 2 }),
+        createSkill({ skill: { id: 1, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 2, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 3, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 4, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 5, code: 'test', name: 'Test' }, rank: 2 }),
       ]; // Total: 10
       const data = createValidationData({
         hero: createHero({ skills }),
@@ -335,7 +341,7 @@ describe('getStepValidation', () => {
     });
 
     it('fails when skill rank exceeds maximum', () => {
-      const skills = [createSkill({ skillId: 1, rank: 3 })]; // Max is 2
+      const skills = [createSkill({ skill: { id: 1, code: 'test', name: 'Test' }, rank: 3 })]; // Max is 2
       const data = createValidationData({
         hero: createHero({ skills }),
         levelData: createLevel({ skillRanks: 8, maxSkillRank: 2 }),
@@ -347,7 +353,7 @@ describe('getStepValidation', () => {
     });
 
     it('warns when skill budget is not fully spent', () => {
-      const skills = [createSkill({ skillId: 1, rank: 2 })]; // Total: 2
+      const skills = [createSkill({ skill: { id: 1, code: 'test', name: 'Test' }, rank: 2 })]; // Total: 2
       const data = createValidationData({
         hero: createHero({ skills }),
         levelData: createLevel({ skillRanks: 8, maxSkillRank: 2 }),
@@ -365,10 +371,10 @@ describe('getStepValidation', () => {
   describe('EXPERTISES step', () => {
     it('validates within budget (base 2 + intellect)', () => {
       const expertises = [
-        createExpertise({ expertiseId: 1 }),
-        createExpertise({ expertiseId: 2 }),
-        createExpertise({ expertiseId: 3 }),
-        createExpertise({ expertiseId: 4 }),
+        createExpertise({ expertise: { id: 1, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 2, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 3, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 4, code: 'test', name: 'Test' } }),
       ]; // Total: 4, Budget: 2 + 2 = 4
       const data = createValidationData({
         hero: createHero({ expertises }),
@@ -381,11 +387,11 @@ describe('getStepValidation', () => {
 
     it('fails when expertise slots exceeded', () => {
       const expertises = [
-        createExpertise({ expertiseId: 1 }),
-        createExpertise({ expertiseId: 2 }),
-        createExpertise({ expertiseId: 3 }),
-        createExpertise({ expertiseId: 4 }),
-        createExpertise({ expertiseId: 5 }),
+        createExpertise({ expertise: { id: 1, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 2, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 3, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 4, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 5, code: 'test', name: 'Test' } }),
       ]; // Total: 5, Budget: 2 + 2 = 4
       const data = createValidationData({
         hero: createHero({ expertises }),
@@ -399,12 +405,18 @@ describe('getStepValidation', () => {
 
     it('excludes starting_kit expertises from count', () => {
       const expertises = [
-        createExpertise({ expertiseId: 1 }),
-        createExpertise({ expertiseId: 2 }),
-        createExpertise({ expertiseId: 3 }),
-        createExpertise({ expertiseId: 4 }),
-        createExpertise({ expertiseId: 5, source: { sourceType: 'starting_kit' } }),
-        createExpertise({ expertiseId: 6, source: { sourceType: 'starting_kit' } }),
+        createExpertise({ expertise: { id: 1, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 2, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 3, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 4, code: 'test', name: 'Test' } }),
+        createExpertise({
+          expertise: { id: 5, code: 'test', name: 'Test' },
+          source: { sourceType: 'starting_kit' },
+        }),
+        createExpertise({
+          expertise: { id: 6, code: 'test', name: 'Test' },
+          source: { sourceType: 'starting_kit' },
+        }),
       ]; // Non-kit: 4, Budget: 2 + 2 = 4
       const data = createValidationData({
         hero: createHero({ expertises }),
@@ -421,7 +433,10 @@ describe('getStepValidation', () => {
   // ---------------------------------------------------------------------------
   describe('PATHS step', () => {
     it('validates with talents within budget', () => {
-      const talents = [createTalent({ talentId: 1 }), createTalent({ talentId: 2 })];
+      const talents = [
+        createTalent({ talent: { id: 1, code: 'test', name: 'Test' } }),
+        createTalent({ talent: { id: 2, code: 'test', name: 'Test' } }),
+      ];
       const data = createValidationData({
         hero: createHero({ talents }),
         levelData: createLevel({ talentSlots: 3 }),
@@ -444,10 +459,10 @@ describe('getStepValidation', () => {
 
     it('fails when talent slots exceeded', () => {
       const talents = [
-        createTalent({ talentId: 1 }),
-        createTalent({ talentId: 2 }),
-        createTalent({ talentId: 3 }),
-        createTalent({ talentId: 4 }),
+        createTalent({ talent: { id: 1, code: 'test', name: 'Test' } }),
+        createTalent({ talent: { id: 2, code: 'test', name: 'Test' } }),
+        createTalent({ talent: { id: 3, code: 'test', name: 'Test' } }),
+        createTalent({ talent: { id: 4, code: 'test', name: 'Test' } }),
       ];
       const data = createValidationData({
         hero: createHero({ talents }),
@@ -466,7 +481,7 @@ describe('getStepValidation', () => {
   describe('STARTING_KIT step', () => {
     it('validates with selected starting kit', () => {
       const data = createValidationData({
-        hero: createHero({ startingKitId: 1 }),
+        hero: createHero({ startingKit: { id: 1, code: 'test', name: 'Test' } }),
       });
       const result = getStepValidation(STEP_CODES.STARTING_KIT, data);
 
@@ -475,7 +490,7 @@ describe('getStepValidation', () => {
 
     it('fails with no starting kit', () => {
       const data = createValidationData({
-        hero: createHero({ startingKitId: null }),
+        hero: createHero({ startingKit: null }),
       });
       const result = getStepValidation(STEP_CODES.STARTING_KIT, data);
 
@@ -509,33 +524,33 @@ describe('getStepValidation', () => {
     it('validates when all required steps are valid', () => {
       // Create attributes that sum to exactly the budget (12 points)
       const attributes = [
-        createAttribute({ id: 1, attrId: 1, value: 2 }),
-        createAttribute({ id: 2, attrId: 2, value: 2 }),
-        createAttribute({ id: 3, attrId: 3, value: 2 }),
-        createAttribute({ id: 4, attrId: 4, value: 2 }),
-        createAttribute({ id: 5, attrId: 5, value: 2 }),
-        createAttribute({ id: 6, attrId: 6, value: 2 }),
+        createAttribute({ id: 1, attribute: { id: 1, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ id: 2, attribute: { id: 2, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ id: 3, attribute: { id: 3, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ id: 4, attribute: { id: 4, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ id: 5, attribute: { id: 5, code: 'test', name: 'Test' }, value: 2 }),
+        createAttribute({ id: 6, attribute: { id: 6, code: 'test', name: 'Test' }, value: 2 }),
       ]; // Total: 12
 
       // Create skills that sum to exactly the budget (8 ranks)
       const skills = [
-        createSkill({ id: 1, skillId: 1, rank: 2 }),
-        createSkill({ id: 2, skillId: 2, rank: 2 }),
-        createSkill({ id: 3, skillId: 3, rank: 2 }),
-        createSkill({ id: 4, skillId: 4, rank: 2 }),
+        createSkill({ id: 1, skill: { id: 1, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ id: 2, skill: { id: 2, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ id: 3, skill: { id: 3, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ id: 4, skill: { id: 4, code: 'test', name: 'Test' }, rank: 2 }),
       ]; // Total: 8
 
       const data = createValidationData({
         hero: createHero({
           name: 'Test Hero',
           level: 1,
-          ancestryId: 1,
+          ancestry: { id: 1, code: 'test', name: 'Test' },
           cultures: [createCulture()],
           attributes,
           skills,
           expertises: [createExpertise()],
           talents: [createTalent()],
-          startingKitId: 1,
+          startingKit: { id: 1, code: 'test', name: 'Test' },
         }),
         levelData: createLevel({
           attributePoints: 12,
@@ -555,10 +570,10 @@ describe('getStepValidation', () => {
         hero: createHero({
           name: '',
           level: 0,
-          ancestryId: null as unknown as number,
+          ancestry: null as unknown as { id: number; code: string; name: string },
           cultures: [],
           talents: [],
-          startingKitId: null,
+          startingKit: null,
         }),
       });
       const result = getStepValidation(STEP_CODES.REVIEW, data);

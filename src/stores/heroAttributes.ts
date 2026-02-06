@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
-import { findById, findByCode, findByProp } from 'src/utils/arrayUtils';
+import { findById, findByCode, findByProp, toClassifierRef } from 'src/utils/arrayUtils';
 import { calculateFormulaStat } from 'src/utils/derivedStats';
 import { MIN_ATTRIBUTE_VALUE, MAX_ATTRIBUTE_VALUE } from 'src/constants';
 import type { ExpertiseSourceData } from 'src/types';
@@ -19,7 +19,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   });
 
   const tierData = computed(() => {
-    return findById(classifierStore.tiers, levelData.value?.tierId);
+    return findById(classifierStore.tiers, levelData.value?.tier.id);
   });
 
   // ===================
@@ -29,13 +29,13 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     if (!heroStore.hero?.attributes) return 0;
     const attr = findByCode(classifierStore.attributes, attrCode);
     if (!attr) return 0;
-    const heroAttr = heroStore.hero.attributes.find((a) => a.attrId === attr.id);
+    const heroAttr = heroStore.hero.attributes.find((a) => a.attribute.id === attr.id);
     return heroAttr?.value ?? 0;
   }
 
   function getAttributeValueById(attrId: number): number {
     if (!heroStore.hero?.attributes) return 0;
-    const heroAttr = heroStore.hero.attributes.find((a) => a.attrId === attrId);
+    const heroAttr = heroStore.hero.attributes.find((a) => a.attribute.id === attrId);
     return heroAttr?.value ?? 0;
   }
 
@@ -43,8 +43,8 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     if (!heroStore.hero?.defenses) return 10;
     const attrType = findByCode(classifierStore.attributeTypes, attrTypeCode);
     if (!attrType) return 10;
-    const defense = heroStore.hero.defenses.find((d) => d.attrTypeId === attrType.id);
-    return defense?.value ?? 10;
+    const defense = heroStore.hero.defenses.find((d) => d.attributeType.id === attrType.id);
+    return defense?.totalValue ?? 10;
   }
 
   // ===================
@@ -52,14 +52,14 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   // ===================
   function getSkillRank(skillId: number): number {
     if (!heroStore.hero?.skills) return 0;
-    const skill = heroStore.hero.skills.find((s) => s.skillId === skillId);
+    const skill = heroStore.hero.skills.find((s) => s.skill.id === skillId);
     return skill?.rank ?? 0;
   }
 
   function getSkillModifier(skillCode: string): number {
     const skillData = findByCode(classifierStore.skills, skillCode);
     if (!skillData || !heroStore.hero) return 0;
-    const attrValue = getAttributeValueById(skillData.attrId);
+    const attrValue = getAttributeValueById(skillData.attr.id);
     const rank = getSkillRank(skillData.id);
     return attrValue + rank;
   }
@@ -80,11 +80,11 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     if (!heroStore.hero?.derivedStats) return undefined;
     const stat = findByCode(classifierStore.derivedStats, statCode);
     if (!stat) return undefined;
-    return heroStore.hero.derivedStats.find((s) => s.statId === stat.id);
+    return heroStore.hero.derivedStats.find((s) => s.derivedStat.id === stat.id);
   }
 
   function getDerivedStatValue(statCode: string): number {
-    return getHeroDerivedStat(statCode)?.value ?? 0;
+    return getHeroDerivedStat(statCode)?.totalValue ?? 0;
   }
 
   function getDerivedStatTotal(statCode: string): number {
@@ -102,23 +102,20 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
 
   function getDerivedStatModifier(statId: number): number {
     if (!heroStore.hero?.derivedStats) return 0;
-    const stat = heroStore.hero.derivedStats.find((s) => s.statId === statId);
+    const stat = heroStore.hero.derivedStats.find((s) => s.derivedStat.id === statId);
     return stat?.modifier ?? 0;
   }
 
   function getDerivedStatDisplay(statCode: string): string {
     const heroStat = getHeroDerivedStat(statCode);
     if (!heroStat) return '';
-    const unit = heroStat.unitId
-      ? (findById(classifierStore.units, heroStat.unitId)?.code ?? '')
-      : '';
     const modifier = heroStat.modifier ?? 0;
     const total = getDerivedStatTotal(statCode);
     if (modifier) {
       const baseValue = total - modifier;
-      return `${total}${unit} (${baseValue} + ${modifier})`;
+      return `${total} (${baseValue} + ${modifier})`;
     }
-    return `${total}${unit}`;
+    return `${total}`;
   }
 
   // ===================
@@ -127,14 +124,16 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   function setAttribute(attrId: number, value: number) {
     if (!heroStore.hero) return;
     const clampedValue = Math.max(MIN_ATTRIBUTE_VALUE, Math.min(MAX_ATTRIBUTE_VALUE, value));
-    const existing = heroStore.hero.attributes.find((a) => a.attrId === attrId);
+    const existing = heroStore.hero.attributes.find((a) => a.attribute.id === attrId);
     if (existing) {
       existing.value = clampedValue;
     } else {
+      const attr = findById(classifierStore.attributes, attrId);
+      if (!attr) return;
       heroStore.hero.attributes.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        attrId,
+        attribute: toClassifierRef(attr),
         value: clampedValue,
       });
     }
@@ -144,14 +143,16 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     if (!heroStore.hero) return;
     const maxRank = levelData.value?.maxSkillRank ?? 2;
     const clampedRank = Math.max(0, Math.min(maxRank, rank));
-    const existing = heroStore.hero.skills.find((s) => s.skillId === skillId);
+    const existing = heroStore.hero.skills.find((s) => s.skill.id === skillId);
     if (existing) {
       existing.rank = clampedRank;
     } else {
+      const skillData = findById(classifierStore.skills, skillId);
+      if (!skillData) return;
       heroStore.hero.skills.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        skillId,
+        skill: toClassifierRef(skillData),
         rank: clampedRank,
         modifier: 0,
       });
@@ -161,14 +162,16 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   function setSkillModifier(skillId: number, modifier: number) {
     if (!heroStore.hero) return;
     const clampedModifier = Math.max(MIN_ATTRIBUTE_VALUE, Math.min(MAX_ATTRIBUTE_VALUE, modifier));
-    const existing = heroStore.hero.skills.find((s) => s.skillId === skillId);
+    const existing = heroStore.hero.skills.find((s) => s.skill.id === skillId);
     if (existing) {
       existing.modifier = clampedModifier;
     } else {
+      const skillData = findById(classifierStore.skills, skillId);
+      if (!skillData) return;
       heroStore.hero.skills.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        skillId,
+        skill: toClassifierRef(skillData),
         rank: 0,
         modifier: clampedModifier,
       });
@@ -177,27 +180,30 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
 
   function setDerivedStatModifier(statId: number, modifier: number) {
     if (!heroStore.hero) return;
-    const existing = heroStore.hero.derivedStats.find((s) => s.statId === statId);
+    const existing = heroStore.hero.derivedStats.find((s) => s.derivedStat.id === statId);
     if (existing) {
       existing.modifier = modifier;
     } else {
+      const stat = findById(classifierStore.derivedStats, statId);
+      if (!stat) return;
       heroStore.hero.derivedStats.push({
-        id: heroStore.nextTempId(),
-        heroId: heroStore.hero.id,
-        statId,
-        value: 0,
+        derivedStat: toClassifierRef(stat),
+        baseValue: null,
         modifier,
+        totalValue: null,
       });
     }
   }
 
   function addExpertise(expertiseId: number, source?: ExpertiseSourceData) {
     if (!heroStore.hero) return;
-    if (!heroStore.hero.expertises.find((e) => e.expertiseId === expertiseId)) {
+    if (!heroStore.hero.expertises.find((e) => e.expertise.id === expertiseId)) {
+      const exp = findById(classifierStore.expertises, expertiseId);
+      if (!exp) return;
       heroStore.hero.expertises.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        expertiseId,
+        expertise: toClassifierRef(exp),
         ...(source && { source }),
       });
     }
@@ -206,7 +212,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   function removeExpertise(expertiseId: number) {
     if (!heroStore.hero) return;
     heroStore.hero.expertises = heroStore.hero.expertises.filter(
-      (e) => e.expertiseId !== expertiseId
+      (e) => e.expertise.id !== expertiseId
     );
   }
 

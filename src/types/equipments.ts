@@ -1,21 +1,15 @@
 import type { Classifier } from './classifier';
-import type { EquipmentAttributeMap } from './equipmentAttributes';
+import type { ClassifierRef, ClassifierInput } from './shared';
 
-/**
- * Equipment type classifier (cl_equipment_types)
- */
+/** Equipment type classifier (cl_equipment_types) */
 export interface EquipmentType extends Classifier {
   icon: string;
 }
 
-/**
- * Damage type classifier (cl_damage_types)
- */
+/** Damage type classifier (cl_damage_types) */
 export type DamageType = Classifier;
 
-/**
- * Equipment special properties (JSONB)
- */
+/** Equipment special properties (JSONB) */
 export interface EquipmentSpecial {
   damage?: string;
   range?: string;
@@ -24,31 +18,32 @@ export interface EquipmentSpecial {
   maxCharges?: number;
 }
 
-/**
- * Equipment classifier (cl_equipments)
- * Actions granted by equipment are linked via cl_action_links
- */
+/** Equipment classifier (cl_equipments) */
 export interface Equipment extends Classifier {
-  equipTypeId: number;
-  damageTypeId?: number | null;
-  unitId?: number | null;
+  equipType: ClassifierRef;
+  damageType: ClassifierRef | null;
+  unit: ClassifierRef | null;
   special?: EquipmentSpecial | null;
+  weight: number;
   cost: number;
   isCustom: boolean;
-  heroId?: number | null;
-  attributes?: EquipmentAttributeMap[]; // Frontend-only, populated from cl_equipment_attributes_map
+  attributes: ClassifierRef[];
 }
 
-/**
- * Hero's equipment item (equipment table)
- */
-export interface HeroEquipment {
-  id: number;
+/** Hero equipment - upsert payload */
+export interface HeroEquipmentBase {
+  id?: number;
   heroId: number;
-  equipmentId: number;
+  equipment: ClassifierInput;
   amount: number;
   isEquipped: boolean;
   isPrimary: boolean;
   notes?: string | null;
   customName?: string | null;
+}
+
+/** Hero equipment - API response */
+export interface HeroEquipment extends HeroEquipmentBase {
+  id: number;
+  equipment: ClassifierRef;
 }

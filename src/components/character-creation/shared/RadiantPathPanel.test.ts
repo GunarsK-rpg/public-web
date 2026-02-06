@@ -6,8 +6,20 @@ import type { Talent } from 'src/types';
 
 // Mock classifiers store
 const mockRadiantOrders = [
-  { id: 1, code: 'order-light', name: 'Order of Light', surge1Id: 10, surge2Id: 11 },
-  { id: 2, code: 'order-shadow', name: 'Order of Shadow', surge1Id: 20, surge2Id: 21 },
+  {
+    id: 1,
+    code: 'order-light',
+    name: 'Order of Light',
+    surge1: { id: 10, code: 'surge-fire', name: 'Fire Surge' },
+    surge2: { id: 11, code: 'surge-ice', name: 'Ice Surge' },
+  },
+  {
+    id: 2,
+    code: 'order-shadow',
+    name: 'Order of Shadow',
+    surge1: { id: 20, code: 'surge-dark', name: 'Dark Surge' },
+    surge2: { id: 21, code: 'surge-void', name: 'Void Surge' },
+  },
 ];
 
 const mockSurges = [
@@ -54,6 +66,11 @@ describe('RadiantPathPanel', () => {
     name: 'Radiant Mastery',
     description: 'Key talent for radiant order',
     isKey: true,
+    path: null,
+    specialties: [],
+    ancestry: null,
+    radiantOrder: { id: 1, code: 'order-light', name: 'Order of Light' },
+    surge: null,
   });
 
   const createWrapper = (props: { orderId: number | null; idealLevel: number }) =>

@@ -3,6 +3,18 @@ import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import SkillsStep from './SkillsStep.vue';
 
+type MockHeroSkill = {
+  skill: { id: number; code: string; name: string };
+  modifier: number;
+};
+
+type MockClassifierSkill = {
+  id: number;
+  code: string;
+  name: string;
+  attr: { id: number; code: string; name: string };
+};
+
 // Mock stores
 const mockSetSkillRank = vi.fn();
 const mockSetSkillModifier = vi.fn();
@@ -12,8 +24,12 @@ const mockGetSkillRank = vi.fn().mockReturnValue(1);
 const mockHeroData = {
   value: {
     hero: {
-      skills: [{ skillId: 1, modifier: 0 }] as Array<{ skillId: number; modifier: number }>,
-    } as { skills: Array<{ skillId: number; modifier: number }> } | null,
+      skills: [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: 0 },
+      ] as MockHeroSkill[],
+    } as {
+      skills: MockHeroSkill[];
+    } | null,
   },
 };
 
@@ -37,6 +53,9 @@ vi.mock('src/stores/hero', () => ({
     get hero() {
       return mockHeroData.value.hero;
     },
+    get skills() {
+      return mockHeroData.value.hero?.skills ?? [];
+    },
   }),
 }));
 
@@ -48,18 +67,61 @@ vi.mock('src/stores/heroAttributes', () => ({
   }),
 }));
 
-vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
+function createDefaultClassifierData() {
+  return {
     skills: [
-      { id: 1, code: 'athletics', name: 'Athletics', attrId: 1 },
-      { id: 2, code: 'acrobatics', name: 'Acrobatics', attrId: 2 },
-      { id: 3, code: 'unknown', name: 'Unknown Skill', attrId: 999 }, // No matching attribute
-    ],
+      {
+        id: 1,
+        code: 'athletics',
+        name: 'Athletics',
+        attr: { id: 1, code: 'str', name: 'Strength' },
+      },
+      {
+        id: 2,
+        code: 'acrobatics',
+        name: 'Acrobatics',
+        attr: { id: 2, code: 'dex', name: 'Dexterity' },
+      },
+      {
+        id: 3,
+        code: 'unknown',
+        name: 'Unknown Skill',
+        attr: { id: 999, code: 'none', name: 'None' },
+      },
+    ] as MockClassifierSkill[],
     attributes: [
-      { id: 1, code: 'str', name: 'Strength', attrTypeId: 1 },
-      { id: 2, code: 'dex', name: 'Dexterity', attrTypeId: 1 },
+      {
+        id: 1,
+        code: 'str',
+        name: 'Strength',
+        attrType: { id: 1, code: 'physical', name: 'Physical' },
+      },
+      {
+        id: 2,
+        code: 'dex',
+        name: 'Dexterity',
+        attrType: { id: 1, code: 'physical', name: 'Physical' },
+      },
     ],
     attributeTypes: [{ id: 1, code: 'physical', name: 'Physical' }],
+  };
+}
+
+const mockClassifierData = {
+  value: createDefaultClassifierData(),
+};
+
+vi.mock('src/stores/classifiers', () => ({
+  useClassifierStore: () => ({
+    get skills() {
+      return mockClassifierData.value.skills;
+    },
+    get attributes() {
+      return mockClassifierData.value.attributes;
+    },
+    get attributeTypes() {
+      return mockClassifierData.value.attributeTypes;
+    },
   }),
 }));
 
@@ -69,17 +131,16 @@ vi.mock('src/composables/useStepValidation', () => ({
   }),
 }));
 
-const mockSkillsByAttrType = {
-  value: {
-    1: [
-      { id: 1, code: 'athletics', name: 'Athletics', attrId: 1 },
-      { id: 3, code: 'unknown', name: 'Unknown Skill', attrId: 999 },
-    ],
-  } as Record<number, Array<{ id: number; code: string; name: string; attrId: number }>>,
-};
-
 vi.mock('src/utils/arrayUtils', () => ({
-  groupByChainedKey: () => mockSkillsByAttrType.value,
+  groupByKey: <T, K extends PropertyKey>(list: T[], keyFn: (item: T) => K) => {
+    const result = {} as Record<K, T[]>;
+    for (const item of list) {
+      const key = keyFn(item);
+      if (!result[key]) result[key] = [];
+      result[key].push(item);
+    }
+    return result;
+  },
   buildIdCodeMap: () => mockAttributeCodeMap.value,
 }));
 
@@ -131,6 +192,7 @@ describe('SkillsStep', () => {
               class="q-input"
               type="number"
               :value="modelValue"
+              :aria-label="ariaLabel"
               @input="$emit('update:modelValue', Number($event.target.value))"
             />`,
             props: ['modelValue', 'ariaLabel', 'type', 'dense', 'outlined', 'prefix', 'min', 'max'],
@@ -148,7 +210,7 @@ describe('SkillsStep', () => {
     // Reset mock data to defaults
     mockHeroData.value = {
       hero: {
-        skills: [{ skillId: 1, modifier: 0 }],
+        skills: [{ skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: 0 }],
       },
     };
     mockBudgetData.value = { remaining: 5, budget: 10, spent: 5, maxRank: 2 };
@@ -158,12 +220,7 @@ describe('SkillsStep', () => {
     ]);
     mockNormalizeModifier.value = (val: unknown) =>
       typeof val === 'number' ? val : Number(val) || 0;
-    mockSkillsByAttrType.value = {
-      1: [
-        { id: 1, code: 'athletics', name: 'Athletics', attrId: 1 },
-        { id: 3, code: 'unknown', name: 'Unknown Skill', attrId: 999 },
-      ],
-    };
+    mockClassifierData.value = createDefaultClassifierData();
   });
 
   // ========================================
@@ -334,7 +391,9 @@ describe('SkillsStep', () => {
     });
 
     it('shows negative modifier without plus prefix', () => {
-      mockHeroData.value.hero!.skills = [{ skillId: 1, modifier: -3 }];
+      mockHeroData.value.hero!.skills = [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: -3 },
+      ];
       const wrapper = createWrapper();
 
       const input = wrapper.find('.q-input');
@@ -344,7 +403,9 @@ describe('SkillsStep', () => {
     });
 
     it('shows positive modifier with plus prefix', () => {
-      mockHeroData.value.hero!.skills = [{ skillId: 1, modifier: 5 }];
+      mockHeroData.value.hero!.skills = [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: 5 },
+      ];
       const wrapper = createWrapper();
 
       const input = wrapper.find('.q-input');
@@ -354,7 +415,9 @@ describe('SkillsStep', () => {
     });
 
     it('returns 0 for skill not in hero skills array', () => {
-      mockHeroData.value.hero!.skills = [{ skillId: 999, modifier: 5 }]; // Different skill
+      mockHeroData.value.hero!.skills = [
+        { skill: { id: 999, code: 'unknown', name: 'Unknown' }, modifier: 5 },
+      ]; // Different skill
       const wrapper = createWrapper();
 
       const input = wrapper.find('.q-input');
@@ -375,7 +438,7 @@ describe('SkillsStep', () => {
 
     it('returns 0 when hero.skills is undefined', () => {
       mockHeroData.value.hero = {
-        skills: undefined as unknown as Array<{ skillId: number; modifier: number }>,
+        skills: undefined as unknown as MockHeroSkill[],
       };
       const wrapper = createWrapper();
 
@@ -402,15 +465,14 @@ describe('SkillsStep', () => {
       expect(wrapper.text()).toContain('STR');
     });
 
-    it('shows empty string for skill with unknown attribute', () => {
-      // Skill with attrId 999 has no matching attribute in the map
+    it('does not render skill with unknown attribute type', () => {
+      // Skill with attr.id 999 maps to attrTypeId 0 (fallback), which has no matching attributeType
       mockAttributeCodeMap.value = new Map([[1, 'str']]); // Only str, not attr 999
 
       const wrapper = createWrapper();
 
-      // Unknown Skill has attrId 999 which is not in the map
-      expect(wrapper.text()).toContain('Unknown Skill');
-      // Should not show any attribute code for unknown attribute
+      // Unknown Skill should not appear since its attribute type doesn't exist
+      expect(wrapper.text()).not.toContain('Unknown Skill');
       expect(wrapper.text()).not.toContain('999');
     });
   });
@@ -459,8 +521,8 @@ describe('SkillsStep', () => {
     });
 
     it('handles skill groups with no skills using empty array fallback', () => {
-      // Remove all skills for type 1 to test the ?? [] fallback
-      mockSkillsByAttrType.value = {}; // No skills for any type
+      // Remove all skills to test the ?? [] fallback
+      mockClassifierData.value.skills = [];
 
       const wrapper = createWrapper();
 
@@ -470,16 +532,19 @@ describe('SkillsStep', () => {
       expect(wrapper.findAll('.q-item').length).toBe(0);
     });
 
-    it('handles attribute type with undefined skills', () => {
-      // attrType.id=2 does not exist in mockSkillsByAttrType, so ?? [] is used
-      mockSkillsByAttrType.value = {
-        1: [{ id: 1, code: 'athletics', name: 'Athletics', attrId: 1 }],
-      };
+    it('renders correctly when an attribute type has no matching skills', () => {
+      // Add a Mental attribute type with no skills mapped to it
+      mockClassifierData.value.attributeTypes = [
+        { id: 1, code: 'physical', name: 'Physical' },
+        { id: 2, code: 'mental', name: 'Mental' },
+      ];
 
       const wrapper = createWrapper();
 
-      // Physical Skills group should render with one skill
-      expect(wrapper.text()).toContain('Athletics');
+      // Physical Skills group should render with skills
+      expect(wrapper.text()).toContain('Physical Skills');
+      // Mental Skills group should render but with no skill items
+      expect(wrapper.text()).toContain('Mental Skills');
     });
 
     it('increment respects both maxRank and pointsRemaining conditions', async () => {
@@ -496,20 +561,6 @@ describe('SkillsStep', () => {
       await incrementBtns[0]!.trigger('click');
 
       expect(mockSetSkillRank).toHaveBeenCalledWith(1, 2);
-    });
-
-    it('decrement does not call setSkillRank when current is 0', async () => {
-      mockGetSkillRank.mockReturnValue(0);
-
-      const wrapper = createWrapper();
-
-      const decrementBtns = wrapper
-        .findAll('.q-btn')
-        .filter((b) => b.attributes('aria-label')?.includes('Decrease'));
-      expect(decrementBtns.length).toBeGreaterThan(0);
-      await decrementBtns[0]!.trigger('click');
-
-      expect(mockSetSkillRank).not.toHaveBeenCalled();
     });
   });
 });

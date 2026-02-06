@@ -8,10 +8,8 @@ import type { Level, Tier, DerivedStat, DerivedStatValue, Attribute } from 'src/
 
 const createLevel = (overrides: Partial<Level> = {}): Level => ({
   id: 1,
-  code: 'level_1',
-  name: 'Level 1',
   level: 1,
-  tierId: 1,
+  tier: { id: 1, code: 'test', name: 'Test' },
   attributePoints: 12,
   healthBase: 10,
   maxSkillRank: 2,
@@ -40,14 +38,14 @@ const createAttribute = (overrides: Partial<Attribute> = {}): Attribute => ({
   id: 1,
   code: 'str',
   name: 'Strength',
-  attrTypeId: 1,
+  attrType: { id: 1, code: 'test', name: 'Test' },
   ...overrides,
 });
 
 const createDerivedStatValue = (overrides: Partial<DerivedStatValue> = {}): DerivedStatValue => ({
   id: 1,
-  derivedStatId: 1,
-  attrId: 1,
+  derivedStat: { id: 1, code: 'test', name: 'Test' },
+  attr: { id: 1, code: 'test', name: 'Test' },
   attrMin: 0,
   attrMax: 2,
   value: 10,
@@ -257,11 +255,23 @@ describe('buildDerivedStatsList', () => {
       const derivedStats = [createDerivedStat({ id: 1, code: 'movement', name: 'Movement' })];
       const attributes = [createAttribute({ id: 1, code: 'spd', name: 'Speed' })];
       const derivedStatValues = [
-        createDerivedStatValue({ derivedStatId: 1, attrId: 1, attrMin: 0, attrMax: 1, value: 20 }),
-        createDerivedStatValue({ derivedStatId: 1, attrId: 1, attrMin: 2, attrMax: 3, value: 25 }),
         createDerivedStatValue({
-          derivedStatId: 1,
-          attrId: 1,
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'spd', name: 'Speed' },
+          attrMin: 0,
+          attrMax: 1,
+          value: 20,
+        }),
+        createDerivedStatValue({
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'spd', name: 'Speed' },
+          attrMin: 2,
+          attrMax: 3,
+          value: 25,
+        }),
+        createDerivedStatValue({
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'spd', name: 'Speed' },
           attrMin: 4,
           attrMax: null,
           value: 30,
@@ -287,10 +297,16 @@ describe('buildDerivedStatsList', () => {
       const derivedStats = [createDerivedStat({ id: 1, code: 'movement', name: 'Movement' })];
       const attributes = [createAttribute({ id: 1, code: 'spd' })];
       const derivedStatValues = [
-        createDerivedStatValue({ derivedStatId: 1, attrId: 1, attrMin: 0, attrMax: 2, value: 20 }),
         createDerivedStatValue({
-          derivedStatId: 1,
-          attrId: 1,
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'spd', name: 'Speed' },
+          attrMin: 0,
+          attrMax: 2,
+          value: 20,
+        }),
+        createDerivedStatValue({
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'spd', name: 'Speed' },
           attrMin: 3,
           attrMax: null,
           value: 35,
@@ -316,8 +332,8 @@ describe('buildDerivedStatsList', () => {
       const attributes = [createAttribute({ id: 1, code: 'str' })];
       const derivedStatValues = [
         createDerivedStatValue({
-          derivedStatId: 1,
-          attrId: 1,
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'str', name: 'Strength' },
           attrMin: 5,
           attrMax: 10,
           value: 100,
@@ -350,8 +366,8 @@ describe('buildDerivedStatsList', () => {
       const attributes = [createAttribute({ id: 1, code: 'str' })];
       const derivedStatValues = [
         createDerivedStatValue({
-          derivedStatId: 1,
-          attrId: 1,
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'str', name: 'Strength' },
           attrMin: 0,
           attrMax: null,
           value: 8,
@@ -380,8 +396,8 @@ describe('buildDerivedStatsList', () => {
       const attributes = [createAttribute({ id: 1, code: 'str' })];
       const derivedStatValues = [
         createDerivedStatValue({
-          derivedStatId: 1,
-          attrId: 1,
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'str', name: 'Strength' },
           attrMin: 0,
           attrMax: null,
           value: 150,
@@ -409,8 +425,8 @@ describe('buildDerivedStatsList', () => {
       const attributes = [createAttribute({ id: 1, code: 'awa' })];
       const derivedStatValues = [
         createDerivedStatValue({
-          derivedStatId: 1,
-          attrId: 1,
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'awa', name: 'Awareness' },
           attrMin: 0,
           attrMax: null,
           value: -1,
@@ -464,8 +480,8 @@ describe('buildDerivedStatsList', () => {
       const attributes = [createAttribute({ id: 1, code: 'str' })];
       const derivedStatValues = [
         createDerivedStatValue({
-          derivedStatId: 1,
-          attrId: 1,
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'str', name: 'Strength' },
           attrMin: 0,
           attrMax: null,
           value: 6,
@@ -510,8 +526,8 @@ describe('buildDerivedStatsList', () => {
       const derivedStats = [createDerivedStat({ id: 1, code: 'test', name: 'Test' })];
       const derivedStatValues = [
         createDerivedStatValue({
-          derivedStatId: 1,
-          attrId: 999, // Non-existent attribute
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 999, code: 'unknown', name: 'Unknown' }, // Non-existent attribute
           attrMin: 0,
           attrMax: null,
           value: 100,

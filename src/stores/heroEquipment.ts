@@ -25,15 +25,17 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     if (!heroStore.hero) return;
     // Validate amount - must be positive
     const validAmount = Math.max(1, Math.floor(amount));
-    const existing = heroStore.hero.equipment.find((e) => e.equipmentId === equipmentId);
+    const existing = heroStore.hero.equipment.find((e) => e.equipment.id === equipmentId);
     if (existing) {
       // Cap at max stack size
       existing.amount = Math.min(existing.amount + validAmount, MAX_EQUIPMENT_STACK);
     } else {
+      const equip = findById(classifierStore.equipment, equipmentId);
+      if (!equip) return;
       heroStore.hero.equipment.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        equipmentId,
+        equipment: { id: equip.id, code: equip.code, name: equip.name },
         amount: Math.min(validAmount, MAX_EQUIPMENT_STACK),
         isEquipped: false,
         isPrimary: false,
@@ -45,25 +47,25 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     if (!heroStore.hero) return;
     // If amount specified, decrement stack; otherwise remove entirely
     if (amount !== undefined) {
-      const existing = heroStore.hero.equipment.find((e) => e.equipmentId === equipmentId);
+      const existing = heroStore.hero.equipment.find((e) => e.equipment.id === equipmentId);
       if (existing) {
         existing.amount -= Math.max(1, Math.floor(amount));
         if (existing.amount <= 0) {
           heroStore.hero.equipment = heroStore.hero.equipment.filter(
-            (e) => e.equipmentId !== equipmentId
+            (e) => e.equipment.id !== equipmentId
           );
         }
         return;
       }
     }
     heroStore.hero.equipment = heroStore.hero.equipment.filter(
-      (e) => e.equipmentId !== equipmentId
+      (e) => e.equipment.id !== equipmentId
     );
   }
 
   function setEquipmentEquipped(equipmentId: number, isEquipped: boolean) {
     if (!heroStore.hero) return;
-    const item = heroStore.hero.equipment.find((e) => e.equipmentId === equipmentId);
+    const item = heroStore.hero.equipment.find((e) => e.equipment.id === equipmentId);
     if (item) {
       item.isEquipped = isEquipped;
     }
@@ -71,7 +73,7 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
 
   function setEquipmentPrimary(equipmentId: number, isPrimary: boolean) {
     if (!heroStore.hero) return;
-    const item = heroStore.hero.equipment.find((e) => e.equipmentId === equipmentId);
+    const item = heroStore.hero.equipment.find((e) => e.equipment.id === equipmentId);
     if (item) {
       item.isPrimary = isPrimary;
     }
@@ -82,7 +84,9 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
   // ===================
   function setStartingKit(startingKitId: number) {
     if (!heroStore.hero) return;
-    heroStore.hero.startingKitId = startingKitId;
+    const kit = findById(classifierStore.startingKits, startingKitId);
+    if (!kit) return;
+    heroStore.hero.startingKit = { id: kit.id, code: kit.code, name: kit.name };
     applyStartingKitBonuses(startingKitId);
   }
 
@@ -99,7 +103,7 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     // Apply expertise bonuses from kit
     if (kitData.expertises) {
       for (const exp of kitData.expertises) {
-        attrStore.addExpertise(exp.expertiseId, {
+        attrStore.addExpertise(exp.id, {
           sourceType: 'starting_kit',
           sourceId: startingKitId,
         });
@@ -111,7 +115,7 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     heroStore.hero.equipment = [];
     if (kitData.equipment) {
       for (const item of kitData.equipment) {
-        addEquipment(item.equipmentId, item.quantity);
+        addEquipment(item.id, item.quantity);
       }
     }
   }

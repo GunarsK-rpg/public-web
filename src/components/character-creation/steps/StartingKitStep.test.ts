@@ -10,9 +10,12 @@ const mockSetCurrency = vi.fn();
 // Reactive mock data
 const mockHero = {
   value: {
-    startingKitId: 1,
+    startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
     currency: 10,
-  } as { startingKitId: number | null; currency: number } | null,
+  } as {
+    startingKit: { id: number; code: string; name: string } | null;
+    currency: number;
+  } | null,
 };
 
 vi.mock('src/stores/hero', () => ({
@@ -39,7 +42,7 @@ const mockClassifierData = {
         name: 'Adventurer',
         description: 'Standard kit',
         startingSpheres: '2d6',
-        equipment: [{ equipmentId: 1, quantity: 1 }],
+        equipment: [{ id: 1, code: 'sword', name: 'Sword', quantity: 1 }],
         expertises: [],
       },
       {
@@ -57,8 +60,8 @@ const mockClassifierData = {
         name: 'Scholar',
         description: 'Academic start',
         startingSpheres: '1d6',
-        equipment: [{ equipmentId: 2, quantity: 2 }],
-        expertises: [{ expertiseId: 1 }],
+        equipment: [{ id: 2, code: 'book', name: 'Book', quantity: 2 }],
+        expertises: [{ id: 1, code: 'vorin-customs', name: 'Vorin Customs' }],
       },
       {
         id: 4,
@@ -67,17 +70,17 @@ const mockClassifierData = {
         description: 'Mysterious kit',
         startingSpheres: '1d6',
         equipment: [
-          { equipmentId: 1, quantity: 1 }, // Valid
-          { equipmentId: 999, quantity: 1 }, // Invalid - equipment not found
+          { id: 1, code: 'sword', name: 'Sword', quantity: 1 }, // Valid
+          { id: 999, code: 'unknown', name: 'Unknown', quantity: 1 }, // Invalid - equipment not found
         ],
         expertises: [],
       },
     ],
     equipment: [
-      { id: 1, name: 'Sword' },
-      { id: 2, name: 'Book' },
+      { id: 1, code: 'sword', name: 'Sword' },
+      { id: 2, code: 'book', name: 'Book' },
     ],
-    expertises: [{ id: 1, name: 'Vorin Customs' }],
+    expertises: [{ id: 1, code: 'vorin-customs', name: 'Vorin Customs' }],
   },
 };
 
@@ -157,7 +160,7 @@ describe('StartingKitStep', () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     mockHero.value = {
-      startingKitId: 1,
+      startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
       currency: 10,
     };
     mockClassifierData.value = {
@@ -168,7 +171,7 @@ describe('StartingKitStep', () => {
           name: 'Adventurer',
           description: 'Standard kit',
           startingSpheres: '2d6',
-          equipment: [{ equipmentId: 1, quantity: 1 }],
+          equipment: [{ id: 1, code: 'sword', name: 'Sword', quantity: 1 }],
           expertises: [],
         },
         {
@@ -186,8 +189,8 @@ describe('StartingKitStep', () => {
           name: 'Scholar',
           description: 'Academic start',
           startingSpheres: '1d6',
-          equipment: [{ equipmentId: 2, quantity: 2 }],
-          expertises: [{ expertiseId: 1 }],
+          equipment: [{ id: 2, code: 'book', name: 'Book', quantity: 2 }],
+          expertises: [{ id: 1, code: 'vorin-customs', name: 'Vorin Customs' }],
         },
         {
           id: 4,
@@ -196,17 +199,17 @@ describe('StartingKitStep', () => {
           description: 'Mysterious kit',
           startingSpheres: '1d6',
           equipment: [
-            { equipmentId: 1, quantity: 1 },
-            { equipmentId: 999, quantity: 1 }, // Invalid equipment
+            { id: 1, code: 'sword', name: 'Sword', quantity: 1 },
+            { id: 999, code: 'unknown', name: 'Unknown', quantity: 1 }, // Invalid equipment
           ],
           expertises: [],
         },
       ],
       equipment: [
-        { id: 1, name: 'Sword' },
-        { id: 2, name: 'Book' },
+        { id: 1, code: 'sword', name: 'Sword' },
+        { id: 2, code: 'book', name: 'Book' },
       ],
-      expertises: [{ id: 1, name: 'Vorin Customs' }],
+      expertises: [{ id: 1, code: 'vorin-customs', name: 'Vorin Customs' }],
     };
   });
 
@@ -346,7 +349,7 @@ describe('StartingKitStep', () => {
     });
 
     it('shows prisoner banner when prisoner kit is selected', () => {
-      mockHero.value = { startingKitId: 2, currency: 0 };
+      mockHero.value = { startingKit: { id: 2, code: 'prisoner', name: 'Prisoner' }, currency: 0 };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Prisoner Kit Special');
@@ -354,7 +357,7 @@ describe('StartingKitStep', () => {
     });
 
     it('shows no starting currency message for prisoner kit', () => {
-      mockHero.value = { startingKitId: 2, currency: 0 };
+      mockHero.value = { startingKit: { id: 2, code: 'prisoner', name: 'Prisoner' }, currency: 0 };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('No starting currency');
@@ -366,7 +369,7 @@ describe('StartingKitStep', () => {
   // ========================================
   describe('expertise display', () => {
     it('shows expertise for kits that grant one', () => {
-      mockHero.value = { startingKitId: 3, currency: 5 };
+      mockHero.value = { startingKit: { id: 3, code: 'scholar', name: 'Scholar' }, currency: 5 };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Vorin Customs');
@@ -379,7 +382,7 @@ describe('StartingKitStep', () => {
   // ========================================
   describe('equipment summary extended', () => {
     it('shows quantity when equipment has multiple items', () => {
-      mockHero.value = { startingKitId: 3, currency: 5 };
+      mockHero.value = { startingKit: { id: 3, code: 'scholar', name: 'Scholar' }, currency: 5 };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Book x2');
@@ -398,7 +401,7 @@ describe('StartingKitStep', () => {
     });
 
     it('handles no kit selected', () => {
-      mockHero.value = { startingKitId: null, currency: 0 };
+      mockHero.value = { startingKit: null, currency: 0 };
       const wrapper = createWrapper();
 
       const cards = wrapper.findAll('.q-card');
@@ -525,7 +528,7 @@ describe('StartingKitStep', () => {
   describe('getEquipmentSummary edge cases', () => {
     it('filters out equipment with invalid equipmentId from summary', () => {
       // Mystery kit (id: 4) has one valid and one invalid equipment
-      mockHero.value = { startingKitId: 4, currency: 5 };
+      mockHero.value = { startingKit: { id: 4, code: 'mystery', name: 'Mystery' }, currency: 5 };
       const wrapper = createWrapper();
 
       // Should show Sword but filter out the invalid equipment (equipmentId: 999)
@@ -540,7 +543,10 @@ describe('StartingKitStep', () => {
   describe('template v-if branches', () => {
     it('does not show expertise section for kit without expertises', () => {
       // Adventurer kit (id: 1) has empty expertises array
-      mockHero.value = { startingKitId: 1, currency: 10 };
+      mockHero.value = {
+        startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
+        currency: 10,
+      };
       const wrapper = createWrapper();
 
       // The adventurer kit card should not have Vorin Customs (expertise is on Scholar card)
@@ -553,7 +559,7 @@ describe('StartingKitStep', () => {
 
     it('shows expertise section for kit with expertises', () => {
       // Scholar kit (id: 3) has expertises
-      mockHero.value = { startingKitId: 3, currency: 5 };
+      mockHero.value = { startingKit: { id: 3, code: 'scholar', name: 'Scholar' }, currency: 5 };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('+1');
@@ -561,7 +567,10 @@ describe('StartingKitStep', () => {
     });
 
     it('shows selection indicator only for selected kit', () => {
-      mockHero.value = { startingKitId: 1, currency: 10 };
+      mockHero.value = {
+        startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
+        currency: 10,
+      };
       const wrapper = createWrapper();
 
       // The selection indicator should be present for the selected kit
@@ -570,7 +579,7 @@ describe('StartingKitStep', () => {
     });
 
     it('hides currency input section when no kit is selected', () => {
-      mockHero.value = { startingKitId: null, currency: 0 };
+      mockHero.value = { startingKit: null, currency: 0 };
       const wrapper = createWrapper();
 
       // No kit selected means no currency input should be shown

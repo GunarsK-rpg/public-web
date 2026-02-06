@@ -7,7 +7,11 @@ import CultureStep from './CultureStep.vue';
 const mockAddCulture = vi.fn();
 const mockRemoveCulture = vi.fn();
 
-const mockHeroCultures = { value: [{ cultureId: 1 }] as { cultureId: number }[] };
+const mockHeroCultures = {
+  value: [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }] as {
+    culture: { id: number; code: string; name: string };
+  }[],
+};
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
@@ -29,20 +33,38 @@ vi.mock('src/stores/heroTalents', () => ({
 const mockClassifierData = {
   value: {
     cultures: [
-      { id: 1, code: 'vorin', name: 'Vorin', description: 'Vorin culture', expertiseId: 10 },
-      { id: 2, code: 'shin', name: 'Shin', description: 'Shin culture', expertiseId: 20 },
-      { id: 3, code: 'azish', name: 'Azish', description: 'Azish culture', expertiseId: null }, // No expertise
-      { id: 4, code: 'thaylen', name: 'Thaylen', description: 'Thaylen culture', expertiseId: 999 }, // Invalid expertise
+      {
+        id: 1,
+        code: 'vorin',
+        name: 'Vorin',
+        description: 'Vorin culture',
+        expertise: { id: 10, code: 'vorin-exp', name: 'Vorin Expertise' },
+      },
+      {
+        id: 2,
+        code: 'shin',
+        name: 'Shin',
+        description: 'Shin culture',
+        expertise: { id: 20, code: 'shin-exp', name: 'Shin Expertise' },
+      },
+      { id: 3, code: 'azish', name: 'Azish', description: 'Azish culture', expertise: null }, // No expertise
+      {
+        id: 4,
+        code: 'thaylen',
+        name: 'Thaylen',
+        description: 'Thaylen culture',
+        expertise: { id: 999, code: 'invalid', name: 'Invalid' },
+      }, // Invalid expertise
     ] as {
       id: number;
       code: string;
       name: string;
       description: string;
-      expertiseId: number | null;
+      expertise: { id: number; code: string; name: string } | null;
     }[],
     expertises: [
-      { id: 10, name: 'Vorin Expertise' },
-      { id: 20, name: 'Shin Expertise' },
+      { id: 10, code: 'vorin-exp', name: 'Vorin Expertise' },
+      { id: 20, code: 'shin-exp', name: 'Shin Expertise' },
     ],
   },
 };
@@ -106,23 +128,35 @@ describe('CultureStep', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-    mockHeroCultures.value = [{ cultureId: 1 }];
+    mockHeroCultures.value = [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }];
     mockClassifierData.value = {
       cultures: [
-        { id: 1, code: 'vorin', name: 'Vorin', description: 'Vorin culture', expertiseId: 10 },
-        { id: 2, code: 'shin', name: 'Shin', description: 'Shin culture', expertiseId: 20 },
-        { id: 3, code: 'azish', name: 'Azish', description: 'Azish culture', expertiseId: null },
+        {
+          id: 1,
+          code: 'vorin',
+          name: 'Vorin',
+          description: 'Vorin culture',
+          expertise: { id: 10, code: 'vorin-exp', name: 'Vorin Expertise' },
+        },
+        {
+          id: 2,
+          code: 'shin',
+          name: 'Shin',
+          description: 'Shin culture',
+          expertise: { id: 20, code: 'shin-exp', name: 'Shin Expertise' },
+        },
+        { id: 3, code: 'azish', name: 'Azish', description: 'Azish culture', expertise: null },
         {
           id: 4,
           code: 'thaylen',
           name: 'Thaylen',
           description: 'Thaylen culture',
-          expertiseId: 999,
+          expertise: { id: 999, code: 'invalid', name: 'Invalid' },
         },
       ],
       expertises: [
-        { id: 10, name: 'Vorin Expertise' },
-        { id: 20, name: 'Shin Expertise' },
+        { id: 10, code: 'vorin-exp', name: 'Vorin Expertise' },
+        { id: 20, code: 'shin-exp', name: 'Shin Expertise' },
       ],
     };
   });
@@ -209,7 +243,7 @@ describe('CultureStep', () => {
     });
 
     it('calls removeCulture when clearing primary culture', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }];
+      mockHeroCultures.value = [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');
@@ -219,7 +253,7 @@ describe('CultureStep', () => {
     });
 
     it('calls addCulture when selecting secondary culture', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }];
+      mockHeroCultures.value = [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');
@@ -229,7 +263,10 @@ describe('CultureStep', () => {
     });
 
     it('calls removeCulture when clearing secondary culture', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }, { cultureId: 2 }];
+      mockHeroCultures.value = [
+        { culture: { id: 1, code: 'vorin', name: 'Vorin' } },
+        { culture: { id: 2, code: 'shin', name: 'Shin' } },
+      ];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');
@@ -239,7 +276,10 @@ describe('CultureStep', () => {
     });
 
     it('preserves array order when changing primary with secondary present', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }, { cultureId: 2 }];
+      mockHeroCultures.value = [
+        { culture: { id: 1, code: 'vorin', name: 'Vorin' } },
+        { culture: { id: 2, code: 'shin', name: 'Shin' } },
+      ];
       const wrapper = createWrapper();
 
       // Change primary from 1 to something else
@@ -253,7 +293,7 @@ describe('CultureStep', () => {
     });
 
     it('skips setCulture if no change', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }];
+      mockHeroCultures.value = [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');
@@ -279,9 +319,9 @@ describe('CultureStep', () => {
       expect(wrapper.find('.q-card').exists()).toBe(false);
     });
 
-    it('handles culture without expertiseId', () => {
+    it('handles culture without expertise', () => {
       // Mock culture without expertise
-      mockHeroCultures.value = [{ cultureId: 999 }]; // Non-existent culture
+      mockHeroCultures.value = [{ culture: { id: 999, code: 'nonexistent', name: 'Nonexistent' } }]; // Non-existent culture
       const wrapper = createWrapper();
 
       // Should not crash
@@ -289,7 +329,10 @@ describe('CultureStep', () => {
     });
 
     it('shows both cultures expertises when both selected', () => {
-      mockHeroCultures.value = [{ cultureId: 1 }, { cultureId: 2 }];
+      mockHeroCultures.value = [
+        { culture: { id: 1, code: 'vorin', name: 'Vorin' } },
+        { culture: { id: 2, code: 'shin', name: 'Shin' } },
+      ];
       const wrapper = createWrapper();
 
       const banner = wrapper.find('.info-banner');
@@ -298,16 +341,16 @@ describe('CultureStep', () => {
       expect(banner.text()).toContain('Shin Expertise');
     });
 
-    it('does not show expertise for culture with null expertiseId', () => {
-      mockHeroCultures.value = [{ cultureId: 3 }]; // Azish has null expertiseId
+    it('does not show expertise for culture with null expertise', () => {
+      mockHeroCultures.value = [{ culture: { id: 3, code: 'azish', name: 'Azish' } }]; // Azish has null expertise
       const wrapper = createWrapper();
 
       // Banner should not show since no expertises
       expect(wrapper.find('.info-banner').exists()).toBe(false);
     });
 
-    it('does not show expertise for culture with invalid expertiseId', () => {
-      mockHeroCultures.value = [{ cultureId: 4 }]; // Thaylen has expertiseId 999 which doesn't exist
+    it('does not show expertise for culture with invalid expertise', () => {
+      mockHeroCultures.value = [{ culture: { id: 4, code: 'thaylen', name: 'Thaylen' } }]; // Thaylen has expertise id 999 which doesn't exist
       const wrapper = createWrapper();
 
       // Banner should not show since expertise doesn't exist
@@ -316,7 +359,11 @@ describe('CultureStep', () => {
 
     it('filters out null expertise names from banner', () => {
       // Mix of valid and invalid expertise cultures
-      mockHeroCultures.value = [{ cultureId: 1 }, { cultureId: 3 }, { cultureId: 4 }];
+      mockHeroCultures.value = [
+        { culture: { id: 1, code: 'vorin', name: 'Vorin' } },
+        { culture: { id: 3, code: 'azish', name: 'Azish' } },
+        { culture: { id: 4, code: 'thaylen', name: 'Thaylen' } },
+      ];
       const wrapper = createWrapper();
 
       const banner = wrapper.find('.info-banner');
@@ -331,7 +378,7 @@ describe('CultureStep', () => {
   // ========================================
   describe('setCulture branches', () => {
     it('does nothing when oldId equals newId', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }];
+      mockHeroCultures.value = [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');
@@ -342,7 +389,10 @@ describe('CultureStep', () => {
     });
 
     it('handles primary change with secondary present - removes both and re-adds', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }, { cultureId: 2 }];
+      mockHeroCultures.value = [
+        { culture: { id: 1, code: 'vorin', name: 'Vorin' } },
+        { culture: { id: 2, code: 'shin', name: 'Shin' } },
+      ];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');
@@ -358,7 +408,10 @@ describe('CultureStep', () => {
     });
 
     it('handles clearing primary with secondary present', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }, { cultureId: 2 }];
+      mockHeroCultures.value = [
+        { culture: { id: 1, code: 'vorin', name: 'Vorin' } },
+        { culture: { id: 2, code: 'shin', name: 'Shin' } },
+      ];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');
@@ -383,7 +436,10 @@ describe('CultureStep', () => {
     });
 
     it('handles clearing secondary when it exists', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }, { cultureId: 2 }];
+      mockHeroCultures.value = [
+        { culture: { id: 1, code: 'vorin', name: 'Vorin' } },
+        { culture: { id: 2, code: 'shin', name: 'Shin' } },
+      ];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');
@@ -394,7 +450,7 @@ describe('CultureStep', () => {
     });
 
     it('handles setting secondary when no previous secondary', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }];
+      mockHeroCultures.value = [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');
@@ -405,7 +461,10 @@ describe('CultureStep', () => {
     });
 
     it('handles changing secondary culture', async () => {
-      mockHeroCultures.value = [{ cultureId: 1 }, { cultureId: 2 }];
+      mockHeroCultures.value = [
+        { culture: { id: 1, code: 'vorin', name: 'Vorin' } },
+        { culture: { id: 2, code: 'shin', name: 'Shin' } },
+      ];
       const wrapper = createWrapper();
 
       const selects = wrapper.findAll('.q-select');

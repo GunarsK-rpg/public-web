@@ -1,38 +1,31 @@
 import type { Classifier } from './classifier';
+import type { ClassifierRef, ClassifierInput } from './shared';
 
-/**
- * Expertise type classifier (cl_expertise_types)
- */
+/** Expertise type classifier (cl_expertise_types) */
 export type ExpertiseType = Classifier;
 
-/**
- * Expertise source JSONB structure
- *
- * @property sourceType - Database classifier code indicating expertise origin.
- *   Values are dynamically defined in cl_source_types (culture, intellect, starting_kit, talent, reward, training, etc.)
- *   Use string type to support future source types without code changes.
- * @property sourceId - Optional foreign key to the source record (e.g., talent ID, culture ID)
- */
+/** Expertise source JSONB structure */
 export interface ExpertiseSourceData {
   sourceType: string;
   sourceId?: number;
 }
 
-/**
- * Expertise classifier (cl_expertises)
- */
+/** Expertise classifier (cl_expertises) */
 export interface Expertise extends Classifier {
-  expertiseTypeId: number;
+  expertiseType: ClassifierRef;
 }
 
-/**
- * Hero's expertise
- * Maps to expertises table
- */
-export interface HeroExpertise {
-  id: number;
+/** Hero expertise - upsert payload */
+export interface HeroExpertiseBase {
+  id?: number;
   heroId: number;
-  expertiseId: number;
+  expertise: ClassifierInput;
   notes?: string | null;
-  source?: ExpertiseSourceData | null; // JSONB: {source_type, source_id}
+  source?: ExpertiseSourceData | null;
+}
+
+/** Hero expertise - API response */
+export interface HeroExpertise extends HeroExpertiseBase {
+  id: number;
+  expertise: ClassifierRef;
 }

@@ -1,41 +1,40 @@
 import type { Classifier } from './classifier';
+import type { ClassifierRef, ClassifierInput } from './shared';
 
-/**
- * Goal status classifier (cl_goal_status)
- */
+/** Goal status classifier (cl_goal_status) */
 export type GoalStatus = Classifier;
 
-/**
- * Connection type classifier (cl_connection_types)
- */
+/** Connection type classifier (cl_connection_types) */
 export type ConnectionType = Classifier;
 
-/**
- * Hero's goal (goals table)
- */
-export interface HeroGoal {
-  id: number;
+/** Hero goal - upsert payload */
+export interface HeroGoalBase {
+  id?: number;
   heroId: number;
+  status: ClassifierInput;
   name: string;
   description?: string | null;
   notes?: string | null;
-  /**
-   * Importance value (1-5) indicating goal priority.
-   * Higher values indicate more important goals.
-   * @minimum 1
-   * @maximum 5
-   */
   value: number;
-  statusId: number;
 }
 
-/**
- * Hero's connection (connections table)
- */
-export interface HeroConnection {
+/** Hero goal - API response */
+export interface HeroGoal extends HeroGoalBase {
   id: number;
+  status: ClassifierRef;
+}
+
+/** Hero connection - upsert payload */
+export interface HeroConnectionBase {
+  id?: number;
   heroId: number;
-  connTypeId: number;
+  connectionType: ClassifierInput;
   description?: string | null;
   notes?: string | null;
+}
+
+/** Hero connection - API response */
+export interface HeroConnection extends HeroConnectionBase {
+  id: number;
+  connectionType: ClassifierRef;
 }

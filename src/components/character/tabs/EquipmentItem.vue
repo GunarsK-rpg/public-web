@@ -50,7 +50,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById } from 'src/utils/arrayUtils';
 import { useChainedEntityIcon } from 'src/composables/useEntityIcon';
 import { RPG_COLORS } from 'src/constants/theme';
 import type { HeroEquipment, Equipment } from 'src/types';
@@ -61,15 +60,15 @@ const props = defineProps<{
 
 const classifiers = useClassifierStore();
 
-// Use chained lookup: heroEquipment.equipmentId → equipment → equipmentType (for icon)
+// Use chained lookup: heroEquipment.equipment.id → equipment → equipmentType (for icon)
 const {
   primaryEntity: equipment,
   relatedEntity: equipmentType,
   iconUrl,
 } = useChainedEntityIcon(
-  computed(() => props.heroEquipment.equipmentId),
+  computed(() => props.heroEquipment.equipment.id),
   computed(() => classifiers.equipment),
-  (eq: Equipment) => eq.equipTypeId,
+  (eq: Equipment) => eq.equipType.id,
   computed(() => classifiers.equipmentTypes),
   'equipment'
 );
@@ -82,7 +81,7 @@ const detailsLine = computed(() => {
   const parts: string[] = [];
 
   if (eq.special.damage) {
-    const damageTypeName = findById(classifiers.damageTypes, eq.damageTypeId)?.name;
+    const damageTypeName = eq.damageType?.name;
     parts.push(`${eq.special.damage}${damageTypeName ? ` ${damageTypeName}` : ''}`);
   }
 

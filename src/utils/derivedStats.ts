@@ -96,14 +96,14 @@ export function buildDerivedStatsList(
 ): DerivedStatDisplay[] {
   return derivedStats.map((stat) => {
     // Check if this stat has lookup table entries
-    const statEntries = derivedStatValues.filter((v) => v.derivedStatId === stat.id);
+    const statEntries = derivedStatValues.filter((v) => v.derivedStat.id === stat.id);
     let baseValue: number;
     const hasModifier = stat.code !== 'recovery_die';
 
     const firstEntry = statEntries[0];
     if (firstEntry) {
       // Lookup-based stat - all entries for a stat should reference the same attribute
-      const attrId = firstEntry.attrId;
+      const attrId = firstEntry.attr.id;
       const attr = attributes.find((a) => a.id === attrId);
       const attrValue = attr ? (attrs[attr.code] ?? 0) : 0;
 

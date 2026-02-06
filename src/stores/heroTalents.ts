@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { useHeroAttributesStore } from './heroAttributes';
-import { findById, findByCode } from 'src/utils/arrayUtils';
+import { findById, findByCode, toClassifierRef } from 'src/utils/arrayUtils';
 
 export const useHeroTalentsStore = defineStore('heroTalents', () => {
   const heroStore = useHeroStore();
@@ -16,13 +16,14 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   const isSinger = computed(() => {
     if (!heroStore.hero) return false;
     const singerAncestry = findByCode(classifierStore.ancestries, 'singer');
-    return heroStore.hero.ancestryId === singerAncestry?.id;
+    if (!singerAncestry) return false;
+    return heroStore.hero.ancestry?.id === singerAncestry.id;
   });
 
-  const isRadiant = computed(() => !!heroStore.hero?.radiantOrderId);
+  const isRadiant = computed(() => !!heroStore.hero?.radiantOrder);
 
   // Radiant-specific computed values for consistent state derivation
-  const radiantOrderId = computed(() => heroStore.hero?.radiantOrderId ?? null);
+  const radiantOrderId = computed(() => heroStore.hero?.radiantOrder?.id ?? null);
   const radiantIdeal = computed(() => heroStore.hero?.radiantIdeal ?? 0);
 
   // ===================
@@ -36,34 +37,36 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     }
 
     // Remove previous ancestry talents if changing ancestry
-    if (heroStore.hero.ancestryId) {
-      const prevAncestryId = heroStore.hero.ancestryId;
+    if (heroStore.hero.ancestry?.id) {
+      const prevAncestryId = heroStore.hero.ancestry.id;
       const prevAncestryTalentIds = new Set(
-        classifierStore.talents.filter((t) => t.ancestryId === prevAncestryId).map((t) => t.id)
+        classifierStore.talents.filter((t) => t.ancestry?.id === prevAncestryId).map((t) => t.id)
       );
       heroStore.hero.talents = heroStore.hero.talents.filter(
-        (t) => !prevAncestryTalentIds.has(t.talentId)
+        (t) => !prevAncestryTalentIds.has(t.talent.id)
       );
     }
 
-    heroStore.hero.ancestryId = ancestryId;
+    const ancestry = findById(classifierStore.ancestries, ancestryId);
+    if (!ancestry) return;
+    heroStore.hero.ancestry = toClassifierRef(ancestry);
 
     // Reset singer form if not singer
     if (!singerAncestry || ancestryId !== singerAncestry.id) {
-      heroStore.hero.activeSingerFormId = null;
+      heroStore.hero.activeSingerForm = null;
     } else {
       // Add singer key talent
       const singerKeyTalent = classifierStore.talents.find(
-        (t) => t.ancestryId === singerAncestry.id && t.isKey
+        (t) => t.ancestry?.id === singerAncestry.id && t.isKey
       );
       if (
         singerKeyTalent &&
-        !heroStore.hero.talents.find((t) => t.talentId === singerKeyTalent.id)
+        !heroStore.hero.talents.find((t) => t.talent.id === singerKeyTalent.id)
       ) {
         heroStore.hero.talents.push({
           id: heroStore.nextTempId(),
           heroId: heroStore.hero.id,
-          talentId: singerKeyTalent.id,
+          talent: toClassifierRef(singerKeyTalent),
         });
       }
     }
@@ -71,7 +74,13 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
 
   function setSingerForm(singerFormId: number | null) {
     if (!heroStore.hero) return;
-    heroStore.hero.activeSingerFormId = singerFormId;
+    if (singerFormId === null) {
+      heroStore.hero.activeSingerForm = null;
+    } else {
+      const form = findById(classifierStore.singerForms, singerFormId);
+      if (!form) return;
+      heroStore.hero.activeSingerForm = toClassifierRef(form);
+    }
   }
 
   // ===================
@@ -79,11 +88,13 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   // ===================
   function addCulture(cultureId: number) {
     if (!heroStore.hero) return;
-    if (!heroStore.hero.cultures.find((c) => c.cultureId === cultureId)) {
+    if (!heroStore.hero.cultures.find((c) => c.culture.id === cultureId)) {
+      const cult = findById(classifierStore.cultures, cultureId);
+      if (!cult) return;
       heroStore.hero.cultures.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        cultureId,
+        culture: toClassifierRef(cult),
       });
       applyCulturalExpertise(cultureId);
     }
@@ -91,7 +102,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
 
   function removeCulture(cultureId: number) {
     if (!heroStore.hero) return;
-    heroStore.hero.cultures = heroStore.hero.cultures.filter((c) => c.cultureId !== cultureId);
+    heroStore.hero.cultures = heroStore.hero.cultures.filter((c) => c.culture.id !== cultureId);
     removeCulturalExpertise(cultureId);
   }
 
@@ -100,7 +111,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     const culture = findById(classifierStore.cultures, cultureId);
     if (!culture) return;
 
-    attrStore.addExpertise(culture.expertiseId, { sourceType: 'culture', sourceId: cultureId });
+    attrStore.addExpertise(culture.expertise.id, { sourceType: 'culture', sourceId: cultureId });
   }
 
   function removeCulturalExpertise(cultureId: number) {
@@ -113,22 +124,24 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   // ===================
   function addTalent(talentId: number) {
     if (!heroStore.hero) return;
-    if (!heroStore.hero.talents.find((t) => t.talentId === talentId)) {
+    if (!heroStore.hero.talents.find((t) => t.talent.id === talentId)) {
+      const tal = findById(classifierStore.talents, talentId);
+      if (!tal) return;
       heroStore.hero.talents.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        talentId,
+        talent: toClassifierRef(tal),
       });
     }
   }
 
   function removeTalent(talentId: number) {
     if (!heroStore.hero) return;
-    heroStore.hero.talents = heroStore.hero.talents.filter((t) => t.talentId !== talentId);
+    heroStore.hero.talents = heroStore.hero.talents.filter((t) => t.talent.id !== talentId);
   }
 
   function addKeyTalentForPath(pathId: number) {
-    const keyTalent = classifierStore.talents.find((t) => t.pathId === pathId && t.isKey);
+    const keyTalent = classifierStore.talents.find((t) => t.path?.id === pathId && t.isKey);
     if (keyTalent) {
       addTalent(keyTalent.id);
     }
@@ -141,39 +154,42 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     if (!heroStore.hero) return;
 
     // Remove all radiant talents from previous order
-    if (heroStore.hero.radiantOrderId) {
-      const prevOrder = findById(classifierStore.radiantOrders, heroStore.hero.radiantOrderId);
+    if (heroStore.hero.radiantOrder) {
+      const prevOrder = findById(classifierStore.radiantOrders, heroStore.hero.radiantOrder.id);
       if (prevOrder) {
         // Collect all talent IDs for this order in single pass
         const allRadiantTalentIds = new Set<number>();
         for (const talent of classifierStore.talents) {
           if (
-            talent.radiantOrderId === prevOrder.id ||
-            talent.surgeId === prevOrder.surge1Id ||
-            talent.surgeId === prevOrder.surge2Id
+            talent.radiantOrder?.id === prevOrder.id ||
+            talent.surge?.id === prevOrder.surge1?.id ||
+            talent.surge?.id === prevOrder.surge2?.id
           ) {
             allRadiantTalentIds.add(talent.id);
           }
         }
         heroStore.hero.talents = heroStore.hero.talents.filter(
-          (t) => !allRadiantTalentIds.has(t.talentId)
+          (t) => !allRadiantTalentIds.has(t.talent.id)
         );
       }
     }
 
-    heroStore.hero.radiantOrderId = orderId;
-    if (!orderId) {
+    if (orderId === null) {
+      heroStore.hero.radiantOrder = null;
       heroStore.hero.radiantIdeal = 0;
     } else {
+      const order = findById(classifierStore.radiantOrders, orderId);
+      if (!order) return;
+      heroStore.hero.radiantOrder = toClassifierRef(order);
       // Add new radiant key talent
       const keyTalent = classifierStore.talents.find(
-        (t) => t.radiantOrderId === orderId && t.isKey
+        (t) => t.radiantOrder?.id === orderId && t.isKey
       );
-      if (keyTalent && !heroStore.hero.talents.find((t) => t.talentId === keyTalent.id)) {
+      if (keyTalent && !heroStore.hero.talents.find((t) => t.talent.id === keyTalent.id)) {
         heroStore.hero.talents.push({
           id: heroStore.nextTempId(),
           heroId: heroStore.hero.id,
-          talentId: keyTalent.id,
+          talent: toClassifierRef(keyTalent),
         });
       }
     }

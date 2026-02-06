@@ -15,21 +15,21 @@ const mockClassifierData = {
       { id: 3, code: 'undescribed', name: 'Undescribed', description: null }, // No description
     ] as Array<{ id: number; code: string; name: string; description: string | null }>,
     singerForms: [
-      { id: 1, code: 'dullform', name: 'Dullform', description: 'Default form', talentId: null },
+      { id: 1, code: 'dullform', name: 'Dullform', description: 'Default form', talent: null },
       {
         id: 2,
         code: 'warform',
         name: 'Warform',
         description: 'Combat form',
-        talentId: 100,
+        talent: { id: 100, code: 'warform-talent', name: 'Warform Talent' },
       },
-      { id: 3, code: 'nodesc', name: 'NoDesc', description: null, talentId: null }, // No description
+      { id: 3, code: 'nodesc', name: 'NoDesc', description: null, talent: null }, // No description
     ] as Array<{
       id: number;
       code: string;
       name: string;
       description: string | null;
-      talentId: number | null;
+      talent: { id: number; code: string; name: string } | null;
     }>,
   },
 };
@@ -52,18 +52,20 @@ vi.mock('src/utils/arrayUtils', () => ({
 
 // Reactive mocks
 const mockIsSinger = { value: false };
-const mockHeroAncestryId = { value: 1 };
-const mockActiveSingerFormId = { value: null as number | null };
-const mockHeroTalents = { value: [] as { talentId: number }[] };
+const mockHeroAncestry = {
+  value: { id: 1, code: 'human', name: 'Human' } as { id: number; code: string; name: string },
+};
+const mockActiveSingerForm = { value: null as { id: number; code: string; name: string } | null };
+const mockHeroTalents = { value: [] as { talent: { id: number; code: string; name: string } }[] };
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     hero: {
-      get ancestryId() {
-        return mockHeroAncestryId.value;
+      get ancestry() {
+        return mockHeroAncestry.value;
       },
-      get activeSingerFormId() {
-        return mockActiveSingerFormId.value;
+      get activeSingerForm() {
+        return mockActiveSingerForm.value;
       },
     },
     get talents() {
@@ -108,8 +110,8 @@ describe('AncestryStep', () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     mockIsSinger.value = false;
-    mockHeroAncestryId.value = 1;
-    mockActiveSingerFormId.value = null;
+    mockHeroAncestry.value = { id: 1, code: 'human', name: 'Human' };
+    mockActiveSingerForm.value = null;
     mockHeroTalents.value = [];
     mockClassifierData.value = {
       ancestries: [
@@ -118,9 +120,15 @@ describe('AncestryStep', () => {
         { id: 3, code: 'undescribed', name: 'Undescribed', description: null },
       ],
       singerForms: [
-        { id: 1, code: 'dullform', name: 'Dullform', description: 'Default form', talentId: null },
-        { id: 2, code: 'warform', name: 'Warform', description: 'Combat form', talentId: 100 },
-        { id: 3, code: 'nodesc', name: 'NoDesc', description: null, talentId: null },
+        { id: 1, code: 'dullform', name: 'Dullform', description: 'Default form', talent: null },
+        {
+          id: 2,
+          code: 'warform',
+          name: 'Warform',
+          description: 'Combat form',
+          talent: { id: 100, code: 'warform-talent', name: 'Warform Talent' },
+        },
+        { id: 3, code: 'nodesc', name: 'NoDesc', description: null, talent: null },
       ],
     };
   });
@@ -207,7 +215,9 @@ describe('AncestryStep', () => {
 
     it('shows available forms based on talents', () => {
       mockIsSinger.value = true;
-      mockHeroTalents.value = [{ talentId: 100 }]; // Has warform talent
+      mockHeroTalents.value = [
+        { talent: { id: 100, code: 'warform-talent', name: 'Warform Talent' } },
+      ]; // Has warform talent
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Dullform');
@@ -225,7 +235,7 @@ describe('AncestryStep', () => {
 
     it('marks selected form', () => {
       mockIsSinger.value = true;
-      mockActiveSingerFormId.value = 1;
+      mockActiveSingerForm.value = { id: 1, code: 'dullform', name: 'Dullform' };
       const wrapper = createWrapper();
 
       const formCards = wrapper.findAll('.selectable-card').filter((c) => c.text() === 'Dullform');
@@ -262,7 +272,7 @@ describe('AncestryStep', () => {
   describe('auto-select dullform', () => {
     it('auto-selects dullform when selecting singer ancestry without existing form', async () => {
       mockIsSinger.value = false;
-      mockActiveSingerFormId.value = null;
+      mockActiveSingerForm.value = null;
 
       // Simulate isSinger becoming true after setAncestry is called
       mockSetAncestry.mockImplementation(() => {
@@ -279,7 +289,7 @@ describe('AncestryStep', () => {
     });
 
     it('does not auto-select dullform if form already selected', async () => {
-      mockActiveSingerFormId.value = 2; // Already has form selected
+      mockActiveSingerForm.value = { id: 2, code: 'warform', name: 'Warform' }; // Already has form selected
 
       mockSetAncestry.mockImplementation(() => {
         mockIsSinger.value = true;
@@ -312,11 +322,17 @@ describe('AncestryStep', () => {
     it('handles dullform not found in classifiers', async () => {
       // Remove dullform from singerForms
       mockClassifierData.value.singerForms = [
-        { id: 2, code: 'warform', name: 'Warform', description: 'Combat form', talentId: 100 },
+        {
+          id: 2,
+          code: 'warform',
+          name: 'Warform',
+          description: 'Combat form',
+          talent: { id: 100, code: 'warform-talent', name: 'Warform Talent' },
+        },
       ];
 
       mockIsSinger.value = false;
-      mockActiveSingerFormId.value = null;
+      mockActiveSingerForm.value = null;
       mockSetAncestry.mockImplementation(() => {
         mockIsSinger.value = true;
       });
@@ -352,7 +368,7 @@ describe('AncestryStep', () => {
     });
 
     it('handles null ancestryId with fallback to 0', () => {
-      mockHeroAncestryId.value = null as unknown as number;
+      mockHeroAncestry.value = { id: 0, code: '', name: '' };
       const wrapper = createWrapper();
 
       // Should render without crashing, nothing selected

@@ -30,9 +30,16 @@ const mockGoals = {
 };
 
 const mockConnections = {
-  value: [{ id: 1, connTypeId: 1, description: 'Connection 1', notes: 'Notes' }] as Array<{
+  value: [
+    {
+      id: 1,
+      connectionType: { id: 1, code: 'ally', name: 'Ally' },
+      description: 'Connection 1',
+      notes: 'Notes',
+    },
+  ] as Array<{
     id: number;
-    connTypeId: number;
+    connectionType: { id: number; code: string; name: string };
     description: string;
     notes?: string;
   }>,
@@ -164,7 +171,14 @@ describe('PersonalDetailsStep', () => {
       notes: '',
     };
     mockGoals.value = [{ id: 1, name: 'Goal 1', description: 'Description' }];
-    mockConnections.value = [{ id: 1, connTypeId: 1, description: 'Connection 1', notes: 'Notes' }];
+    mockConnections.value = [
+      {
+        id: 1,
+        connectionType: { id: 1, code: 'ally', name: 'Ally' },
+        description: 'Connection 1',
+        notes: 'Notes',
+      },
+    ];
   });
 
   // ========================================
@@ -426,14 +440,26 @@ describe('PersonalDetailsStep', () => {
     });
 
     it('displays connection without notes', () => {
-      mockConnections.value = [{ id: 1, connTypeId: 1, description: 'Simple Connection' }];
+      mockConnections.value = [
+        {
+          id: 1,
+          connectionType: { id: 1, code: 'ally', name: 'Ally' },
+          description: 'Simple Connection',
+        },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Simple Connection');
     });
 
     it('shows Unknown for connection with invalid type', () => {
-      mockConnections.value = [{ id: 1, connTypeId: 999, description: 'Test' }];
+      mockConnections.value = [
+        {
+          id: 1,
+          connectionType: { id: 999, code: 'invalid', name: 'Invalid' },
+          description: 'Test',
+        },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Unknown');

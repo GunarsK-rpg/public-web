@@ -35,7 +35,7 @@
                 </span>
               </div>
 
-              <div v-if="kit.expertises?.[0]?.expertiseId" class="row items-center q-mb-xs">
+              <div v-if="kit.expertises?.[0]?.id" class="row items-center q-mb-xs">
                 <q-icon
                   name="sym_o_workspace_premium"
                   size="xs"
@@ -44,7 +44,7 @@
                 />
                 <span>
                   <strong>+1</strong>
-                  {{ findById(classifiers.expertises, kit.expertises[0].expertiseId)?.name }}
+                  {{ findById(classifiers.expertises, kit.expertises[0].id)?.name }}
                 </span>
               </div>
 
@@ -116,7 +116,7 @@ const equipStore = useHeroEquipmentStore();
 const classifiers = useClassifierStore();
 
 const startingKits = computed(() => classifiers.startingKits);
-const selectedKitId = computed(() => heroStore.hero?.startingKitId ?? null);
+const selectedKitId = computed(() => heroStore.hero?.startingKit?.id ?? null);
 
 const isPrisonerKit = computed(() => {
   const prisonerKit = findByCode(classifiers.startingKits, 'prisoner');
@@ -146,7 +146,7 @@ function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
 
   return kit.equipment
     .map((item) => {
-      const name = findById(classifiers.equipment, item.equipmentId)?.name;
+      const name = findById(classifiers.equipment, item.id)?.name;
       if (!name) return null;
       return item.quantity > 1 ? `${name} x${item.quantity}` : name;
     })

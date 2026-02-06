@@ -1,47 +1,37 @@
 import type { Classifier } from './classifier';
+import type { ClassifierRef, ClassifierInput } from './shared';
 
-/**
- * Known prerequisite types - extensible via database
- * Using string union for common types with fallback to string for future additions
- */
-export type PrerequisiteType = 'talent' | 'skill' | 'narrative' | (string & NonNullable<unknown>);
-
-/**
- * Talent prerequisite types (JSONB)
- */
+/** Talent prerequisite (JSONB) */
 export interface TalentPrerequisite {
-  type: PrerequisiteType;
-  /**
-   * Talent prerequisite IDs with OR logic. Any one talent in the array satisfies the requirement.
-   * Single prerequisite: [101], Multiple (OR): [2002, 2003, 2004]
-   */
+  type: string;
   talentIds?: number[];
   skillId?: number;
   skillRank?: number;
   description?: string;
 }
 
-/**
- * Talent classifier (cl_talents)
- * Actions granted by talents are linked via cl_action_links
- */
+/** Talent classifier (cl_talents) */
 export interface Talent extends Classifier {
-  pathId?: number | null;
-  specialtyId?: number | null;
-  ancestryId?: number | null;
-  radiantOrderId?: number | null;
-  surgeId?: number | null;
+  path: ClassifierRef | null;
+  specialties: ClassifierRef[];
+  ancestry: ClassifierRef | null;
+  radiantOrder: ClassifierRef | null;
+  surge: ClassifierRef | null;
   descriptionShort?: string | null;
   isKey: boolean;
-  prerequisites?: TalentPrerequisite[] | null; // JSONB
+  prerequisites?: TalentPrerequisite[] | null;
 }
 
-/**
- * Hero's talent (hero_talents table)
- */
-export interface HeroTalent {
-  id: number;
+/** Hero talent - upsert payload */
+export interface HeroTalentBase {
+  id?: number;
   heroId: number;
-  talentId: number;
+  talent: ClassifierInput;
   notes?: string | null;
+}
+
+/** Hero talent - API response */
+export interface HeroTalent extends HeroTalentBase {
+  id: number;
+  talent: ClassifierRef;
 }

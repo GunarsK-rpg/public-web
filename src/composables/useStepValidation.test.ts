@@ -2,100 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useStepValidation } from './useStepValidation';
 import { useHeroStore } from 'src/stores/hero';
+import type { HeroCulture } from 'src/types';
 import { useWizardStore } from 'src/stores/wizard';
 import { STEP_CODES } from 'src/types/wizard';
-
-// Mock the heroes module for loadHero
-vi.mock('src/mock/heroes', () => ({
-  heroes: [
-    {
-      id: 1,
-      userId: 1,
-      campaignId: 1,
-      ancestryId: 1,
-      startingKitId: null,
-      activeSingerFormId: null,
-      radiantOrderId: null,
-      radiantIdeal: 0,
-      name: 'Test Hero',
-      level: 5,
-      currentHealth: 20,
-      currentFocus: 10,
-      currentInvestiture: 5,
-      attributes: [],
-      defenses: [],
-      derivedStats: [],
-      skills: [],
-      talents: [],
-      expertises: [],
-      equipment: [],
-      currency: 100,
-      conditions: [],
-      injuries: [],
-      goals: [],
-      connections: [],
-      companions: [],
-      cultures: [],
-    },
-  ],
-}));
-
-// Mock classifiers
-vi.mock('src/mock/classifiers', () => ({
-  classifiers: {
-    attributes: [
-      { id: 1, code: 'str', name: 'Strength' },
-      { id: 2, code: 'dex', name: 'Dexterity' },
-      { id: 3, code: 'int', name: 'Intellect' },
-    ],
-    skills: [
-      { id: 1, code: 'athletics', name: 'Athletics', attributeId: 1, maxRank: 5 },
-      { id: 2, code: 'acrobatics', name: 'Acrobatics', attributeId: 2, maxRank: 5 },
-    ],
-    derivedStats: [
-      { id: 1, code: 'health', name: 'Health', formula: 'str*2+10' },
-      { id: 2, code: 'focus', name: 'Focus', formula: 'int*2+10' },
-    ],
-    levelData: [
-      {
-        level: 1,
-        attributePoints: 5,
-        skillPoints: 10,
-        expertiseSlots: 2,
-        talentSlots: 1,
-      },
-      {
-        level: 5,
-        attributePoints: 15,
-        skillPoints: 30,
-        expertiseSlots: 5,
-        talentSlots: 5,
-      },
-    ],
-    ancestries: [{ id: 1, code: 'human', name: 'Human' }],
-    cultures: [{ id: 1, code: 'urban', name: 'Urban' }],
-    startingKits: [{ id: 1, code: 'warrior', name: 'Warrior Kit' }],
-    equipmentTypes: [],
-    equipment: [],
-    talents: [],
-    talentTypes: [],
-    paths: [],
-    specialties: [],
-    heroicPaths: [],
-    radiantOrders: [],
-    singerForms: [],
-    surges: [],
-    connectionTypes: [{ id: 1, code: 'ally', name: 'Ally' }],
-    goalStatuses: [{ id: 1, code: 'active', name: 'Active' }],
-    expertises: [{ id: 1, skillId: 1, code: 'climbing', name: 'Climbing' }],
-    actionCategories: [],
-    actions: [],
-    conditionTypes: [],
-    injuryTypes: [],
-    derivedStatValueRanges: [],
-    defenseTypes: [],
-  },
-}));
 
 // Mock logger
 vi.mock('src/utils/logger', () => ({
@@ -120,9 +29,11 @@ describe('useStepValidation', () => {
     if (heroStore.hero) {
       heroStore.hero.name = 'Test Hero';
       heroStore.hero.level = 5;
-      heroStore.hero.ancestryId = 1;
-      heroStore.hero.cultures = [{ id: -1, heroId: 0, cultureId: 1 }];
-      heroStore.hero.startingKitId = 1;
+      heroStore.hero.ancestry = { id: 1, code: 'human', name: 'Human' };
+      heroStore.hero.cultures = [
+        { id: -1, heroId: 0, culture: { id: 1, code: 'urban', name: 'Urban' } },
+      ] as HeroCulture[];
+      heroStore.hero.startingKit = { id: 1, code: 'warrior', name: 'Warrior Kit' };
     }
     return heroStore;
   };
@@ -178,8 +89,8 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
-        (heroStore.hero as { ancestryId: number | null }).ancestryId = null;
+        heroStore.hero.name = 'Kaladin';
+        (heroStore.hero as unknown as { ancestry: null }).ancestry = null;
       }
 
       const { validate } = useStepValidation();
@@ -201,7 +112,7 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
+        heroStore.hero.name = 'Kaladin';
         heroStore.hero.cultures = [];
       }
 
@@ -224,8 +135,8 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
-        heroStore.hero.startingKitId = null;
+        heroStore.hero.name = 'Kaladin';
+        heroStore.hero.startingKit = null;
       }
 
       const { validate } = useStepValidation();
@@ -370,7 +281,7 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
+        heroStore.hero.name = 'Kaladin';
         heroStore.hero.level = 1;
       }
 
@@ -448,7 +359,7 @@ describe('useStepValidation', () => {
       // Set intellect attribute
       if (heroStore.hero) {
         heroStore.hero.attributes = [
-          { id: -1, heroId: 0, attrId: 3, value: 3 }, // int = 3
+          { id: -1, heroId: 0, attribute: { id: 3, code: 'int', name: 'Intellect' }, value: 3 }, // int = 3
         ];
       }
 
@@ -496,7 +407,7 @@ describe('useStepValidation', () => {
         heroStore.hero.attributes.push({
           id: -1,
           heroId: 0,
-          attrId: 1,
+          attribute: { id: 1, code: 'str', name: 'Strength' },
           value: 3,
         });
       }
@@ -515,7 +426,7 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
+        heroStore.hero.name = 'Kaladin';
         heroStore.hero.attributes = [];
         heroStore.hero.skills = [];
         heroStore.hero.talents = [];

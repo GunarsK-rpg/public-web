@@ -53,7 +53,7 @@
 import { ref, computed, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { groupByChainedKey } from 'src/utils/arrayUtils';
+import { findById } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 import EquipmentItem from './EquipmentItem.vue';
 import type { HeroEquipment } from 'src/types';
@@ -82,14 +82,17 @@ watch(
 // Currency value in diamond marks
 const totalCurrencyValue = computed(() => heroStore.hero?.currency ?? 0);
 
-// Hero equipment grouped by type (via heroEquip.equipmentId -> equipment.equipTypeId)
+// Hero equipment grouped by type (via heroEquip.equipment.id -> equipment.equipType.id)
 const equipmentByType = computed((): Record<number, HeroEquipment[]> => {
   if (!heroStore.hero?.equipment) return {};
-  return groupByChainedKey(
-    heroStore.hero.equipment,
-    'equipmentId',
-    classifiers.equipment,
-    'equipTypeId'
-  );
+  const result: Record<number, HeroEquipment[]> = {};
+  for (const heroEquip of heroStore.hero.equipment) {
+    const eq = findById(classifiers.equipment, heroEquip.equipment.id);
+    if (!eq) continue;
+    const typeId = eq.equipType.id;
+    if (!result[typeId]) result[typeId] = [];
+    result[typeId].push(heroEquip);
+  }
+  return result;
 });
 </script>

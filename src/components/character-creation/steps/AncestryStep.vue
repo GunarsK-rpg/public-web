@@ -51,23 +51,23 @@ const classifiers = useClassifierStore();
 
 const ancestries = computed(() => classifiers.ancestries);
 
-const selectedAncestryId = computed(() => heroStore.hero?.ancestryId ?? 0);
-const selectedFormId = computed(() => heroStore.hero?.activeSingerFormId ?? null);
+const selectedAncestryId = computed(() => heroStore.hero?.ancestry.id ?? 0);
+const selectedFormId = computed(() => heroStore.hero?.activeSingerForm?.id ?? null);
 
 const isSinger = computed(() => talentStore.isSinger);
 
 // Forms available: no prerequisite talent OR hero has the required talent
 const availableForms = computed(() =>
   classifiers.singerForms.filter((form) => {
-    if (!form.talentId) return true;
-    return heroStore.talents.some((t) => t.talentId === form.talentId);
+    if (!form.talent?.id) return true;
+    return heroStore.talents.some((t) => t.talent.id === form.talent?.id);
   })
 );
 
 function selectAncestry(id: number) {
   talentStore.setAncestry(id);
   // Auto-select dullform for Singer only if no form is already chosen
-  if (talentStore.isSinger && !heroStore.hero?.activeSingerFormId) {
+  if (talentStore.isSinger && !heroStore.hero?.activeSingerForm?.id) {
     const dullform = findByCode(classifiers.singerForms, 'dullform');
     if (dullform) {
       talentStore.setSingerForm(dullform.id);

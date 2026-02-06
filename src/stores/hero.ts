@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Hero } from 'src/types';
+import type { HeroSheet } from 'src/types';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
@@ -8,21 +8,24 @@ import { handleError } from 'src/utils/errorHandling';
 /**
  * Default empty Hero for new character creation
  */
-function createEmptyHero(): Hero {
+function createEmptyHero(): HeroSheet {
   return {
     id: 0,
     userId: 0,
-    campaignId: 0,
-    ancestryId: 0,
-    startingKitId: null,
-    activeSingerFormId: null,
-    radiantOrderId: null,
+    user: { id: 0, username: '' },
+    campaignId: null,
+    campaign: { id: 0, code: '', name: '' },
+    ancestry: { id: 0, code: '', name: '' },
+    startingKit: null,
+    activeSingerForm: null,
+    radiantOrder: null,
     radiantIdeal: 0,
     name: '',
     level: 1,
     currentHealth: 0,
     currentFocus: 0,
     currentInvestiture: 0,
+    currency: 0,
     attributes: [],
     defenses: [],
     derivedStats: [],
@@ -30,7 +33,6 @@ function createEmptyHero(): Hero {
     talents: [],
     expertises: [],
     equipment: [],
-    currency: 0,
     conditions: [],
     injuries: [],
     goals: [],
@@ -41,7 +43,7 @@ function createEmptyHero(): Hero {
 }
 
 export const useHeroStore = defineStore('hero', () => {
-  const hero = ref<Hero | null>(null);
+  const hero = ref<HeroSheet | null>(null);
   const loading = ref(false);
   const saving = ref(false);
   const error = ref<string | null>(null);
@@ -159,6 +161,9 @@ export const useHeroStore = defineStore('hero', () => {
   function setCampaignId(campaignId: number | null) {
     if (!hero.value) return;
     hero.value.campaignId = campaignId;
+    if (campaignId === null) {
+      hero.value.campaign = { id: 0, code: '', name: '' };
+    }
   }
 
   // ===================

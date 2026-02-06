@@ -14,6 +14,11 @@ const createTalent = (overrides: Partial<Talent> = {}): Talent => ({
   id: 1,
   code: 'test_talent',
   name: 'Test Talent',
+  path: null,
+  specialties: [],
+  ancestry: null,
+  radiantOrder: null,
+  surge: null,
   isKey: false,
   ...overrides,
 });
@@ -22,7 +27,7 @@ const createSkill = (overrides: Partial<Skill> = {}): Skill => ({
   id: 1,
   code: 'athletics',
   name: 'Athletics',
-  attrId: 1,
+  attr: { id: 1, code: 'test', name: 'Test' },
   ...overrides,
 });
 

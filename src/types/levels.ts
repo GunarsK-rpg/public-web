@@ -1,11 +1,10 @@
-import type { Classifier } from './classifier';
+import type { ClassifierRef } from './shared';
 
-/**
- * Level classifier (cl_levels)
- */
-export interface Level extends Classifier {
+/** Level classifier (cl_levels) */
+export interface Level {
+  id: number;
   level: number;
-  tierId: number;
+  tier: ClassifierRef;
   attributePoints: number;
   healthBase: number;
   maxSkillRank: number;

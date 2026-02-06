@@ -11,9 +11,18 @@ const mockGetAttributeValue = vi.fn().mockReturnValue(3);
 // Reactive mock data
 const mockExpertises = {
   value: [
-    { expertiseId: 1, source: { sourceType: 'intellect' } },
-    { expertiseId: 2, source: { sourceType: 'culture' } },
-  ] as Array<{ expertiseId: number; source: { sourceType: string } | null }>,
+    {
+      expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' },
+      source: { sourceType: 'intellect' },
+    },
+    {
+      expertise: { id: 2, code: 'vorin', name: 'Vorin Customs' },
+      source: { sourceType: 'culture' },
+    },
+  ] as Array<{
+    expertise: { id: number; code: string; name: string };
+    source: { sourceType: string } | null;
+  }>,
 };
 
 const mockSlotsRemaining = { value: 2 };
@@ -45,21 +54,21 @@ vi.mock('src/stores/classifiers', () => ({
         code: 'lockpicking',
         name: 'Lockpicking',
         description: 'Pick locks',
-        expertiseTypeId: 1,
+        expertiseType: { id: 1, code: 'general', name: 'General' },
       },
       {
         id: 2,
         code: 'vorin',
         name: 'Vorin Customs',
         description: 'Vorin knowledge',
-        expertiseTypeId: 2,
+        expertiseType: { id: 2, code: 'cultural', name: 'Cultural' },
       },
       {
         id: 3,
         code: 'surgery',
         name: 'Surgery',
         description: 'Medical expertise',
-        expertiseTypeId: 3,
+        expertiseType: { id: 3, code: 'specialist', name: 'Specialist' },
       },
     ],
     expertiseTypes: [
@@ -148,8 +157,14 @@ describe('ExpertisesStep', () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     mockExpertises.value = [
-      { expertiseId: 1, source: { sourceType: 'intellect' } },
-      { expertiseId: 2, source: { sourceType: 'culture' } },
+      {
+        expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' },
+        source: { sourceType: 'intellect' },
+      },
+      {
+        expertise: { id: 2, code: 'vorin', name: 'Vorin Customs' },
+        source: { sourceType: 'culture' },
+      },
     ];
     mockSlotsRemaining.value = 2;
     mockGetAttributeValue.mockReturnValue(3);
@@ -302,7 +317,12 @@ describe('ExpertisesStep', () => {
   // ========================================
   describe('starting kit expertises', () => {
     it('shows starting kit banner when expertises from starting kit exist', () => {
-      mockExpertises.value = [{ expertiseId: 1, source: { sourceType: 'starting_kit' } }];
+      mockExpertises.value = [
+        {
+          expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' },
+          source: { sourceType: 'starting_kit' },
+        },
+      ];
       const wrapper = createWrapper();
 
       const banner = wrapper.find('.info-banner[data-title="Starting Kit Expertises"]');
@@ -310,7 +330,12 @@ describe('ExpertisesStep', () => {
     });
 
     it('does not show starting kit banner when no starting kit expertises', () => {
-      mockExpertises.value = [{ expertiseId: 1, source: { sourceType: 'intellect' } }];
+      mockExpertises.value = [
+        {
+          expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' },
+          source: { sourceType: 'intellect' },
+        },
+      ];
       const wrapper = createWrapper();
 
       const banner = wrapper.find('.info-banner[data-title="Starting Kit Expertises"]');
@@ -318,7 +343,12 @@ describe('ExpertisesStep', () => {
     });
 
     it('makes starting kit expertises read-only', async () => {
-      mockExpertises.value = [{ expertiseId: 1, source: { sourceType: 'starting_kit' } }];
+      mockExpertises.value = [
+        {
+          expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' },
+          source: { sourceType: 'starting_kit' },
+        },
+      ];
       const wrapper = createWrapper();
 
       const checkboxes = wrapper.findAll('.q-checkbox');
@@ -362,7 +392,9 @@ describe('ExpertisesStep', () => {
     });
 
     it('handles expertise without source', () => {
-      mockExpertises.value = [{ expertiseId: 1, source: null }];
+      mockExpertises.value = [
+        { expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' }, source: null },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.exists()).toBe(true);
@@ -382,9 +414,18 @@ describe('ExpertisesStep', () => {
     it('does not call addExpertise when expertise already selected (rapid click guard)', async () => {
       // Add expertise 3 to the mock to simulate it being already selected
       mockExpertises.value = [
-        { expertiseId: 1, source: { sourceType: 'intellect' } },
-        { expertiseId: 2, source: { sourceType: 'culture' } },
-        { expertiseId: 3, source: { sourceType: 'intellect' } }, // Already selected
+        {
+          expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' },
+          source: { sourceType: 'intellect' },
+        },
+        {
+          expertise: { id: 2, code: 'vorin', name: 'Vorin Customs' },
+          source: { sourceType: 'culture' },
+        },
+        {
+          expertise: { id: 3, code: 'surgery', name: 'Surgery' },
+          source: { sourceType: 'intellect' },
+        },
       ];
       mockSlotsRemaining.value = 1;
 
@@ -401,7 +442,12 @@ describe('ExpertisesStep', () => {
     });
 
     it('does not show cultural banner when no cultural expertises', () => {
-      mockExpertises.value = [{ expertiseId: 1, source: { sourceType: 'intellect' } }];
+      mockExpertises.value = [
+        {
+          expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' },
+          source: { sourceType: 'intellect' },
+        },
+      ];
       const wrapper = createWrapper();
 
       const banner = wrapper.find('.info-banner[data-title="Cultural Expertises"]');

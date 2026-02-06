@@ -60,7 +60,7 @@ const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 
 // Hero cultures as array of cultureIds
-const heroCultureIds = computed(() => heroStore.hero?.cultures.map((c) => c.cultureId) ?? []);
+const heroCultureIds = computed(() => heroStore.hero?.cultures.map((c) => c.culture.id) ?? []);
 
 // Primary = first culture, Secondary = second culture
 const primaryCultureId = computed(() => heroCultureIds.value[0] ?? null);
@@ -83,8 +83,8 @@ const culturalExpertiseNames = computed(() => {
   return heroCultureIds.value
     .map((cultureId) => {
       const culture = findById(classifiers.cultures, cultureId);
-      if (!culture?.expertiseId) return null;
-      return findById(classifiers.expertises, culture.expertiseId)?.name || null;
+      if (!culture?.expertise?.id) return null;
+      return findById(classifiers.expertises, culture.expertise.id)?.name || null;
     })
     .filter((name): name is string => name !== null);
 });
