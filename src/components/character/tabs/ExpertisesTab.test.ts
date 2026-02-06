@@ -107,7 +107,7 @@ describe('ExpertisesTab', () => {
         expertise: { id: 6, code: 'alethi_culture', name: 'Alethi Culture' },
         source: { sourceType: 'culture', sourceId: 1 },
       },
-    ] as HeroExpertise[];
+    ];
   });
 
   // ========================================
@@ -202,7 +202,7 @@ describe('ExpertisesTab', () => {
       // Only weapon expertises
       mockExpertises.value = [
         { id: 1, heroId: 1, expertise: { id: 1, code: 'swords', name: 'Swords' }, source: null },
-      ] as HeroExpertise[];
+      ];
       const wrapper = createWrapper();
 
       // Should show Swords but empty for other types
@@ -234,7 +234,7 @@ describe('ExpertisesTab', () => {
       mockExpertises.value = [
         { id: 1, heroId: 1, expertise: { id: 1, code: 'swords', name: 'Swords' }, source: null }, // Swords (weapon)
         { id: 2, heroId: 1, expertise: { id: 2, code: 'bows', name: 'Bows' }, source: null }, // Bows (weapon)
-      ] as HeroExpertise[];
+      ];
       const wrapper = createWrapper();
 
       // Both should be in Weapon section
@@ -258,7 +258,7 @@ describe('ExpertisesTab', () => {
           expertise: { id: 4, code: 'heavy_armor', name: 'Heavy Armor' },
           source: null,
         }, // Heavy Armor
-      ] as HeroExpertise[];
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Light Armor');
@@ -278,11 +278,11 @@ describe('ExpertisesTab', () => {
           expertise: { id: 999, code: 'unknown', name: 'Unknown' },
           source: null,
         }, // Non-existent expertise
-      ] as HeroExpertise[];
+      ];
       const wrapper = createWrapper();
 
-      // Should not crash, expertise won't be grouped into any type
-      expect(wrapper.exists()).toBe(true);
+      // Unknown expertise is skipped by grouping logic, so no chips should render
+      expect(wrapper.findAll('.q-chip').length).toBe(0);
     });
 
     it('handles empty expertises array', () => {
@@ -321,7 +321,7 @@ describe('ExpertisesTab', () => {
           expertise: { id: 6, code: 'alethi_culture', name: 'Alethi Culture' },
           source: null,
         }, // Alethi Culture
-      ] as HeroExpertise[];
+      ];
       const wrapper = createWrapper();
 
       // All expertises should render

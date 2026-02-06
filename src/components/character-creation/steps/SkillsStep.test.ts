@@ -3,6 +3,11 @@ import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import SkillsStep from './SkillsStep.vue';
 
+type MockHeroSkill = {
+  skill: { id: number; code: string; name: string };
+  modifier: number;
+};
+
 // Mock stores
 const mockSetSkillRank = vi.fn();
 const mockSetSkillModifier = vi.fn();
@@ -12,12 +17,11 @@ const mockGetSkillRank = vi.fn().mockReturnValue(1);
 const mockHeroData = {
   value: {
     hero: {
-      skills: [{ skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: 0 }] as Array<{
-        skill: { id: number; code: string; name: string };
-        modifier: number;
-      }>,
+      skills: [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: 0 },
+      ] as MockHeroSkill[],
     } as {
-      skills: Array<{ skill: { id: number; code: string; name: string }; modifier: number }>;
+      skills: MockHeroSkill[];
     } | null,
   },
 };
@@ -56,8 +60,8 @@ vi.mock('src/stores/heroAttributes', () => ({
   }),
 }));
 
-const mockClassifierData = {
-  value: {
+function createDefaultClassifierData() {
+  return {
     skills: [
       {
         id: 1,
@@ -98,7 +102,11 @@ const mockClassifierData = {
       },
     ],
     attributeTypes: [{ id: 1, code: 'physical', name: 'Physical' }],
-  },
+  };
+}
+
+const mockClassifierData = {
+  value: createDefaultClassifierData(),
 };
 
 vi.mock('src/stores/classifiers', () => ({
@@ -209,43 +217,7 @@ describe('SkillsStep', () => {
     ]);
     mockNormalizeModifier.value = (val: unknown) =>
       typeof val === 'number' ? val : Number(val) || 0;
-    mockClassifierData.value = {
-      skills: [
-        {
-          id: 1,
-          code: 'athletics',
-          name: 'Athletics',
-          attr: { id: 1, code: 'str', name: 'Strength' },
-        },
-        {
-          id: 2,
-          code: 'acrobatics',
-          name: 'Acrobatics',
-          attr: { id: 2, code: 'dex', name: 'Dexterity' },
-        },
-        {
-          id: 3,
-          code: 'unknown',
-          name: 'Unknown Skill',
-          attr: { id: 999, code: 'none', name: 'None' },
-        },
-      ],
-      attributes: [
-        {
-          id: 1,
-          code: 'str',
-          name: 'Strength',
-          attrType: { id: 1, code: 'physical', name: 'Physical' },
-        },
-        {
-          id: 2,
-          code: 'dex',
-          name: 'Dexterity',
-          attrType: { id: 1, code: 'physical', name: 'Physical' },
-        },
-      ],
-      attributeTypes: [{ id: 1, code: 'physical', name: 'Physical' }],
-    };
+    mockClassifierData.value = createDefaultClassifierData();
   });
 
   // ========================================
@@ -463,10 +435,7 @@ describe('SkillsStep', () => {
 
     it('returns 0 when hero.skills is undefined', () => {
       mockHeroData.value.hero = {
-        skills: undefined as unknown as Array<{
-          skill: { id: number; code: string; name: string };
-          modifier: number;
-        }>,
+        skills: undefined as unknown as MockHeroSkill[],
       };
       const wrapper = createWrapper();
 
@@ -560,7 +529,7 @@ describe('SkillsStep', () => {
       expect(wrapper.findAll('.q-item').length).toBe(0);
     });
 
-    it('handles attribute type with undefined skills', () => {
+    it('renders correctly when an attribute type has no matching skills', () => {
       // Only one skill in group
       mockClassifierData.value.skills = [
         {

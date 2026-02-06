@@ -59,7 +59,7 @@ const skillsByAttrType = computed((): Record<number, Skill[]> => {
 });
 
 function getAttributeCode(skill: Skill): string {
-  return (skill.attr.code ?? '').toUpperCase();
+  return (skill.attr?.code ?? '').toUpperCase();
 }
 
 function formatModifier(value: number): string {

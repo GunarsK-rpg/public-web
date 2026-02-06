@@ -189,7 +189,7 @@ function setCurrencyAmount(val: string | number | null) {
 
 function addItemOfType(typeId: number) {
   const equipmentId = newEquipmentByType[typeId];
-  if (equipmentId) {
+  if (equipmentId != null) {
     equipStore.addEquipment(equipmentId, 1);
     newEquipmentByType[typeId] = null;
   }

@@ -9,23 +9,31 @@ const mockSetCurrency = vi.fn();
 const mockAddEquipment = vi.fn();
 const mockRemoveEquipment = vi.fn();
 
+// Factory functions for default mock data
+const createDefaultHeroData = (): {
+  startingKit: ClassifierRef | null;
+  currency: number;
+} => ({
+  startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
+  currency: 100,
+});
+
+const createDefaultEquipmentData = (): Array<{
+  id: number;
+  equipment: ClassifierRef;
+  amount: number;
+}> => [
+  { id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 2 },
+  { id: 2, equipment: { id: 2, code: 'shield', name: 'Shield' }, amount: 1 },
+];
+
 // Reactive mock data
 const mockHero = {
-  value: {
-    startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
-    currency: 100,
-  } as { startingKit: ClassifierRef | null; currency: number } | null,
+  value: createDefaultHeroData() as { startingKit: ClassifierRef | null; currency: number } | null,
 };
 
 const mockEquipment = {
-  value: [
-    { id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 2 },
-    { id: 2, equipment: { id: 2, code: 'shield', name: 'Shield' }, amount: 1 },
-  ] as Array<{
-    id: number;
-    equipment: ClassifierRef;
-    amount: number;
-  }>,
+  value: createDefaultEquipmentData(),
 };
 
 vi.mock('src/stores/hero', () => ({
@@ -47,64 +55,66 @@ vi.mock('src/stores/heroEquipment', () => ({
   }),
 }));
 
+const createDefaultClassifierData = () => ({
+  startingKits: [
+    {
+      id: 1,
+      code: 'adventurer',
+      name: 'Adventurer',
+      description: 'Standard kit',
+      startingSpheres: '2d6',
+      equipment: [{ id: 1, code: 'sword', name: 'Sword', quantity: 1 }],
+    },
+    {
+      id: 2,
+      code: 'warrior',
+      name: 'Warrior',
+      description: 'Combat kit',
+      startingSpheres: '3d6',
+      equipment: [
+        { id: 1, code: 'sword', name: 'Sword', quantity: 2 },
+        { id: 999, code: 'unknown', name: 'Unknown', quantity: 1 }, // Invalid equipment id
+      ],
+    },
+    {
+      id: 3,
+      code: 'empty',
+      name: 'Empty',
+      description: 'No equipment',
+      startingSpheres: '1d6',
+      equipment: null, // null equipment
+    },
+  ] as Array<{
+    id: number;
+    code: string;
+    name: string;
+    description: string;
+    startingSpheres: string;
+    equipment: Array<ClassifierRef & { quantity: number }> | null;
+  }>,
+  equipment: [
+    {
+      id: 1,
+      code: 'sword',
+      name: 'Sword',
+      equipType: { id: 1, code: 'weapons', name: 'Weapons' },
+    },
+    {
+      id: 2,
+      code: 'shield',
+      name: 'Shield',
+      equipType: { id: 1, code: 'weapons', name: 'Weapons' },
+    },
+    { id: 3, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
+  ],
+  equipmentTypes: [
+    { id: 1, code: 'weapons', name: 'Weapons' },
+    { id: 2, code: 'gear', name: 'Gear' },
+  ],
+});
+
 const mockClassifierData = {
-  value: {
-    startingKits: [
-      {
-        id: 1,
-        code: 'adventurer',
-        name: 'Adventurer',
-        description: 'Standard kit',
-        startingSpheres: '2d6',
-        equipment: [{ id: 1, code: 'sword', name: 'Sword', quantity: 1 }],
-      },
-      {
-        id: 2,
-        code: 'warrior',
-        name: 'Warrior',
-        description: 'Combat kit',
-        startingSpheres: '3d6',
-        equipment: [
-          { id: 1, code: 'sword', name: 'Sword', quantity: 2 },
-          { id: 999, code: 'unknown', name: 'Unknown', quantity: 1 }, // Invalid equipment id
-        ],
-      },
-      {
-        id: 3,
-        code: 'empty',
-        name: 'Empty',
-        description: 'No equipment',
-        startingSpheres: '1d6',
-        equipment: null, // null equipment
-      },
-    ] as Array<{
-      id: number;
-      code: string;
-      name: string;
-      description: string;
-      startingSpheres: string;
-      equipment: Array<ClassifierRef & { quantity: number }> | null;
-    }>,
-    equipment: [
-      {
-        id: 1,
-        code: 'sword',
-        name: 'Sword',
-        equipType: { id: 1, code: 'weapons', name: 'Weapons' },
-      },
-      {
-        id: 2,
-        code: 'shield',
-        name: 'Shield',
-        equipType: { id: 1, code: 'weapons', name: 'Weapons' },
-      },
-      { id: 3, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
-    ],
-    equipmentTypes: [
-      { id: 1, code: 'weapons', name: 'Weapons' },
-      { id: 2, code: 'gear', name: 'Gear' },
-    ],
-  },
+  value: createDefaultClassifierData(),
 };
 
 vi.mock('src/stores/classifiers', () => ({
@@ -126,13 +136,17 @@ vi.mock('src/utils/arrayUtils', () => ({
     arr?.find((item) => item.id === id),
 }));
 
-const mockNormalizeModifier = {
-  value: (val: unknown, min?: number, max?: number): number | null => {
+const createDefaultNormalizeModifier =
+  () =>
+  (val: unknown, min?: number, max?: number): number | null => {
     const num = typeof val === 'number' ? val : Number(val) || 0;
     if (min !== undefined && num < min) return min;
     if (max !== undefined && num > max) return max;
     return num;
-  },
+  };
+
+const mockNormalizeModifier = {
+  value: createDefaultNormalizeModifier(),
 };
 
 vi.mock('src/composables/useModifierInput', () => ({
@@ -223,70 +237,10 @@ describe('EquipmentStep', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-    mockHero.value = {
-      startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
-      currency: 100,
-    };
-    mockEquipment.value = [
-      { id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 2 },
-      { id: 2, equipment: { id: 2, code: 'shield', name: 'Shield' }, amount: 1 },
-    ];
-    mockClassifierData.value = {
-      startingKits: [
-        {
-          id: 1,
-          code: 'adventurer',
-          name: 'Adventurer',
-          description: 'Standard kit',
-          startingSpheres: '2d6',
-          equipment: [{ id: 1, code: 'sword', name: 'Sword', quantity: 1 }],
-        },
-        {
-          id: 2,
-          code: 'warrior',
-          name: 'Warrior',
-          description: 'Combat kit',
-          startingSpheres: '3d6',
-          equipment: [
-            { id: 1, code: 'sword', name: 'Sword', quantity: 2 },
-            { id: 999, code: 'unknown', name: 'Unknown', quantity: 1 },
-          ],
-        },
-        {
-          id: 3,
-          code: 'empty',
-          name: 'Empty',
-          description: 'No equipment',
-          startingSpheres: '1d6',
-          equipment: null,
-        },
-      ],
-      equipment: [
-        {
-          id: 1,
-          code: 'sword',
-          name: 'Sword',
-          equipType: { id: 1, code: 'weapons', name: 'Weapons' },
-        },
-        {
-          id: 2,
-          code: 'shield',
-          name: 'Shield',
-          equipType: { id: 1, code: 'weapons', name: 'Weapons' },
-        },
-        { id: 3, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
-      ],
-      equipmentTypes: [
-        { id: 1, code: 'weapons', name: 'Weapons' },
-        { id: 2, code: 'gear', name: 'Gear' },
-      ],
-    };
-    mockNormalizeModifier.value = (val: unknown, min?: number, max?: number): number | null => {
-      const num = typeof val === 'number' ? val : Number(val) || 0;
-      if (min !== undefined && num < min) return min;
-      if (max !== undefined && num > max) return max;
-      return num;
-    };
+    mockHero.value = createDefaultHeroData();
+    mockEquipment.value = createDefaultEquipmentData();
+    mockClassifierData.value = createDefaultClassifierData();
+    mockNormalizeModifier.value = createDefaultNormalizeModifier();
   });
 
   // ========================================

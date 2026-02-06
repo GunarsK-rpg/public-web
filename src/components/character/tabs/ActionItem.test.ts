@@ -264,7 +264,9 @@ describe('ActionItem', () => {
         iconUrl: null,
       };
 
-      const wrapper = createWrapper({ activationType: { id: 4, code: 'at4', name: 'ActType4' } });
+      const wrapper = createWrapper({
+        activationType: { id: 4, code: 'no-icon', name: 'No Icon' },
+      });
 
       const img = wrapper.find('img');
       expect(img.exists()).toBe(false);

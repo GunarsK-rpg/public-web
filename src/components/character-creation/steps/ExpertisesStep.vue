@@ -101,7 +101,12 @@ const specialistTypeId = computed(() => findByCode(classifiers.expertiseTypes, '
 const heroExpertises = computed(() => heroStore.expertises);
 
 // Pre-computed Maps for O(1) lookups in template (avoids O(n) per item in v-for)
-const selectedSet = computed(() => new Set(heroExpertises.value.map((e) => e.expertise?.id)));
+const selectedSet = computed(
+  () =>
+    new Set(
+      heroExpertises.value.map((e) => e.expertise?.id).filter((id): id is number => id != null)
+    )
+);
 const sourceMap = computed(() => {
   const map = new Map<number, string>();
   for (const e of heroExpertises.value) {

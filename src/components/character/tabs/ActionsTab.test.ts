@@ -274,7 +274,7 @@ describe('ActionsTab', () => {
       mockHero.value = {
         equipment: [],
         talents: [],
-        radiantOrder: { id: 1, code: 'ro1', name: 'RadiantOrder1' }, // Windrunner with surge1: { id: 100, ... }
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' }, // Windrunner with surge1: { id: 100, ... }
       };
       const wrapper = createWrapper();
 
@@ -321,7 +321,7 @@ describe('ActionsTab', () => {
       mockHero.value = {
         equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' } }],
         talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }],
-        radiantOrder: { id: 1, code: 'ro1', name: 'RadiantOrder1' },
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
       };
       const wrapper = createWrapper();
 

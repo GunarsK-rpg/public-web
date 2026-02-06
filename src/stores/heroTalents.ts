@@ -16,7 +16,8 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   const isSinger = computed(() => {
     if (!heroStore.hero) return false;
     const singerAncestry = findByCode(classifierStore.ancestries, 'singer');
-    return heroStore.hero.ancestry?.id === singerAncestry?.id;
+    if (!singerAncestry) return false;
+    return heroStore.hero.ancestry?.id === singerAncestry.id;
   });
 
   const isRadiant = computed(() => !!heroStore.hero?.radiantOrder);
@@ -161,8 +162,8 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
         for (const talent of classifierStore.talents) {
           if (
             talent.radiantOrder?.id === prevOrder.id ||
-            talent.surge?.id === prevOrder.surge1.id ||
-            talent.surge?.id === prevOrder.surge2.id
+            talent.surge?.id === prevOrder.surge1?.id ||
+            talent.surge?.id === prevOrder.surge2?.id
           ) {
             allRadiantTalentIds.add(talent.id);
           }
