@@ -50,10 +50,11 @@ const classifiers = useClassifierStore();
 
 // Skills grouped by attribute type (via skill.attr.id -> attribute.attrType.id)
 const skillsByAttrType = computed((): Record<number, Skill[]> => {
-  return groupByKey(classifiers.skills, (skill) => {
-    const attr = classifiers.attributes.find((a) => a.id === skill.attr.id);
-    return attr?.attrType.id ?? 0;
-  });
+  const attrTypeMap = new Map<number, number>();
+  for (const attr of classifiers.attributes) {
+    attrTypeMap.set(attr.id, attr.attrType.id);
+  }
+  return groupByKey(classifiers.skills, (skill) => attrTypeMap.get(skill.attr.id) ?? 0);
 });
 
 function getAttributeCode(skill: Skill): string {

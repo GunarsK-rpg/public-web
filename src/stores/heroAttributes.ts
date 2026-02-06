@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
-import { findById, findByCode, findByProp } from 'src/utils/arrayUtils';
+import { findById, findByCode, findByProp, toClassifierRef } from 'src/utils/arrayUtils';
 import { calculateFormulaStat } from 'src/utils/derivedStats';
 import { MIN_ATTRIBUTE_VALUE, MAX_ATTRIBUTE_VALUE } from 'src/constants';
 import type { ExpertiseSourceData } from 'src/types';
@@ -133,7 +133,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
       heroStore.hero.attributes.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        attribute: { id: attr.id, code: attr.code, name: attr.name },
+        attribute: toClassifierRef(attr),
         value: clampedValue,
       });
     }
@@ -152,7 +152,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
       heroStore.hero.skills.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        skill: { id: skillData.id, code: skillData.code, name: skillData.name },
+        skill: toClassifierRef(skillData),
         rank: clampedRank,
         modifier: 0,
       });
@@ -171,7 +171,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
       heroStore.hero.skills.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        skill: { id: skillData.id, code: skillData.code, name: skillData.name },
+        skill: toClassifierRef(skillData),
         rank: 0,
         modifier: clampedModifier,
       });
@@ -187,7 +187,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
       const stat = findById(classifierStore.derivedStats, statId);
       if (!stat) return;
       heroStore.hero.derivedStats.push({
-        derivedStat: { id: stat.id, code: stat.code, name: stat.name },
+        derivedStat: toClassifierRef(stat),
         baseValue: null,
         modifier,
         totalValue: null,
@@ -203,7 +203,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
       heroStore.hero.expertises.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        expertise: { id: exp.id, code: exp.code, name: exp.name },
+        expertise: toClassifierRef(exp),
         ...(source && { source }),
       });
     }

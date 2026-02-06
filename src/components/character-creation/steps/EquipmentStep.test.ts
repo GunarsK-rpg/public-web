@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import EquipmentStep from './EquipmentStep.vue';
+import type { ClassifierRef } from 'src/types';
 
 // Mock stores
 const mockSetCurrency = vi.fn();
@@ -13,7 +14,7 @@ const mockHero = {
   value: {
     startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
     currency: 100,
-  } as { startingKit: { id: number; code: string; name: string } | null; currency: number } | null,
+  } as { startingKit: ClassifierRef | null; currency: number } | null,
 };
 
 const mockEquipment = {
@@ -22,7 +23,7 @@ const mockEquipment = {
     { id: 2, equipment: { id: 2, code: 'shield', name: 'Shield' }, amount: 1 },
   ] as Array<{
     id: number;
-    equipment: { id: number; code: string; name: string };
+    equipment: ClassifierRef;
     amount: number;
   }>,
 };
@@ -82,7 +83,7 @@ const mockClassifierData = {
       name: string;
       description: string;
       startingSpheres: string;
-      equipment: Array<{ id: number; code: string; name: string; quantity: number }> | null;
+      equipment: Array<ClassifierRef & { quantity: number }> | null;
     }>,
     equipment: [
       { id: 1, name: 'Sword', equipType: { id: 1, code: 'weapons', name: 'Weapons' } },

@@ -5,6 +5,16 @@ import type { ComputedRef } from 'vue';
  */
 
 /**
+ * Extract { id, code, name } from a classifier-like object.
+ * Eliminates repeated `{ id: x.id, code: x.code, name: x.name }` spreads.
+ */
+export function toClassifierRef<T extends { id: number; code: string; name: string }>(
+  item: T
+): { id: number; code: string; name: string } {
+  return { id: item.id, code: item.code, name: item.name };
+}
+
+/**
  * Finds an item by any property value.
  */
 export function findByProp<T, K extends keyof T>(

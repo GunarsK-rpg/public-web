@@ -5,8 +5,8 @@ import ActionsTab from './ActionsTab.vue';
 import type { HeroEquipment, HeroTalent } from 'src/types';
 
 const mockHero = ref<{
-  equipment: HeroEquipment[];
-  talents: HeroTalent[];
+  equipment: Partial<HeroEquipment>[];
+  talents: Partial<HeroTalent>[];
   radiantOrder: { id: number; code: string; name: string } | null;
 } | null>(null);
 
@@ -191,7 +191,7 @@ describe('ActionsTab', () => {
   describe('equipment actions', () => {
     it('renders equipment actions for owned equipment', () => {
       mockHero.value = {
-        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' } }] as HeroEquipment[],
+        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' } }],
         talents: [],
         radiantOrder: null,
       };
@@ -213,7 +213,7 @@ describe('ActionsTab', () => {
 
     it('does not show actions for unowned equipment', () => {
       mockHero.value = {
-        equipment: [{ equipment: { id: 999, code: 'e999', name: 'Equip999' } }] as HeroEquipment[], // Non-existent equipment
+        equipment: [{ equipment: { id: 999, code: 'e999', name: 'Equip999' } }], // Non-existent equipment
         talents: [],
         radiantOrder: null,
       };
@@ -228,7 +228,7 @@ describe('ActionsTab', () => {
         equipment: [
           { equipment: { id: 1, code: 'e1', name: 'Equip1' } }, // Sword
           { equipment: { id: 2, code: 'e2', name: 'Equip2' } }, // Bow
-        ] as HeroEquipment[],
+        ],
         talents: [],
         radiantOrder: null,
       };
@@ -246,7 +246,7 @@ describe('ActionsTab', () => {
     it('renders talent actions for owned talents', () => {
       mockHero.value = {
         equipment: [],
-        talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }] as HeroTalent[],
+        talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }],
         radiantOrder: null,
       };
       const wrapper = createWrapper();
@@ -257,7 +257,7 @@ describe('ActionsTab', () => {
     it('shows empty message when no talent actions', () => {
       mockHero.value = {
         equipment: [],
-        talents: [{ talent: { id: 999, code: 't999', name: 'Talent999' } }] as HeroTalent[], // Talent without actions
+        talents: [{ talent: { id: 999, code: 't999', name: 'Talent999' } }], // Talent without actions
         radiantOrder: null,
       };
       const wrapper = createWrapper();
@@ -319,8 +319,8 @@ describe('ActionsTab', () => {
 
     it('handles hero with all action types', () => {
       mockHero.value = {
-        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' } }] as HeroEquipment[],
-        talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }] as HeroTalent[],
+        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' } }],
+        talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }],
         radiantOrder: { id: 1, code: 'ro1', name: 'RadiantOrder1' },
       };
       const wrapper = createWrapper();

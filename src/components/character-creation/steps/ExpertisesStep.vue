@@ -104,7 +104,7 @@ const heroExpertises = computed(() => heroStore.expertises);
 function getExpertisesBySource(sourceType: string) {
   return heroExpertises.value
     .filter((e) => e.source?.sourceType === sourceType)
-    .map((e) => findById(classifiers.expertises, e.expertise.id))
+    .map((e) => findById(classifiers.expertises, e.expertise?.id))
     .filter((e): e is NonNullable<typeof e> => e !== undefined);
 }
 
@@ -129,7 +129,7 @@ const filteredExpertises = computed(() => {
 });
 
 function isSelected(expertiseId: number): boolean {
-  return heroExpertises.value.some((e) => e.expertise.id === expertiseId);
+  return heroExpertises.value.some((e) => e.expertise?.id === expertiseId);
 }
 
 function isReadOnly(expertiseId: number): boolean {
@@ -139,7 +139,7 @@ function isReadOnly(expertiseId: number): boolean {
 }
 
 function getSource(expertiseId: number): string | null {
-  const heroExp = heroExpertises.value.find((e) => e.expertise.id === expertiseId);
+  const heroExp = heroExpertises.value.find((e) => e.expertise?.id === expertiseId);
   return heroExp?.source?.sourceType ?? null;
 }
 

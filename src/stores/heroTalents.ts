@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { useHeroAttributesStore } from './heroAttributes';
-import { findById, findByCode } from 'src/utils/arrayUtils';
+import { findById, findByCode, toClassifierRef } from 'src/utils/arrayUtils';
 
 export const useHeroTalentsStore = defineStore('heroTalents', () => {
   const heroStore = useHeroStore();
@@ -16,7 +16,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   const isSinger = computed(() => {
     if (!heroStore.hero) return false;
     const singerAncestry = findByCode(classifierStore.ancestries, 'singer');
-    return heroStore.hero.ancestry.id === singerAncestry?.id;
+    return heroStore.hero.ancestry?.id === singerAncestry?.id;
   });
 
   const isRadiant = computed(() => !!heroStore.hero?.radiantOrder);
@@ -36,7 +36,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     }
 
     // Remove previous ancestry talents if changing ancestry
-    if (heroStore.hero.ancestry.id) {
+    if (heroStore.hero.ancestry?.id) {
       const prevAncestryId = heroStore.hero.ancestry.id;
       const prevAncestryTalentIds = new Set(
         classifierStore.talents.filter((t) => t.ancestry?.id === prevAncestryId).map((t) => t.id)
@@ -48,7 +48,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
 
     const ancestry = findById(classifierStore.ancestries, ancestryId);
     if (!ancestry) return;
-    heroStore.hero.ancestry = { id: ancestry.id, code: ancestry.code, name: ancestry.name };
+    heroStore.hero.ancestry = toClassifierRef(ancestry);
 
     // Reset singer form if not singer
     if (!singerAncestry || ancestryId !== singerAncestry.id) {
@@ -65,11 +65,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
         heroStore.hero.talents.push({
           id: heroStore.nextTempId(),
           heroId: heroStore.hero.id,
-          talent: {
-            id: singerKeyTalent.id,
-            code: singerKeyTalent.code,
-            name: singerKeyTalent.name,
-          },
+          talent: toClassifierRef(singerKeyTalent),
         });
       }
     }
@@ -82,7 +78,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     } else {
       const form = findById(classifierStore.singerForms, singerFormId);
       if (!form) return;
-      heroStore.hero.activeSingerForm = { id: form.id, code: form.code, name: form.name };
+      heroStore.hero.activeSingerForm = toClassifierRef(form);
     }
   }
 
@@ -97,7 +93,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
       heroStore.hero.cultures.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        culture: { id: cult.id, code: cult.code, name: cult.name },
+        culture: toClassifierRef(cult),
       });
       applyCulturalExpertise(cultureId);
     }
@@ -133,7 +129,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
       heroStore.hero.talents.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
-        talent: { id: tal.id, code: tal.code, name: tal.name },
+        talent: toClassifierRef(tal),
       });
     }
   }
@@ -177,13 +173,13 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
       }
     }
 
-    if (!orderId) {
+    if (orderId === null) {
       heroStore.hero.radiantOrder = null;
       heroStore.hero.radiantIdeal = 0;
     } else {
       const order = findById(classifierStore.radiantOrders, orderId);
       if (order) {
-        heroStore.hero.radiantOrder = { id: order.id, code: order.code, name: order.name };
+        heroStore.hero.radiantOrder = toClassifierRef(order);
       }
       // Add new radiant key talent
       const keyTalent = classifierStore.talents.find(
@@ -193,7 +189,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
         heroStore.hero.talents.push({
           id: heroStore.nextTempId(),
           heroId: heroStore.hero.id,
-          talent: { id: keyTalent.id, code: keyTalent.code, name: keyTalent.name },
+          talent: toClassifierRef(keyTalent),
         });
       }
     }

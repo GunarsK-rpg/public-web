@@ -319,7 +319,7 @@ describe('CultureStep', () => {
       expect(wrapper.find('.q-card').exists()).toBe(false);
     });
 
-    it('handles culture without expertiseId', () => {
+    it('handles culture without expertise', () => {
       // Mock culture without expertise
       mockHeroCultures.value = [{ culture: { id: 999, code: 'nonexistent', name: 'Nonexistent' } }]; // Non-existent culture
       const wrapper = createWrapper();
@@ -341,7 +341,7 @@ describe('CultureStep', () => {
       expect(banner.text()).toContain('Shin Expertise');
     });
 
-    it('does not show expertise for culture with null expertiseId', () => {
+    it('does not show expertise for culture with null expertise', () => {
       mockHeroCultures.value = [{ culture: { id: 3, code: 'azish', name: 'Azish' } }]; // Azish has null expertise
       const wrapper = createWrapper();
 
@@ -349,7 +349,7 @@ describe('CultureStep', () => {
       expect(wrapper.find('.info-banner').exists()).toBe(false);
     });
 
-    it('does not show expertise for culture with invalid expertiseId', () => {
+    it('does not show expertise for culture with invalid expertise', () => {
       mockHeroCultures.value = [{ culture: { id: 4, code: 'thaylen', name: 'Thaylen' } }]; // Thaylen has expertise id 999 which doesn't exist
       const wrapper = createWrapper();
 

@@ -312,7 +312,7 @@ describe('ActionItem', () => {
       expect(wrapper.text()).not.toContain('Dice:');
     });
 
-    it('handles activationTypeId of 0', () => {
+    it('handles activationType with id 0', () => {
       const wrapper = createWrapper({ activationType: { id: 0, code: 'at0', name: 'ActType0' } });
 
       // Should render without crashing

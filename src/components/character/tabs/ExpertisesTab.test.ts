@@ -91,20 +91,20 @@ describe('ExpertisesTab', () => {
       {
         id: 1,
         heroId: 1,
-        expertise: { id: 1, code: 'exp1', name: 'Expertise1' },
+        expertise: { id: 1, code: 'swords', name: 'Swords' },
         source: { sourceType: 'culture', sourceId: 1 },
       },
-      { id: 2, heroId: 1, expertise: { id: 2, code: 'exp2', name: 'Expertise2' }, source: null },
+      { id: 2, heroId: 1, expertise: { id: 2, code: 'bows', name: 'Bows' }, source: null },
       {
         id: 3,
         heroId: 1,
-        expertise: { id: 3, code: 'exp3', name: 'Expertise3' },
+        expertise: { id: 3, code: 'light_armor', name: 'Light Armor' },
         source: { sourceType: 'talent', sourceId: 5 },
       },
       {
         id: 4,
         heroId: 1,
-        expertise: { id: 6, code: 'exp6', name: 'Expertise6' },
+        expertise: { id: 6, code: 'alethi_culture', name: 'Alethi Culture' },
         source: { sourceType: 'culture', sourceId: 1 },
       },
     ] as HeroExpertise[];
@@ -201,7 +201,7 @@ describe('ExpertisesTab', () => {
     it('shows empty message for specific type without expertises', () => {
       // Only weapon expertises
       mockExpertises.value = [
-        { id: 1, expertise: { id: 1, code: 'exp1', name: 'Expertise1' }, source: null },
+        { id: 1, expertise: { id: 1, code: 'swords', name: 'Swords' }, source: null },
       ] as HeroExpertise[];
       const wrapper = createWrapper();
 
@@ -232,8 +232,8 @@ describe('ExpertisesTab', () => {
   describe('expertise grouping', () => {
     it('groups weapon expertises together', () => {
       mockExpertises.value = [
-        { id: 1, expertise: { id: 1, code: 'exp1', name: 'Expertise1' }, source: null }, // Swords (weapon)
-        { id: 2, expertise: { id: 2, code: 'exp2', name: 'Expertise2' }, source: null }, // Bows (weapon)
+        { id: 1, expertise: { id: 1, code: 'swords', name: 'Swords' }, source: null }, // Swords (weapon)
+        { id: 2, expertise: { id: 2, code: 'bows', name: 'Bows' }, source: null }, // Bows (weapon)
       ] as HeroExpertise[];
       const wrapper = createWrapper();
 
@@ -246,8 +246,8 @@ describe('ExpertisesTab', () => {
 
     it('groups armor expertises together', () => {
       mockExpertises.value = [
-        { id: 1, expertise: { id: 3, code: 'exp3', name: 'Expertise3' }, source: null }, // Light Armor
-        { id: 2, expertise: { id: 4, code: 'exp4', name: 'Expertise4' }, source: null }, // Heavy Armor
+        { id: 1, expertise: { id: 3, code: 'light_armor', name: 'Light Armor' }, source: null }, // Light Armor
+        { id: 2, expertise: { id: 4, code: 'heavy_armor', name: 'Heavy Armor' }, source: null }, // Heavy Armor
       ] as HeroExpertise[];
       const wrapper = createWrapper();
 
@@ -262,7 +262,7 @@ describe('ExpertisesTab', () => {
   describe('edge cases', () => {
     it('handles unknown expertise ID gracefully', () => {
       mockExpertises.value = [
-        { id: 1, expertise: { id: 999, code: 'exp999', name: 'Expertise999' }, source: null }, // Non-existent expertise
+        { id: 1, expertise: { id: 999, code: 'unknown', name: 'Unknown' }, source: null }, // Non-existent expertise
       ] as HeroExpertise[];
       const wrapper = createWrapper();
 
@@ -280,12 +280,16 @@ describe('ExpertisesTab', () => {
 
     it('renders multiple expertises of same type correctly', () => {
       mockExpertises.value = [
-        { id: 1, expertise: { id: 1, code: 'exp1', name: 'Expertise1' }, source: null }, // Swords
-        { id: 2, expertise: { id: 2, code: 'exp2', name: 'Expertise2' }, source: null }, // Bows
-        { id: 3, expertise: { id: 3, code: 'exp3', name: 'Expertise3' }, source: null }, // Light Armor
-        { id: 4, expertise: { id: 4, code: 'exp4', name: 'Expertise4' }, source: null }, // Heavy Armor
-        { id: 5, expertise: { id: 5, code: 'exp5', name: 'Expertise5' }, source: null }, // Smithing
-        { id: 6, expertise: { id: 6, code: 'exp6', name: 'Expertise6' }, source: null }, // Alethi Culture
+        { id: 1, expertise: { id: 1, code: 'swords', name: 'Swords' }, source: null }, // Swords
+        { id: 2, expertise: { id: 2, code: 'bows', name: 'Bows' }, source: null }, // Bows
+        { id: 3, expertise: { id: 3, code: 'light_armor', name: 'Light Armor' }, source: null }, // Light Armor
+        { id: 4, expertise: { id: 4, code: 'heavy_armor', name: 'Heavy Armor' }, source: null }, // Heavy Armor
+        { id: 5, expertise: { id: 5, code: 'smithing', name: 'Smithing' }, source: null }, // Smithing
+        {
+          id: 6,
+          expertise: { id: 6, code: 'alethi_culture', name: 'Alethi Culture' },
+          source: null,
+        }, // Alethi Culture
       ] as HeroExpertise[];
       const wrapper = createWrapper();
 

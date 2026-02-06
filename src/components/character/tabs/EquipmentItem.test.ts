@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { computed, ref } from 'vue';
 import EquipmentItem from './EquipmentItem.vue';
-import type { HeroEquipment } from 'src/types';
+import type { Equipment, HeroEquipment } from 'src/types';
 
 // Mock equipment ID for reactive mock
 const mockEquipmentId = ref(1);
@@ -86,11 +86,7 @@ vi.mock('src/stores/classifiers', () => ({
 
 const equipmentMap: Record<
   number,
-  {
-    id: number;
-    name: string;
-    equipType: { id: number; code: string; name: string };
-    damageType: { id: number; code: string; name: string } | null;
+  Pick<Equipment, 'id' | 'name' | 'equipType' | 'damageType'> & {
     special: {
       damage?: string;
       range?: string;

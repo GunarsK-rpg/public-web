@@ -50,7 +50,7 @@
 
       <!-- Items of this type -->
       <q-list v-if="equipmentByType[eqType.id]?.length" bordered separator>
-        <q-item v-for="item in equipmentByType[eqType.id]" :key="item.equipment.id">
+        <q-item v-for="item in equipmentByType[eqType.id]" :key="item.id">
           <q-item-section>
             <q-item-label>{{ getEquipmentName(item.equipment.id) }}</q-item-label>
             <q-item-label caption>Qty: {{ item.amount }}</q-item-label>

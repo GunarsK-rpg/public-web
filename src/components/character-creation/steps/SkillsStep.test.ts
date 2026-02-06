@@ -42,6 +42,9 @@ vi.mock('src/stores/hero', () => ({
     get hero() {
       return mockHeroData.value.hero;
     },
+    get skills() {
+      return mockHeroData.value.hero?.skills ?? [];
+    },
   }),
 }));
 
@@ -53,8 +56,8 @@ vi.mock('src/stores/heroAttributes', () => ({
   }),
 }));
 
-vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
+const mockClassifierData = {
+  value: {
     skills: [
       {
         id: 1,
@@ -73,8 +76,13 @@ vi.mock('src/stores/classifiers', () => ({
         code: 'unknown',
         name: 'Unknown Skill',
         attr: { id: 999, code: 'none', name: 'None' },
-      }, // No matching attribute
-    ],
+      },
+    ] as Array<{
+      id: number;
+      code: string;
+      name: string;
+      attr: { id: number; code: string; name: string };
+    }>,
     attributes: [
       {
         id: 1,
@@ -90,6 +98,20 @@ vi.mock('src/stores/classifiers', () => ({
       },
     ],
     attributeTypes: [{ id: 1, code: 'physical', name: 'Physical' }],
+  },
+};
+
+vi.mock('src/stores/classifiers', () => ({
+  useClassifierStore: () => ({
+    get skills() {
+      return mockClassifierData.value.skills;
+    },
+    get attributes() {
+      return mockClassifierData.value.attributes;
+    },
+    get attributeTypes() {
+      return mockClassifierData.value.attributeTypes;
+    },
   }),
 }));
 
@@ -99,35 +121,16 @@ vi.mock('src/composables/useStepValidation', () => ({
   }),
 }));
 
-const mockSkillsByAttrType = {
-  value: {
-    1: [
-      {
-        id: 1,
-        code: 'athletics',
-        name: 'Athletics',
-        attr: { id: 1, code: 'str', name: 'Strength' },
-      },
-      {
-        id: 3,
-        code: 'unknown',
-        name: 'Unknown Skill',
-        attr: { id: 999, code: 'none', name: 'None' },
-      },
-    ],
-  } as Record<
-    number,
-    Array<{
-      id: number;
-      code: string;
-      name: string;
-      attr: { id: number; code: string; name: string };
-    }>
-  >,
-};
-
 vi.mock('src/utils/arrayUtils', () => ({
-  groupByKey: () => mockSkillsByAttrType.value,
+  groupByKey: <T, K extends PropertyKey>(list: T[], keyFn: (item: T) => K) => {
+    const result = {} as Record<K, T[]>;
+    for (const item of list) {
+      const key = keyFn(item);
+      if (!result[key]) result[key] = [];
+      result[key].push(item);
+    }
+    return result;
+  },
   buildIdCodeMap: () => mockAttributeCodeMap.value,
 }));
 
@@ -206,13 +209,19 @@ describe('SkillsStep', () => {
     ]);
     mockNormalizeModifier.value = (val: unknown) =>
       typeof val === 'number' ? val : Number(val) || 0;
-    mockSkillsByAttrType.value = {
-      1: [
+    mockClassifierData.value = {
+      skills: [
         {
           id: 1,
           code: 'athletics',
           name: 'Athletics',
           attr: { id: 1, code: 'str', name: 'Strength' },
+        },
+        {
+          id: 2,
+          code: 'acrobatics',
+          name: 'Acrobatics',
+          attr: { id: 2, code: 'dex', name: 'Dexterity' },
         },
         {
           id: 3,
@@ -221,6 +230,21 @@ describe('SkillsStep', () => {
           attr: { id: 999, code: 'none', name: 'None' },
         },
       ],
+      attributes: [
+        {
+          id: 1,
+          code: 'str',
+          name: 'Strength',
+          attrType: { id: 1, code: 'physical', name: 'Physical' },
+        },
+        {
+          id: 2,
+          code: 'dex',
+          name: 'Dexterity',
+          attrType: { id: 1, code: 'physical', name: 'Physical' },
+        },
+      ],
+      attributeTypes: [{ id: 1, code: 'physical', name: 'Physical' }],
     };
   });
 
@@ -469,15 +493,14 @@ describe('SkillsStep', () => {
       expect(wrapper.text()).toContain('STR');
     });
 
-    it('shows empty string for skill with unknown attribute', () => {
-      // Skill with attrId 999 has no matching attribute in the map
+    it('does not render skill with unknown attribute type', () => {
+      // Skill with attrId 999 maps to attrTypeId 0 (fallback), which has no matching attributeType
       mockAttributeCodeMap.value = new Map([[1, 'str']]); // Only str, not attr 999
 
       const wrapper = createWrapper();
 
-      // Unknown Skill has attrId 999 which is not in the map
-      expect(wrapper.text()).toContain('Unknown Skill');
-      // Should not show any attribute code for unknown attribute
+      // Unknown Skill should not appear since its attribute type doesn't exist
+      expect(wrapper.text()).not.toContain('Unknown Skill');
       expect(wrapper.text()).not.toContain('999');
     });
   });
@@ -526,8 +549,8 @@ describe('SkillsStep', () => {
     });
 
     it('handles skill groups with no skills using empty array fallback', () => {
-      // Remove all skills for type 1 to test the ?? [] fallback
-      mockSkillsByAttrType.value = {}; // No skills for any type
+      // Remove all skills to test the ?? [] fallback
+      mockClassifierData.value.skills = [];
 
       const wrapper = createWrapper();
 
@@ -538,17 +561,15 @@ describe('SkillsStep', () => {
     });
 
     it('handles attribute type with undefined skills', () => {
-      // attrType.id=2 does not exist in mockSkillsByAttrType, so ?? [] is used
-      mockSkillsByAttrType.value = {
-        1: [
-          {
-            id: 1,
-            code: 'athletics',
-            name: 'Athletics',
-            attr: { id: 1, code: 'str', name: 'Strength' },
-          },
-        ],
-      };
+      // Only one skill in group
+      mockClassifierData.value.skills = [
+        {
+          id: 1,
+          code: 'athletics',
+          name: 'Athletics',
+          attr: { id: 1, code: 'str', name: 'Strength' },
+        },
+      ];
 
       const wrapper = createWrapper();
 

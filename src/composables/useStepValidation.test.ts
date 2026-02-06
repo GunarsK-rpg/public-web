@@ -123,9 +123,9 @@ describe('useStepValidation', () => {
       heroStore.hero.level = 5;
       heroStore.hero.ancestry = { id: 1, code: 'human', name: 'Human' };
       heroStore.hero.cultures = [
-        { id: -1, heroId: 0, culture: { id: 1, code: 'c1', name: 'Culture1' } },
+        { id: -1, heroId: 0, culture: { id: 1, code: 'urban', name: 'Urban' } },
       ] as HeroCulture[];
-      heroStore.hero.startingKit = { id: 1, code: 'sk1', name: 'Kit1' };
+      heroStore.hero.startingKit = { id: 1, code: 'warrior', name: 'Warrior Kit' };
     }
     return heroStore;
   };
@@ -181,7 +181,7 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
+        heroStore.hero.name = 'Kaladin';
         (heroStore.hero as unknown as { ancestry: null }).ancestry = null;
       }
 
@@ -204,7 +204,7 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
+        heroStore.hero.name = 'Kaladin';
         heroStore.hero.cultures = [];
       }
 
@@ -227,7 +227,7 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
+        heroStore.hero.name = 'Kaladin';
         heroStore.hero.startingKit = null;
       }
 
@@ -373,7 +373,7 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
+        heroStore.hero.name = 'Kaladin';
         heroStore.hero.level = 1;
       }
 
@@ -451,7 +451,7 @@ describe('useStepValidation', () => {
       // Set intellect attribute
       if (heroStore.hero) {
         heroStore.hero.attributes = [
-          { id: -1, heroId: 0, attribute: { id: 3, code: 'a3', name: 'Attr3' }, value: 3 }, // int = 3
+          { id: -1, heroId: 0, attribute: { id: 3, code: 'int', name: 'Intellect' }, value: 3 }, // int = 3
         ];
       }
 
@@ -499,7 +499,7 @@ describe('useStepValidation', () => {
         heroStore.hero.attributes.push({
           id: -1,
           heroId: 0,
-          attribute: { id: 1, code: 'a1', name: 'Attr1' },
+          attribute: { id: 1, code: 'str', name: 'Strength' },
           value: 3,
         });
       }
@@ -518,7 +518,7 @@ describe('useStepValidation', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
-        heroStore.hero.name = 'Test';
+        heroStore.hero.name = 'Kaladin';
         heroStore.hero.attributes = [];
         heroStore.hero.skills = [];
         heroStore.hero.talents = [];

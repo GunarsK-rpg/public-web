@@ -4,7 +4,22 @@ import { useTalentPrerequisites } from './useTalentPrerequisites';
 import { axiosError } from 'src/test-utils/axiosHelpers';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import type { Talent, TalentPrerequisite } from 'src/types';
+import type { Talent } from 'src/types';
+
+/** Factory helper for building mock Talent objects with sensible defaults */
+function createMockTalent(overrides: Partial<Talent> & { id: number }): Talent {
+  return {
+    code: `talent-${overrides.id}`,
+    name: `Talent ${overrides.id}`,
+    isKey: false,
+    path: null,
+    specialties: [],
+    ancestry: null,
+    radiantOrder: null,
+    surge: null,
+    ...overrides,
+  };
+}
 
 // Mock hero data
 const mockHero = {
@@ -419,7 +434,7 @@ describe('useTalentPrerequisites', () => {
       await setupHero();
       const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-      const talent: Talent = { id: 100, code: 'test', name: 'Test' } as Talent;
+      const talent = createMockTalent({ id: 100 });
       const result = checkTalentPrerequisites(talent, new Set(), new Map());
 
       expect(result.met).toBe(true);
@@ -430,18 +445,7 @@ describe('useTalentPrerequisites', () => {
       await setupHero();
       const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-      const talent: Talent = {
-        id: 100,
-        code: 'test',
-        name: 'Test',
-        isKey: false,
-        path: null,
-        specialties: [],
-        ancestry: null,
-        radiantOrder: null,
-        surge: null,
-        prerequisites: [],
-      };
+      const talent = createMockTalent({ id: 100, prerequisites: [] });
       const result = checkTalentPrerequisites(talent, new Set(), new Map());
 
       expect(result.met).toBe(true);
@@ -452,12 +456,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 102,
-          code: 'test',
-          name: 'Test',
           prerequisites: [{ type: 'talent', talentIds: [100] }],
-        } as Talent;
+        });
 
         // Has talent 100
         const result1 = checkTalentPrerequisites(talent, new Set([100]), new Map());
@@ -473,12 +475,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 999,
-          code: 'test',
-          name: 'Test',
           prerequisites: [{ type: 'talent', talentIds: [100, 101, 102] }],
-        } as Talent;
+        });
 
         // Has talent 101 (one of the options)
         const result = checkTalentPrerequisites(talent, new Set([101]), new Map());
@@ -489,18 +489,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 999,
-          code: 'test',
-          name: 'Test',
-          isKey: false,
-          path: null,
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
           prerequisites: [{ type: 'talent', talentIds: [] }],
-        };
+        });
 
         const result = checkTalentPrerequisites(talent, new Set([100]), new Map());
         expect(result.met).toBe(false);
@@ -512,12 +504,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 103,
-          code: 'test',
-          name: 'Test',
           prerequisites: [{ type: 'skill', skillId: 1, skillRank: 3 }],
-        } as Talent;
+        });
 
         // Has skill 1 at rank 3
         const skillsWithRank3 = new Map([[1, 3]]);
@@ -534,12 +524,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 103,
-          code: 'test',
-          name: 'Test',
           prerequisites: [{ type: 'skill', skillId: 1, skillRank: 2 }],
-        } as Talent;
+        });
 
         const skillsWithRank5 = new Map([[1, 5]]);
         const result = checkTalentPrerequisites(talent, new Set(), skillsWithRank5);
@@ -550,12 +538,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 103,
-          code: 'test',
-          name: 'Test',
           prerequisites: [{ type: 'skill', skillId: 99, skillRank: 1 }],
-        } as Talent;
+        });
 
         const result = checkTalentPrerequisites(talent, new Set(), new Map());
         expect(result.met).toBe(false);
@@ -567,12 +553,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 104,
-          code: 'test',
-          name: 'Test',
           prerequisites: [{ type: 'ideal', skillRank: 2 }],
-        } as Talent;
+        });
 
         // Hero has ideal level 3, requires 2
         const result = checkTalentPrerequisites(talent, new Set(), new Map());
@@ -583,12 +567,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 104,
-          code: 'test',
-          name: 'Test',
           prerequisites: [{ type: 'ideal', skillRank: 5 }], // Requires 5
-        } as Talent;
+        });
 
         // Hero has ideal level 3
         const result = checkTalentPrerequisites(talent, new Set(), new Map());
@@ -601,12 +583,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 105,
-          code: 'test',
-          name: 'Test',
           prerequisites: [{ type: 'level', skillRank: 5 }],
-        } as Talent;
+        });
 
         // Hero is level 5
         const result = checkTalentPrerequisites(talent, new Set(), new Map());
@@ -617,12 +597,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 105,
-          code: 'test',
-          name: 'Test',
           prerequisites: [{ type: 'level', skillRank: 10 }], // Requires 10
-        } as Talent;
+        });
 
         // Hero is level 5
         const result = checkTalentPrerequisites(talent, new Set(), new Map());
@@ -635,21 +613,13 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 106,
-          code: 'test',
-          name: 'Test',
-          isKey: false,
-          path: null,
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
           prerequisites: [
             { type: 'talent', talentIds: [100] },
             { type: 'skill', skillId: 1, skillRank: 2 },
           ],
-        };
+        });
 
         // Has both: talent 100 and skill 1 at rank 3
         const result = checkTalentPrerequisites(talent, new Set([100]), new Map([[1, 3]]));
@@ -660,21 +630,13 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 106,
-          code: 'test',
-          name: 'Test',
-          isKey: false,
-          path: null,
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
           prerequisites: [
             { type: 'talent', talentIds: [100] },
             { type: 'skill', skillId: 1, skillRank: 5 }, // Requires rank 5
           ],
-        };
+        });
 
         // Has talent but skill rank is too low
         const result = checkTalentPrerequisites(talent, new Set([100]), new Map([[1, 3]]));
@@ -686,21 +648,13 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 999,
-          code: 'test',
-          name: 'Test',
-          isKey: false,
-          path: null,
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
           prerequisites: [
             { type: 'talent', talentIds: [999] }, // Unmet
             { type: 'skill', skillId: 99, skillRank: 5 }, // Unmet
           ],
-        };
+        });
 
         const result = checkTalentPrerequisites(talent, new Set(), new Map());
         expect(result.met).toBe(false);
@@ -713,12 +667,10 @@ describe('useTalentPrerequisites', () => {
         await setupHero();
         const { checkTalentPrerequisites } = useTalentPrerequisites();
 
-        const talent: Talent = {
+        const talent = createMockTalent({
           id: 999,
-          code: 'test',
-          name: 'Test',
-          prerequisites: [{ type: 'unknown' as TalentPrerequisite['type'] }],
-        } as Talent;
+          prerequisites: [{ type: 'unknown' }],
+        });
 
         const result = checkTalentPrerequisites(talent, new Set(), new Map());
         expect(result.met).toBe(true);
@@ -753,18 +705,13 @@ describe('useTalentPrerequisites', () => {
       const { mapTalentsWithStatus } = useTalentPrerequisites();
 
       // Talent 100 has no prerequisites
-      const talents: Talent[] = [
-        {
+      const talents = [
+        createMockTalent({
           id: 100,
           code: 'power-strike',
           name: 'Power Strike',
-          isKey: false,
           path: { id: 1, code: 'warrior', name: 'Warrior' },
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
-        },
+        }),
       ];
 
       const result = mapTalentsWithStatus(talents);
@@ -778,19 +725,12 @@ describe('useTalentPrerequisites', () => {
       const { mapTalentsWithStatus } = useTalentPrerequisites();
 
       // Talent requiring skill rank 10 (hero has rank 3)
-      const talents: Talent[] = [
-        {
+      const talents = [
+        createMockTalent({
           id: 999,
-          code: 'test',
-          name: 'Test',
-          isKey: false,
           path: { id: 1, code: 'warrior', name: 'Warrior' },
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
           prerequisites: [{ type: 'skill', skillId: 1, skillRank: 10 }],
-        },
+        }),
       ];
 
       const result = mapTalentsWithStatus(talents);
@@ -981,18 +921,10 @@ describe('useTalentPrerequisites', () => {
       await setupHero();
       const { getPrerequisitesArray } = useTalentPrerequisites();
 
-      const talent: Talent = {
+      const talent = createMockTalent({
         id: 1,
-        code: 'test',
-        name: 'Test',
-        isKey: false,
-        path: null,
-        specialties: [],
-        ancestry: null,
-        radiantOrder: null,
-        surge: null,
         prerequisites: [{ type: 'skill', skillId: 1, skillRank: 3 }],
-      };
+      });
 
       const result = getPrerequisitesArray(talent);
 
@@ -1004,17 +936,7 @@ describe('useTalentPrerequisites', () => {
       await setupHero();
       const { getPrerequisitesArray } = useTalentPrerequisites();
 
-      const talent: Talent = {
-        id: 1,
-        code: 'test',
-        name: 'Test',
-        isKey: false,
-        path: null,
-        specialties: [],
-        ancestry: null,
-        radiantOrder: null,
-        surge: null,
-      };
+      const talent = createMockTalent({ id: 1 });
 
       const result = getPrerequisitesArray(talent);
 
@@ -1030,7 +952,7 @@ describe('useTalentPrerequisites', () => {
       await setupHero();
       const { formatPrereq } = useTalentPrerequisites();
 
-      const prereq: TalentPrerequisite = {
+      const prereq = {
         type: 'skill',
         skillId: 1,
         skillRank: 3,
@@ -1047,7 +969,7 @@ describe('useTalentPrerequisites', () => {
       await setupHero();
       const { formatPrereq } = useTalentPrerequisites();
 
-      const prereq: TalentPrerequisite = {
+      const prereq = {
         type: 'talent',
         talentIds: [100],
       };

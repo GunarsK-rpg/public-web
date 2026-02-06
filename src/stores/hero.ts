@@ -161,6 +161,9 @@ export const useHeroStore = defineStore('hero', () => {
   function setCampaignId(campaignId: number | null) {
     if (!hero.value) return;
     hero.value.campaignId = campaignId;
+    if (campaignId === null) {
+      hero.value.campaign = { id: 0, code: '', name: '' };
+    }
   }
 
   // ===================

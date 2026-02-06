@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
-import { findByCode, findById, removeById } from 'src/utils/arrayUtils';
+import { findByCode, findById, removeById, toClassifierRef } from 'src/utils/arrayUtils';
 import { MAX_NAME_LENGTH, MAX_TEXT_LENGTH } from 'src/constants';
 
 export const useHeroDetailsStore = defineStore('heroDetails', () => {
@@ -31,7 +31,7 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
       name: trimmedName,
       ...(trimmedDesc && { description: trimmedDesc }),
       value: 0,
-      status: { id: activeStatus.id, code: activeStatus.code, name: activeStatus.name },
+      status: toClassifierRef(activeStatus),
     });
   }
 
@@ -59,7 +59,7 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
     heroStore.hero.connections.push({
       id: heroStore.nextTempId(),
       heroId: heroStore.hero.id,
-      connectionType: { id: connType.id, code: connType.code, name: connType.name },
+      connectionType: toClassifierRef(connType),
       description: trimmedDesc,
       ...(trimmedNotes ? { notes: trimmedNotes } : {}),
     });

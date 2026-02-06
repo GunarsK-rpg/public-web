@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import TalentListPanel from './TalentListPanel.vue';
 import type { TalentWithStatus } from 'src/composables/useTalentPrerequisites';
-import type { TalentPrerequisite } from 'src/types';
+import type { Talent, TalentPrerequisite } from 'src/types';
 
 // Mock the composable
 const mockIsTalentSelected = vi.fn();
@@ -16,20 +16,27 @@ vi.mock('src/composables/useTalentPrerequisites', () => ({
 }));
 
 describe('TalentListPanel', () => {
+  const defaultTalent: Talent = {
+    id: 1,
+    code: 'test-talent',
+    name: 'Test Talent',
+    description: 'Full description',
+    descriptionShort: 'Short desc',
+    isKey: false,
+    path: null,
+    specialties: [],
+    ancestry: null,
+    radiantOrder: null,
+    surge: null,
+  };
+
+  const createTalent = (overrides: Partial<Talent> = {}): Talent => ({
+    ...defaultTalent,
+    ...overrides,
+  });
+
   const createTalentWithStatus = (overrides: Partial<TalentWithStatus> = {}): TalentWithStatus => ({
-    talent: {
-      id: 1,
-      code: 'test-talent',
-      name: 'Test Talent',
-      description: 'Full description',
-      descriptionShort: 'Short desc',
-      isKey: false,
-      path: null,
-      specialties: [],
-      ancestry: null,
-      radiantOrder: null,
-      surge: null,
-    },
+    talent: defaultTalent,
     available: true,
     unmetPrereqs: [],
     ...overrides,
@@ -91,48 +98,9 @@ describe('TalentListPanel', () => {
 
     it('renders talent items for each talent', () => {
       const talents = [
-        createTalentWithStatus({
-          talent: {
-            id: 1,
-            code: 't1',
-            name: 'Talent 1',
-            description: '',
-            isKey: false,
-            path: null,
-            specialties: [],
-            ancestry: null,
-            radiantOrder: null,
-            surge: null,
-          },
-        }),
-        createTalentWithStatus({
-          talent: {
-            id: 2,
-            code: 't2',
-            name: 'Talent 2',
-            description: '',
-            isKey: false,
-            path: null,
-            specialties: [],
-            ancestry: null,
-            radiantOrder: null,
-            surge: null,
-          },
-        }),
-        createTalentWithStatus({
-          talent: {
-            id: 3,
-            code: 't3',
-            name: 'Talent 3',
-            description: '',
-            isKey: false,
-            path: null,
-            specialties: [],
-            ancestry: null,
-            radiantOrder: null,
-            surge: null,
-          },
-        }),
+        createTalentWithStatus({ talent: createTalent({ id: 1, code: 't1', name: 'Talent 1' }) }),
+        createTalentWithStatus({ talent: createTalent({ id: 2, code: 't2', name: 'Talent 2' }) }),
+        createTalentWithStatus({ talent: createTalent({ id: 3, code: 't3', name: 'Talent 3' }) }),
       ];
 
       const wrapper = createWrapper({
@@ -146,18 +114,7 @@ describe('TalentListPanel', () => {
 
     it('passes talent data to TalentListItem', () => {
       const talent = createTalentWithStatus({
-        talent: {
-          id: 42,
-          code: 'special',
-          name: 'Special Talent',
-          description: '',
-          isKey: false,
-          path: null,
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
-        },
+        talent: createTalent({ id: 42, code: 'special', name: 'Special Talent' }),
         available: false,
       });
 
@@ -216,18 +173,7 @@ describe('TalentListPanel', () => {
       mockIsTalentSelected.mockReturnValue(true);
 
       const talent = createTalentWithStatus({
-        talent: {
-          id: 99,
-          code: 't99',
-          name: 'Talent 99',
-          description: '',
-          isKey: false,
-          path: null,
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
-        },
+        talent: createTalent({ id: 99, code: 't99', name: 'Talent 99' }),
       });
 
       const wrapper = createWrapper({
@@ -259,18 +205,7 @@ describe('TalentListPanel', () => {
   describe('events', () => {
     it('emits toggleTalent when talent item is toggled', async () => {
       const talent = createTalentWithStatus({
-        talent: {
-          id: 5,
-          code: 't5',
-          name: 'Talent 5',
-          description: '',
-          isKey: false,
-          path: null,
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
-        },
+        talent: createTalent({ id: 5, code: 't5', name: 'Talent 5' }),
         available: true,
       });
 
@@ -287,18 +222,7 @@ describe('TalentListPanel', () => {
 
     it('emits toggleTalent with availability status', async () => {
       const talent = createTalentWithStatus({
-        talent: {
-          id: 10,
-          code: 't10',
-          name: 'Talent 10',
-          description: '',
-          isKey: false,
-          path: null,
-          specialties: [],
-          ancestry: null,
-          radiantOrder: null,
-          surge: null,
-        },
+        talent: createTalent({ id: 10, code: 't10', name: 'Talent 10' }),
         available: false,
       });
 
@@ -313,18 +237,12 @@ describe('TalentListPanel', () => {
     });
 
     it('emits showDetails when details button clicked', async () => {
-      const talentData = {
+      const talentData = createTalent({
         id: 7,
         code: 't7',
         name: 'Talent 7',
         description: 'Full desc',
-        isKey: false,
-        path: null,
-        specialties: [],
-        ancestry: null,
-        radiantOrder: null,
-        surge: null,
-      };
+      });
       const talent = createTalentWithStatus({ talent: talentData });
 
       const wrapper = createWrapper({

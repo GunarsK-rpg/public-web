@@ -121,7 +121,7 @@ function getSkillRank(skillId: number): number {
 }
 
 function getSkillModifier(skillId: number): number {
-  return heroStore.hero?.skills?.find((s) => s.skill.id === skillId)?.modifier ?? 0;
+  return heroStore.skills.find((s) => s.skill.id === skillId)?.modifier ?? 0;
 }
 
 function setSkillModifier(skillId: number, value: string | number | null) {

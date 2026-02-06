@@ -128,8 +128,8 @@ vi.mock('src/stores/classifiers', () => ({
       },
     ],
     paths: [
-      { id: 1, name: 'Warrior' },
-      { id: 2, name: 'Scholar' },
+      { id: 1, code: 'warrior', name: 'Warrior' },
+      { id: 2, code: 'scholar', name: 'Scholar' },
     ],
     specialties: [
       { id: 1, name: 'Duelist', path: { id: 1, code: 'warrior', name: 'Warrior' } },
@@ -151,13 +151,13 @@ vi.mock('src/stores/classifiers', () => ({
       },
     ],
     surges: [
-      { id: 1, name: 'Adhesion' },
-      { id: 2, name: 'Gravitation' },
-      { id: 3, name: 'Division' },
+      { id: 1, code: 'adhesion', name: 'Adhesion' },
+      { id: 2, code: 'gravitation', name: 'Gravitation' },
+      { id: 3, code: 'division', name: 'Division' },
     ],
     ancestries: [
-      { id: 1, name: 'Human' },
-      { id: 2, name: 'Singer' },
+      { id: 1, code: 'human', name: 'Human' },
+      { id: 2, code: 'singer', name: 'Singer' },
     ],
   }),
 }));
