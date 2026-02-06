@@ -84,7 +84,7 @@
           <q-item-label>{{ conn.description }}</q-item-label>
           <q-item-label caption>
             <q-badge color="grey-7">
-              {{ findById(classifiers.connectionTypes, conn.connTypeId)?.name ?? 'Unknown' }}
+              {{ findById(classifiers.connectionTypes, conn.connectionType.id)?.name ?? 'Unknown' }}
             </q-badge>
             <span v-if="conn.notes" class="q-ml-sm">{{ conn.notes }}</span>
           </q-item-label>

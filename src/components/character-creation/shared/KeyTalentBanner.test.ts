@@ -11,6 +11,11 @@ describe('KeyTalentBanner', () => {
     description: 'Full description of the talent',
     descriptionShort: 'Short description',
     isKey: true,
+    path: null,
+    specialties: [],
+    ancestry: null,
+    radiantOrder: null,
+    surge: null,
     ...overrides,
   });
 

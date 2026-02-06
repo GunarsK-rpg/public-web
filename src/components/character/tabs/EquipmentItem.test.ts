@@ -13,33 +13,62 @@ vi.mock('src/stores/classifiers', () => ({
       {
         id: 1,
         name: 'Longsword',
-        equipTypeId: 1,
-        damageTypeId: 1,
+        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+        damageType: { id: 1, code: 'slashing', name: 'Slashing' },
         special: { damage: '2d6' },
+        weight: 3,
+        cost: 15,
+        isCustom: false,
+        attributes: [],
+        unit: null,
       },
       {
         id: 2,
         name: 'Longbow',
-        equipTypeId: 1,
+        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+        damageType: null,
         special: { damage: '1d8', range: '120 ft' },
+        weight: 2,
+        cost: 25,
+        isCustom: false,
+        attributes: [],
+        unit: null,
       },
       {
         id: 3,
         name: 'Chain Mail',
-        equipTypeId: 2,
+        equipType: { id: 2, code: 'armor', name: 'Armor' },
+        damageType: null,
         special: { deflect: '+2' },
+        weight: 40,
+        cost: 75,
+        isCustom: false,
+        attributes: [],
+        unit: null,
       },
       {
         id: 4,
         name: 'Healing Potion',
-        equipTypeId: 3,
+        equipType: { id: 3, code: 'consumable', name: 'Consumable' },
+        damageType: null,
         special: { charges: 3, maxCharges: 3 },
+        weight: 0.5,
+        cost: 50,
+        isCustom: false,
+        attributes: [],
+        unit: null,
       },
       {
         id: 5,
         name: 'Backpack',
-        equipTypeId: 4,
+        equipType: { id: 4, code: 'gear', name: 'Gear' },
+        damageType: null,
         special: null,
+        weight: 5,
+        cost: 2,
+        isCustom: false,
+        attributes: [],
+        unit: null,
       },
     ],
     equipmentTypes: [
@@ -60,8 +89,8 @@ const equipmentMap: Record<
   {
     id: number;
     name: string;
-    equipTypeId: number;
-    damageTypeId?: number;
+    equipType: { id: number; code: string; name: string };
+    damageType: { id: number; code: string; name: string } | null;
     special: {
       damage?: string;
       range?: string;
@@ -74,32 +103,36 @@ const equipmentMap: Record<
   1: {
     id: 1,
     name: 'Longsword',
-    equipTypeId: 1,
-    damageTypeId: 1,
+    equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+    damageType: { id: 1, code: 'slashing', name: 'Slashing' },
     special: { damage: '2d6' },
   },
   2: {
     id: 2,
     name: 'Longbow',
-    equipTypeId: 1,
+    equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+    damageType: null,
     special: { damage: '1d8', range: '120 ft' },
   },
   3: {
     id: 3,
     name: 'Chain Mail',
-    equipTypeId: 2,
+    equipType: { id: 2, code: 'armor', name: 'Armor' },
+    damageType: null,
     special: { deflect: '+2' },
   },
   4: {
     id: 4,
     name: 'Healing Potion',
-    equipTypeId: 3,
+    equipType: { id: 3, code: 'consumable', name: 'Consumable' },
+    damageType: null,
     special: { charges: 3, maxCharges: 3 },
   },
   5: {
     id: 5,
     name: 'Backpack',
-    equipTypeId: 4,
+    equipType: { id: 4, code: 'gear', name: 'Gear' },
+    damageType: null,
     special: null,
   },
 };
@@ -111,7 +144,7 @@ vi.mock('src/composables/useEntityIcon', () => ({
     const primaryEntity = computed(() => equipmentMap[mockEquipmentId.value]);
     const relatedEntity = computed(() => {
       const eq = primaryEntity.value;
-      return eq ? { id: eq.equipTypeId, name: 'Weapon', icon: 'weapon.svg' } : undefined;
+      return eq ? { id: eq.equipType.id, name: 'Weapon', icon: 'weapon.svg' } : undefined;
     });
     const iconUrl = computed(() =>
       relatedEntity.value?.icon ? '/icons/equipment/weapon.svg' : ''
@@ -133,7 +166,7 @@ describe('EquipmentItem', () => {
       props: {
         heroEquipment: {
           id: 1,
-          equipmentId: 1,
+          equipment: { id: 1, code: 'e1', name: 'Equip1' },
           amount: 1,
           isEquipped: false,
           isPrimary: false,
@@ -170,14 +203,14 @@ describe('EquipmentItem', () => {
   // ========================================
   describe('basic rendering', () => {
     it('renders equipment name', () => {
-      const wrapper = createWrapper({ equipmentId: 1 });
+      const wrapper = createWrapper({ equipment: { id: 1, code: 'e1', name: 'Equip1' } });
 
       expect(wrapper.text()).toContain('Longsword');
     });
 
     it('renders custom name when provided', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         customName: 'Syladin',
       });
 
@@ -185,7 +218,7 @@ describe('EquipmentItem', () => {
     });
 
     it('renders equipment type icon', () => {
-      const wrapper = createWrapper({ equipmentId: 1 });
+      const wrapper = createWrapper({ equipment: { id: 1, code: 'e1', name: 'Equip1' } });
 
       const img = wrapper.find('img');
       expect(img.exists()).toBe(true);
@@ -199,7 +232,7 @@ describe('EquipmentItem', () => {
   describe('status badges', () => {
     it('shows Equipped badge when equipped', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         isEquipped: true,
       });
 
@@ -208,7 +241,7 @@ describe('EquipmentItem', () => {
 
     it('does not show Equipped badge when not equipped', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         isEquipped: false,
       });
 
@@ -217,7 +250,7 @@ describe('EquipmentItem', () => {
 
     it('shows Primary badge when primary', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         isPrimary: true,
       });
 
@@ -226,7 +259,7 @@ describe('EquipmentItem', () => {
 
     it('does not show Primary badge when not primary', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         isPrimary: false,
       });
 
@@ -235,7 +268,7 @@ describe('EquipmentItem', () => {
 
     it('shows both badges when equipped and primary', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         isEquipped: true,
         isPrimary: true,
       });
@@ -251,7 +284,7 @@ describe('EquipmentItem', () => {
   describe('quantity badge', () => {
     it('shows quantity badge when amount > 1', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         amount: 3,
       });
 
@@ -260,7 +293,7 @@ describe('EquipmentItem', () => {
 
     it('does not show quantity badge when amount is 1', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         amount: 1,
       });
 
@@ -269,7 +302,7 @@ describe('EquipmentItem', () => {
 
     it('quantity badge has correct aria-label', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         amount: 5,
       });
 
@@ -283,32 +316,32 @@ describe('EquipmentItem', () => {
   // ========================================
   describe('details line', () => {
     it('shows damage for weapons', () => {
-      const wrapper = createWrapper({ equipmentId: 1 });
+      const wrapper = createWrapper({ equipment: { id: 1, code: 'e1', name: 'Equip1' } });
 
       expect(wrapper.text()).toContain('2d6');
       expect(wrapper.text()).toContain('Slashing');
     });
 
     it('shows range for ranged weapons', () => {
-      const wrapper = createWrapper({ equipmentId: 2 });
+      const wrapper = createWrapper({ equipment: { id: 2, code: 'e2', name: 'Equip2' } });
 
       expect(wrapper.text()).toContain('120 ft');
     });
 
     it('shows deflect for armor', () => {
-      const wrapper = createWrapper({ equipmentId: 3 });
+      const wrapper = createWrapper({ equipment: { id: 3, code: 'e3', name: 'Equip3' } });
 
       expect(wrapper.text()).toContain('Deflect +2');
     });
 
     it('shows charges for consumables', () => {
-      const wrapper = createWrapper({ equipmentId: 4 });
+      const wrapper = createWrapper({ equipment: { id: 4, code: 'e4', name: 'Equip4' } });
 
       expect(wrapper.text()).toContain('3/3 charges');
     });
 
     it('does not show details for items without special', () => {
-      const wrapper = createWrapper({ equipmentId: 5 });
+      const wrapper = createWrapper({ equipment: { id: 5, code: 'e5', name: 'Equip5' } });
 
       // Backpack has no special properties
       expect(wrapper.text()).not.toContain('Deflect');
@@ -322,7 +355,7 @@ describe('EquipmentItem', () => {
   describe('notes', () => {
     it('renders notes when provided', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         notes: 'Family heirloom',
       });
 
@@ -331,7 +364,7 @@ describe('EquipmentItem', () => {
 
     it('does not render notes section when empty', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         notes: null,
       });
 
@@ -344,7 +377,7 @@ describe('EquipmentItem', () => {
   // ========================================
   describe('edge cases', () => {
     it('handles unknown equipment ID gracefully', () => {
-      const wrapper = createWrapper({ equipmentId: 999 });
+      const wrapper = createWrapper({ equipment: { id: 999, code: 'e999', name: 'Equip999' } });
 
       // Should not crash
       expect(wrapper.exists()).toBe(true);
@@ -352,7 +385,7 @@ describe('EquipmentItem', () => {
 
     it('handles zero amount', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         amount: 0,
       });
 
@@ -362,7 +395,7 @@ describe('EquipmentItem', () => {
 
     it('renders all badges and details together', () => {
       const wrapper = createWrapper({
-        equipmentId: 1,
+        equipment: { id: 1, code: 'e1', name: 'Equip1' },
         isEquipped: true,
         isPrimary: true,
         amount: 2,

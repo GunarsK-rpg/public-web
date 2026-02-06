@@ -12,8 +12,8 @@ import type {
 } from 'src/types';
 
 const mockHero = ref<{
-  ancestryId: number | null;
-  activeSingerFormId: number | null;
+  ancestry: { id: number; code: string; name: string } | null;
+  activeSingerForm: { id: number; code: string; name: string } | null;
   appearance: string | null;
   biography: string | null;
   notes: string | null;
@@ -149,8 +149,8 @@ describe('OthersTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockHero.value = {
-      ancestryId: 1,
-      activeSingerFormId: null,
+      ancestry: { id: 1, code: 'human', name: 'Human' },
+      activeSingerForm: null,
       appearance: 'Tall with dark hair',
       biography: 'A hero from Alethkar',
       notes: 'Some player notes',
@@ -222,7 +222,7 @@ describe('OthersTab', () => {
     });
 
     it('shows Unknown when no ancestry', () => {
-      mockHero.value!.ancestryId = null;
+      mockHero.value!.ancestry = null;
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Unknown');
@@ -230,8 +230,8 @@ describe('OthersTab', () => {
 
     it('renders culture names', () => {
       mockCultures.value = [
-        { id: 1, heroId: 1, cultureId: 1 },
-        { id: 2, heroId: 1, cultureId: 2 },
+        { id: 1, heroId: 1, culture: { id: 1, code: 'c1', name: 'Culture1' } },
+        { id: 2, heroId: 1, culture: { id: 2, code: 'c2', name: 'Culture2' } },
       ] as HeroCulture[];
       const wrapper = createWrapper();
 
@@ -253,7 +253,7 @@ describe('OthersTab', () => {
   describe('singer form', () => {
     it('shows singer form when singer and form is active', () => {
       mockIsSinger.value = true;
-      mockHero.value!.activeSingerFormId = 2;
+      mockHero.value!.activeSingerForm = { id: 2, code: 'warform', name: 'Warform' };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Current Form');
@@ -262,7 +262,7 @@ describe('OthersTab', () => {
 
     it('shows singer form description', () => {
       mockIsSinger.value = true;
-      mockHero.value!.activeSingerFormId = 2;
+      mockHero.value!.activeSingerForm = { id: 2, code: 'warform', name: 'Warform' };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('For battle');
@@ -277,7 +277,7 @@ describe('OthersTab', () => {
 
     it('does not show singer form when no active form', () => {
       mockIsSinger.value = true;
-      mockHero.value!.activeSingerFormId = null;
+      mockHero.value!.activeSingerForm = null;
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('Current Form');
@@ -295,7 +295,7 @@ describe('OthersTab', () => {
           heroId: 1,
           name: 'Protect the king',
           description: 'Guard duty',
-          statusId: 1,
+          status: { id: 1, code: 's1', name: 'Status1' },
           value: 3,
         },
       ] as HeroGoal[];
@@ -306,7 +306,14 @@ describe('OthersTab', () => {
 
     it('renders goal description', () => {
       mockGoals.value = [
-        { id: 1, heroId: 1, name: 'Goal', description: 'Important task', statusId: 1, value: 3 },
+        {
+          id: 1,
+          heroId: 1,
+          name: 'Goal',
+          description: 'Important task',
+          status: { id: 1, code: 's1', name: 'Status1' },
+          value: 3,
+        },
       ] as HeroGoal[];
       const wrapper = createWrapper();
 
@@ -314,7 +321,15 @@ describe('OthersTab', () => {
     });
 
     it('renders goal status badge', () => {
-      mockGoals.value = [{ id: 1, heroId: 1, name: 'Goal', statusId: 1, value: 3 }] as HeroGoal[];
+      mockGoals.value = [
+        {
+          id: 1,
+          heroId: 1,
+          name: 'Goal',
+          status: { id: 1, code: 's1', name: 'Status1' },
+          value: 3,
+        },
+      ] as HeroGoal[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Active');
@@ -334,7 +349,12 @@ describe('OthersTab', () => {
   describe('connections', () => {
     it('renders connections with description', () => {
       mockConnections.value = [
-        { id: 1, heroId: 1, description: 'King Elhokar', connTypeId: 1 },
+        {
+          id: 1,
+          heroId: 1,
+          description: 'King Elhokar',
+          connectionType: { id: 1, code: 'ct1', name: 'ConnType1' },
+        },
       ] as HeroConnection[];
       const wrapper = createWrapper();
 
@@ -343,7 +363,13 @@ describe('OthersTab', () => {
 
     it('renders connection notes', () => {
       mockConnections.value = [
-        { id: 1, heroId: 1, description: 'Friend', notes: 'Met in war', connTypeId: 1 },
+        {
+          id: 1,
+          heroId: 1,
+          description: 'Friend',
+          notes: 'Met in war',
+          connectionType: { id: 1, code: 'ct1', name: 'ConnType1' },
+        },
       ] as HeroConnection[];
       const wrapper = createWrapper();
 
@@ -352,7 +378,12 @@ describe('OthersTab', () => {
 
     it('renders connection type badge', () => {
       mockConnections.value = [
-        { id: 1, heroId: 1, description: 'Friend', connTypeId: 1 },
+        {
+          id: 1,
+          heroId: 1,
+          description: 'Friend',
+          connectionType: { id: 1, code: 'ct1', name: 'ConnType1' },
+        },
       ] as HeroConnection[];
       const wrapper = createWrapper();
 
@@ -368,7 +399,12 @@ describe('OthersTab', () => {
 
     it('shows fallback for connection without description', () => {
       mockConnections.value = [
-        { id: 1, heroId: 1, description: null, connTypeId: 1 },
+        {
+          id: 1,
+          heroId: 1,
+          description: null,
+          connectionType: { id: 1, code: 'ct1', name: 'ConnType1' },
+        },
       ] as HeroConnection[];
       const wrapper = createWrapper();
 
@@ -382,7 +418,12 @@ describe('OthersTab', () => {
   describe('companions', () => {
     it('renders companions with description', () => {
       mockCompanions.value = [
-        { id: 1, heroId: 1, description: 'Syl', compTypeId: 2 },
+        {
+          id: 1,
+          heroId: 1,
+          description: 'Syl',
+          companionType: { id: 2, code: 'cpt2', name: 'CompType2' },
+        },
       ] as HeroCompanion[];
       const wrapper = createWrapper();
 
@@ -391,7 +432,12 @@ describe('OthersTab', () => {
 
     it('renders companion type badge', () => {
       mockCompanions.value = [
-        { id: 1, heroId: 1, description: 'Syl', compTypeId: 2 },
+        {
+          id: 1,
+          heroId: 1,
+          description: 'Syl',
+          companionType: { id: 2, code: 'cpt2', name: 'CompType2' },
+        },
       ] as HeroCompanion[];
       const wrapper = createWrapper();
 
@@ -407,7 +453,12 @@ describe('OthersTab', () => {
 
     it('shows fallback for companion without description', () => {
       mockCompanions.value = [
-        { id: 1, heroId: 1, description: null, compTypeId: 1 },
+        {
+          id: 1,
+          heroId: 1,
+          description: null,
+          companionType: { id: 1, code: 'cpt1', name: 'CompType1' },
+        },
       ] as HeroCompanion[];
       const wrapper = createWrapper();
 
@@ -464,7 +515,9 @@ describe('OthersTab', () => {
   // ========================================
   describe('conditions & injuries', () => {
     it('renders active conditions', () => {
-      mockConditions.value = [{ id: 1, heroId: 1, conditionId: 1 }] as HeroCondition[];
+      mockConditions.value = [
+        { id: 1, heroId: 1, condition: { id: 1, code: 'cond1', name: 'Condition1' } },
+      ] as HeroCondition[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Exhausted');
@@ -478,7 +531,9 @@ describe('OthersTab', () => {
     });
 
     it('renders injuries', () => {
-      mockInjuries.value = [{ id: 1, heroId: 1, injuryId: 1 }] as HeroInjury[];
+      mockInjuries.value = [
+        { id: 1, heroId: 1, injury: { id: 1, code: 'inj1', name: 'Injury1' } },
+      ] as HeroInjury[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Broken Arm');
@@ -486,7 +541,12 @@ describe('OthersTab', () => {
 
     it('renders injury notes', () => {
       mockInjuries.value = [
-        { id: 1, heroId: 1, injuryId: 1, notes: 'From battle' },
+        {
+          id: 1,
+          heroId: 1,
+          injury: { id: 1, code: 'inj1', name: 'Injury1' },
+          notes: 'From battle',
+        },
       ] as HeroInjury[];
       const wrapper = createWrapper();
 
@@ -515,12 +575,34 @@ describe('OthersTab', () => {
 
     it('handles multiple items in each section', () => {
       mockGoals.value = [
-        { id: 1, heroId: 1, name: 'Goal 1', statusId: 1, value: 3 },
-        { id: 2, heroId: 1, name: 'Goal 2', statusId: 2, value: 4 },
+        {
+          id: 1,
+          heroId: 1,
+          name: 'Goal 1',
+          status: { id: 1, code: 's1', name: 'Status1' },
+          value: 3,
+        },
+        {
+          id: 2,
+          heroId: 1,
+          name: 'Goal 2',
+          status: { id: 2, code: 's2', name: 'Status2' },
+          value: 4,
+        },
       ] as HeroGoal[];
       mockConnections.value = [
-        { id: 1, heroId: 1, description: 'Person 1', connTypeId: 1 },
-        { id: 2, heroId: 1, description: 'Person 2', connTypeId: 2 },
+        {
+          id: 1,
+          heroId: 1,
+          description: 'Person 1',
+          connectionType: { id: 1, code: 'ct1', name: 'ConnType1' },
+        },
+        {
+          id: 2,
+          heroId: 1,
+          description: 'Person 2',
+          connectionType: { id: 2, code: 'ct2', name: 'ConnType2' },
+        },
       ] as HeroConnection[];
       const wrapper = createWrapper();
 

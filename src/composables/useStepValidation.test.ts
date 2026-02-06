@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useStepValidation } from './useStepValidation';
 import { useHeroStore } from 'src/stores/hero';
+import type { HeroCulture } from 'src/types';
 import { useWizardStore } from 'src/stores/wizard';
 import { STEP_CODES } from 'src/types/wizard';
 
@@ -12,10 +13,10 @@ vi.mock('src/mock/heroes', () => ({
       id: 1,
       userId: 1,
       campaignId: 1,
-      ancestryId: 1,
-      startingKitId: null,
-      activeSingerFormId: null,
-      radiantOrderId: null,
+      ancestry: { id: 1, code: 'human', name: 'Human' },
+      startingKit: null,
+      activeSingerForm: null,
+      radiantOrder: null,
       radiantIdeal: 0,
       name: 'Test Hero',
       level: 5,
@@ -120,9 +121,11 @@ describe('useStepValidation', () => {
     if (heroStore.hero) {
       heroStore.hero.name = 'Test Hero';
       heroStore.hero.level = 5;
-      heroStore.hero.ancestryId = 1;
-      heroStore.hero.cultures = [{ id: -1, heroId: 0, cultureId: 1 }];
-      heroStore.hero.startingKitId = 1;
+      heroStore.hero.ancestry = { id: 1, code: 'human', name: 'Human' };
+      heroStore.hero.cultures = [
+        { id: -1, heroId: 0, culture: { id: 1, code: 'c1', name: 'Culture1' } },
+      ] as HeroCulture[];
+      heroStore.hero.startingKit = { id: 1, code: 'sk1', name: 'Kit1' };
     }
     return heroStore;
   };
@@ -179,7 +182,7 @@ describe('useStepValidation', () => {
       heroStore.initNewHero();
       if (heroStore.hero) {
         heroStore.hero.name = 'Test';
-        (heroStore.hero as { ancestryId: number | null }).ancestryId = null;
+        (heroStore.hero as unknown as { ancestry: null }).ancestry = null;
       }
 
       const { validate } = useStepValidation();
@@ -225,7 +228,7 @@ describe('useStepValidation', () => {
       heroStore.initNewHero();
       if (heroStore.hero) {
         heroStore.hero.name = 'Test';
-        heroStore.hero.startingKitId = null;
+        heroStore.hero.startingKit = null;
       }
 
       const { validate } = useStepValidation();
@@ -448,7 +451,7 @@ describe('useStepValidation', () => {
       // Set intellect attribute
       if (heroStore.hero) {
         heroStore.hero.attributes = [
-          { id: -1, heroId: 0, attrId: 3, value: 3 }, // int = 3
+          { id: -1, heroId: 0, attribute: { id: 3, code: 'a3', name: 'Attr3' }, value: 3 }, // int = 3
         ];
       }
 
@@ -496,7 +499,7 @@ describe('useStepValidation', () => {
         heroStore.hero.attributes.push({
           id: -1,
           heroId: 0,
-          attrId: 1,
+          attribute: { id: 1, code: 'a1', name: 'Attr1' },
           value: 3,
         });
       }

@@ -54,8 +54,8 @@ describe('ActionItem', () => {
           id: 1,
           name: 'Strike',
           description: 'A basic attack',
-          activationTypeId: 1,
-          actionTypeId: 1,
+          activationType: { id: 1, code: 'at1', name: 'ActType1' },
+          actionType: { id: 1, code: 'act1', name: 'ActionType1' },
           focusCost: 0,
           investitureCost: 0,
           ...action,
@@ -222,7 +222,9 @@ describe('ActionItem', () => {
     });
 
     it('handles missing activation type gracefully', () => {
-      const wrapper = createWrapper({ activationTypeId: 999 });
+      const wrapper = createWrapper({
+        activationType: { id: 999, code: 'at999', name: 'ActType999' },
+      });
 
       // Should render without crashing
       expect(wrapper.exists()).toBe(true);
@@ -262,7 +264,7 @@ describe('ActionItem', () => {
         iconUrl: null,
       };
 
-      const wrapper = createWrapper({ activationTypeId: 4 });
+      const wrapper = createWrapper({ activationType: { id: 4, code: 'at4', name: 'ActType4' } });
 
       const img = wrapper.find('img');
       expect(img.exists()).toBe(false);
@@ -274,7 +276,9 @@ describe('ActionItem', () => {
         iconUrl: null,
       };
 
-      const wrapper = createWrapper({ activationTypeId: 999 });
+      const wrapper = createWrapper({
+        activationType: { id: 999, code: 'at999', name: 'ActType999' },
+      });
 
       // Icon should not render when entity is null (no icon property)
       const img = wrapper.find('img');
@@ -309,14 +313,16 @@ describe('ActionItem', () => {
     });
 
     it('handles activationTypeId of 0', () => {
-      const wrapper = createWrapper({ activationTypeId: 0 });
+      const wrapper = createWrapper({ activationType: { id: 0, code: 'at0', name: 'ActType0' } });
 
       // Should render without crashing
       expect(wrapper.exists()).toBe(true);
     });
 
-    it('handles undefined activationTypeId', () => {
-      const wrapper = createWrapper({ activationTypeId: undefined as unknown as number });
+    it('handles undefined activationType', () => {
+      const wrapper = createWrapper({
+        activationType: undefined as unknown as { id: number; code: string; name: string },
+      });
 
       expect(wrapper.exists()).toBe(true);
     });

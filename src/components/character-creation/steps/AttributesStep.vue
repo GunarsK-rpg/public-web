@@ -120,7 +120,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 const attributeList = computed(() =>
   classifiers.attributes.map((attr) => {
-    const attrType = findById(classifiers.attributeTypes, attr.attrTypeId);
+    const attrType = findById(classifiers.attributeTypes, attr.attrType.id);
     return {
       id: attr.id,
       code: attr.code,

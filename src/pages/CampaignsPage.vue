@@ -41,12 +41,6 @@
                 {{ campaign.description }}
               </div>
             </q-card-section>
-
-            <q-separator />
-
-            <q-card-section class="text-caption text-grey">
-              Updated: {{ formatDate(campaign.updatedAt) }}
-            </q-card-section>
           </q-card>
         </div>
       </div>
@@ -58,7 +52,6 @@
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'stores/campaigns';
-import { formatDate } from 'src/utils/dateUtils';
 
 const router = useRouter();
 const campaignStore = useCampaignStore();

@@ -54,7 +54,7 @@ const classifiers = useClassifierStore();
 
 // Use entity icon composable for activation type lookup
 const { entity: activationType, iconUrl } = useEntityIcon(
-  computed(() => props.action.activationTypeId),
+  computed(() => props.action.activationType?.id),
   computed(() => classifiers.activationTypes),
   'actions'
 );

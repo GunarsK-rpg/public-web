@@ -11,10 +11,10 @@ const mockHero = ref<{
   currentFocus: number;
   currentInvestiture: number;
   currency: number;
-  ancestryId: number | null;
-  radiantOrderId: number | null;
-  activeSingerFormId: number | null;
-  cultures: { cultureId: number }[];
+  ancestry: { id: number; code: string; name: string } | null;
+  radiantOrder: { id: number; code: string; name: string } | null;
+  activeSingerForm: { id: number; code: string; name: string } | null;
+  cultures: { culture: { id: number; code: string; name: string } }[];
 } | null>(null);
 
 const mockIsRadiant = ref(false);
@@ -103,10 +103,10 @@ describe('CharacterHeader', () => {
       currentFocus: 8,
       currentInvestiture: 15,
       currency: 100,
-      ancestryId: 1,
-      radiantOrderId: 1,
-      activeSingerFormId: null,
-      cultures: [{ cultureId: 1 }],
+      ancestry: { id: 1, code: 'human', name: 'Human' },
+      radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+      activeSingerForm: null,
+      cultures: [{ culture: { id: 1, code: 'alethi', name: 'Alethi' } }],
     };
     mockIsRadiant.value = true;
     mockMaxHealth.value = 30;
@@ -246,14 +246,14 @@ describe('CharacterHeader', () => {
   // ========================================
   describe('singer form display', () => {
     it('renders active singer form when set', () => {
-      mockHero.value!.activeSingerFormId = 2;
+      mockHero.value!.activeSingerForm = { id: 2, code: 'warform', name: 'Warform' };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Warform');
     });
 
     it('does not render singer form when not set', () => {
-      mockHero.value!.activeSingerFormId = null;
+      mockHero.value!.activeSingerForm = null;
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('Warform');
@@ -283,14 +283,14 @@ describe('CharacterHeader', () => {
     });
 
     it('handles missing radiant order gracefully', () => {
-      mockHero.value!.radiantOrderId = null;
+      mockHero.value!.radiantOrder = null;
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('· Windrunner');
     });
 
     it('handles missing ancestry gracefully', () => {
-      mockHero.value!.ancestryId = null;
+      mockHero.value!.ancestry = null;
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('Human');
@@ -344,7 +344,7 @@ describe('CharacterHeader', () => {
   // ========================================
   describe('classifier lookup edge cases', () => {
     it('handles non-existent ancestry ID', () => {
-      mockHero.value!.ancestryId = 999;
+      mockHero.value!.ancestry = { id: 999, code: 'unknown', name: 'Unknown' };
       const wrapper = createWrapper();
 
       // Should not crash, just show undefined/missing name
@@ -352,7 +352,7 @@ describe('CharacterHeader', () => {
     });
 
     it('handles non-existent culture ID', () => {
-      mockHero.value!.cultures = [{ cultureId: 999 }];
+      mockHero.value!.cultures = [{ culture: { id: 999, code: 'unknown', name: 'Unknown' } }];
       const wrapper = createWrapper();
 
       // Should not crash
@@ -360,7 +360,7 @@ describe('CharacterHeader', () => {
     });
 
     it('handles non-existent radiant order ID', () => {
-      mockHero.value!.radiantOrderId = 999;
+      mockHero.value!.radiantOrder = { id: 999, code: 'unknown', name: 'Unknown' };
       const wrapper = createWrapper();
 
       // Should not crash
@@ -368,7 +368,7 @@ describe('CharacterHeader', () => {
     });
 
     it('handles non-existent singer form ID', () => {
-      mockHero.value!.activeSingerFormId = 999;
+      mockHero.value!.activeSingerForm = { id: 999, code: 'unknown', name: 'Unknown' };
       const wrapper = createWrapper();
 
       // Should not crash

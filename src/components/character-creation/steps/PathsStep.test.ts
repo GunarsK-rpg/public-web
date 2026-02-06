@@ -9,7 +9,9 @@ const mockRemoveTalent = vi.fn();
 const mockSetRadiantOrder = vi.fn();
 const mockSetRadiantIdeal = vi.fn();
 
-const mockHeroTalents = { value: [] as { talentId: number }[] };
+const mockHeroTalents = {
+  value: [] as { id: number; heroId: number; talent: { id: number; code: string; name: string } }[],
+};
 const mockIsSinger = { value: false };
 const mockIsRadiant = { value: false };
 const mockRadiantOrderId = { value: null as number | null };
@@ -55,10 +57,28 @@ const mockClassifiersData = {
       { id: 3, code: 'pathless', name: 'Pathless', description: null },
     ],
     radiantOrders: [
-      { id: 1, code: 'windrunner', name: 'Windrunner', surge1Id: 1, surge2Id: 2 },
-      { id: 2, code: 'skybreaker', name: 'Skybreaker', surge1Id: 2, surge2Id: 3 },
-      { id: 3, code: 'bondsmith', name: 'Bondsmith', surge1Id: 1, surge2Id: null },
-      { id: 4, code: 'unknown', name: 'Unknown', surge1Id: null, surge2Id: null },
+      {
+        id: 1,
+        code: 'windrunner',
+        name: 'Windrunner',
+        surge1: { id: 1, code: 'gravitation', name: 'Gravitation' },
+        surge2: { id: 2, code: 'adhesion', name: 'Adhesion' },
+      },
+      {
+        id: 2,
+        code: 'skybreaker',
+        name: 'Skybreaker',
+        surge1: { id: 2, code: 'adhesion', name: 'Adhesion' },
+        surge2: { id: 3, code: 'division', name: 'Division' },
+      },
+      {
+        id: 3,
+        code: 'bondsmith',
+        name: 'Bondsmith',
+        surge1: { id: 1, code: 'gravitation', name: 'Gravitation' },
+        surge2: null,
+      },
+      { id: 4, code: 'unknown', name: 'Unknown', surge1: null, surge2: null },
     ],
     surges: [
       { id: 1, code: 'gravitation', name: 'Gravitation' },
@@ -647,7 +667,10 @@ describe('PathsStep', () => {
         { id: 101, pathId: 2, specialtyId: 10 },
       ];
       mockClassifiersData.value.specialties = [{ id: 10, pathId: 2 }];
-      mockHeroTalents.value = [{ talentId: 100 }, { talentId: 101 }];
+      mockHeroTalents.value = [
+        { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
+        { id: 2, heroId: 1, talent: { id: 101, code: 'scholar-lore', name: 'Lore Mastery' } },
+      ];
 
       const wrapper = createWrapper();
 
@@ -658,7 +681,9 @@ describe('PathsStep', () => {
     it('syncs specialties from existing hero talents', () => {
       mockClassifiersData.value.talents = [{ id: 100, pathId: 1, specialtyId: 20 }];
       mockClassifiersData.value.specialties = [{ id: 20, pathId: 1 }];
-      mockHeroTalents.value = [{ talentId: 100 }];
+      mockHeroTalents.value = [
+        { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
+      ];
 
       const wrapper = createWrapper();
 
@@ -667,7 +692,9 @@ describe('PathsStep', () => {
 
     it('handles talent without pathId', () => {
       mockClassifiersData.value.talents = [{ id: 100 }]; // No pathId
-      mockHeroTalents.value = [{ talentId: 100 }];
+      mockHeroTalents.value = [
+        { id: 1, heroId: 1, talent: { id: 100, code: 'generic-talent', name: 'Generic Talent' } },
+      ];
 
       const wrapper = createWrapper();
 
@@ -675,7 +702,9 @@ describe('PathsStep', () => {
     });
 
     it('handles talent with unknown talentId', () => {
-      mockHeroTalents.value = [{ talentId: 999 }]; // Unknown talent
+      mockHeroTalents.value = [
+        { id: 1, heroId: 1, talent: { id: 999, code: 'unknown-talent', name: 'Unknown Talent' } },
+      ]; // Unknown talent
 
       const wrapper = createWrapper();
 
@@ -685,7 +714,9 @@ describe('PathsStep', () => {
     it('handles specialty without pathId', () => {
       mockClassifiersData.value.talents = [{ id: 100, pathId: 1, specialtyId: 30 }];
       mockClassifiersData.value.specialties = []; // No specialty found
-      mockHeroTalents.value = [{ talentId: 100 }];
+      mockHeroTalents.value = [
+        { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
+      ];
 
       const wrapper = createWrapper();
 

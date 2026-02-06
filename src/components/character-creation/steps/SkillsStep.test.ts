@@ -12,8 +12,13 @@ const mockGetSkillRank = vi.fn().mockReturnValue(1);
 const mockHeroData = {
   value: {
     hero: {
-      skills: [{ skillId: 1, modifier: 0 }] as Array<{ skillId: number; modifier: number }>,
-    } as { skills: Array<{ skillId: number; modifier: number }> } | null,
+      skills: [{ skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: 0 }] as Array<{
+        skill: { id: number; code: string; name: string };
+        modifier: number;
+      }>,
+    } as {
+      skills: Array<{ skill: { id: number; code: string; name: string }; modifier: number }>;
+    } | null,
   },
 };
 
@@ -51,13 +56,38 @@ vi.mock('src/stores/heroAttributes', () => ({
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
     skills: [
-      { id: 1, code: 'athletics', name: 'Athletics', attrId: 1 },
-      { id: 2, code: 'acrobatics', name: 'Acrobatics', attrId: 2 },
-      { id: 3, code: 'unknown', name: 'Unknown Skill', attrId: 999 }, // No matching attribute
+      {
+        id: 1,
+        code: 'athletics',
+        name: 'Athletics',
+        attr: { id: 1, code: 'str', name: 'Strength' },
+      },
+      {
+        id: 2,
+        code: 'acrobatics',
+        name: 'Acrobatics',
+        attr: { id: 2, code: 'dex', name: 'Dexterity' },
+      },
+      {
+        id: 3,
+        code: 'unknown',
+        name: 'Unknown Skill',
+        attr: { id: 999, code: 'none', name: 'None' },
+      }, // No matching attribute
     ],
     attributes: [
-      { id: 1, code: 'str', name: 'Strength', attrTypeId: 1 },
-      { id: 2, code: 'dex', name: 'Dexterity', attrTypeId: 1 },
+      {
+        id: 1,
+        code: 'str',
+        name: 'Strength',
+        attrType: { id: 1, code: 'physical', name: 'Physical' },
+      },
+      {
+        id: 2,
+        code: 'dex',
+        name: 'Dexterity',
+        attrType: { id: 1, code: 'physical', name: 'Physical' },
+      },
     ],
     attributeTypes: [{ id: 1, code: 'physical', name: 'Physical' }],
   }),
@@ -72,14 +102,32 @@ vi.mock('src/composables/useStepValidation', () => ({
 const mockSkillsByAttrType = {
   value: {
     1: [
-      { id: 1, code: 'athletics', name: 'Athletics', attrId: 1 },
-      { id: 3, code: 'unknown', name: 'Unknown Skill', attrId: 999 },
+      {
+        id: 1,
+        code: 'athletics',
+        name: 'Athletics',
+        attr: { id: 1, code: 'str', name: 'Strength' },
+      },
+      {
+        id: 3,
+        code: 'unknown',
+        name: 'Unknown Skill',
+        attr: { id: 999, code: 'none', name: 'None' },
+      },
     ],
-  } as Record<number, Array<{ id: number; code: string; name: string; attrId: number }>>,
+  } as Record<
+    number,
+    Array<{
+      id: number;
+      code: string;
+      name: string;
+      attr: { id: number; code: string; name: string };
+    }>
+  >,
 };
 
 vi.mock('src/utils/arrayUtils', () => ({
-  groupByChainedKey: () => mockSkillsByAttrType.value,
+  groupByKey: () => mockSkillsByAttrType.value,
   buildIdCodeMap: () => mockAttributeCodeMap.value,
 }));
 
@@ -148,7 +196,7 @@ describe('SkillsStep', () => {
     // Reset mock data to defaults
     mockHeroData.value = {
       hero: {
-        skills: [{ skillId: 1, modifier: 0 }],
+        skills: [{ skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: 0 }],
       },
     };
     mockBudgetData.value = { remaining: 5, budget: 10, spent: 5, maxRank: 2 };
@@ -160,8 +208,18 @@ describe('SkillsStep', () => {
       typeof val === 'number' ? val : Number(val) || 0;
     mockSkillsByAttrType.value = {
       1: [
-        { id: 1, code: 'athletics', name: 'Athletics', attrId: 1 },
-        { id: 3, code: 'unknown', name: 'Unknown Skill', attrId: 999 },
+        {
+          id: 1,
+          code: 'athletics',
+          name: 'Athletics',
+          attr: { id: 1, code: 'str', name: 'Strength' },
+        },
+        {
+          id: 3,
+          code: 'unknown',
+          name: 'Unknown Skill',
+          attr: { id: 999, code: 'none', name: 'None' },
+        },
       ],
     };
   });
@@ -334,7 +392,9 @@ describe('SkillsStep', () => {
     });
 
     it('shows negative modifier without plus prefix', () => {
-      mockHeroData.value.hero!.skills = [{ skillId: 1, modifier: -3 }];
+      mockHeroData.value.hero!.skills = [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: -3 },
+      ];
       const wrapper = createWrapper();
 
       const input = wrapper.find('.q-input');
@@ -344,7 +404,9 @@ describe('SkillsStep', () => {
     });
 
     it('shows positive modifier with plus prefix', () => {
-      mockHeroData.value.hero!.skills = [{ skillId: 1, modifier: 5 }];
+      mockHeroData.value.hero!.skills = [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, modifier: 5 },
+      ];
       const wrapper = createWrapper();
 
       const input = wrapper.find('.q-input');
@@ -354,7 +416,9 @@ describe('SkillsStep', () => {
     });
 
     it('returns 0 for skill not in hero skills array', () => {
-      mockHeroData.value.hero!.skills = [{ skillId: 999, modifier: 5 }]; // Different skill
+      mockHeroData.value.hero!.skills = [
+        { skill: { id: 999, code: 'unknown', name: 'Unknown' }, modifier: 5 },
+      ]; // Different skill
       const wrapper = createWrapper();
 
       const input = wrapper.find('.q-input');
@@ -375,7 +439,10 @@ describe('SkillsStep', () => {
 
     it('returns 0 when hero.skills is undefined', () => {
       mockHeroData.value.hero = {
-        skills: undefined as unknown as Array<{ skillId: number; modifier: number }>,
+        skills: undefined as unknown as Array<{
+          skill: { id: number; code: string; name: string };
+          modifier: number;
+        }>,
       };
       const wrapper = createWrapper();
 
@@ -473,7 +540,14 @@ describe('SkillsStep', () => {
     it('handles attribute type with undefined skills', () => {
       // attrType.id=2 does not exist in mockSkillsByAttrType, so ?? [] is used
       mockSkillsByAttrType.value = {
-        1: [{ id: 1, code: 'athletics', name: 'Athletics', attrId: 1 }],
+        1: [
+          {
+            id: 1,
+            code: 'athletics',
+            name: 'Athletics',
+            attr: { id: 1, code: 'str', name: 'Strength' },
+          },
+        ],
       };
 
       const wrapper = createWrapper();

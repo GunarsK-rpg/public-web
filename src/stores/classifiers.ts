@@ -160,11 +160,11 @@ export const useClassifierStore = defineStore('classifiers', () => {
     const cache = new Map<number, Map<number, number>>();
     // Pre-build the cache for O(1) lookups
     for (const v of derivedStatValues.value) {
-      if (!cache.has(v.derivedStatId)) {
-        cache.set(v.derivedStatId, new Map());
+      if (!cache.has(v.derivedStat.id)) {
+        cache.set(v.derivedStat.id, new Map());
       }
       // Store for each attribute value in the range
-      const statMap = cache.get(v.derivedStatId)!;
+      const statMap = cache.get(v.derivedStat.id)!;
       const maxVal = v.attrMax ?? MAX_ATTRIBUTE_VALUE;
       for (let attr = v.attrMin; attr <= maxVal; attr++) {
         statMap.set(attr, v.value);

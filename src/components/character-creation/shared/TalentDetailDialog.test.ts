@@ -11,6 +11,11 @@ describe('TalentDetailDialog', () => {
     description: 'Full description of the talent',
     descriptionShort: 'Short desc',
     isKey: false,
+    path: null,
+    specialties: [],
+    ancestry: null,
+    radiantOrder: null,
+    surge: null,
     ...overrides,
   });
 

@@ -1,3 +1,6 @@
+// Shared types
+export * from './shared';
+
 // Base types
 export * from './classifier';
 
@@ -47,13 +50,10 @@ export interface ApiError {
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
-  page: number;
-  pageSize: number;
 }
 
 // Auth types
 export interface User {
   id: number;
   username: string;
-  email: string;
 }

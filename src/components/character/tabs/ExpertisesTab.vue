@@ -11,9 +11,9 @@
         <q-chip
           v-for="heroExp in expertisesByTypeRecord[expType.id]"
           :key="heroExp.id"
-          :aria-label="`${getExpertiseName(heroExp.expertiseId)} expertise`"
+          :aria-label="`${getExpertiseName(heroExp.expertise.id)} expertise`"
         >
-          {{ getExpertiseName(heroExp.expertiseId) }}
+          {{ getExpertiseName(heroExp.expertise.id) }}
           <q-badge v-if="heroExp.source" :color="RPG_COLORS.badgeMuted" class="q-ml-xs">
             {{ heroExp.source.sourceType }}
           </q-badge>
@@ -28,7 +28,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { groupByChainedKey, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
+import { findById, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 import type { HeroExpertise } from 'src/types';
 
@@ -37,14 +37,17 @@ const classifiers = useClassifierStore();
 
 const heroExpertises = computed(() => heroStore.expertises);
 
-// Hero expertises grouped by type (via heroExp.expertiseId -> expertise.expertiseTypeId)
+// Hero expertises grouped by type (via heroExp.expertise.id -> expertise.expertiseType.id)
 const expertisesByTypeRecord = computed((): Record<number, HeroExpertise[]> => {
-  return groupByChainedKey(
-    heroExpertises.value,
-    'expertiseId',
-    classifiers.expertises,
-    'expertiseTypeId'
-  );
+  const result: Record<number, HeroExpertise[]> = {};
+  for (const heroExp of heroExpertises.value) {
+    const expertise = findById(classifiers.expertises, heroExp.expertise.id);
+    if (!expertise) continue;
+    const typeId = expertise.expertiseType.id;
+    if (!result[typeId]) result[typeId] = [];
+    result[typeId].push(heroExp);
+  }
+  return result;
 });
 
 // Name getter using factory pattern

@@ -11,10 +11,10 @@ const mockHero = {
   id: 1,
   userId: 1,
   campaignId: 1,
-  ancestryId: 1,
-  startingKitId: null,
-  activeSingerFormId: null,
-  radiantOrderId: 1,
+  ancestry: { id: 1, code: 'human', name: 'Human' },
+  startingKit: null,
+  activeSingerForm: null,
+  radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
   radiantIdeal: 3,
   name: 'Test Hero',
   level: 5,
@@ -25,12 +25,12 @@ const mockHero = {
   defenses: [],
   derivedStats: [],
   skills: [
-    { id: 1, heroId: 1, skillId: 1, rank: 3 },
-    { id: 2, heroId: 1, skillId: 2, rank: 5 },
+    { id: 1, heroId: 1, skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 3 },
+    { id: 2, heroId: 1, skill: { id: 2, code: 'acrobatics', name: 'Acrobatics' }, rank: 5 },
   ],
   talents: [
-    { id: 1, heroId: 1, talentId: 100 },
-    { id: 2, heroId: 1, talentId: 101 },
+    { id: 1, heroId: 1, talent: { id: 100, code: 'power-strike', name: 'Power Strike' } },
+    { id: 2, heroId: 1, talent: { id: 101, code: 'quick-dodge', name: 'Quick Dodge' } },
   ],
   expertises: [],
   equipment: [],
@@ -79,14 +79,39 @@ const mockClassifiers = {
   equipment: [],
   talents: [
     // Base talents
-    { id: 100, code: 'power-strike', name: 'Power Strike', pathId: 1 },
-    { id: 101, code: 'quick-dodge', name: 'Quick Dodge', pathId: 1 },
+    {
+      id: 100,
+      code: 'power-strike',
+      name: 'Power Strike',
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
+    },
+    {
+      id: 101,
+      code: 'quick-dodge',
+      name: 'Quick Dodge',
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
+    },
     // Talent with talent prerequisite
     {
       id: 102,
       code: 'mighty-blow',
       name: 'Mighty Blow',
-      pathId: 1,
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
       prerequisites: [{ type: 'talent', talentIds: [100] }],
     },
     // Talent with skill prerequisite
@@ -94,7 +119,12 @@ const mockClassifiers = {
       id: 103,
       code: 'expert-climber',
       name: 'Expert Climber',
-      pathId: 1,
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
       prerequisites: [{ type: 'skill', skillId: 1, skillRank: 3 }],
     },
     // Talent with ideal prerequisite
@@ -102,8 +132,12 @@ const mockClassifiers = {
       id: 104,
       code: 'radiant-surge',
       name: 'Radiant Surge',
-      pathId: null,
-      radiantOrderId: 1,
+      path: null,
+      specialties: [],
+      ancestry: null,
+      radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+      surge: null,
+      isKey: false,
       prerequisites: [{ type: 'ideal', skillRank: 2 }],
     },
     // Talent with level prerequisite
@@ -111,7 +145,12 @@ const mockClassifiers = {
       id: 105,
       code: 'veteran-skill',
       name: 'Veteran Skill',
-      pathId: 1,
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
       prerequisites: [{ type: 'level', skillRank: 5 }],
     },
     // Talent with multiple prerequisites (all must be met)
@@ -119,34 +158,159 @@ const mockClassifiers = {
       id: 106,
       code: 'master-warrior',
       name: 'Master Warrior',
-      pathId: 1,
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
       prerequisites: [
         { type: 'talent', talentIds: [100, 101] },
         { type: 'skill', skillId: 2, skillRank: 4 },
       ],
     },
     // Key talents
-    { id: 200, code: 'path-key', name: 'Path Key Talent', pathId: 1, isKey: true },
-    { id: 201, code: 'ancestry-key', name: 'Ancestry Key', ancestryId: 1, isKey: true },
-    { id: 202, code: 'order-key', name: 'Order Key', radiantOrderId: 1, isKey: true },
+    {
+      id: 200,
+      code: 'path-key',
+      name: 'Path Key Talent',
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: true,
+    },
+    {
+      id: 201,
+      code: 'ancestry-key',
+      name: 'Ancestry Key',
+      path: null,
+      specialties: [],
+      ancestry: { id: 1, code: 'human', name: 'Human' },
+      radiantOrder: null,
+      surge: null,
+      isKey: true,
+    },
+    {
+      id: 202,
+      code: 'order-key',
+      name: 'Order Key',
+      path: null,
+      specialties: [],
+      ancestry: null,
+      radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+      surge: null,
+      isKey: true,
+    },
     // Specialty talents
-    { id: 300, code: 'specialty-1', name: 'Specialty Talent 1', pathId: 1, specialtyId: 10 },
-    { id: 301, code: 'specialty-2', name: 'Specialty Talent 2', pathId: 1, specialtyId: 10 },
+    {
+      id: 300,
+      code: 'specialty-1',
+      name: 'Specialty Talent 1',
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [{ id: 10, code: 'berserker', name: 'Berserker' }],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
+    },
+    {
+      id: 301,
+      code: 'specialty-2',
+      name: 'Specialty Talent 2',
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      specialties: [{ id: 10, code: 'berserker', name: 'Berserker' }],
+      ancestry: null,
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
+    },
     // Ancestry talents
-    { id: 400, code: 'human-1', name: 'Human Talent 1', ancestryId: 1 },
-    { id: 401, code: 'human-2', name: 'Human Talent 2', ancestryId: 1 },
+    {
+      id: 400,
+      code: 'human-1',
+      name: 'Human Talent 1',
+      path: null,
+      specialties: [],
+      ancestry: { id: 1, code: 'human', name: 'Human' },
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
+    },
+    {
+      id: 401,
+      code: 'human-2',
+      name: 'Human Talent 2',
+      path: null,
+      specialties: [],
+      ancestry: { id: 1, code: 'human', name: 'Human' },
+      radiantOrder: null,
+      surge: null,
+      isKey: false,
+    },
     // Radiant order talents
-    { id: 500, code: 'order-1', name: 'Order Talent 1', radiantOrderId: 1 },
-    { id: 501, code: 'order-2', name: 'Order Talent 2', radiantOrderId: 1 },
+    {
+      id: 500,
+      code: 'order-1',
+      name: 'Order Talent 1',
+      path: null,
+      specialties: [],
+      ancestry: null,
+      radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+      surge: null,
+      isKey: false,
+    },
+    {
+      id: 501,
+      code: 'order-2',
+      name: 'Order Talent 2',
+      path: null,
+      specialties: [],
+      ancestry: null,
+      radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+      surge: null,
+      isKey: false,
+    },
     // Surge talents
-    { id: 600, code: 'surge-1', name: 'Surge Talent 1', surgeId: 5 },
-    { id: 601, code: 'surge-2', name: 'Surge Talent 2', surgeId: 5 },
+    {
+      id: 600,
+      code: 'surge-1',
+      name: 'Surge Talent 1',
+      path: null,
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: { id: 5, code: 'gravitation', name: 'Gravitation' },
+      isKey: false,
+    },
+    {
+      id: 601,
+      code: 'surge-2',
+      name: 'Surge Talent 2',
+      path: null,
+      specialties: [],
+      ancestry: null,
+      radiantOrder: null,
+      surge: { id: 5, code: 'gravitation', name: 'Gravitation' },
+      isKey: false,
+    },
   ],
   talentTypes: [],
   paths: [{ id: 1, code: 'warrior', name: 'Warrior' }],
   specialties: [
-    { id: 10, pathId: 1, code: 'berserker', name: 'Berserker' },
-    { id: 11, pathId: 1, code: 'guardian', name: 'Guardian' },
+    {
+      id: 10,
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      code: 'berserker',
+      name: 'Berserker',
+    },
+    {
+      id: 11,
+      path: { id: 1, code: 'warrior', name: 'Warrior' },
+      code: 'guardian',
+      name: 'Guardian',
+    },
   ],
   heroicPaths: [],
   radiantOrders: [{ id: 1, code: 'windrunner', name: 'Windrunner' }],
@@ -271,6 +435,11 @@ describe('useTalentPrerequisites', () => {
         code: 'test',
         name: 'Test',
         isKey: false,
+        path: null,
+        specialties: [],
+        ancestry: null,
+        radiantOrder: null,
+        surge: null,
         prerequisites: [],
       };
       const result = checkTalentPrerequisites(talent, new Set(), new Map());
@@ -325,6 +494,11 @@ describe('useTalentPrerequisites', () => {
           code: 'test',
           name: 'Test',
           isKey: false,
+          path: null,
+          specialties: [],
+          ancestry: null,
+          radiantOrder: null,
+          surge: null,
           prerequisites: [{ type: 'talent', talentIds: [] }],
         };
 
@@ -466,6 +640,11 @@ describe('useTalentPrerequisites', () => {
           code: 'test',
           name: 'Test',
           isKey: false,
+          path: null,
+          specialties: [],
+          ancestry: null,
+          radiantOrder: null,
+          surge: null,
           prerequisites: [
             { type: 'talent', talentIds: [100] },
             { type: 'skill', skillId: 1, skillRank: 2 },
@@ -486,6 +665,11 @@ describe('useTalentPrerequisites', () => {
           code: 'test',
           name: 'Test',
           isKey: false,
+          path: null,
+          specialties: [],
+          ancestry: null,
+          radiantOrder: null,
+          surge: null,
           prerequisites: [
             { type: 'talent', talentIds: [100] },
             { type: 'skill', skillId: 1, skillRank: 5 }, // Requires rank 5
@@ -507,6 +691,11 @@ describe('useTalentPrerequisites', () => {
           code: 'test',
           name: 'Test',
           isKey: false,
+          path: null,
+          specialties: [],
+          ancestry: null,
+          radiantOrder: null,
+          surge: null,
           prerequisites: [
             { type: 'talent', talentIds: [999] }, // Unmet
             { type: 'skill', skillId: 99, skillRank: 5 }, // Unmet
@@ -546,7 +735,9 @@ describe('useTalentPrerequisites', () => {
       const { mapTalentsWithStatus } = useTalentPrerequisites();
       const classifiers = useClassifierStore();
 
-      const talents = classifiers.talents.filter((t) => t.pathId === 1 && !t.specialtyId);
+      const talents = classifiers.talents.filter(
+        (t) => t.path?.id === 1 && t.specialties.length === 0
+      );
       const result = mapTalentsWithStatus(talents);
 
       expect(result).toBeInstanceOf(Array);
@@ -563,7 +754,17 @@ describe('useTalentPrerequisites', () => {
 
       // Talent 100 has no prerequisites
       const talents: Talent[] = [
-        { id: 100, code: 'power-strike', name: 'Power Strike', isKey: false, pathId: 1 },
+        {
+          id: 100,
+          code: 'power-strike',
+          name: 'Power Strike',
+          isKey: false,
+          path: { id: 1, code: 'warrior', name: 'Warrior' },
+          specialties: [],
+          ancestry: null,
+          radiantOrder: null,
+          surge: null,
+        },
       ];
 
       const result = mapTalentsWithStatus(talents);
@@ -583,7 +784,11 @@ describe('useTalentPrerequisites', () => {
           code: 'test',
           name: 'Test',
           isKey: false,
-          pathId: 1,
+          path: { id: 1, code: 'warrior', name: 'Warrior' },
+          specialties: [],
+          ancestry: null,
+          radiantOrder: null,
+          surge: null,
           prerequisites: [{ type: 'skill', skillId: 1, skillRank: 10 }],
         },
       ];
@@ -606,7 +811,7 @@ describe('useTalentPrerequisites', () => {
 
       const initialCount = heroStore.hero?.talents.length ?? 0;
 
-      toggleTalent(999, true); // Available
+      toggleTalent(102, true); // Available - Mighty Blow (exists in mock classifiers)
 
       expect(heroStore.hero?.talents.length).toBe(initialCount + 1);
     });
@@ -674,8 +879,8 @@ describe('useTalentPrerequisites', () => {
 
       expect(talents.length).toBeGreaterThan(0);
       talents.forEach((t) => {
-        expect(t.pathId).toBe(1);
-        expect(t.specialtyId).toBeUndefined();
+        expect(t.path?.id).toBe(1);
+        expect(t.specialties.length).toBe(0);
       });
     });
 
@@ -686,7 +891,7 @@ describe('useTalentPrerequisites', () => {
 
       expect(talents).toHaveLength(2);
       talents.forEach((t) => {
-        expect(t.specialtyId).toBe(10);
+        expect(t.specialties.some((s: { id: number }) => s.id === 10)).toBe(true);
       });
     });
 
@@ -697,7 +902,7 @@ describe('useTalentPrerequisites', () => {
 
       expect(keyTalent).toBeDefined();
       expect(keyTalent?.isKey).toBe(true);
-      expect(keyTalent?.pathId).toBe(1);
+      expect(keyTalent?.path?.id).toBe(1);
     });
 
     it('getTalentsByAncestry returns ancestry talents', () => {
@@ -708,7 +913,7 @@ describe('useTalentPrerequisites', () => {
       // Mock has 3 ancestry talents: 201 (key), 400, 401
       expect(talents).toHaveLength(3);
       talents.forEach((t) => {
-        expect(t.ancestryId).toBe(1);
+        expect(t.ancestry?.id).toBe(1);
       });
     });
 
@@ -719,7 +924,7 @@ describe('useTalentPrerequisites', () => {
 
       expect(keyTalent).toBeDefined();
       expect(keyTalent?.isKey).toBe(true);
-      expect(keyTalent?.ancestryId).toBe(1);
+      expect(keyTalent?.ancestry?.id).toBe(1);
     });
 
     it('getTalentsByRadiantOrder returns order talents without surge', () => {
@@ -727,11 +932,11 @@ describe('useTalentPrerequisites', () => {
 
       const talents = getTalentsByRadiantOrder(1);
 
-      // Mock has 4 radiant order talents without surgeId: 104, 202 (key), 500, 501
+      // Mock has 4 radiant order talents without surge: 104, 202 (key), 500, 501
       expect(talents).toHaveLength(4);
       talents.forEach((t) => {
-        expect(t.radiantOrderId).toBe(1);
-        expect(t.surgeId).toBeUndefined();
+        expect(t.radiantOrder?.id).toBe(1);
+        expect(t.surge).toBeNull();
       });
     });
 
@@ -742,7 +947,7 @@ describe('useTalentPrerequisites', () => {
 
       expect(keyTalent).toBeDefined();
       expect(keyTalent?.isKey).toBe(true);
-      expect(keyTalent?.radiantOrderId).toBe(1);
+      expect(keyTalent?.radiantOrder?.id).toBe(1);
     });
 
     it('getTalentsBySurge returns surge talents', () => {
@@ -752,7 +957,7 @@ describe('useTalentPrerequisites', () => {
 
       expect(talents).toHaveLength(2);
       talents.forEach((t) => {
-        expect(t.surgeId).toBe(5);
+        expect(t.surge?.id).toBe(5);
       });
     });
 
@@ -763,7 +968,7 @@ describe('useTalentPrerequisites', () => {
 
       expect(specialties).toHaveLength(2);
       specialties.forEach((s) => {
-        expect(s.pathId).toBe(1);
+        expect(s.path.id).toBe(1);
       });
     });
   });
@@ -781,6 +986,11 @@ describe('useTalentPrerequisites', () => {
         code: 'test',
         name: 'Test',
         isKey: false,
+        path: null,
+        specialties: [],
+        ancestry: null,
+        radiantOrder: null,
+        surge: null,
         prerequisites: [{ type: 'skill', skillId: 1, skillRank: 3 }],
       };
 
@@ -794,7 +1004,17 @@ describe('useTalentPrerequisites', () => {
       await setupHero();
       const { getPrerequisitesArray } = useTalentPrerequisites();
 
-      const talent: Talent = { id: 1, code: 'test', name: 'Test', isKey: false };
+      const talent: Talent = {
+        id: 1,
+        code: 'test',
+        name: 'Test',
+        isKey: false,
+        path: null,
+        specialties: [],
+        ancestry: null,
+        radiantOrder: null,
+        surge: null,
+      };
 
       const result = getPrerequisitesArray(talent);
 

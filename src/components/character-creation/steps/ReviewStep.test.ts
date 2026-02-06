@@ -9,30 +9,36 @@ const mockHeroData = {
     hero: {
       name: 'Test Hero',
       level: 3,
-      ancestryId: 1,
-      cultures: [{ cultureId: 1 }],
-      startingKitId: 1,
-      radiantOrderId: null,
+      ancestry: { id: 1, code: 'human', name: 'Human' },
+      cultures: [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }],
+      startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
+      radiantOrder: null as { id: number; code: string; name: string } | null,
       currency: 50,
     } as {
       name: string | null;
       level: number;
-      ancestryId: number | null;
-      cultures: Array<{ cultureId: number }>;
-      startingKitId: number | null;
-      radiantOrderId: number | null;
+      ancestry: { id: number; code: string; name: string };
+      cultures: Array<{ culture: { id: number; code: string; name: string } }> | undefined;
+      startingKit: { id: number; code: string; name: string } | null;
+      radiantOrder: { id: number; code: string; name: string } | null;
       currency: number;
     } | null,
-    skills: [{ skillId: 1, rank: 2, modifier: 1 }] as Array<{
-      skillId: number;
+    skills: [
+      { skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 2, modifier: 1 },
+    ] as Array<{
+      skill: { id: number; code: string; name: string };
       rank: number;
       modifier: number;
     }>,
-    expertises: [{ expertiseId: 1 }] as Array<{ expertiseId: number }>,
-    talents: [{ talentId: 1 }] as Array<{ talentId: number }>,
-    equipment: [{ id: 1, equipmentId: 1, amount: 1 }] as Array<{
+    expertises: [{ expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' } }] as Array<{
+      expertise: { id: number; code: string; name: string };
+    }>,
+    talents: [{ talent: { id: 1, code: 'power-attack', name: 'Power Attack' } }] as Array<{
+      talent: { id: number; code: string; name: string };
+    }>,
+    equipment: [{ id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 1 }] as Array<{
       id: number;
-      equipmentId: number;
+      equipment: { id: number; code: string; name: string };
       amount: number;
     }>,
   },
@@ -115,8 +121,13 @@ vi.mock('src/stores/classifiers', () => ({
     expertises: [{ id: 1, code: 'lockpicking', name: 'Lockpicking' }],
     talents: [{ id: 1, code: 'power-attack', name: 'Power Attack' }],
     equipment: [
-      { id: 1, code: 'sword', name: 'Sword', equipTypeId: 1 },
-      { id: 2, code: 'rope', name: 'Rope', equipTypeId: 2 },
+      {
+        id: 1,
+        code: 'sword',
+        name: 'Sword',
+        equipType: { id: 1, code: 'weapons', name: 'Weapons' },
+      },
+      { id: 2, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
     ],
     equipmentTypes: [
       { id: 1, code: 'weapons', name: 'Weapons' },
@@ -180,16 +191,16 @@ describe('ReviewStep', () => {
       hero: {
         name: 'Test Hero',
         level: 3,
-        ancestryId: 1,
-        cultures: [{ cultureId: 1 }],
-        startingKitId: 1,
-        radiantOrderId: null,
+        ancestry: { id: 1, code: 'human', name: 'Human' },
+        cultures: [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }],
+        startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
+        radiantOrder: null,
         currency: 50,
       },
-      skills: [{ skillId: 1, rank: 2, modifier: 1 }],
-      expertises: [{ expertiseId: 1 }],
-      talents: [{ talentId: 1 }],
-      equipment: [{ id: 1, equipmentId: 1, amount: 1 }],
+      skills: [{ skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 2, modifier: 1 }],
+      expertises: [{ expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' } }],
+      talents: [{ talent: { id: 1, code: 'power-attack', name: 'Power Attack' } }],
+      equipment: [{ id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 1 }],
     };
     mockTalentStoreData.value = { isRadiant: false };
     mockValidationData.value = { isValid: true, errors: [], warnings: [] };
@@ -279,7 +290,7 @@ describe('ReviewStep', () => {
 
     it('shows radiant order when isRadiant is true', () => {
       mockTalentStoreData.value.isRadiant = true;
-      mockHeroData.value.hero!.radiantOrderId = 1;
+      mockHeroData.value.hero!.radiantOrder = { id: 1, code: 'windrunner', name: 'Windrunner' };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Radiant Order');
@@ -301,14 +312,16 @@ describe('ReviewStep', () => {
     });
 
     it('shows "Unknown" when ancestry is not found', () => {
-      mockHeroData.value.hero!.ancestryId = 999;
+      mockHeroData.value.hero!.ancestry = { id: 999, code: 'unknown', name: 'Unknown' };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Unknown');
     });
 
     it('shows "None" when culture is not found', () => {
-      mockHeroData.value.hero!.cultures = [{ cultureId: 999 }];
+      mockHeroData.value.hero!.cultures = [
+        { culture: { id: 999, code: 'unknown', name: 'Unknown' } },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('None');
@@ -322,7 +335,7 @@ describe('ReviewStep', () => {
     });
 
     it('shows "None" when starting kit is not found', () => {
-      mockHeroData.value.hero!.startingKitId = 999;
+      mockHeroData.value.hero!.startingKit = { id: 999, code: 'unknown', name: 'Unknown' };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('None');
@@ -412,21 +425,27 @@ describe('ReviewStep', () => {
     });
 
     it('shows skill modifier when positive', () => {
-      mockHeroData.value.skills = [{ skillId: 1, rank: 2, modifier: 3 }];
+      mockHeroData.value.skills = [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 2, modifier: 3 },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('+3');
     });
 
     it('shows skill modifier when negative', () => {
-      mockHeroData.value.skills = [{ skillId: 1, rank: 2, modifier: -2 }];
+      mockHeroData.value.skills = [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 2, modifier: -2 },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('-2');
     });
 
     it('does not show skill modifier when modifier is 0', () => {
-      mockHeroData.value.skills = [{ skillId: 1, rank: 2, modifier: 0 }];
+      mockHeroData.value.skills = [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 2, modifier: 0 },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Athletics');
@@ -442,7 +461,9 @@ describe('ReviewStep', () => {
     });
 
     it('filters out skills with rank 0', () => {
-      mockHeroData.value.skills = [{ skillId: 1, rank: 0, modifier: 0 }];
+      mockHeroData.value.skills = [
+        { skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 0, modifier: 0 },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('Athletics:');
@@ -450,7 +471,9 @@ describe('ReviewStep', () => {
     });
 
     it('shows "Unknown" for skill with invalid skillId', () => {
-      mockHeroData.value.skills = [{ skillId: 999, rank: 2, modifier: 0 }];
+      mockHeroData.value.skills = [
+        { skill: { id: 999, code: 'unknown', name: 'Unknown' }, rank: 2, modifier: 0 },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Unknown');
@@ -481,7 +504,9 @@ describe('ReviewStep', () => {
     });
 
     it('shows "Unknown" for expertise with invalid expertiseId', () => {
-      mockHeroData.value.expertises = [{ expertiseId: 999 }];
+      mockHeroData.value.expertises = [
+        { expertise: { id: 999, code: 'unknown', name: 'Unknown' } },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Unknown');
@@ -512,7 +537,7 @@ describe('ReviewStep', () => {
     });
 
     it('shows "Unknown" for talent with invalid talentId', () => {
-      mockHeroData.value.talents = [{ talentId: 999 }];
+      mockHeroData.value.talents = [{ talent: { id: 999, code: 'unknown', name: 'Unknown' } }];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Unknown');
@@ -550,7 +575,9 @@ describe('ReviewStep', () => {
     });
 
     it('displays equipment amount', () => {
-      mockHeroData.value.equipment = [{ id: 1, equipmentId: 1, amount: 3 }];
+      mockHeroData.value.equipment = [
+        { id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 3 },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('x3');
@@ -558,7 +585,9 @@ describe('ReviewStep', () => {
 
     it('does not display equipment with invalid equipmentId (no type)', () => {
       // Equipment with invalid ID has no type, so it won't appear in any type section
-      mockHeroData.value.equipment = [{ id: 1, equipmentId: 999, amount: 1 }];
+      mockHeroData.value.equipment = [
+        { id: 1, equipment: { id: 999, code: 'unknown', name: 'Unknown' }, amount: 1 },
+      ];
       const wrapper = createWrapper();
 
       // Should not appear in weapons or gear sections
@@ -567,8 +596,8 @@ describe('ReviewStep', () => {
 
     it('groups equipment by type', () => {
       mockHeroData.value.equipment = [
-        { id: 1, equipmentId: 1, amount: 1 },
-        { id: 2, equipmentId: 2, amount: 1 },
+        { id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 1 },
+        { id: 2, equipment: { id: 2, code: 'rope', name: 'Rope' }, amount: 1 },
       ];
       const wrapper = createWrapper();
 
@@ -602,10 +631,12 @@ describe('ReviewStep', () => {
       mockHeroData.value.hero = {
         name: 'Test',
         level: 1,
-        ancestryId: 1,
-        cultures: undefined as unknown as Array<{ cultureId: number }>,
-        startingKitId: 1,
-        radiantOrderId: null,
+        ancestry: { id: 1, code: 'human', name: 'Human' },
+        cultures: undefined as unknown as Array<{
+          culture: { id: number; code: string; name: string };
+        }>,
+        startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
+        radiantOrder: null,
         currency: 0,
       };
       const wrapper = createWrapper();

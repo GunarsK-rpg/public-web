@@ -19,6 +19,11 @@ describe('TalentListItem', () => {
     description: 'Full description',
     descriptionShort: 'Short desc',
     isKey: false,
+    path: null,
+    specialties: [],
+    ancestry: null,
+    radiantOrder: null,
+    surge: null,
     ...overrides,
   });
 

@@ -50,9 +50,9 @@
 
       <!-- Items of this type -->
       <q-list v-if="equipmentByType[eqType.id]?.length" bordered separator>
-        <q-item v-for="item in equipmentByType[eqType.id]" :key="item.equipmentId">
+        <q-item v-for="item in equipmentByType[eqType.id]" :key="item.equipment.id">
           <q-item-section>
-            <q-item-label>{{ getEquipmentName(item.equipmentId) }}</q-item-label>
+            <q-item-label>{{ getEquipmentName(item.equipment.id) }}</q-item-label>
             <q-item-label caption>Qty: {{ item.amount }}</q-item-label>
           </q-item-section>
           <q-item-section side>
@@ -62,8 +62,8 @@
               icon="sym_o_delete"
               color="negative"
               size="sm"
-              :aria-label="`Remove ${getEquipmentName(item.equipmentId)}`"
-              @click="removeItem(item.equipmentId)"
+              :aria-label="`Remove ${getEquipmentName(item.equipment.id)}`"
+              @click="removeItem(item.equipment.id)"
             />
           </q-item-section>
         </q-item>
@@ -118,7 +118,7 @@ const newEquipmentByType = reactive<Record<number, number | null>>({});
 
 // Get selected starting kit
 const selectedStartingKit = computed(() =>
-  findById(classifiers.startingKits, heroStore.hero?.startingKitId)
+  findById(classifiers.startingKits, heroStore.hero?.startingKit?.id)
 );
 
 // Hero's currency (diamond marks)
@@ -132,8 +132,8 @@ const startingKitEquipmentNames = computed(() => {
   const kit = selectedStartingKit.value;
   if (!kit?.equipment) return [];
   return kit.equipment
-    .map((e: { equipmentId: number; quantity: number }) => {
-      const name = findById(classifiers.equipment, e.equipmentId)?.name;
+    .map((e: { id: number; quantity: number }) => {
+      const name = findById(classifiers.equipment, e.id)?.name;
       if (!name) return null;
       return e.quantity > 1 ? `${name} x${e.quantity}` : name;
     })
@@ -146,7 +146,7 @@ const equipmentMaps = computed(() => {
   const typeMap = new Map<number, number>(); // equipmentId -> equipTypeId
   for (const eq of classifiers.equipment) {
     nameMap.set(eq.id, eq.name);
-    typeMap.set(eq.id, eq.equipTypeId);
+    typeMap.set(eq.id, eq.equipType.id);
   }
   return { nameMap, typeMap };
 });
@@ -164,7 +164,7 @@ const equipmentByType = computed(() => {
   }
   // Single pass through hero equipment - O(n)
   for (const item of heroEquipment.value) {
-    const typeId = equipmentMaps.value.typeMap.get(item.equipmentId);
+    const typeId = equipmentMaps.value.typeMap.get(item.equipment.id);
     if (typeId !== undefined && result[typeId]) {
       result[typeId].push(item);
     }
@@ -175,7 +175,7 @@ const equipmentByType = computed(() => {
 // Get available equipment options for a specific type
 function getAvailableByType(typeId: number) {
   return classifiers.equipment
-    .filter((e) => e.equipTypeId === typeId)
+    .filter((e) => e.equipType.id === typeId)
     .map((e) => ({ value: e.id, label: e.name }));
 }
 

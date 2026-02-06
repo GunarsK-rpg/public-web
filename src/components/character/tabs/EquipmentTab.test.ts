@@ -29,10 +29,10 @@ vi.mock('src/stores/classifiers', () => ({
       return mockEquipmentTypes.value;
     },
     equipment: [
-      { id: 1, name: 'Longsword', equipTypeId: 1 },
-      { id: 2, name: 'Longbow', equipTypeId: 1 },
-      { id: 3, name: 'Chain Mail', equipTypeId: 2 },
-      { id: 4, name: 'Backpack', equipTypeId: 3 },
+      { id: 1, name: 'Longsword', equipType: { id: 1, code: 'weapon', name: 'Weapon' } },
+      { id: 2, name: 'Longbow', equipType: { id: 1, code: 'weapon', name: 'Weapon' } },
+      { id: 3, name: 'Chain Mail', equipType: { id: 2, code: 'armor', name: 'Armor' } },
+      { id: 4, name: 'Backpack', equipType: { id: 3, code: 'gear', name: 'Gear' } },
     ],
   }),
 }));
@@ -79,7 +79,7 @@ describe('EquipmentTab', () => {
             props: ['bordered', 'separator'],
           },
           EquipmentItem: {
-            template: '<div class="equipment-item">{{ heroEquipment.equipmentId }}</div>',
+            template: '<div class="equipment-item">{{ heroEquipment.equipment.id }}</div>',
             props: ['heroEquipment'],
           },
         },
@@ -158,8 +158,8 @@ describe('EquipmentTab', () => {
       mockHero.value = {
         currency: 100,
         equipment: [
-          { id: 1, equipmentId: 1 }, // Longsword (weapon)
-          { id: 2, equipmentId: 3 }, // Chain Mail (armor)
+          { id: 1, equipment: { id: 1, code: 'e1', name: 'Equip1' } }, // Longsword (weapon)
+          { id: 2, equipment: { id: 3, code: 'e3', name: 'Equip3' } }, // Chain Mail (armor)
         ] as HeroEquipment[],
       };
       const wrapper = createWrapper();
@@ -171,7 +171,7 @@ describe('EquipmentTab', () => {
     it('shows empty message for category without equipment', () => {
       mockHero.value = {
         currency: 100,
-        equipment: [{ id: 1, equipmentId: 1 }] as HeroEquipment[], // Only weapon
+        equipment: [{ id: 1, equipment: { id: 1, code: 'e1', name: 'Equip1' } }] as HeroEquipment[], // Only weapon
       };
       const wrapper = createWrapper();
 
@@ -235,7 +235,7 @@ describe('EquipmentTab', () => {
       mockHero.value = {
         currency: 100,
         equipment: [
-          { id: 1, equipmentId: 999 }, // Unknown equipment
+          { id: 1, equipment: { id: 999, code: 'e999', name: 'Equip999' } }, // Unknown equipment
         ] as HeroEquipment[],
       };
       const wrapper = createWrapper();
@@ -248,8 +248,8 @@ describe('EquipmentTab', () => {
       mockHero.value = {
         currency: 100,
         equipment: [
-          { id: 1, equipmentId: 1 }, // Longsword
-          { id: 2, equipmentId: 2 }, // Longbow
+          { id: 1, equipment: { id: 1, code: 'e1', name: 'Equip1' } }, // Longsword
+          { id: 2, equipment: { id: 2, code: 'e2', name: 'Equip2' } }, // Longbow
         ] as HeroEquipment[],
       };
       const wrapper = createWrapper();

@@ -11,9 +11,19 @@ const mockPaths = [
 ];
 
 const mockSpecialties = [
-  { id: 10, code: 'berserker', name: 'Berserker', pathId: 1 },
-  { id: 11, code: 'guardian', name: 'Guardian', pathId: 1 },
-  { id: 20, code: 'elementalist', name: 'Elementalist', pathId: 2 },
+  {
+    id: 10,
+    code: 'berserker',
+    name: 'Berserker',
+    path: { id: 1, code: 'warrior', name: 'Warrior' },
+  },
+  { id: 11, code: 'guardian', name: 'Guardian', path: { id: 1, code: 'warrior', name: 'Warrior' } },
+  {
+    id: 20,
+    code: 'elementalist',
+    name: 'Elementalist',
+    path: { id: 2, code: 'mage', name: 'Mage' },
+  },
 ];
 
 vi.mock('src/stores/classifiers', () => ({
@@ -55,6 +65,11 @@ describe('HeroicPathPanel', () => {
     name: 'Warrior Mastery',
     description: 'Key talent for warriors',
     isKey: true,
+    path: { id: 1, code: 'warrior', name: 'Warrior' },
+    specialties: [],
+    ancestry: null,
+    radiantOrder: null,
+    surge: null,
   });
 
   const createWrapper = (props: {

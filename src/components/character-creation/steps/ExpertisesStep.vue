@@ -104,7 +104,7 @@ const heroExpertises = computed(() => heroStore.expertises);
 function getExpertisesBySource(sourceType: string) {
   return heroExpertises.value
     .filter((e) => e.source?.sourceType === sourceType)
-    .map((e) => findById(classifiers.expertises, e.expertiseId))
+    .map((e) => findById(classifiers.expertises, e.expertise.id))
     .filter((e): e is NonNullable<typeof e> => e !== undefined);
 }
 
@@ -125,11 +125,11 @@ const filteredExpertises = computed(() => {
   }
   const typeId = getExpertiseTypeId(selectedCategory.value);
   if (!typeId) return [];
-  return classifiers.expertises.filter((e) => e.expertiseTypeId === typeId);
+  return classifiers.expertises.filter((e) => e.expertiseType.id === typeId);
 });
 
 function isSelected(expertiseId: number): boolean {
-  return heroExpertises.value.some((e) => e.expertiseId === expertiseId);
+  return heroExpertises.value.some((e) => e.expertise.id === expertiseId);
 }
 
 function isReadOnly(expertiseId: number): boolean {
@@ -139,7 +139,7 @@ function isReadOnly(expertiseId: number): boolean {
 }
 
 function getSource(expertiseId: number): string | null {
-  const heroExp = heroExpertises.value.find((e) => e.expertiseId === expertiseId);
+  const heroExp = heroExpertises.value.find((e) => e.expertise.id === expertiseId);
   return heroExp?.source?.sourceType ?? null;
 }
 
@@ -159,6 +159,6 @@ function toggleExpertise(expertiseId: number, checked: boolean) {
 function isSpecialist(expertiseId: number): boolean {
   if (!specialistTypeId.value) return false;
   const expertise = findById(classifiers.expertises, expertiseId);
-  return expertise?.expertiseTypeId === specialistTypeId.value;
+  return expertise?.expertiseType.id === specialistTypeId.value;
 }
 </script>

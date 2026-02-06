@@ -117,8 +117,8 @@ const selectedOrder = computed(() => findById(classifiers.radiantOrders, props.o
 
 const orderName = computed(() => selectedOrder.value?.name || 'Select Order');
 
-const surge1Id = computed(() => selectedOrder.value?.surge1Id ?? null);
-const surge2Id = computed(() => selectedOrder.value?.surge2Id ?? null);
+const surge1Id = computed(() => selectedOrder.value?.surge1.id ?? null);
+const surge2Id = computed(() => selectedOrder.value?.surge2.id ?? null);
 
 const surge1Name = computed(() => findById(classifiers.surges, surge1Id.value)?.name || 'Surge 1');
 const surge2Name = computed(() => findById(classifiers.surges, surge2Id.value)?.name || 'Surge 2');

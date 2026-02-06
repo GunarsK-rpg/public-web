@@ -8,17 +8,46 @@ import { useClassifierStore } from './classifiers';
 const mockClassifiers = {
   attributeTypes: [{ id: 1, code: 'physical', name: 'Physical' }],
   attributes: [
-    { id: 1, code: 'strength', name: 'Strength', attributeTypeId: 1, sortOrder: 1 },
-    { id: 2, code: 'speed', name: 'Speed', attributeTypeId: 1, sortOrder: 2 },
+    {
+      id: 1,
+      code: 'strength',
+      name: 'Strength',
+      attrType: { id: 1, code: 'physical', name: 'Physical' },
+      sortOrder: 1,
+    },
+    {
+      id: 2,
+      code: 'speed',
+      name: 'Speed',
+      attrType: { id: 1, code: 'physical', name: 'Physical' },
+      sortOrder: 2,
+    },
   ],
-  derivedStats: [{ id: 1, code: 'health', name: 'Health', attributeId: 1 }],
+  derivedStats: [{ id: 1, code: 'health', name: 'Health' }],
   derivedStatValues: [],
   skills: [
-    { id: 1, code: 'athletics', name: 'Athletics', attrId: 1 },
-    { id: 2, code: 'acrobatics', name: 'Acrobatics', attrId: 2 },
+    {
+      id: 1,
+      code: 'athletics',
+      name: 'Athletics',
+      attr: { id: 1, code: 'strength', name: 'Strength' },
+    },
+    {
+      id: 2,
+      code: 'acrobatics',
+      name: 'Acrobatics',
+      attr: { id: 2, code: 'speed', name: 'Speed' },
+    },
   ],
   expertiseTypes: [],
-  expertises: [{ id: 1, code: 'climbing', name: 'Climbing', skillId: 1 }],
+  expertises: [
+    {
+      id: 1,
+      code: 'climbing',
+      name: 'Climbing',
+      expertiseType: { id: 1, code: 'general', name: 'General' },
+    },
+  ],
   activationTypes: [],
   actionTypes: [],
   actions: [],
@@ -43,7 +72,18 @@ const mockClassifiers = {
   ancestries: [],
   cultures: [],
   tiers: [{ id: 1, code: 'apprentice', name: 'Apprentice' }],
-  levels: [{ id: 1, level: 1, tierId: 1, maxSkillRank: 2 }],
+  levels: [
+    {
+      id: 1,
+      level: 1,
+      tier: { id: 1, code: 'apprentice', name: 'Apprentice' },
+      attributePoints: 6,
+      healthBase: 10,
+      maxSkillRank: 2,
+      skillRanks: 6,
+      talentSlots: 3,
+    },
+  ],
 };
 
 const { mockGetAllClassifiers } = vi.hoisted(() => ({
@@ -98,14 +138,27 @@ describe('useHeroAttributesStore', () => {
     // Add some attributes
     if (heroStore.hero) {
       heroStore.hero.attributes = [
-        { id: 1, heroId: 0, attrId: 1, value: 3 }, // strength = 3
-        { id: 2, heroId: 0, attrId: 2, value: 2 }, // speed = 2
+        { id: 1, heroId: 0, attribute: { id: 1, code: 'strength', name: 'Strength' }, value: 3 },
+        { id: 2, heroId: 0, attribute: { id: 2, code: 'speed', name: 'Speed' }, value: 2 },
       ];
       heroStore.hero.skills = [
-        { id: 1, heroId: 0, skillId: 1, rank: 2, modifier: 0 }, // athletics rank 2
+        {
+          id: 1,
+          heroId: 0,
+          skill: { id: 1, code: 'athletics', name: 'Athletics' },
+          rank: 2,
+          modifier: 0,
+        },
       ];
       heroStore.hero.expertises = [];
-      heroStore.hero.derivedStats = [{ id: 1, heroId: 0, statId: 1, value: 15, modifier: 2 }];
+      heroStore.hero.derivedStats = [
+        {
+          derivedStat: { id: 1, code: 'health', name: 'Health' },
+          baseValue: 15,
+          modifier: 2,
+          totalValue: 17,
+        },
+      ];
     }
   }
 
@@ -167,7 +220,14 @@ describe('useHeroAttributesStore', () => {
 
       // Add defense data
       if (heroStore.hero) {
-        heroStore.hero.defenses = [{ id: 1, heroId: 0, attrTypeId: 1, value: 14, modifier: 0 }];
+        heroStore.hero.defenses = [
+          {
+            attributeType: { id: 1, code: 'physical', name: 'Physical' },
+            baseValue: 14,
+            modifier: 0,
+            totalValue: 14,
+          },
+        ];
       }
 
       expect(store.getDefenseValue('physical')).toBe(14);
@@ -247,7 +307,7 @@ describe('useHeroAttributesStore', () => {
       setupHeroWithAttributes();
       const store = useHeroAttributesStore();
 
-      expect(store.getDerivedStatValue('health')).toBe(15);
+      expect(store.getDerivedStatValue('health')).toBe(17);
     });
 
     it('returns 0 for unknown stat', () => {
@@ -297,12 +357,18 @@ describe('useHeroAttributesStore', () => {
 
       // Set stat with zero modifier
       if (heroStore.hero) {
-        heroStore.hero.derivedStats = [{ id: 1, heroId: 0, statId: 1, value: 15, modifier: 0 }];
+        heroStore.hero.derivedStats = [
+          {
+            derivedStat: { id: 1, code: 'health', name: 'Health' },
+            baseValue: 15,
+            modifier: 0,
+            totalValue: 15,
+          },
+        ];
       }
 
       const total = store.getDerivedStatTotal('health');
       // Total = calculateFormulaStat result + modifier (0)
-      // Note: The 'value' field is stored data, not used in total calculation
       expect(typeof total).toBe('number');
       expect(total).toBeGreaterThanOrEqual(0);
     });
@@ -322,10 +388,15 @@ describe('useHeroAttributesStore', () => {
       const heroStore = useHeroStore();
       const store = useHeroAttributesStore();
 
-      // Set up stat with unit and modifier
+      // Set up stat with modifier
       if (heroStore.hero) {
         heroStore.hero.derivedStats = [
-          { id: 1, heroId: 0, statId: 1, value: 15, modifier: 2, unitId: 1 },
+          {
+            derivedStat: { id: 1, code: 'health', name: 'Health' },
+            baseValue: 15,
+            modifier: 2,
+            totalValue: 17,
+          },
         ];
       }
 
@@ -341,7 +412,12 @@ describe('useHeroAttributesStore', () => {
 
       if (heroStore.hero) {
         heroStore.hero.derivedStats = [
-          { id: 1, heroId: 0, statId: 1, value: 15, modifier: 0, unitId: 1 },
+          {
+            derivedStat: { id: 1, code: 'health', name: 'Health' },
+            baseValue: 15,
+            modifier: 0,
+            totalValue: 15,
+          },
         ];
       }
 
@@ -362,7 +438,14 @@ describe('useHeroAttributesStore', () => {
       const store = useHeroAttributesStore();
 
       if (heroStore.hero) {
-        heroStore.hero.derivedStats = [{ id: 1, heroId: 0, statId: 1, value: 15, modifier: 0 }];
+        heroStore.hero.derivedStats = [
+          {
+            derivedStat: { id: 1, code: 'health', name: 'Health' },
+            baseValue: 15,
+            modifier: 0,
+            totalValue: 15,
+          },
+        ];
       }
 
       const display = store.getDerivedStatDisplay('health');
@@ -381,7 +464,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setAttribute(1, 5);
 
-      const attr = heroStore.hero?.attributes.find((a) => a.attrId === 1);
+      const attr = heroStore.hero?.attributes.find((a) => a.attribute.id === 1);
       expect(attr?.value).toBe(5);
     });
 
@@ -406,7 +489,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setAttribute(1, -5);
 
-      const attr = heroStore.hero?.attributes.find((a) => a.attrId === 1);
+      const attr = heroStore.hero?.attributes.find((a) => a.attribute.id === 1);
       expect(attr?.value).toBe(0);
     });
 
@@ -417,7 +500,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setAttribute(1, 15);
 
-      const attr = heroStore.hero?.attributes.find((a) => a.attrId === 1);
+      const attr = heroStore.hero?.attributes.find((a) => a.attribute.id === 1);
       expect(attr?.value).toBe(10);
     });
 
@@ -439,7 +522,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setSkillRank(1, 1);
 
-      const skill = heroStore.hero?.skills.find((s) => s.skillId === 1);
+      const skill = heroStore.hero?.skills.find((s) => s.skill.id === 1);
       expect(skill?.rank).toBe(1);
     });
 
@@ -450,7 +533,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setSkillRank(2, 1); // acrobatics
 
-      const skill = heroStore.hero?.skills.find((s) => s.skillId === 2);
+      const skill = heroStore.hero?.skills.find((s) => s.skill.id === 2);
       expect(skill).toBeDefined();
       expect(skill?.rank).toBe(1);
     });
@@ -462,7 +545,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setSkillRank(1, -5);
 
-      const skill = heroStore.hero?.skills.find((s) => s.skillId === 1);
+      const skill = heroStore.hero?.skills.find((s) => s.skill.id === 1);
       expect(skill?.rank).toBe(0);
     });
 
@@ -474,7 +557,7 @@ describe('useHeroAttributesStore', () => {
       // Level 1 maxSkillRank is 2
       store.setSkillRank(1, 10);
 
-      const skill = heroStore.hero?.skills.find((s) => s.skillId === 1);
+      const skill = heroStore.hero?.skills.find((s) => s.skill.id === 1);
       expect(skill?.rank).toBe(2);
     });
   });
@@ -491,7 +574,7 @@ describe('useHeroAttributesStore', () => {
       store.addExpertise(1);
 
       expect(heroStore.hero!.expertises.length).toBe(1);
-      expect(heroStore.hero!.expertises[0]!.expertiseId).toBe(1);
+      expect(heroStore.hero!.expertises[0]!.expertise.id).toBe(1);
     });
 
     it('does not add duplicate expertise', () => {
@@ -602,7 +685,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setSkillModifier(1, 3);
 
-      const skill = heroStore.hero?.skills.find((s) => s.skillId === 1);
+      const skill = heroStore.hero?.skills.find((s) => s.skill.id === 1);
       expect(skill?.modifier).toBe(3);
     });
 
@@ -613,7 +696,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setSkillModifier(2, 2); // acrobatics
 
-      const skill = heroStore.hero?.skills.find((s) => s.skillId === 2);
+      const skill = heroStore.hero?.skills.find((s) => s.skill.id === 2);
       expect(skill).toBeDefined();
       expect(skill?.modifier).toBe(2);
       expect(skill?.rank).toBe(0);
@@ -626,7 +709,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setSkillModifier(1, -100);
 
-      const skill = heroStore.hero?.skills.find((s) => s.skillId === 1);
+      const skill = heroStore.hero?.skills.find((s) => s.skill.id === 1);
       expect(skill?.modifier).toBe(0);
     });
 
@@ -637,7 +720,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setSkillModifier(1, 100);
 
-      const skill = heroStore.hero?.skills.find((s) => s.skillId === 1);
+      const skill = heroStore.hero?.skills.find((s) => s.skill.id === 1);
       expect(skill?.modifier).toBe(10);
     });
 
@@ -658,7 +741,7 @@ describe('useHeroAttributesStore', () => {
 
       store.setDerivedStatModifier(1, 5);
 
-      const stat = heroStore.hero?.derivedStats.find((s) => s.statId === 1);
+      const stat = heroStore.hero?.derivedStats.find((s) => s.derivedStat.id === 1);
       expect(stat?.modifier).toBe(5);
     });
 
@@ -674,10 +757,10 @@ describe('useHeroAttributesStore', () => {
 
       store.setDerivedStatModifier(1, 3);
 
-      const stat = heroStore.hero?.derivedStats.find((s) => s.statId === 1);
+      const stat = heroStore.hero?.derivedStats.find((s) => s.derivedStat.id === 1);
       expect(stat).toBeDefined();
       expect(stat?.modifier).toBe(3);
-      expect(stat?.value).toBe(0);
+      expect(stat?.baseValue).toBeNull();
     });
 
     it('does nothing when no hero', () => {

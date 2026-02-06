@@ -193,20 +193,20 @@ const isValid = computed(() => allStepsValidation.value.isValid);
 
 // Basic info lookups
 const ancestryName = computed(
-  () => findById(classifiers.ancestries, heroStore.hero?.ancestryId)?.name || 'Unknown'
+  () => findById(classifiers.ancestries, heroStore.hero?.ancestry.id)?.name || 'Unknown'
 );
 
 const cultureName = computed(() => {
-  const primaryCultureId = heroStore.hero?.cultures?.[0]?.cultureId;
+  const primaryCultureId = heroStore.hero?.cultures?.[0]?.culture.id;
   return findById(classifiers.cultures, primaryCultureId)?.name || 'None';
 });
 
 const startingKitName = computed(
-  () => findById(classifiers.startingKits, heroStore.hero?.startingKitId)?.name || 'None'
+  () => findById(classifiers.startingKits, heroStore.hero?.startingKit?.id)?.name || 'None'
 );
 
 const radiantOrderName = computed(
-  () => findById(classifiers.radiantOrders, heroStore.hero?.radiantOrderId)?.name
+  () => findById(classifiers.radiantOrders, heroStore.hero?.radiantOrder?.id)?.name
 );
 
 // Attributes display - abbr derived from code (e.g., 'str' -> 'STR')
@@ -242,8 +242,8 @@ const skillDisplay = computed(() =>
   heroStore.skills
     .filter((s) => s.rank > 0)
     .map((s) => ({
-      id: s.skillId,
-      name: findById(classifiers.skills, s.skillId)?.name || 'Unknown',
+      id: s.skill.id,
+      name: findById(classifiers.skills, s.skill.id)?.name || 'Unknown',
       rank: s.rank,
       modifier: s.modifier,
     }))
@@ -252,29 +252,29 @@ const skillDisplay = computed(() =>
 // Expertises
 const expertiseDisplay = computed(() =>
   heroStore.expertises.map((e) => ({
-    id: e.expertiseId,
-    name: findById(classifiers.expertises, e.expertiseId)?.name || 'Unknown',
+    id: e.expertise.id,
+    name: findById(classifiers.expertises, e.expertise.id)?.name || 'Unknown',
   }))
 );
 
 // Talents
 const talentDisplay = computed(() =>
   heroStore.talents.map((t) => ({
-    id: t.talentId,
-    name: findById(classifiers.talents, t.talentId)?.name || 'Unknown',
+    id: t.talent.id,
+    name: findById(classifiers.talents, t.talent.id)?.name || 'Unknown',
   }))
 );
 
 // Equipment
 const equipmentDisplay = computed(() =>
   heroStore.equipment.map((e) => {
-    const eq = findById(classifiers.equipment, e.equipmentId);
+    const eq = findById(classifiers.equipment, e.equipment.id);
     return {
       id: e.id,
-      equipmentId: e.equipmentId,
+      equipmentId: e.equipment.id,
       name: eq?.name || 'Unknown',
       amount: e.amount,
-      equipTypeId: eq?.equipTypeId,
+      equipTypeId: eq?.equipType.id,
     };
   })
 );

@@ -25,13 +25,13 @@ export function useTalentPrerequisites() {
   const classifiers = useClassifierStore();
 
   // Hero's selected talent IDs as Set for O(1) lookups
-  const heroTalentIds = computed(() => new Set(heroStore.talents.map((t) => t.talentId)));
+  const heroTalentIds = computed(() => new Set(heroStore.talents.map((t) => t.talent.id)));
 
   // Build character skills map from hero
   const characterSkills = computed(() => {
     const skills = new Map<number, number>();
     for (const skill of heroStore.skills) {
-      skills.set(skill.skillId, skill.rank);
+      skills.set(skill.skill.id, skill.rank);
     }
     return skills;
   });
@@ -126,39 +126,39 @@ export function useTalentPrerequisites() {
 
   // Talent lookup helpers
   function getTalentsByPath(pathId: number): Talent[] {
-    return classifiers.talents.filter((t) => t.pathId === pathId && !t.specialtyId);
+    return classifiers.talents.filter((t) => t.path?.id === pathId && t.specialties.length === 0);
   }
 
   function getTalentsBySpecialty(specialtyId: number): Talent[] {
-    return classifiers.talents.filter((t) => t.specialtyId === specialtyId);
+    return classifiers.talents.filter((t) => t.specialties.some((s) => s.id === specialtyId));
   }
 
   function getPathKeyTalent(pathId: number): Talent | undefined {
-    return classifiers.talents.find((t) => t.pathId === pathId && t.isKey);
+    return classifiers.talents.find((t) => t.path?.id === pathId && t.isKey);
   }
 
   function getTalentsByAncestry(ancestryId: number): Talent[] {
-    return classifiers.talents.filter((t) => t.ancestryId === ancestryId);
+    return classifiers.talents.filter((t) => t.ancestry?.id === ancestryId);
   }
 
   function getAncestryKeyTalent(ancestryId: number): Talent | undefined {
-    return classifiers.talents.find((t) => t.ancestryId === ancestryId && t.isKey);
+    return classifiers.talents.find((t) => t.ancestry?.id === ancestryId && t.isKey);
   }
 
   function getTalentsByRadiantOrder(orderId: number): Talent[] {
-    return classifiers.talents.filter((t) => t.radiantOrderId === orderId && !t.surgeId);
+    return classifiers.talents.filter((t) => t.radiantOrder?.id === orderId && !t.surge);
   }
 
   function getRadiantOrderKeyTalent(orderId: number): Talent | undefined {
-    return classifiers.talents.find((t) => t.radiantOrderId === orderId && t.isKey);
+    return classifiers.talents.find((t) => t.radiantOrder?.id === orderId && t.isKey);
   }
 
   function getTalentsBySurge(surgeId: number): Talent[] {
-    return classifiers.talents.filter((t) => t.surgeId === surgeId);
+    return classifiers.talents.filter((t) => t.surge?.id === surgeId);
   }
 
   function getSpecialtiesByPath(pathId: number) {
-    return classifiers.specialties.filter((s) => s.pathId === pathId);
+    return classifiers.specialties.filter((s) => s.path.id === pathId);
   }
 
   function getPrerequisitesArray(talent: Talent): TalentPrerequisite[] {

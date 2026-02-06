@@ -31,7 +31,7 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
       name: trimmedName,
       ...(trimmedDesc && { description: trimmedDesc }),
       value: 0,
-      statusId: activeStatus.id,
+      status: { id: activeStatus.id, code: activeStatus.code, name: activeStatus.name },
     });
   }
 
@@ -59,7 +59,7 @@ export const useHeroDetailsStore = defineStore('heroDetails', () => {
     heroStore.hero.connections.push({
       id: heroStore.nextTempId(),
       heroId: heroStore.hero.id,
-      connTypeId,
+      connectionType: { id: connType.id, code: connType.code, name: connType.name },
       description: trimmedDesc,
       ...(trimmedNotes ? { notes: trimmedNotes } : {}),
     });

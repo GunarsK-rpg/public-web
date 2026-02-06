@@ -63,23 +63,12 @@
                 <div class="text-h6">{{ hero.name }}</div>
                 <div class="text-subtitle2">
                   Level {{ hero.level }}
-                  <span v-if="hero.radiantOrderId">
-                    · {{ findById(classifiers.radiantOrders, hero.radiantOrderId)?.name }}
-                  </span>
+                  <span v-if="hero.radiantOrder"> · {{ hero.radiantOrder.name }} </span>
                 </div>
               </q-card-section>
 
               <q-card-section>
-                <div class="health-bar">
-                  <q-linear-progress
-                    :value="getHealthPercent(hero.currentHealth, hero.maxHealth)"
-                    color="negative"
-                    class="q-mb-xs"
-                  />
-                  <div class="text-caption">
-                    HP: {{ hero.currentHealth }} / {{ hero.maxHealth }}
-                  </div>
-                </div>
+                <div class="text-caption">HP: {{ hero.currentHealth }}</div>
               </q-card-section>
             </q-card>
           </div>
@@ -95,7 +84,6 @@ import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'src/stores/campaigns';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
-import { findById } from 'src/utils/arrayUtils';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
 
@@ -111,12 +99,6 @@ const { showWarning } = useErrorHandler();
 const campaign = computed(() => campaignStore.currentCampaign);
 const loading = computed(() => campaignStore.loading);
 const error = computed(() => campaignStore.error);
-
-// Calculate health percentage clamped to 0-1 (handles negative health edge case)
-function getHealthPercent(current: number, max: number): number {
-  if (max <= 0) return 0;
-  return Math.max(0, Math.min(1, current / max));
-}
 
 onMounted(async () => {
   const campaignId = Number(props.campaignId);

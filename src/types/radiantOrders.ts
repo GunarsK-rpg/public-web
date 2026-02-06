@@ -1,9 +1,8 @@
 import type { Classifier } from './classifier';
+import type { ClassifierRef } from './shared';
 
-/**
- * Radiant order classifier (cl_radiant_orders)
- */
+/** Radiant order classifier (cl_radiant_orders) */
 export interface RadiantOrder extends Classifier {
-  surge1Id: number;
-  surge2Id: number;
+  surge1: ClassifierRef;
+  surge2: ClassifierRef;
 }

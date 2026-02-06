@@ -130,7 +130,7 @@ describe('useHeroDetailsStore', () => {
 
       store.addGoal('Test goal');
 
-      expect(heroStore.hero!.goals[0]!.statusId).toBe(1); // 'active' status
+      expect(heroStore.hero!.goals[0]!.status.id).toBe(1); // 'active' status
     });
 
     it('generates temp id', () => {
@@ -218,7 +218,7 @@ describe('useHeroDetailsStore', () => {
       store.addConnection(1, 'A trusted friend');
 
       expect(heroStore.hero!.connections.length).toBe(1);
-      expect(heroStore.hero!.connections[0]!.connTypeId).toBe(1);
+      expect(heroStore.hero!.connections[0]!.connectionType.id).toBe(1);
       expect(heroStore.hero!.connections[0]!.description).toBe('A trusted friend');
     });
 

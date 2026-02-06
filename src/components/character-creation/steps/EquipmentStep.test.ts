@@ -11,16 +11,20 @@ const mockRemoveEquipment = vi.fn();
 // Reactive mock data
 const mockHero = {
   value: {
-    startingKitId: 1,
+    startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
     currency: 100,
-  } as { startingKitId: number | null; currency: number } | null,
+  } as { startingKit: { id: number; code: string; name: string } | null; currency: number } | null,
 };
 
 const mockEquipment = {
   value: [
-    { id: 1, equipmentId: 1, amount: 2 },
-    { id: 2, equipmentId: 2, amount: 1 },
-  ] as Array<{ id: number; equipmentId: number; amount: number }>,
+    { id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 2 },
+    { id: 2, equipment: { id: 2, code: 'shield', name: 'Shield' }, amount: 1 },
+  ] as Array<{
+    id: number;
+    equipment: { id: number; code: string; name: string };
+    amount: number;
+  }>,
 };
 
 vi.mock('src/stores/hero', () => ({
@@ -51,7 +55,7 @@ const mockClassifierData = {
         name: 'Adventurer',
         description: 'Standard kit',
         startingSpheres: '2d6',
-        equipment: [{ equipmentId: 1, quantity: 1 }],
+        equipment: [{ id: 1, code: 'sword', name: 'Sword', quantity: 1 }],
       },
       {
         id: 2,
@@ -60,8 +64,8 @@ const mockClassifierData = {
         description: 'Combat kit',
         startingSpheres: '3d6',
         equipment: [
-          { equipmentId: 1, quantity: 2 },
-          { equipmentId: 999, quantity: 1 }, // Invalid equipment id
+          { id: 1, code: 'sword', name: 'Sword', quantity: 2 },
+          { id: 999, code: 'unknown', name: 'Unknown', quantity: 1 }, // Invalid equipment id
         ],
       },
       {
@@ -78,12 +82,12 @@ const mockClassifierData = {
       name: string;
       description: string;
       startingSpheres: string;
-      equipment: Array<{ equipmentId: number; quantity: number }> | null;
+      equipment: Array<{ id: number; code: string; name: string; quantity: number }> | null;
     }>,
     equipment: [
-      { id: 1, name: 'Sword', equipTypeId: 1 },
-      { id: 2, name: 'Shield', equipTypeId: 1 },
-      { id: 3, name: 'Rope', equipTypeId: 2 },
+      { id: 1, name: 'Sword', equipType: { id: 1, code: 'weapons', name: 'Weapons' } },
+      { id: 2, name: 'Shield', equipType: { id: 1, code: 'weapons', name: 'Weapons' } },
+      { id: 3, name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
     ],
     equipmentTypes: [
       { id: 1, code: 'weapons', name: 'Weapons' },
@@ -209,12 +213,12 @@ describe('EquipmentStep', () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     mockHero.value = {
-      startingKitId: 1,
+      startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
       currency: 100,
     };
     mockEquipment.value = [
-      { id: 1, equipmentId: 1, amount: 2 },
-      { id: 2, equipmentId: 2, amount: 1 },
+      { id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 2 },
+      { id: 2, equipment: { id: 2, code: 'shield', name: 'Shield' }, amount: 1 },
     ];
     mockClassifierData.value = {
       startingKits: [
@@ -224,7 +228,7 @@ describe('EquipmentStep', () => {
           name: 'Adventurer',
           description: 'Standard kit',
           startingSpheres: '2d6',
-          equipment: [{ equipmentId: 1, quantity: 1 }],
+          equipment: [{ id: 1, code: 'sword', name: 'Sword', quantity: 1 }],
         },
         {
           id: 2,
@@ -233,8 +237,8 @@ describe('EquipmentStep', () => {
           description: 'Combat kit',
           startingSpheres: '3d6',
           equipment: [
-            { equipmentId: 1, quantity: 2 },
-            { equipmentId: 999, quantity: 1 },
+            { id: 1, code: 'sword', name: 'Sword', quantity: 2 },
+            { id: 999, code: 'unknown', name: 'Unknown', quantity: 1 },
           ],
         },
         {
@@ -247,9 +251,9 @@ describe('EquipmentStep', () => {
         },
       ],
       equipment: [
-        { id: 1, name: 'Sword', equipTypeId: 1 },
-        { id: 2, name: 'Shield', equipTypeId: 1 },
-        { id: 3, name: 'Rope', equipTypeId: 2 },
+        { id: 1, name: 'Sword', equipType: { id: 1, code: 'weapons', name: 'Weapons' } },
+        { id: 2, name: 'Shield', equipType: { id: 1, code: 'weapons', name: 'Weapons' } },
+        { id: 3, name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
       ],
       equipmentTypes: [
         { id: 1, code: 'weapons', name: 'Weapons' },
@@ -392,7 +396,7 @@ describe('EquipmentStep', () => {
     });
 
     it('handles no starting kit selected', () => {
-      mockHero.value = { startingKitId: null, currency: 100 };
+      mockHero.value = { startingKit: null, currency: 100 };
       const wrapper = createWrapper();
 
       expect(wrapper.exists()).toBe(true);
@@ -401,7 +405,9 @@ describe('EquipmentStep', () => {
     });
 
     it('filters out equipment with invalid type', () => {
-      mockEquipment.value = [{ id: 1, equipmentId: 999, amount: 1 }];
+      mockEquipment.value = [
+        { id: 1, equipment: { id: 999, code: 'unknown', name: 'Unknown' }, amount: 1 },
+      ];
       const wrapper = createWrapper();
 
       // Equipment with unknown type gets filtered out, so weapons should be empty
@@ -409,7 +415,10 @@ describe('EquipmentStep', () => {
     });
 
     it('handles unknown starting kit', () => {
-      mockHero.value = { startingKitId: 999, currency: 100 };
+      mockHero.value = {
+        startingKit: { id: 999, code: 'unknown', name: 'Unknown' },
+        currency: 100,
+      };
       const wrapper = createWrapper();
 
       expect(wrapper.exists()).toBe(true);
@@ -557,7 +566,7 @@ describe('EquipmentStep', () => {
   // ========================================
   describe('starting kit equipment names', () => {
     it('shows quantity format for items with quantity > 1', () => {
-      mockHero.value = { startingKitId: 2, currency: 100 }; // Warrior kit with quantity 2
+      mockHero.value = { startingKit: { id: 2, code: 'warrior', name: 'Warrior' }, currency: 100 }; // Warrior kit with quantity 2
       const wrapper = createWrapper();
 
       const banner = wrapper.find('.info-banner');
@@ -566,7 +575,7 @@ describe('EquipmentStep', () => {
     });
 
     it('filters out equipment with invalid id from starting kit', () => {
-      mockHero.value = { startingKitId: 2, currency: 100 };
+      mockHero.value = { startingKit: { id: 2, code: 'warrior', name: 'Warrior' }, currency: 100 };
       const wrapper = createWrapper();
 
       const banner = wrapper.find('.info-banner');
@@ -575,7 +584,7 @@ describe('EquipmentStep', () => {
     });
 
     it('handles starting kit with null equipment', () => {
-      mockHero.value = { startingKitId: 3, currency: 100 }; // Empty kit with null equipment
+      mockHero.value = { startingKit: { id: 3, code: 'empty', name: 'Empty' }, currency: 100 }; // Empty kit with null equipment
       const wrapper = createWrapper();
 
       // Should not show info banner when no equipment
@@ -588,7 +597,9 @@ describe('EquipmentStep', () => {
   // ========================================
   describe('equipment name fallback', () => {
     it('returns Unknown for equipment with unknown id', () => {
-      mockEquipment.value = [{ id: 1, equipmentId: 9999, amount: 1 }];
+      mockEquipment.value = [
+        { id: 1, equipment: { id: 9999, code: 'unknown', name: 'Unknown' }, amount: 1 },
+      ];
       const wrapper = createWrapper();
 
       // Equipment with unknown id would show "Unknown" but gets filtered by type

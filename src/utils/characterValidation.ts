@@ -1,6 +1,6 @@
 import type {
   Level,
-  Hero,
+  HeroSheet,
   HeroAttribute,
   HeroSkill,
   HeroExpertise,
@@ -131,7 +131,7 @@ function validateAncestry(ancestryId: number | null | undefined): StepValidation
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (ancestryId == null) {
+  if (!ancestryId) {
     errors.push('Ancestry is required');
   }
 
@@ -169,7 +169,7 @@ function validateStartingKit(startingKitId: number | null | undefined): StepVali
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (startingKitId == null) {
+  if (!startingKitId) {
     errors.push('Starting kit is required');
   }
 
@@ -180,7 +180,7 @@ function validateStartingKit(startingKitId: number | null | undefined): StepVali
  * Data needed for hero validation
  */
 export interface HeroValidationData {
-  hero: Hero;
+  hero: HeroSheet;
   levelData: Level | undefined;
   intellectValue: number;
 }
@@ -192,7 +192,7 @@ export function getStepValidation(stepCode: StepCode, data: HeroValidationData):
     case STEP_CODES.BASIC_SETUP:
       return validateBasicSetup(hero.name, hero.level);
     case STEP_CODES.ANCESTRY:
-      return validateAncestry(hero.ancestryId);
+      return validateAncestry(hero.ancestry?.id);
     case STEP_CODES.CULTURE:
       return validateCulture(hero.cultures);
     case STEP_CODES.ATTRIBUTES:
@@ -204,7 +204,7 @@ export function getStepValidation(stepCode: StepCode, data: HeroValidationData):
     case STEP_CODES.PATHS:
       return validatePaths(levelData, hero.talents);
     case STEP_CODES.STARTING_KIT:
-      return validateStartingKit(hero.startingKitId);
+      return validateStartingKit(hero.startingKit?.id);
     case STEP_CODES.EQUIPMENT:
     case STEP_CODES.PERSONAL_DETAILS:
       return { isValid: true, errors: [], warnings: [] };
