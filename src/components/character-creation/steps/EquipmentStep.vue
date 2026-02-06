@@ -105,6 +105,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import InfoBanner from '../shared/InfoBanner.vue';
+import type { ClassifierRef } from 'src/types';
 
 const heroStore = useHeroStore();
 const equipStore = useHeroEquipmentStore();
@@ -132,7 +133,7 @@ const startingKitEquipmentNames = computed(() => {
   const kit = selectedStartingKit.value;
   if (!kit?.equipment) return [];
   return kit.equipment
-    .map((e: { id: number; quantity: number }) => {
+    .map((e: ClassifierRef & { quantity: number }) => {
       const name = findById(classifiers.equipment, e.id)?.name;
       if (!name) return null;
       return e.quantity > 1 ? `${name} x${e.quantity}` : name;

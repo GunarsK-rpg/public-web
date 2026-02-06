@@ -12,6 +12,7 @@ vi.mock('src/stores/classifiers', () => ({
     equipment: [
       {
         id: 1,
+        code: 'longsword',
         name: 'Longsword',
         equipType: { id: 1, code: 'weapon', name: 'Weapon' },
         damageType: { id: 1, code: 'slashing', name: 'Slashing' },
@@ -24,6 +25,7 @@ vi.mock('src/stores/classifiers', () => ({
       },
       {
         id: 2,
+        code: 'longbow',
         name: 'Longbow',
         equipType: { id: 1, code: 'weapon', name: 'Weapon' },
         damageType: null,
@@ -36,6 +38,7 @@ vi.mock('src/stores/classifiers', () => ({
       },
       {
         id: 3,
+        code: 'chain-mail',
         name: 'Chain Mail',
         equipType: { id: 2, code: 'armor', name: 'Armor' },
         damageType: null,
@@ -48,6 +51,7 @@ vi.mock('src/stores/classifiers', () => ({
       },
       {
         id: 4,
+        code: 'healing-potion',
         name: 'Healing Potion',
         equipType: { id: 3, code: 'consumable', name: 'Consumable' },
         damageType: null,
@@ -60,6 +64,7 @@ vi.mock('src/stores/classifiers', () => ({
       },
       {
         id: 5,
+        code: 'backpack',
         name: 'Backpack',
         equipType: { id: 4, code: 'gear', name: 'Gear' },
         damageType: null,
@@ -133,6 +138,13 @@ const equipmentMap: Record<
   },
 };
 
+const equipmentTypeMap: Record<number, { id: number; name: string; icon: string }> = {
+  1: { id: 1, name: 'Weapon', icon: 'weapon.svg' },
+  2: { id: 2, name: 'Armor', icon: 'armor.svg' },
+  3: { id: 3, name: 'Consumable', icon: 'consumable.svg' },
+  4: { id: 4, name: 'Gear', icon: 'gear.svg' },
+};
+
 vi.mock('src/composables/useEntityIcon', () => ({
   useChainedEntityIcon: (equipmentIdRef: { value: number }) => {
     // Update mock ref when composable is called
@@ -140,10 +152,11 @@ vi.mock('src/composables/useEntityIcon', () => ({
     const primaryEntity = computed(() => equipmentMap[mockEquipmentId.value]);
     const relatedEntity = computed(() => {
       const eq = primaryEntity.value;
-      return eq ? { id: eq.equipType.id, name: 'Weapon', icon: 'weapon.svg' } : undefined;
+      if (!eq) return undefined;
+      return equipmentTypeMap[eq.equipType.id];
     });
     const iconUrl = computed(() =>
-      relatedEntity.value?.icon ? '/icons/equipment/weapon.svg' : ''
+      relatedEntity.value?.icon ? `/icons/equipment/${relatedEntity.value.icon}` : ''
     );
     return { primaryEntity, relatedEntity, iconUrl };
   },

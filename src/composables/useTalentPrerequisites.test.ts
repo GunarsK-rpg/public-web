@@ -4,13 +4,14 @@ import { useTalentPrerequisites } from './useTalentPrerequisites';
 import { axiosError } from 'src/test-utils/axiosHelpers';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import type { Talent } from 'src/types';
+import type { Talent, TalentPrerequisite } from 'src/types';
 
 /** Factory helper for building mock Talent objects with sensible defaults */
 function createMockTalent(overrides: Partial<Talent> & { id: number }): Talent {
   return {
     code: `talent-${overrides.id}`,
     name: `Talent ${overrides.id}`,
+    description: '',
     isKey: false,
     path: null,
     specialties: [],
@@ -952,7 +953,7 @@ describe('useTalentPrerequisites', () => {
       await setupHero();
       const { formatPrereq } = useTalentPrerequisites();
 
-      const prereq = {
+      const prereq: TalentPrerequisite = {
         type: 'skill',
         skillId: 1,
         skillRank: 3,
@@ -969,7 +970,7 @@ describe('useTalentPrerequisites', () => {
       await setupHero();
       const { formatPrereq } = useTalentPrerequisites();
 
-      const prereq = {
+      const prereq: TalentPrerequisite = {
         type: 'talent',
         talentIds: [100],
       };

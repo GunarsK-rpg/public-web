@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import TalentsTab from './TalentsTab.vue';
-import type { HeroTalent } from 'src/types';
+import type { ClassifierRef, HeroTalent } from 'src/types';
 
 const mockHeroTalents = ref<HeroTalent[]>([]);
 const mockIsRadiant = ref(false);
 const mockHero = ref<{
-  radiantOrder: { id: number; code: string; name: string } | null;
+  radiantOrder: ClassifierRef | null;
   radiantIdeal: number;
 } | null>(null);
 
@@ -162,6 +162,11 @@ vi.mock('src/stores/classifiers', () => ({
   }),
 }));
 
+let nextHeroTalentId = 1;
+function createHeroTalent(talentId: number, code: string, name: string) {
+  return { id: nextHeroTalentId++, heroId: 1, talent: { id: talentId, code, name } };
+}
+
 describe('TalentsTab', () => {
   const createWrapper = () =>
     shallowMount(TalentsTab, {
@@ -196,6 +201,7 @@ describe('TalentsTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    nextHeroTalentId = 1;
     mockHeroTalents.value = [];
     mockIsRadiant.value = false;
     mockHero.value = {
@@ -221,9 +227,7 @@ describe('TalentsTab', () => {
   // ========================================
   describe('path talents', () => {
     it('renders path section for path with talents', () => {
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(1, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Warrior');
@@ -231,9 +235,7 @@ describe('TalentsTab', () => {
     });
 
     it('renders key talent in Key Talent section', () => {
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(1, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Key Talent');
@@ -242,8 +244,8 @@ describe('TalentsTab', () => {
 
     it('renders general path talents in Path Talents section', () => {
       mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 't1', name: 'T1' } },
-        { id: 2, heroId: 1, talent: { id: 2, code: 't2', name: 'T2' } },
+        createHeroTalent(1, 't1', 'T1'),
+        createHeroTalent(2, 't2', 'T2'),
       ] as HeroTalent[];
       const wrapper = createWrapper();
 
@@ -253,8 +255,8 @@ describe('TalentsTab', () => {
 
     it('renders specialty talents under specialty name', () => {
       mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 't1', name: 'T1' } },
-        { id: 3, heroId: 1, talent: { id: 3, code: 't3', name: 'T3' } },
+        createHeroTalent(1, 't1', 'T1'),
+        createHeroTalent(3, 't3', 'T3'),
       ] as HeroTalent[];
       const wrapper = createWrapper();
 
@@ -264,8 +266,8 @@ describe('TalentsTab', () => {
 
     it('renders multiple paths when hero has talents from multiple', () => {
       mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 't1', name: 'T1' } },
-        { id: 2, heroId: 1, talent: { id: 8, code: 't8', name: 'T8' } },
+        createHeroTalent(1, 't1', 'T1'),
+        createHeroTalent(8, 't8', 'T8'),
       ] as HeroTalent[];
       const wrapper = createWrapper();
 
@@ -284,9 +286,7 @@ describe('TalentsTab', () => {
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         radiantIdeal: 2,
       };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(6, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Windrunner');
@@ -299,9 +299,7 @@ describe('TalentsTab', () => {
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         radiantIdeal: 3,
       };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(6, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Ideal 3');
@@ -313,9 +311,7 @@ describe('TalentsTab', () => {
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         radiantIdeal: 2,
       };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(6, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Windrunner Bond');
@@ -328,9 +324,7 @@ describe('TalentsTab', () => {
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         radiantIdeal: 2,
       };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 4, code: 'test', name: 'Test' } },
-      ] as HeroTalent[]; // Only surge talent
+      mockHeroTalents.value = [createHeroTalent(4, 'test', 'Test')] as HeroTalent[]; // Only surge talent
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('No bond talents acquired');
@@ -342,9 +336,7 @@ describe('TalentsTab', () => {
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         radiantIdeal: 2,
       };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(6, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Adhesion');
@@ -358,8 +350,8 @@ describe('TalentsTab', () => {
         radiantIdeal: 2,
       };
       mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 't6', name: 'T6' } },
-        { id: 2, heroId: 1, talent: { id: 4, code: 't4', name: 'T4' } },
+        createHeroTalent(6, 't6', 'T6'),
+        createHeroTalent(4, 't4', 'T4'),
       ] as HeroTalent[];
       const wrapper = createWrapper();
 
@@ -372,9 +364,7 @@ describe('TalentsTab', () => {
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         radiantIdeal: 2,
       };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(6, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('No Adhesion talents acquired');
@@ -383,9 +373,7 @@ describe('TalentsTab', () => {
     it('does not render radiant section for non-radiants', () => {
       mockIsRadiant.value = false;
       mockHero.value = { radiantOrder: null, radiantIdeal: 0 };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(1, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('Windrunner');
@@ -398,9 +386,7 @@ describe('TalentsTab', () => {
   // ========================================
   describe('ancestry talents', () => {
     it('renders ancestry talents section when present', () => {
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 7, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(7, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Singer');
@@ -408,18 +394,14 @@ describe('TalentsTab', () => {
     });
 
     it('renders ancestry talent items', () => {
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 7, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(7, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Warform');
     });
 
     it('does not render ancestry section when no ancestry talents', () => {
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(1, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('Ancestry Talents');
@@ -431,9 +413,7 @@ describe('TalentsTab', () => {
   // ========================================
   describe('accessibility', () => {
     it('path expansion has aria-label', () => {
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(1, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       const expansion = wrapper.find('[aria-label="Warrior path talents"]');
@@ -446,9 +426,7 @@ describe('TalentsTab', () => {
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         radiantIdeal: 2,
       };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(6, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       const expansion = wrapper.find('[aria-label="Windrunner radiant order talents"]');
@@ -456,9 +434,7 @@ describe('TalentsTab', () => {
     });
 
     it('ancestry expansion has aria-label', () => {
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 7, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(7, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       const expansion = wrapper.find('[aria-label="Singer ancestry talents"]');
@@ -471,9 +447,7 @@ describe('TalentsTab', () => {
   // ========================================
   describe('edge cases', () => {
     it('handles talent with non-existent path gracefully', () => {
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 999, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(999, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       // Should not crash, shows empty state
@@ -493,8 +467,8 @@ describe('TalentsTab', () => {
     it('handles multiple talents in same specialty', () => {
       // Add another talent with same specialty
       mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 't1', name: 'T1' } },
-        { id: 2, heroId: 1, talent: { id: 3, code: 't3', name: 'T3' } },
+        createHeroTalent(1, 't1', 'T1'),
+        createHeroTalent(3, 't3', 'T3'),
       ] as HeroTalent[];
       const wrapper = createWrapper();
 
@@ -503,9 +477,7 @@ describe('TalentsTab', () => {
 
     it('handles path with no key talent', () => {
       // Only general path talent, no key talent
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 2, code: 'test', name: 'Test' } },
-      ] as HeroTalent[]; // Parry is not isKey
+      mockHeroTalents.value = [createHeroTalent(2, 'test', 'Test')] as HeroTalent[]; // Parry is not isKey
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Path Talents');
@@ -514,9 +486,7 @@ describe('TalentsTab', () => {
 
     it('handles path with only key talent (no general talents)', () => {
       // Only key talent, no general path talents
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(1, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Key Talent');
@@ -531,9 +501,9 @@ describe('TalentsTab', () => {
       };
       // Include both bond talent and surge talent
       mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 't6', name: 'T6' } }, // Spren Bond (no surge)
-        { id: 2, heroId: 1, talent: { id: 4, code: 't4', name: 'T4' } }, // Lashing (surge 1)
-        { id: 3, heroId: 1, talent: { id: 5, code: 't5', name: 'T5' } }, // Gravitation (surge 2)
+        createHeroTalent(6, 't6', 'T6'), // Spren Bond (no surge)
+        createHeroTalent(4, 't4', 'T4'), // Lashing (surge 1)
+        createHeroTalent(5, 't5', 'T5'), // Gravitation (surge 2)
       ] as HeroTalent[];
       const wrapper = createWrapper();
 
@@ -549,8 +519,8 @@ describe('TalentsTab', () => {
         radiantIdeal: 2,
       };
       mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 't6', name: 'T6' } },
-        { id: 2, heroId: 1, talent: { id: 4, code: 't4', name: 'T4' } }, // Adhesion surge
+        createHeroTalent(6, 't6', 'T6'),
+        createHeroTalent(4, 't4', 'T4'), // Adhesion surge
       ] as HeroTalent[];
       const wrapper = createWrapper();
 
@@ -561,9 +531,7 @@ describe('TalentsTab', () => {
     it('handles non-radiant with no radiant order', () => {
       mockIsRadiant.value = false;
       mockHero.value = { radiantOrder: null, radiantIdeal: 0 };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(1, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       // orderSurges should return empty array
@@ -576,9 +544,7 @@ describe('TalentsTab', () => {
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         radiantIdeal: 5,
       };
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 6, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(6, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Ideal 5');
@@ -586,9 +552,7 @@ describe('TalentsTab', () => {
 
     it('handles specialty with no talents (not shown)', () => {
       // Has path talent but not specialty talent
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(1, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       // Key Talent section should show for key talent
@@ -597,9 +561,7 @@ describe('TalentsTab', () => {
 
     it('handles case where generalTalentsByPath returns empty array', () => {
       // Only key talent for path, no general talents
-      mockHeroTalents.value = [
-        { id: 1, heroId: 1, talent: { id: 1, code: 'test', name: 'Test' } },
-      ] as HeroTalent[];
+      mockHeroTalents.value = [createHeroTalent(1, 'test', 'Test')] as HeroTalent[];
       const wrapper = createWrapper();
 
       // Path Talents section should not appear when empty

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import ActionItem from './ActionItem.vue';
-import type { Action } from 'src/types';
+import type { Action, ClassifierRef } from 'src/types';
 
 // Reactive mock data
 const mockEntityIconData = {
@@ -54,8 +54,8 @@ describe('ActionItem', () => {
           id: 1,
           name: 'Strike',
           description: 'A basic attack',
-          activationType: { id: 1, code: 'at1', name: 'ActType1' },
-          actionType: { id: 1, code: 'act1', name: 'ActionType1' },
+          activationType: { id: 1, code: 'action', name: 'Action' },
+          actionType: { id: 1, code: 'action-type', name: 'Action Type' },
           focusCost: 0,
           investitureCost: 0,
           ...action,
@@ -321,7 +321,7 @@ describe('ActionItem', () => {
 
     it('handles undefined activationType', () => {
       const wrapper = createWrapper({
-        activationType: undefined as unknown as { id: number; code: string; name: string },
+        activationType: undefined as unknown as ClassifierRef,
       });
 
       expect(wrapper.exists()).toBe(true);

@@ -178,9 +178,8 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
       heroStore.hero.radiantIdeal = 0;
     } else {
       const order = findById(classifierStore.radiantOrders, orderId);
-      if (order) {
-        heroStore.hero.radiantOrder = toClassifierRef(order);
-      }
+      if (!order) return;
+      heroStore.hero.radiantOrder = toClassifierRef(order);
       // Add new radiant key talent
       const keyTalent = classifierStore.talents.find(
         (t) => t.radiantOrder?.id === orderId && t.isKey

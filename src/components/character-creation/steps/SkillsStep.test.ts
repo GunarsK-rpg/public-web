@@ -494,7 +494,7 @@ describe('SkillsStep', () => {
     });
 
     it('does not render skill with unknown attribute type', () => {
-      // Skill with attrId 999 maps to attrTypeId 0 (fallback), which has no matching attributeType
+      // Skill with attr.id 999 maps to attrTypeId 0 (fallback), which has no matching attributeType
       mockAttributeCodeMap.value = new Map([[1, 'str']]); // Only str, not attr 999
 
       const wrapper = createWrapper();

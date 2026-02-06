@@ -86,9 +86,19 @@ const mockClassifierData = {
       equipment: Array<ClassifierRef & { quantity: number }> | null;
     }>,
     equipment: [
-      { id: 1, name: 'Sword', equipType: { id: 1, code: 'weapons', name: 'Weapons' } },
-      { id: 2, name: 'Shield', equipType: { id: 1, code: 'weapons', name: 'Weapons' } },
-      { id: 3, name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
+      {
+        id: 1,
+        code: 'sword',
+        name: 'Sword',
+        equipType: { id: 1, code: 'weapons', name: 'Weapons' },
+      },
+      {
+        id: 2,
+        code: 'shield',
+        name: 'Shield',
+        equipType: { id: 1, code: 'weapons', name: 'Weapons' },
+      },
+      { id: 3, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
     ],
     equipmentTypes: [
       { id: 1, code: 'weapons', name: 'Weapons' },
@@ -252,9 +262,19 @@ describe('EquipmentStep', () => {
         },
       ],
       equipment: [
-        { id: 1, name: 'Sword', equipType: { id: 1, code: 'weapons', name: 'Weapons' } },
-        { id: 2, name: 'Shield', equipType: { id: 1, code: 'weapons', name: 'Weapons' } },
-        { id: 3, name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
+        {
+          id: 1,
+          code: 'sword',
+          name: 'Sword',
+          equipType: { id: 1, code: 'weapons', name: 'Weapons' },
+        },
+        {
+          id: 2,
+          code: 'shield',
+          name: 'Shield',
+          equipType: { id: 1, code: 'weapons', name: 'Weapons' },
+        },
+        { id: 3, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
       ],
       equipmentTypes: [
         { id: 1, code: 'weapons', name: 'Weapons' },
@@ -598,14 +618,24 @@ describe('EquipmentStep', () => {
   // ========================================
   describe('equipment name fallback', () => {
     it('returns Unknown for equipment with unknown id', () => {
+      // Add equipment entry with valid type but undefined name so it renders
+      // in the type group but getEquipmentName falls back to "Unknown"
+      mockClassifierData.value.equipment = [
+        ...mockClassifierData.value.equipment,
+        {
+          id: 9999,
+          code: 'mystery',
+          name: undefined as unknown as string,
+          equipType: { id: 1, code: 'weapons', name: 'Weapons' },
+        },
+      ];
       mockEquipment.value = [
         { id: 1, equipment: { id: 9999, code: 'unknown', name: 'Unknown' }, amount: 1 },
       ];
       const wrapper = createWrapper();
 
-      // Equipment with unknown id would show "Unknown" but gets filtered by type
-      // This tests the getEquipmentName fallback
-      expect(wrapper.exists()).toBe(true);
+      // Equipment type is valid so item renders, but name lookup returns undefined → "Unknown"
+      expect(wrapper.text()).toContain('Unknown');
     });
   });
 });
