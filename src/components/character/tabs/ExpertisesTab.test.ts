@@ -69,6 +69,16 @@ vi.mock('src/constants/theme', () => ({
   },
 }));
 
+function createHeroExpertise(overrides: Partial<HeroExpertise> = {}): HeroExpertise {
+  return {
+    id: 1,
+    heroId: 1,
+    expertise: { id: 1, code: 'swords', name: 'Swords' },
+    source: null,
+    ...overrides,
+  };
+}
+
 describe('ExpertisesTab', () => {
   const createWrapper = () =>
     shallowMount(ExpertisesTab, {
@@ -88,25 +98,22 @@ describe('ExpertisesTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExpertises.value = [
-      {
+      createHeroExpertise({
         id: 1,
-        heroId: 1,
         expertise: { id: 1, code: 'swords', name: 'Swords' },
         source: { sourceType: 'culture', sourceId: 1 },
-      },
-      { id: 2, heroId: 1, expertise: { id: 2, code: 'bows', name: 'Bows' }, source: null },
-      {
+      }),
+      createHeroExpertise({ id: 2, expertise: { id: 2, code: 'bows', name: 'Bows' } }),
+      createHeroExpertise({
         id: 3,
-        heroId: 1,
         expertise: { id: 3, code: 'light_armor', name: 'Light Armor' },
         source: { sourceType: 'talent', sourceId: 5 },
-      },
-      {
+      }),
+      createHeroExpertise({
         id: 4,
-        heroId: 1,
         expertise: { id: 6, code: 'alethi_culture', name: 'Alethi Culture' },
         source: { sourceType: 'culture', sourceId: 1 },
-      },
+      }),
     ];
   });
 
@@ -201,7 +208,7 @@ describe('ExpertisesTab', () => {
     it('shows empty message for specific type without expertises', () => {
       // Only weapon expertises
       mockExpertises.value = [
-        { id: 1, heroId: 1, expertise: { id: 1, code: 'swords', name: 'Swords' }, source: null },
+        createHeroExpertise({ expertise: { id: 1, code: 'swords', name: 'Swords' } }),
       ];
       const wrapper = createWrapper();
 
@@ -224,6 +231,16 @@ describe('ExpertisesTab', () => {
       const swordsChip = chips.find((c) => c.attributes('aria-label') === 'Swords expertise');
       expect(swordsChip).toBeDefined();
     });
+
+    it('chips have aria-label for multi-word expertise names', () => {
+      const wrapper = createWrapper();
+
+      const chips = wrapper.findAll('.q-chip');
+      const lightArmorChip = chips.find(
+        (c) => c.attributes('aria-label') === 'Light Armor expertise'
+      );
+      expect(lightArmorChip).toBeDefined();
+    });
   });
 
   // ========================================
@@ -232,8 +249,8 @@ describe('ExpertisesTab', () => {
   describe('expertise grouping', () => {
     it('groups weapon expertises together', () => {
       mockExpertises.value = [
-        { id: 1, heroId: 1, expertise: { id: 1, code: 'swords', name: 'Swords' }, source: null }, // Swords (weapon)
-        { id: 2, heroId: 1, expertise: { id: 2, code: 'bows', name: 'Bows' }, source: null }, // Bows (weapon)
+        createHeroExpertise({ id: 1, expertise: { id: 1, code: 'swords', name: 'Swords' } }), // Swords (weapon)
+        createHeroExpertise({ id: 2, expertise: { id: 2, code: 'bows', name: 'Bows' } }), // Bows (weapon)
       ];
       const wrapper = createWrapper();
 
@@ -246,18 +263,14 @@ describe('ExpertisesTab', () => {
 
     it('groups armor expertises together', () => {
       mockExpertises.value = [
-        {
+        createHeroExpertise({
           id: 1,
-          heroId: 1,
           expertise: { id: 3, code: 'light_armor', name: 'Light Armor' },
-          source: null,
-        }, // Light Armor
-        {
+        }), // Light Armor
+        createHeroExpertise({
           id: 2,
-          heroId: 1,
           expertise: { id: 4, code: 'heavy_armor', name: 'Heavy Armor' },
-          source: null,
-        }, // Heavy Armor
+        }), // Heavy Armor
       ];
       const wrapper = createWrapper();
 
@@ -272,12 +285,7 @@ describe('ExpertisesTab', () => {
   describe('edge cases', () => {
     it('handles unknown expertise ID gracefully', () => {
       mockExpertises.value = [
-        {
-          id: 1,
-          heroId: 1,
-          expertise: { id: 999, code: 'unknown', name: 'Unknown' },
-          source: null,
-        }, // Non-existent expertise
+        createHeroExpertise({ expertise: { id: 999, code: 'unknown', name: 'Unknown' } }),
       ];
       const wrapper = createWrapper();
 
@@ -295,32 +303,21 @@ describe('ExpertisesTab', () => {
 
     it('renders multiple expertises of same type correctly', () => {
       mockExpertises.value = [
-        { id: 1, heroId: 1, expertise: { id: 1, code: 'swords', name: 'Swords' }, source: null }, // Swords
-        { id: 2, heroId: 1, expertise: { id: 2, code: 'bows', name: 'Bows' }, source: null }, // Bows
-        {
+        createHeroExpertise({ id: 1, expertise: { id: 1, code: 'swords', name: 'Swords' } }),
+        createHeroExpertise({ id: 2, expertise: { id: 2, code: 'bows', name: 'Bows' } }),
+        createHeroExpertise({
           id: 3,
-          heroId: 1,
           expertise: { id: 3, code: 'light_armor', name: 'Light Armor' },
-          source: null,
-        }, // Light Armor
-        {
+        }),
+        createHeroExpertise({
           id: 4,
-          heroId: 1,
           expertise: { id: 4, code: 'heavy_armor', name: 'Heavy Armor' },
-          source: null,
-        }, // Heavy Armor
-        {
-          id: 5,
-          heroId: 1,
-          expertise: { id: 5, code: 'smithing', name: 'Smithing' },
-          source: null,
-        }, // Smithing
-        {
+        }),
+        createHeroExpertise({ id: 5, expertise: { id: 5, code: 'smithing', name: 'Smithing' } }),
+        createHeroExpertise({
           id: 6,
-          heroId: 1,
           expertise: { id: 6, code: 'alethi_culture', name: 'Alethi Culture' },
-          source: null,
-        }, // Alethi Culture
+        }),
       ];
       const wrapper = createWrapper();
 

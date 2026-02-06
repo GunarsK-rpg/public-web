@@ -132,19 +132,36 @@ vi.mock('src/stores/classifiers', () => ({
       { id: 2, code: 'scholar', name: 'Scholar' },
     ],
     specialties: [
-      { id: 1, name: 'Duelist', path: { id: 1, code: 'warrior', name: 'Warrior' } },
-      { id: 2, name: 'Guardian', path: { id: 1, code: 'warrior', name: 'Warrior' } },
-      { id: 3, name: 'Historian', path: { id: 2, code: 'scholar', name: 'Scholar' } },
+      {
+        id: 1,
+        code: 'duelist',
+        name: 'Duelist',
+        path: { id: 1, code: 'warrior', name: 'Warrior' },
+      },
+      {
+        id: 2,
+        code: 'guardian',
+        name: 'Guardian',
+        path: { id: 1, code: 'warrior', name: 'Warrior' },
+      },
+      {
+        id: 3,
+        code: 'historian',
+        name: 'Historian',
+        path: { id: 2, code: 'scholar', name: 'Scholar' },
+      },
     ],
     radiantOrders: [
       {
         id: 1,
+        code: 'windrunner',
         name: 'Windrunner',
         surge1: { id: 1, code: 'adhesion', name: 'Adhesion' },
         surge2: { id: 2, code: 'gravitation', name: 'Gravitation' },
       },
       {
         id: 2,
+        code: 'skybreaker',
         name: 'Skybreaker',
         surge1: { id: 2, code: 'gravitation', name: 'Gravitation' },
         surge2: { id: 3, code: 'division', name: 'Division' },
@@ -161,6 +178,13 @@ vi.mock('src/stores/classifiers', () => ({
     ],
   }),
 }));
+
+const WINDRUNNER_ORDER: ClassifierRef = { id: 1, code: 'windrunner', name: 'Windrunner' };
+
+function setRadiantHero(radiantIdeal = 2) {
+  mockIsRadiant.value = true;
+  mockHero.value = { radiantOrder: WINDRUNNER_ORDER, radiantIdeal };
+}
 
 let nextHeroTalentId = 1;
 function createHeroTalent(overrides: Partial<HeroTalent> = {}): HeroTalent {
@@ -286,11 +310,7 @@ describe('TalentsTab', () => {
   // ========================================
   describe('radiant order talents', () => {
     it('renders radiant order section for radiants', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 2,
-      };
+      setRadiantHero(2);
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
       const wrapper = createWrapper();
 
@@ -299,11 +319,7 @@ describe('TalentsTab', () => {
     });
 
     it('shows radiant ideal in section', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 3,
-      };
+      setRadiantHero(3);
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
       const wrapper = createWrapper();
 
@@ -311,11 +327,7 @@ describe('TalentsTab', () => {
     });
 
     it('renders spren bond talents', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 2,
-      };
+      setRadiantHero(2);
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
       const wrapper = createWrapper();
 
@@ -324,11 +336,7 @@ describe('TalentsTab', () => {
     });
 
     it('shows empty message when no bond talents', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 2,
-      };
+      setRadiantHero(2);
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 4, code: 'test', name: 'Test' } })]; // Only surge talent
       const wrapper = createWrapper();
 
@@ -336,11 +344,7 @@ describe('TalentsTab', () => {
     });
 
     it('renders surge sections for radiant order', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 2,
-      };
+      setRadiantHero(2);
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
       const wrapper = createWrapper();
 
@@ -349,11 +353,7 @@ describe('TalentsTab', () => {
     });
 
     it('renders surge talents under correct surge', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 2,
-      };
+      setRadiantHero(2);
       mockHeroTalents.value = [
         createHeroTalent({ talent: { id: 6, code: 't6', name: 'T6' } }),
         createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } }),
@@ -364,11 +364,7 @@ describe('TalentsTab', () => {
     });
 
     it('shows empty message for surge with no talents', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 2,
-      };
+      setRadiantHero(2);
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
       const wrapper = createWrapper();
 
@@ -426,11 +422,7 @@ describe('TalentsTab', () => {
     });
 
     it('radiant order expansion has aria-label', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 2,
-      };
+      setRadiantHero(2);
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
       const wrapper = createWrapper();
 
@@ -501,11 +493,7 @@ describe('TalentsTab', () => {
     });
 
     it('handles radiant order with surge talents', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 2,
-      };
+      setRadiantHero(2);
       // Include both bond talent and surge talent
       mockHeroTalents.value = [
         createHeroTalent({ talent: { id: 6, code: 't6', name: 'T6' } }), // Spren Bond (no surge)
@@ -520,11 +508,7 @@ describe('TalentsTab', () => {
     });
 
     it('handles radiant with both surge sections populated', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 2,
-      };
+      setRadiantHero(2);
       mockHeroTalents.value = [
         createHeroTalent({ talent: { id: 6, code: 't6', name: 'T6' } }),
         createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } }), // Adhesion surge
@@ -546,11 +530,7 @@ describe('TalentsTab', () => {
     });
 
     it('shows correct radiant ideal from hero', () => {
-      mockIsRadiant.value = true;
-      mockHero.value = {
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
-        radiantIdeal: 5,
-      };
+      setRadiantHero(5);
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
       const wrapper = createWrapper();
 

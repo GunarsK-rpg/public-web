@@ -52,6 +52,7 @@
         <q-item-section avatar>
           <q-checkbox
             :model-value="isSelected(expertise.id)"
+            :aria-label="`Toggle ${expertise.name}`"
             :disable="
               isReadOnly(expertise.id) || (!isSelected(expertise.id) && slotsRemaining <= 0)
             "

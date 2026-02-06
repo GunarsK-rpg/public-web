@@ -222,12 +222,17 @@ describe('ActionItem', () => {
     });
 
     it('handles missing activation type gracefully', () => {
+      mockEntityIconData.value = {
+        entity: null,
+        iconUrl: null,
+      };
+
       const wrapper = createWrapper({
         activationType: { id: 999, code: 'at999', name: 'ActType999' },
       });
 
-      // Should render without crashing
       expect(wrapper.exists()).toBe(true);
+      expect(wrapper.find('img').exists()).toBe(false);
     });
 
     it('renders action with all optional fields', () => {

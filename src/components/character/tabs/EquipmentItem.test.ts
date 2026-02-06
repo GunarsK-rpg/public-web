@@ -91,7 +91,7 @@ vi.mock('src/stores/classifiers', () => ({
 
 const equipmentMap: Record<
   number,
-  Pick<Equipment, 'id' | 'name' | 'equipType' | 'damageType'> & {
+  Pick<Equipment, 'id' | 'code' | 'name' | 'equipType' | 'damageType'> & {
     special: {
       damage?: string;
       range?: string;
@@ -103,6 +103,7 @@ const equipmentMap: Record<
 > = {
   1: {
     id: 1,
+    code: 'longsword',
     name: 'Longsword',
     equipType: { id: 1, code: 'weapon', name: 'Weapon' },
     damageType: { id: 1, code: 'slashing', name: 'Slashing' },
@@ -110,6 +111,7 @@ const equipmentMap: Record<
   },
   2: {
     id: 2,
+    code: 'longbow',
     name: 'Longbow',
     equipType: { id: 1, code: 'weapon', name: 'Weapon' },
     damageType: null,
@@ -117,6 +119,7 @@ const equipmentMap: Record<
   },
   3: {
     id: 3,
+    code: 'chain-mail',
     name: 'Chain Mail',
     equipType: { id: 2, code: 'armor', name: 'Armor' },
     damageType: null,
@@ -124,6 +127,7 @@ const equipmentMap: Record<
   },
   4: {
     id: 4,
+    code: 'healing-potion',
     name: 'Healing Potion',
     equipType: { id: 3, code: 'consumable', name: 'Consumable' },
     damageType: null,
@@ -131,6 +135,7 @@ const equipmentMap: Record<
   },
   5: {
     id: 5,
+    code: 'backpack',
     name: 'Backpack',
     equipType: { id: 4, code: 'gear', name: 'Gear' },
     damageType: null,

@@ -55,7 +55,7 @@ const skillsByAttrType = computed((): Record<number, Skill[]> => {
     attrTypeMap.set(attr.id, attr.attrType.id);
   }
   // Falls back to 0 (unmapped bucket, filtered out by template) when attr.id has no matching attribute type
-  return groupByKey(classifiers.skills, (skill) => attrTypeMap.get(skill.attr.id) ?? 0);
+  return groupByKey(classifiers.skills, (skill) => attrTypeMap.get(skill.attr?.id ?? 0) ?? 0);
 });
 
 function getAttributeCode(skill: Skill): string {

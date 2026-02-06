@@ -28,8 +28,8 @@ const createDefaultEquipmentData = (): Array<{
 ];
 
 // Reactive mock data
-const mockHero = {
-  value: createDefaultHeroData() as { startingKit: ClassifierRef | null; currency: number } | null,
+const mockHero: { value: ReturnType<typeof createDefaultHeroData> | null } = {
+  value: createDefaultHeroData(),
 };
 
 const mockEquipment = {

@@ -8,6 +8,13 @@ type MockHeroSkill = {
   modifier: number;
 };
 
+type MockClassifierSkill = {
+  id: number;
+  code: string;
+  name: string;
+  attr: { id: number; code: string; name: string };
+};
+
 // Mock stores
 const mockSetSkillRank = vi.fn();
 const mockSetSkillModifier = vi.fn();
@@ -81,12 +88,7 @@ function createDefaultClassifierData() {
         name: 'Unknown Skill',
         attr: { id: 999, code: 'none', name: 'None' },
       },
-    ] as Array<{
-      id: number;
-      code: string;
-      name: string;
-      attr: { id: number; code: string; name: string };
-    }>,
+    ] as MockClassifierSkill[],
     attributes: [
       {
         id: 1,
@@ -530,20 +532,18 @@ describe('SkillsStep', () => {
     });
 
     it('renders correctly when an attribute type has no matching skills', () => {
-      // Only one skill in group
-      mockClassifierData.value.skills = [
-        {
-          id: 1,
-          code: 'athletics',
-          name: 'Athletics',
-          attr: { id: 1, code: 'str', name: 'Strength' },
-        },
+      // Add a Mental attribute type with no skills mapped to it
+      mockClassifierData.value.attributeTypes = [
+        { id: 1, code: 'physical', name: 'Physical' },
+        { id: 2, code: 'mental', name: 'Mental' },
       ];
 
       const wrapper = createWrapper();
 
-      // Physical Skills group should render with one skill
-      expect(wrapper.text()).toContain('Athletics');
+      // Physical Skills group should render with skills
+      expect(wrapper.text()).toContain('Physical Skills');
+      // Mental Skills group should render but with no skill items
+      expect(wrapper.text()).toContain('Mental Skills');
     });
 
     it('increment respects both maxRank and pointsRemaining conditions', async () => {
