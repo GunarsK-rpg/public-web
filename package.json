@@ -37,7 +37,7 @@
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.24",
     "eslint": "^9.39.2",
-    "eslint-plugin-vue": "^10.7.0",
+    "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.3.0",
     "jsdom": "^27.4.0",
     "markdownlint-cli2": "^0.20.0",
@@ -45,7 +45,7 @@
     "typescript": "^5.9.3",
     "vite-plugin-checker": "^0.12.0",
     "vitest": "^4.0.18",
-    "vue-eslint-parser": "^10.2.0",
+    "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^3.2.4"
   },
   "engines": {
