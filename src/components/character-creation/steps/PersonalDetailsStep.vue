@@ -160,16 +160,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed, inject, onUnmounted } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroDetailsStore } from 'src/stores/heroDetails';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { debounce } from 'src/utils/debounce';
 import { findById } from 'src/utils/arrayUtils';
+import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 
 const heroStore = useHeroStore();
 const detailsStore = useHeroDetailsStore();
 const classifiers = useClassifierStore();
+const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
 // Goals and connections from hero
 const goals = computed(() => heroStore.goals);
@@ -226,6 +228,7 @@ function addGoal() {
 }
 
 function removeGoal(goalId: number) {
+  deletionTracker?.trackDeletion('goals', goalId);
   detailsStore.removeGoalById(goalId);
 }
 
@@ -243,6 +246,7 @@ function addConnection() {
 }
 
 function removeConnection(connectionId: number) {
+  deletionTracker?.trackDeletion('connections', connectionId);
   detailsStore.removeConnectionById(connectionId);
 }
 </script>

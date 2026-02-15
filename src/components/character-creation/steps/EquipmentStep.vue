@@ -98,18 +98,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed, reactive, inject } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
+import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import InfoBanner from '../shared/InfoBanner.vue';
 import type { ClassifierRef } from 'src/types';
 
 const heroStore = useHeroStore();
 const equipStore = useHeroEquipmentStore();
 const classifiers = useClassifierStore();
+const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
 // Equipment types list from classifiers
 const equipmentTypesList = computed(() => classifiers.equipmentTypes);
@@ -196,6 +198,11 @@ function addItemOfType(typeId: number) {
 }
 
 function removeItem(equipmentId: number) {
+  // Track equipment deletion before removing from local state
+  const heroEquip = heroStore.hero?.equipment.find((e) => e.equipment.id === equipmentId);
+  if (heroEquip) {
+    deletionTracker?.trackDeletion('equipment', heroEquip.id);
+  }
   equipStore.removeEquipment(equipmentId);
 }
 </script>

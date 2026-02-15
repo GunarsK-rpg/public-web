@@ -39,7 +39,11 @@ const mockEquipment = {
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     get hero() {
-      return mockHero.value;
+      if (!mockHero.value) return null;
+      return {
+        ...mockHero.value,
+        equipment: mockEquipment.value,
+      };
     },
     get equipment() {
       return mockEquipment.value;
@@ -155,9 +159,19 @@ vi.mock('src/composables/useModifierInput', () => ({
 }));
 
 describe('EquipmentStep', () => {
+  const mockDeletionTracker = {
+    trackDeletion: vi.fn(),
+    getDeletions: vi.fn(() => []),
+    clearDeletions: vi.fn(),
+    clearAll: vi.fn(),
+  };
+
   const createWrapper = () =>
     shallowMount(EquipmentStep, {
       global: {
+        provide: {
+          deletionTracker: mockDeletionTracker,
+        },
         stubs: {
           InfoBanner: {
             template: '<div class="info-banner">{{ content }}</div>',
@@ -481,6 +495,13 @@ describe('EquipmentStep', () => {
             },
             QSeparator: { template: '<hr />' },
           },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
+          },
         },
       });
 
@@ -527,6 +548,13 @@ describe('EquipmentStep', () => {
               emits: ['click'],
             },
             QSeparator: { template: '<hr />' },
+          },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
           },
         },
       });

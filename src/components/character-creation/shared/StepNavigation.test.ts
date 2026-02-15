@@ -7,7 +7,6 @@ import StepNavigation from './StepNavigation.vue';
 // Mock values that can be changed per test
 const mockCurrentStep = ref(1);
 const mockPreviousStep = vi.fn();
-const mockNextStep = vi.fn();
 
 vi.mock('src/stores/wizard', () => ({
   useWizardStore: () => ({
@@ -15,7 +14,6 @@ vi.mock('src/stores/wizard', () => ({
       return mockCurrentStep.value;
     },
     previousStep: mockPreviousStep,
-    nextStep: mockNextStep,
   }),
 }));
 
@@ -52,7 +50,7 @@ vi.mock('src/types/wizard', () => ({
 }));
 
 describe('StepNavigation', () => {
-  const createWrapper = (props: { creating?: boolean } = {}) =>
+  const createWrapper = (props: { saving?: boolean; saveError?: string | null } = {}) =>
     shallowMount(StepNavigation, {
       props,
       global: {
@@ -99,12 +97,12 @@ describe('StepNavigation', () => {
       expect(wrapper.text()).toContain('Next');
     });
 
-    it('renders Create button on last step', () => {
+    it('renders Finish button on last step', () => {
       mockCurrentStepCode.value = 'review';
 
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Create');
+      expect(wrapper.text()).toContain('Finish');
     });
 
     it('does not render Back button on first step', () => {
@@ -141,7 +139,7 @@ describe('StepNavigation', () => {
       expect(mockPreviousStep).toHaveBeenCalled();
     });
 
-    it('calls nextStep when Next clicked', async () => {
+    it('emits next event when Next clicked', async () => {
       const wrapper = createWrapper();
       const buttons = wrapper.findAll('.q-btn');
       const nextButton = buttons.find((b) => b.text().includes('Next'));
@@ -149,21 +147,21 @@ describe('StepNavigation', () => {
 
       await nextButton!.trigger('click');
 
-      expect(mockNextStep).toHaveBeenCalled();
+      expect(wrapper.emitted('next')).toBeTruthy();
     });
 
-    it('emits create event when Create clicked', async () => {
+    it('emits finish event when Finish clicked', async () => {
       mockCurrentStepCode.value = 'review';
       mockAllStepsValidation.value = { isValid: true, errors: [], warnings: [] };
 
       const wrapper = createWrapper();
       const buttons = wrapper.findAll('.q-btn');
-      const createButton = buttons.find((b) => b.text().includes('Create'));
-      expect(createButton).toBeDefined();
+      const finishButton = buttons.find((b) => b.text().includes('Finish'));
+      expect(finishButton).toBeDefined();
 
-      await createButton!.trigger('click');
+      await finishButton!.trigger('click');
 
-      expect(wrapper.emitted('create')).toBeTruthy();
+      expect(wrapper.emitted('finish')).toBeTruthy();
     });
   });
 
@@ -214,52 +212,65 @@ describe('StepNavigation', () => {
 
       expect(wrapper.find('[aria-live="polite"]').exists()).toBe(true);
     });
+
+    it('shows saveError with priority over validation errors', () => {
+      mockCurrentValidation.value = {
+        isValid: false,
+        errors: ['Validation error'],
+        warnings: [],
+      };
+
+      const wrapper = createWrapper({ saveError: 'Network error' });
+
+      expect(wrapper.text()).toContain('Network error');
+    });
   });
 
   // ========================================
-  // Create Button State
+  // Finish Button State
   // ========================================
-  describe('create button state', () => {
-    it('disables Create when all steps not valid', () => {
+  describe('finish button state', () => {
+    it('disables Finish when all steps not valid', () => {
       mockCurrentStepCode.value = 'review';
       mockAllStepsValidation.value = { isValid: false, errors: ['Not complete'], warnings: [] };
 
       const wrapper = createWrapper();
       const buttons = wrapper.findAll('.q-btn');
-      const createButton = buttons.find((b) => b.text().includes('Create'));
+      const finishButton = buttons.find((b) => b.text().includes('Finish'));
 
-      expect(createButton?.attributes('disabled')).toBeDefined();
+      expect(finishButton?.attributes('disabled')).toBeDefined();
     });
 
-    it('enables Create when all steps valid', () => {
+    it('enables Finish when all steps valid', () => {
       mockCurrentStepCode.value = 'review';
       mockAllStepsValidation.value = { isValid: true, errors: [], warnings: [] };
 
       const wrapper = createWrapper();
       const buttons = wrapper.findAll('.q-btn');
-      const createButton = buttons.find((b) => b.text().includes('Create'));
+      const finishButton = buttons.find((b) => b.text().includes('Finish'));
 
-      expect(createButton?.attributes('disabled')).toBeUndefined();
+      expect(finishButton?.attributes('disabled')).toBeUndefined();
     });
+  });
 
-    it('shows loading state when creating', () => {
-      mockCurrentStepCode.value = 'review';
-
-      const wrapper = createWrapper({ creating: true });
+  // ========================================
+  // Loading State
+  // ========================================
+  describe('loading state', () => {
+    it('shows loading state on Next button when saving', () => {
+      const wrapper = createWrapper({ saving: true });
       const buttons = wrapper.findAll('.q-btn');
-      const createButton = buttons.find((b) => b.text().includes('Create'));
+      const nextButton = buttons.find((b) => b.text().includes('Next'));
 
-      expect(createButton?.classes()).toContain('q-btn--loading');
+      expect(nextButton?.classes()).toContain('q-btn--loading');
     });
 
     it('does not show loading state by default', () => {
-      mockCurrentStepCode.value = 'review';
-
       const wrapper = createWrapper();
       const buttons = wrapper.findAll('.q-btn');
-      const createButton = buttons.find((b) => b.text().includes('Create'));
+      const nextButton = buttons.find((b) => b.text().includes('Next'));
 
-      expect(createButton?.classes()).not.toContain('q-btn--loading');
+      expect(nextButton?.classes()).not.toContain('q-btn--loading');
     });
   });
 
@@ -274,7 +285,7 @@ describe('StepNavigation', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Next');
-      expect(wrapper.text()).not.toContain('Create');
+      expect(wrapper.text()).not.toContain('Finish');
     });
 
     it('shows both Back and Next on middle steps', () => {
@@ -287,14 +298,14 @@ describe('StepNavigation', () => {
       expect(wrapper.text()).toContain('Next');
     });
 
-    it('shows Back and Create on last step', () => {
+    it('shows Back and Finish on last step', () => {
       mockCurrentStep.value = 5;
       mockCurrentStepCode.value = 'review';
 
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Back');
-      expect(wrapper.text()).toContain('Create');
+      expect(wrapper.text()).toContain('Finish');
       expect(wrapper.text()).not.toContain('Next');
     });
   });

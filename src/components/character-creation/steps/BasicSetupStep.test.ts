@@ -6,12 +6,21 @@ import BasicSetupStep from './BasicSetupStep.vue';
 // Mock stores
 const mockSetName = vi.fn();
 const mockSetLevel = vi.fn();
-const mockSetCampaignId = vi.fn();
+const mockSetCampaign = vi.fn();
 const mockFetchCampaigns = vi.fn();
+
+const mockSetAncestry = vi.fn();
+const mockSetSingerForm = vi.fn();
 
 const mockHeroLevel = { value: 1 };
 const mockHeroName = { value: 'Test Hero' };
 const mockHeroCampaignId = { value: null as number | null };
+const mockHeroAncestry = {
+  value: { id: 1, code: 'human', name: 'Human' } as { id: number; code: string; name: string },
+};
+const mockActiveSingerForm = { value: null as { id: number; code: string; name: string } | null };
+const mockHeroTalents = { value: [] as { talent: { id: number; code: string; name: string } }[] };
+const mockIsSinger = { value: false };
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
@@ -20,11 +29,17 @@ vi.mock('src/stores/hero', () => ({
         name: mockHeroName.value,
         level: mockHeroLevel.value,
         campaignId: mockHeroCampaignId.value,
+        ancestry: mockHeroAncestry.value,
+        activeSingerForm: mockActiveSingerForm.value,
+        talents: mockHeroTalents.value,
       };
+    },
+    get talents() {
+      return mockHeroTalents.value;
     },
     setName: mockSetName,
     setLevel: mockSetLevel,
-    setCampaignId: mockSetCampaignId,
+    setCampaign: mockSetCampaign,
   }),
 }));
 
@@ -49,8 +64,8 @@ const mockHasCampaigns = { value: true };
 vi.mock('src/stores/campaigns', () => ({
   useCampaignStore: () => ({
     campaigns: [
-      { id: 1, name: 'Campaign 1' },
-      { id: 2, name: 'Campaign 2' },
+      { id: 1, code: 'campaign-1', name: 'Campaign 1' },
+      { id: 2, code: 'campaign-2', name: 'Campaign 2' },
     ],
     get hasCampaigns() {
       return mockHasCampaigns.value;
@@ -73,10 +88,72 @@ vi.mock('src/utils/logger', () => ({
   logger: { error: (...args: unknown[]) => mockLoggerError.fn(...args) },
 }));
 
+const mockClassifierData = {
+  value: {
+    ancestries: [
+      { id: 1, code: 'human', name: 'Human', description: 'A human ancestry' },
+      { id: 2, code: 'singer', name: 'Singer', description: 'A singer ancestry' },
+    ] as Array<{ id: number; code: string; name: string; description: string | null }>,
+    singerForms: [
+      { id: 1, code: 'dullform', name: 'Dullform', description: 'Default form', talent: null },
+      {
+        id: 2,
+        code: 'warform',
+        name: 'Warform',
+        description: 'Combat form',
+        talent: { id: 100, code: 'warform-talent', name: 'Warform Talent' },
+      },
+    ] as Array<{
+      id: number;
+      code: string;
+      name: string;
+      description: string | null;
+      talent: { id: number; code: string; name: string } | null;
+    }>,
+  },
+};
+
+vi.mock('src/stores/heroTalents', () => ({
+  useHeroTalentsStore: () => ({
+    get isSinger() {
+      return mockIsSinger.value;
+    },
+    setAncestry: mockSetAncestry,
+    setSingerForm: mockSetSingerForm,
+  }),
+}));
+
+vi.mock('src/stores/classifiers', () => ({
+  useClassifierStore: () => ({
+    get ancestries() {
+      return mockClassifierData.value.ancestries;
+    },
+    get singerForms() {
+      return mockClassifierData.value.singerForms;
+    },
+    talents: [],
+  }),
+}));
+
+vi.mock('src/utils/arrayUtils', () => ({
+  findByCode: <T extends { code: string }>(arr: T[], code: string) =>
+    arr?.find((item) => item.code === code),
+}));
+
 describe('BasicSetupStep', () => {
+  const mockDeletionTracker = {
+    trackDeletion: vi.fn(),
+    getDeletions: vi.fn(() => []),
+    clearDeletions: vi.fn(),
+    clearAll: vi.fn(),
+  };
+
   const createWrapper = () =>
     shallowMount(BasicSetupStep, {
       global: {
+        provide: {
+          deletionTracker: mockDeletionTracker,
+        },
         stubs: {
           QInput: {
             template: `<input
@@ -123,6 +200,19 @@ describe('BasicSetupStep', () => {
           QIcon: {
             template: '<span class="q-icon" />',
           },
+          QSeparator: {
+            template: '<hr class="q-separator" />',
+          },
+          SelectableCard: {
+            template: `<div
+              class="selectable-card"
+              :class="{ selected: selected }"
+              :data-title="title"
+              @click="$emit('select')"
+            >{{ title }}</div>`,
+            props: ['title', 'subtitle', 'selected', 'ariaLabel'],
+            emits: ['select'],
+          },
         },
       },
     });
@@ -136,6 +226,26 @@ describe('BasicSetupStep', () => {
     mockHasCampaigns.value = true;
     mockLevelData.value = { attributePoints: 10, skillRanks: 10, talentSlots: 3 };
     mockFetchCampaigns.mockResolvedValue(undefined);
+    mockHeroAncestry.value = { id: 1, code: 'human', name: 'Human' };
+    mockActiveSingerForm.value = null;
+    mockHeroTalents.value = [];
+    mockIsSinger.value = false;
+    mockClassifierData.value = {
+      ancestries: [
+        { id: 1, code: 'human', name: 'Human', description: 'A human ancestry' },
+        { id: 2, code: 'singer', name: 'Singer', description: 'A singer ancestry' },
+      ],
+      singerForms: [
+        { id: 1, code: 'dullform', name: 'Dullform', description: 'Default form', talent: null },
+        {
+          id: 2,
+          code: 'warform',
+          name: 'Warform',
+          description: 'Combat form',
+          talent: { id: 100, code: 'warform-talent', name: 'Warform Talent' },
+        },
+      ],
+    };
   });
 
   // ========================================
@@ -212,13 +322,17 @@ describe('BasicSetupStep', () => {
   // Campaign Select
   // ========================================
   describe('campaign select', () => {
-    it('calls setCampaignId on selection change', async () => {
+    it('calls setCampaign with full ClassifierRef on selection', async () => {
       const wrapper = createWrapper();
 
       const select = wrapper.find('.q-select');
       await select.setValue(1);
 
-      expect(mockSetCampaignId).toHaveBeenCalledWith(1);
+      expect(mockSetCampaign).toHaveBeenCalledWith({
+        id: 1,
+        code: 'campaign-1',
+        name: 'Campaign 1',
+      });
     });
   });
 
@@ -316,13 +430,13 @@ describe('BasicSetupStep', () => {
   // Campaign Selection
   // ========================================
   describe('campaign selection', () => {
-    it('allows clearing campaign selection', async () => {
+    it('calls setCampaign with null when clearing', async () => {
       const wrapper = createWrapper();
 
       const select = wrapper.find('.q-select');
       await select.setValue('');
 
-      expect(mockSetCampaignId).toHaveBeenCalledWith(null);
+      expect(mockSetCampaign).toHaveBeenCalledWith(null);
     });
 
     it('displays campaign options', () => {
@@ -352,6 +466,13 @@ describe('BasicSetupStep', () => {
             QBanner: { template: '<div class="q-banner"><slot /></div>' },
             QIcon: { template: '<span class="q-icon" />' },
           },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
+          },
         },
       });
 
@@ -380,6 +501,13 @@ describe('BasicSetupStep', () => {
             QBanner: { template: '<div class="q-banner"><slot /></div>' },
             QIcon: { template: '<span class="q-icon" />' },
           },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
+          },
         },
       });
 
@@ -404,6 +532,13 @@ describe('BasicSetupStep', () => {
             QSelect: { template: '<div class="q-select"></div>', props: ['modelValue', 'options'] },
             QBanner: { template: '<div class="q-banner"><slot /></div>' },
             QIcon: { template: '<span class="q-icon" />' },
+          },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
           },
         },
       });
@@ -529,6 +664,154 @@ describe('BasicSetupStep', () => {
       expect(wrapper.exists()).toBe(true);
       // Verify multiple inputs exist (name and level)
       expect(wrapper.findAll('.q-input').length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  // ========================================
+  // Ancestry Selection (merged from AncestryStep)
+  // ========================================
+  describe('ancestry selection', () => {
+    it('renders ancestry section', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain("Choose your character's ancestry");
+    });
+
+    it('renders all ancestry options', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Human');
+      expect(wrapper.text()).toContain('Singer');
+    });
+
+    it('marks selected ancestry', () => {
+      const wrapper = createWrapper();
+
+      const cards = wrapper.findAll('.selectable-card');
+      const humanCard = cards.find((c) => c.text() === 'Human');
+      expect(humanCard?.classes()).toContain('selected');
+    });
+
+    it('calls setAncestry when card is clicked', async () => {
+      const wrapper = createWrapper();
+
+      const cards = wrapper.findAll('.selectable-card');
+      expect(cards.length).toBeGreaterThan(1);
+      await cards.find((c) => c.text() === 'Singer')!.trigger('click');
+
+      expect(mockSetAncestry).toHaveBeenCalledWith(2);
+    });
+
+    it('has radiogroup role for ancestry selection', () => {
+      const wrapper = createWrapper();
+
+      const radiogroup = wrapper.find('[role="radiogroup"]');
+      expect(radiogroup.exists()).toBe(true);
+      expect(radiogroup.attributes('aria-label')).toBe('Select ancestry');
+    });
+  });
+
+  // ========================================
+  // Singer Form Selection (merged from AncestryStep)
+  // ========================================
+  describe('singer form selection', () => {
+    it('shows form selection when singer ancestry is selected', () => {
+      mockIsSinger.value = true;
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Select Initial Form');
+      expect(wrapper.text()).toContain('Dullform');
+    });
+
+    it('does not show form selection for non-singer ancestry', () => {
+      mockIsSinger.value = false;
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).not.toContain('Select Initial Form');
+    });
+
+    it('shows available forms based on talents', () => {
+      mockIsSinger.value = true;
+      mockHeroTalents.value = [
+        { talent: { id: 100, code: 'warform-talent', name: 'Warform Talent' } },
+      ];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Dullform');
+      expect(wrapper.text()).toContain('Warform');
+    });
+
+    it('filters forms requiring talents hero does not have', () => {
+      mockIsSinger.value = true;
+      mockHeroTalents.value = [];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Dullform');
+      expect(wrapper.text()).not.toContain('Warform');
+    });
+
+    it('calls setSingerForm when form card is clicked', async () => {
+      mockIsSinger.value = true;
+      const wrapper = createWrapper();
+
+      const cards = wrapper.findAll('.selectable-card');
+      const dullformCard = cards.find((c) => c.text() === 'Dullform');
+      await dullformCard!.trigger('click');
+
+      expect(mockSetSingerForm).toHaveBeenCalledWith(1);
+    });
+  });
+
+  // ========================================
+  // Auto-select Dullform (merged from AncestryStep)
+  // ========================================
+  describe('auto-select dullform', () => {
+    it('auto-selects dullform when selecting singer ancestry without existing form', async () => {
+      mockIsSinger.value = false;
+      mockActiveSingerForm.value = null;
+
+      mockSetAncestry.mockImplementation(() => {
+        mockIsSinger.value = true;
+      });
+
+      const wrapper = createWrapper();
+      const cards = wrapper.findAll('.selectable-card');
+      const singerCard = cards.find((c) => c.text() === 'Singer');
+      await singerCard!.trigger('click');
+
+      expect(mockSetAncestry).toHaveBeenCalledWith(2);
+      expect(mockSetSingerForm).toHaveBeenCalledWith(1);
+    });
+
+    it('does not auto-select dullform if form already selected', async () => {
+      mockActiveSingerForm.value = { id: 2, code: 'warform', name: 'Warform' };
+
+      mockSetAncestry.mockImplementation(() => {
+        mockIsSinger.value = true;
+      });
+
+      const wrapper = createWrapper();
+      const cards = wrapper.findAll('.selectable-card');
+      const singerCard = cards.find((c) => c.text() === 'Singer');
+      await singerCard!.trigger('click');
+
+      expect(mockSetAncestry).toHaveBeenCalledWith(2);
+      expect(mockSetSingerForm).not.toHaveBeenCalled();
+    });
+
+    it('does not auto-select form when selecting non-singer ancestry', async () => {
+      mockIsSinger.value = true;
+      mockSetAncestry.mockImplementation(() => {
+        mockIsSinger.value = false;
+      });
+
+      const wrapper = createWrapper();
+      const cards = wrapper.findAll('.selectable-card');
+      const humanCard = cards.find((c) => c.text() === 'Human');
+      await humanCard!.trigger('click');
+
+      expect(mockSetAncestry).toHaveBeenCalledWith(1);
+      expect(mockSetSingerForm).not.toHaveBeenCalled();
     });
   });
 });

@@ -150,6 +150,13 @@ describe('ExpertisesStep', () => {
             props: ['color'],
           },
         },
+        provide: {
+          deletionTracker: {
+            trackDeletion: vi.fn(),
+            getDeletions: vi.fn(() => []),
+            clearDeletions: vi.fn(),
+          },
+        },
       },
     });
 
@@ -482,6 +489,13 @@ describe('ExpertisesStep', () => {
             QCheckbox: { template: '<input type="checkbox" class="q-checkbox" />' },
             QBadge: { template: '<span class="q-badge"><slot /></span>' },
           },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
+          },
         },
       });
 
@@ -520,6 +534,13 @@ describe('ExpertisesStep', () => {
             QItemLabel: { template: '<span class="q-item-label"><slot /></span>' },
             QCheckbox: { template: '<input type="checkbox" class="q-checkbox" />' },
             QBadge: { template: '<span class="q-badge"><slot /></span>' },
+          },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
           },
         },
       });

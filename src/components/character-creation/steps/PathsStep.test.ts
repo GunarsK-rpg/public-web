@@ -190,6 +190,13 @@ describe('PathsStep', () => {
             template: '<span class="q-space" />',
           },
         },
+        provide: {
+          deletionTracker: {
+            trackDeletion: vi.fn(),
+            getDeletions: vi.fn(() => []),
+            clearDeletions: vi.fn(),
+          },
+        },
       },
     });
 

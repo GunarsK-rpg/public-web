@@ -48,16 +48,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import InfoBanner from '../shared/InfoBanner.vue';
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
+const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
 // Hero cultures as array of cultureIds
 const heroCultureIds = computed(() => heroStore.hero?.cultures.map((c) => c.culture.id) ?? []);
@@ -89,6 +91,21 @@ const culturalExpertiseNames = computed(() => {
     .filter((name): name is string => name !== null);
 });
 
+function trackCultureDeletion(cultureId: number) {
+  if (!heroStore.hero) return;
+  // Track the HeroCulture record for deletion
+  const heroCulture = heroStore.hero.cultures.find((c) => c.culture.id === cultureId);
+  if (heroCulture) {
+    deletionTracker?.trackDeletion('cultures', heroCulture.id);
+  }
+  // Track associated cultural expertises for deletion
+  for (const e of heroStore.hero.expertises) {
+    if (e.source?.sourceType === 'culture' && e.source.sourceId === cultureId) {
+      deletionTracker?.trackDeletion('expertises', e.id);
+    }
+  }
+}
+
 function setCulture(oldId: number | null, newId: number | null, isPrimary: boolean) {
   // Skip if no actual change
   if (oldId === newId) return;
@@ -97,6 +114,10 @@ function setCulture(oldId: number | null, newId: number | null, isPrimary: boole
   // to prevent secondary culture from shifting to primary position
   if (isPrimary && secondaryCultureId.value !== null) {
     const secondaryId = secondaryCultureId.value;
+    // Track deletions before removing from local state
+    if (oldId !== null) trackCultureDeletion(oldId);
+    // Secondary is re-added, so only track if it's truly being removed
+    // (it's temporarily removed and re-added, so don't track it)
     // Remove both cultures
     if (oldId !== null) talentStore.removeCulture(oldId);
     talentStore.removeCulture(secondaryId);
@@ -106,6 +127,7 @@ function setCulture(oldId: number | null, newId: number | null, isPrimary: boole
   } else {
     // Simple case: no secondary or changing secondary
     if (oldId !== null) {
+      trackCultureDeletion(oldId);
       talentStore.removeCulture(oldId);
     }
     if (newId !== null) {

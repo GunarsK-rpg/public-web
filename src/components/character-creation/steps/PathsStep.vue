@@ -85,12 +85,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, inject, onMounted, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useTalentPrerequisites } from 'src/composables/useTalentPrerequisites';
 import { findById } from 'src/utils/arrayUtils';
+import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import SelectableCard from '../shared/SelectableCard.vue';
 import HeroicPathPanel from '../shared/HeroicPathPanel.vue';
 import SingerAncestryPanel from '../shared/SingerAncestryPanel.vue';
@@ -107,6 +108,7 @@ interface PathSelection {
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
+const deletionTracker = inject<DeletionTracker>('deletionTracker');
 const { getPathKeyTalent, getSpecialtiesByPath, toggleTalent, formatPrereq } =
   useTalentPrerequisites();
 
@@ -190,6 +192,11 @@ function togglePath(pathId: number) {
     pathSpecialties.value.delete(pathId);
     const keyTalent = getPathKeyTalent(pathId);
     if (keyTalent) {
+      // Track talent deletion before removing from local state
+      const heroTalent = heroStore.hero?.talents.find((t) => t.talent.id === keyTalent.id);
+      if (heroTalent) {
+        deletionTracker?.trackDeletion('talents', heroTalent.id);
+      }
       talentStore.removeTalent(keyTalent.id);
     }
   } else {
@@ -207,19 +214,47 @@ function setSpecialty(pathId: number, specialtyId: number) {
   pathSpecialties.value.set(pathId, specialtyId);
 }
 
+// Track radiant talent deletions before order change/removal
+function trackRadiantTalentDeletions() {
+  if (!heroStore.hero?.radiantOrder) return;
+  const prevOrderId = heroStore.hero.radiantOrder.id;
+  const prevOrder = findById(classifiers.radiantOrders, prevOrderId);
+  if (!prevOrder) return;
+
+  const radiantClassifierIds = new Set<number>();
+  for (const talent of classifiers.talents) {
+    if (
+      talent.radiantOrder?.id === prevOrder.id ||
+      talent.surge?.id === prevOrder.surge1?.id ||
+      talent.surge?.id === prevOrder.surge2?.id
+    ) {
+      radiantClassifierIds.add(talent.id);
+    }
+  }
+
+  for (const ht of heroStore.hero.talents) {
+    if (radiantClassifierIds.has(ht.talent.id)) {
+      deletionTracker?.trackDeletion('talents', ht.id);
+    }
+  }
+}
+
 // Radiant actions
 function toggleRadiant(value: boolean) {
   if (value) {
     const firstOrder = classifiers.radiantOrders[0];
     if (firstOrder) {
+      trackRadiantTalentDeletions();
       talentStore.setRadiantOrder(firstOrder.id);
     }
   } else {
+    trackRadiantTalentDeletions();
     talentStore.setRadiantOrder(null);
   }
 }
 
 function setRadiantOrder(orderId: number) {
+  trackRadiantTalentDeletions();
   talentStore.setRadiantOrder(orderId);
 }
 
@@ -231,6 +266,11 @@ function setIdealLevel(level: number | null) {
 
 // Talent actions
 function handleToggleTalent(talentId: number, available: boolean) {
+  // Track deletion if talent is being removed (already selected)
+  const heroTalent = heroStore.hero?.talents.find((t) => t.talent.id === talentId);
+  if (heroTalent) {
+    deletionTracker?.trackDeletion('talents', heroTalent.id);
+  }
   toggleTalent(talentId, available);
 }
 

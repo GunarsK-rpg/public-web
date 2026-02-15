@@ -21,7 +21,12 @@ const mockHero = {
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     get hero() {
-      return mockHero.value;
+      if (!mockHero.value) return null;
+      return {
+        ...mockHero.value,
+        equipment: [],
+        expertises: [],
+      };
     },
   }),
 }));
@@ -113,9 +118,19 @@ vi.mock('src/constants/theme', () => ({
 }));
 
 describe('StartingKitStep', () => {
+  const mockDeletionTracker = {
+    trackDeletion: vi.fn(),
+    getDeletions: vi.fn(() => []),
+    clearDeletions: vi.fn(),
+    clearAll: vi.fn(),
+  };
+
   const createWrapper = () =>
     shallowMount(StartingKitStep, {
       global: {
+        provide: {
+          deletionTracker: mockDeletionTracker,
+        },
         stubs: {
           QCard: {
             template: `<div
@@ -457,6 +472,13 @@ describe('StartingKitStep', () => {
             },
             QBanner: { template: '<div />' },
           },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
+          },
         },
       });
 
@@ -487,6 +509,13 @@ describe('StartingKitStep', () => {
             },
             QBanner: { template: '<div />' },
           },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
+          },
         },
       });
 
@@ -513,6 +542,13 @@ describe('StartingKitStep', () => {
             QSeparator: { template: '<hr />' },
             QInput: { template: '<input />' },
             QBanner: { template: '<div />' },
+          },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
           },
         },
       });

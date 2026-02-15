@@ -41,6 +41,7 @@ vi.mock('stores/wizard', () => ({
 
 vi.mock('stores/hero', () => ({
   useHeroStore: () => ({
+    hero: { id: 42 },
     clearHero: mockClearHero,
   }),
 }));
@@ -56,15 +57,35 @@ vi.mock('src/composables/useSwipeNavigation', () => ({
   useSwipeNavigation: vi.fn(),
 }));
 
+vi.mock('src/composables/useDeletionTracker', () => ({
+  useDeletionTracker: () => ({
+    trackDeletion: vi.fn(),
+    getDeletions: vi.fn(() => []),
+    clearDeletions: vi.fn(),
+    clearAll: vi.fn(),
+  }),
+}));
+
+vi.mock('src/composables/useWizardSave', () => ({
+  useWizardSave: () => ({
+    saving: ref(false),
+    saveError: ref(null),
+    saveAndAdvance: vi.fn().mockResolvedValue(true),
+  }),
+}));
+
 vi.mock('src/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn() },
+}));
+
+vi.mock('src/utils/errorHandling', () => ({
+  toError: (e: unknown) => (e instanceof Error ? e : new Error(String(e))),
 }));
 
 vi.mock('src/types', () => ({
   WIZARD_STEPS: [
     { id: 1, code: 'basic-setup', name: 'Basics' },
-    { id: 2, code: 'ancestry', name: 'Ancestry' },
-    { id: 11, code: 'review', name: 'Review' },
+    { id: 10, code: 'review', name: 'Review' },
   ],
 }));
 
@@ -113,11 +134,10 @@ describe('CharacterCreationPage', () => {
           },
           StepNavigation: {
             template: '<div class="step-navigation" />',
-            props: ['creating'],
-            emits: ['create'],
+            props: ['saving', 'saveError'],
+            emits: ['next', 'finish'],
           },
           BasicSetupStep: { template: '<div class="basic-setup-step" />' },
-          AncestryStep: { template: '<div class="ancestry-step" />' },
           CultureStep: { template: '<div class="culture-step" />' },
           AttributesStep: { template: '<div class="attributes-step" />' },
           SkillsStep: { template: '<div class="skills-step" />' },

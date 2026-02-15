@@ -13,7 +13,9 @@
           aria-label="Go back"
           @click="goBack"
         />
-        <div class="text-subtitle1 q-ml-sm">Create Character</div>
+        <div class="text-subtitle1 q-ml-sm">
+          {{ wizardStore.mode === 'edit' ? 'Edit Character' : 'Create Character' }}
+        </div>
         <q-space />
         <q-btn
           flat
@@ -50,7 +52,12 @@
     </div>
 
     <!-- Bottom Navigation -->
-    <StepNavigation :creating="creating" @create="createCharacter" />
+    <StepNavigation
+      :saving="saving"
+      :save-error="saveError"
+      @next="handleNext"
+      @finish="finishWizard"
+    />
 
     <!-- Reset Confirmation Dialog -->
     <q-dialog v-model="showResetDialog" aria-modal="true" aria-labelledby="reset-dialog-title">
@@ -69,16 +76,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, type Component } from 'vue';
+import { ref, computed, provide, onMounted, type Component } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useWizardStore } from 'stores/wizard';
 import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
 import { useSwipeNavigation } from 'src/composables/useSwipeNavigation';
+import { useDeletionTracker } from 'src/composables/useDeletionTracker';
+import { useWizardSave } from 'src/composables/useWizardSave';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
-import { WIZARD_STEPS } from 'src/types';
 
 // Shared components
 import StepTabs from 'components/character-creation/shared/StepTabs.vue';
@@ -86,7 +94,6 @@ import StepNavigation from 'components/character-creation/shared/StepNavigation.
 
 // Step components
 import BasicSetupStep from 'components/character-creation/steps/BasicSetupStep.vue';
-import AncestryStep from 'components/character-creation/steps/AncestryStep.vue';
 import CultureStep from 'components/character-creation/steps/CultureStep.vue';
 import AttributesStep from 'components/character-creation/steps/AttributesStep.vue';
 import SkillsStep from 'components/character-creation/steps/SkillsStep.vue';
@@ -97,31 +104,32 @@ import EquipmentStep from 'components/character-creation/steps/EquipmentStep.vue
 import PersonalDetailsStep from 'components/character-creation/steps/PersonalDetailsStep.vue';
 import ReviewStep from 'components/character-creation/steps/ReviewStep.vue';
 
+const props = defineProps<{
+  campaignId?: string;
+  characterId?: string;
+}>();
+
 const router = useRouter();
 const $q = useQuasar();
 const wizardStore = useWizardStore();
 const heroStore = useHeroStore();
 const classifierStore = useClassifierStore();
 
+// Deletion tracker — provided to step components via inject
+const deletionTracker = useDeletionTracker();
+provide('deletionTracker', deletionTracker);
+
+// Save composable
+const { saving, saveError, saveAndAdvance } = useWizardSave(deletionTracker);
+
 // State
-const creating = ref(false);
 const showResetDialog = ref(false);
 const initializing = ref(true);
 const stepContentRef = ref<HTMLElement | null>(null);
 
-// Swipe navigation for mobile
-const totalSteps = WIZARD_STEPS.length;
-
+// Swipe navigation for mobile — only back (right swipe), not forward (left swipe)
 useSwipeNavigation(stepContentRef, {
-  onSwipeLeft: () => {
-    // Next step
-    if (currentStep.value < totalSteps) {
-      wizardStore.markStepCompleted(currentStep.value);
-      wizardStore.goToStep(currentStep.value + 1);
-    }
-  },
   onSwipeRight: () => {
-    // Previous step
     if (currentStep.value > 1) {
       wizardStore.goToStep(currentStep.value - 1);
     }
@@ -130,16 +138,15 @@ useSwipeNavigation(stepContentRef, {
 
 const stepComponents: Record<number, Component> = {
   1: BasicSetupStep,
-  2: AncestryStep,
-  3: CultureStep,
-  4: AttributesStep,
-  5: SkillsStep,
-  6: ExpertisesStep,
-  7: PathsStep,
-  8: StartingKitStep,
-  9: EquipmentStep,
-  10: PersonalDetailsStep,
-  11: ReviewStep,
+  2: CultureStep,
+  3: AttributesStep,
+  4: SkillsStep,
+  5: ExpertisesStep,
+  6: PathsStep,
+  7: StartingKitStep,
+  8: EquipmentStep,
+  9: PersonalDetailsStep,
+  10: ReviewStep,
 };
 
 // Current step
@@ -147,7 +154,6 @@ const currentStep = computed(() => wizardStore.currentStep);
 const currentStepComponent = computed(() => {
   const component = stepComponents[currentStep.value];
   if (!component) {
-    // Log issue for debugging rather than silent fallback
     logger.warn('Invalid wizard step, defaulting to step 1', {
       requestedStep: currentStep.value,
       availableSteps: Object.keys(stepComponents).map(Number),
@@ -162,29 +168,19 @@ function goBack() {
   router.back();
 }
 
-// Create character
-async function createCharacter(): Promise<void> {
-  creating.value = true;
-  try {
-    // TODO: Replace with actual API call
-    await Promise.resolve(); // Placeholder for: await heroService.createHero(heroStore.hero);
-    $q.notify({
-      type: 'positive',
-      message: 'Character created successfully!',
-      position: 'top',
-    });
-    wizardStore.reset();
-    heroStore.clearHero();
+async function handleNext(): Promise<void> {
+  await saveAndAdvance();
+}
+
+function finishWizard() {
+  const heroId = heroStore.hero?.id;
+  const campId = heroStore.hero?.campaignId;
+  wizardStore.reset();
+  heroStore.clearHero();
+  if (heroId && heroId > 0 && campId) {
+    void router.push(`/campaigns/${campId}/characters/${heroId}`);
+  } else {
     void router.push('/campaigns');
-  } catch (err) {
-    logger.error('Failed to create character', toError(err));
-    $q.notify({
-      type: 'negative',
-      message: 'Failed to create character',
-      position: 'top',
-    });
-  } finally {
-    creating.value = false;
   }
 }
 
@@ -194,9 +190,16 @@ function confirmReset() {
 }
 
 function resetWizard() {
+  deletionTracker.clearAll();
   wizardStore.reset();
   heroStore.clearHero();
-  wizardStore.startCreate();
+  const campId = props.campaignId ? Number(props.campaignId) : undefined;
+  wizardStore.startCreate(campId);
+  // If we were on an edit route, switch URL back to create
+  if (props.characterId) {
+    const newPath = campId ? `/campaigns/${campId}/characters/new` : '/characters/new';
+    void router.replace(newPath);
+  }
   $q.notify({
     type: 'info',
     message: 'Character creation reset',
@@ -211,7 +214,25 @@ onMounted(async () => {
       await classifierStore.initialize();
     }
     if (!wizardStore.isActive) {
-      wizardStore.startCreate();
+      if (props.characterId) {
+        // Edit route — load existing hero
+        const heroId = Number(props.characterId);
+        const success = await wizardStore.startEdit(heroId);
+        if (!success) {
+          $q.notify({
+            type: 'negative',
+            message: 'Character not found',
+            caption: 'Unable to load the character for editing.',
+            timeout: 5000,
+          });
+          void router.replace('/campaigns');
+          return;
+        }
+      } else {
+        // Create route — start fresh
+        const campId = props.campaignId ? Number(props.campaignId) : undefined;
+        wizardStore.startCreate(campId);
+      }
     }
   } catch (error) {
     logger.error('Failed to initialize character creation', toError(error));
