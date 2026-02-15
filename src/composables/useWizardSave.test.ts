@@ -194,10 +194,11 @@ describe('useWizardSave', () => {
   // Sub-resource sync
   // ========================================
   describe('sub-resource sync', () => {
-    it('upserts cultures on culture step', async () => {
+    it('upserts cultures and expertises on culture step', async () => {
       mockHero.value = makeHero({
         id: 42,
         cultures: [{ id: -1, heroId: 42, culture: { id: 1, code: 'alethi', name: 'Alethi' } }],
+        expertises: [{ id: -1, heroId: 42, expertise: { id: 1, code: 'lore', name: 'Lore' } }],
       });
       mockCurrentStepCode.value = 'culture';
       const { saveAndAdvance } = useWizardSave(tracker);
@@ -205,6 +206,7 @@ describe('useWizardSave', () => {
       await saveAndAdvance();
 
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'cultures', expect.any(Object));
+      expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'expertises', expect.any(Object));
       expect(mockNextStep).toHaveBeenCalled();
     });
 
@@ -508,6 +510,32 @@ describe('useWizardSave', () => {
 
       expect(mockUpdate).toHaveBeenCalledTimes(1);
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'equipment', expect.any(Object));
+    });
+
+    it('saves core + equipment + expertises on starting-kit step', async () => {
+      mockHero.value = makeHero({
+        id: 42,
+        equipment: [
+          {
+            id: -1,
+            heroId: 42,
+            equipment: { id: 3, code: 'longsword', name: 'Longsword' },
+            amount: 1,
+            isEquipped: true,
+            isPrimary: true,
+          },
+        ],
+        expertises: [{ id: -1, heroId: 42, expertise: { id: 1, code: 'lore', name: 'Lore' } }],
+      });
+      mockCurrentStepCode.value = 'starting-kit';
+      const { saveAndAdvance } = useWizardSave(tracker);
+
+      await saveAndAdvance();
+
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
+      expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'equipment', expect.any(Object));
+      expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'expertises', expect.any(Object));
+      expect(mockNextStep).toHaveBeenCalled();
     });
 
     it('saves core + goals + connections + companions on personal-details step', async () => {

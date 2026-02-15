@@ -224,16 +224,19 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
     }
 
     const deletionIds = deletionTracker.getDeletions(deletionKey);
+    // Exclude IDs that were just upserted to prevent stale tracker entries from deleting live data
+    const upsertedIds = new Set(itemsToSync.map((item) => item.id));
+    const safeDeletionIds = deletionIds.filter((id) => !upsertedIds.has(id));
     const deleteResults = await Promise.allSettled(
-      deletionIds.map((id) => heroService.deleteSubResource(heroId, apiPath, id))
+      safeDeletionIds.map((id) => heroService.deleteSubResource(heroId, apiPath, id))
     );
 
     // Only clear successfully deleted IDs; re-track failed ones for retry
     deletionTracker.clearDeletions(deletionKey);
     const failedIds: number[] = [];
     deleteResults.forEach((result, idx) => {
-      if (result.status === 'rejected' && deletionIds[idx] !== undefined) {
-        failedIds.push(deletionIds[idx]);
+      if (result.status === 'rejected' && safeDeletionIds[idx] !== undefined) {
+        failedIds.push(safeDeletionIds[idx]);
       }
     });
     for (const id of failedIds) {
