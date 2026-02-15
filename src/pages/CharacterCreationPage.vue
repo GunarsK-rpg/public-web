@@ -194,6 +194,11 @@ function resetWizard() {
   wizardStore.reset();
   heroStore.clearHero();
   const campId = props.campaignId ? Number(props.campaignId) : undefined;
+  if (campId !== undefined && (!Number.isFinite(campId) || campId <= 0)) {
+    $q.notify({ type: 'negative', message: 'Invalid campaign ID' });
+    void router.replace('/campaigns');
+    return;
+  }
   wizardStore.startCreate(campId);
   // If we were on an edit route, switch URL back to create
   if (props.characterId) {

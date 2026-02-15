@@ -257,6 +257,52 @@ describe('useWizardSave', () => {
       );
     });
 
+    it('tracks previously-saved zeroed skills for deletion', async () => {
+      mockHero.value = makeHero({
+        id: 42,
+        skills: [
+          {
+            id: 55,
+            heroId: 42,
+            skill: { id: 2, code: 'stealth', name: 'Stealth' },
+            rank: 0,
+            modifier: 0,
+          },
+        ],
+      });
+      mockCurrentStepCode.value = 'skills';
+      const { saveAndAdvance } = useWizardSave(tracker);
+
+      await saveAndAdvance();
+
+      // Zeroed skill with real DB ID should be deleted, not upserted
+      expect(mockDeleteSubResource).toHaveBeenCalledWith(42, 'skills', 55);
+      expect(mockUpsertSubResource).not.toHaveBeenCalled();
+    });
+
+    it('does not track temp-id zeroed skills for deletion', async () => {
+      mockHero.value = makeHero({
+        id: 42,
+        skills: [
+          {
+            id: -1,
+            heroId: 42,
+            skill: { id: 2, code: 'stealth', name: 'Stealth' },
+            rank: 0,
+            modifier: 0,
+          },
+        ],
+      });
+      mockCurrentStepCode.value = 'skills';
+      const { saveAndAdvance } = useWizardSave(tracker);
+
+      await saveAndAdvance();
+
+      // Temp ID skills should not trigger deletion or upsert
+      expect(mockDeleteSubResource).not.toHaveBeenCalled();
+      expect(mockUpsertSubResource).not.toHaveBeenCalled();
+    });
+
     it('includes skills with rank 0 but non-zero modifier', async () => {
       mockHero.value = makeHero({
         id: 42,

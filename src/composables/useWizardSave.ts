@@ -217,10 +217,24 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
     }
 
     const deletionIds = deletionTracker.getDeletions(deletionKey);
-    await Promise.allSettled(
+    const deleteResults = await Promise.allSettled(
       deletionIds.map((id) => heroService.deleteSubResource(heroId, apiPath, id))
     );
+
+    // Only clear successfully deleted IDs; re-track failed ones for retry
     deletionTracker.clearDeletions(deletionKey);
+    const failedIds: number[] = [];
+    deleteResults.forEach((result, idx) => {
+      if (result.status === 'rejected' && deletionIds[idx] !== undefined) {
+        failedIds.push(deletionIds[idx]);
+      }
+    });
+    for (const id of failedIds) {
+      deletionTracker.trackDeletion(deletionKey, id);
+    }
+    if (failedIds.length > 0) {
+      logger.error(`${failedIds.length} deletion(s) failed for ${apiPath}`);
+    }
 
     if (upsertFailures.length > 0) {
       throw new Error(`Failed to save some ${apiPath}`);
