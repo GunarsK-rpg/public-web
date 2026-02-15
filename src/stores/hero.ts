@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { HeroSheet } from 'src/types';
+import type { Hero, HeroSheet } from 'src/types';
+import type { ClassifierRef } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
@@ -166,6 +167,37 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
+  function setCampaign(campaign: ClassifierRef | null) {
+    if (!hero.value) return;
+    if (campaign) {
+      hero.value.campaignId = campaign.id;
+      hero.value.campaign = { id: campaign.id, code: campaign.code, name: campaign.name };
+    } else {
+      hero.value.campaignId = null;
+      hero.value.campaign = { id: 0, code: '', name: '' };
+    }
+  }
+
+  function updateFromResponse(data: Hero): void {
+    if (!hero.value) return;
+    hero.value.id = data.id;
+    hero.value.userId = data.userId;
+    hero.value.user = data.user;
+    hero.value.campaignId = data.campaignId;
+    hero.value.campaign = data.campaign;
+    hero.value.ancestry = data.ancestry;
+    hero.value.startingKit = data.startingKit;
+    hero.value.activeSingerForm = data.activeSingerForm;
+    hero.value.radiantOrder = data.radiantOrder;
+    hero.value.name = data.name;
+    hero.value.level = data.level;
+    hero.value.radiantIdeal = data.radiantIdeal;
+    hero.value.currentHealth = data.currentHealth;
+    hero.value.currentFocus = data.currentFocus;
+    hero.value.currentInvestiture = data.currentInvestiture;
+    hero.value.currency = data.currency;
+  }
+
   // ===================
   // RESOURCES
   // ===================
@@ -234,6 +266,8 @@ export const useHeroStore = defineStore('hero', () => {
     setName,
     setLevel,
     setCampaignId,
+    setCampaign,
+    updateFromResponse,
 
     // Resources
     updateResources,

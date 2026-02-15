@@ -76,16 +76,7 @@ describe('useStepValidation', () => {
       expect(result.errors.length).toBeGreaterThan(0);
     });
 
-    it('validates ancestry step', () => {
-      setupHero();
-      const { validate } = useStepValidation();
-
-      const result = validate(STEP_CODES.ANCESTRY);
-
-      expect(result.isValid).toBe(true);
-    });
-
-    it('returns error for missing ancestry', () => {
+    it('returns error for missing ancestry (merged into basic-setup)', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
@@ -94,7 +85,7 @@ describe('useStepValidation', () => {
       }
 
       const { validate } = useStepValidation();
-      const result = validate(STEP_CODES.ANCESTRY);
+      const result = validate(STEP_CODES.BASIC_SETUP);
 
       expect(result.isValid).toBe(false);
     });
@@ -247,9 +238,9 @@ describe('useStepValidation', () => {
 
       expect(currentStepCode.value).toBe(STEP_CODES.BASIC_SETUP);
 
-      wizardStore.goToStep(2); // Ancestry step
+      wizardStore.goToStep(2); // Culture step
 
-      expect(currentStepCode.value).toBe(STEP_CODES.ANCESTRY);
+      expect(currentStepCode.value).toBe(STEP_CODES.CULTURE);
     });
 
     it('returns basic-setup as fallback when no step config', () => {
@@ -293,11 +284,11 @@ describe('useStepValidation', () => {
       // Initially at step 1 (basic-setup)
       expect(currentStepCode.value).toBe(STEP_CODES.BASIC_SETUP);
 
-      // Move to ancestry step
+      // Move to culture step
       wizardStore.goToStep(2);
 
       // Should update the step code
-      expect(currentStepCode.value).toBe(STEP_CODES.ANCESTRY);
+      expect(currentStepCode.value).toBe(STEP_CODES.CULTURE);
       // Validation result should be defined (actual validity depends on logic)
       expect(currentValidation.value).toBeDefined();
     });
@@ -385,9 +376,10 @@ describe('useStepValidation', () => {
       const result1 = validate(STEP_CODES.BASIC_SETUP);
       expect(result1.isValid).toBe(false);
 
-      // Set name
+      // Set name and ancestry
       if (heroStore.hero) {
         heroStore.hero.name = 'Test Hero';
+        heroStore.hero.ancestry = { id: 1, code: 'human', name: 'Human' };
       }
 
       const result2 = validate(STEP_CODES.BASIC_SETUP);

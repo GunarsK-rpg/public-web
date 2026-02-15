@@ -159,6 +159,14 @@ describe('PersonalDetailsStep', () => {
             template: '<hr class="q-separator" />',
           },
         },
+        provide: {
+          deletionTracker: {
+            trackDeletion: vi.fn(),
+            getDeletions: vi.fn(() => []),
+            clearDeletions: vi.fn(),
+            clearAll: vi.fn(),
+          },
+        },
       },
     });
 
@@ -496,6 +504,13 @@ describe('PersonalDetailsStep', () => {
             QBtn: { template: '<button class="q-btn" />' },
             QBadge: { template: '<span class="q-badge"><slot /></span>' },
             QSeparator: { template: '<hr />' },
+          },
+          provide: {
+            deletionTracker: {
+              trackDeletion: vi.fn(),
+              getDeletions: vi.fn(() => []),
+              clearDeletions: vi.fn(),
+            },
           },
         },
       });

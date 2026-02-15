@@ -536,4 +536,191 @@ describe('useHeroStore', () => {
       expect(store.hero).toBeNull();
     });
   });
+
+  // ========================================
+  // setCampaign
+  // ========================================
+  describe('setCampaign', () => {
+    it('sets campaign with full ClassifierRef', () => {
+      const store = useHeroStore();
+      store.initNewHero();
+      store.setCampaign({ id: 5, code: 'my-campaign', name: 'My Campaign' });
+
+      expect(store.hero?.campaignId).toBe(5);
+      expect(store.hero?.campaign).toEqual({ id: 5, code: 'my-campaign', name: 'My Campaign' });
+    });
+
+    it('clears campaign when set to null', () => {
+      const store = useHeroStore();
+      store.initNewHero();
+      store.setCampaign({ id: 5, code: 'my-campaign', name: 'My Campaign' });
+      store.setCampaign(null);
+
+      expect(store.hero?.campaignId).toBeNull();
+      expect(store.hero?.campaign).toEqual({ id: 0, code: '', name: '' });
+    });
+
+    it('does nothing when no hero loaded', () => {
+      const store = useHeroStore();
+      store.setCampaign({ id: 5, code: 'my-campaign', name: 'My Campaign' });
+
+      expect(store.hero).toBeNull();
+    });
+  });
+
+  // ========================================
+  // updateFromResponse
+  // ========================================
+  describe('updateFromResponse', () => {
+    it('applies API response core fields to local hero', () => {
+      const store = useHeroStore();
+      store.initNewHero();
+
+      store.updateFromResponse({
+        id: 42,
+        userId: 7,
+        user: { id: 7, username: 'player1' },
+        campaignId: 3,
+        campaign: { id: 3, code: 'campaign-x', name: 'Campaign X' },
+        ancestry: { id: 2, code: 'human', name: 'Human' },
+        startingKit: null,
+        activeSingerForm: null,
+        radiantOrder: null,
+        name: 'Kaladin',
+        level: 5,
+        radiantIdeal: 2,
+        currentHealth: 30,
+        currentFocus: 15,
+        currentInvestiture: 10,
+        currency: 200,
+      });
+
+      expect(store.hero?.id).toBe(42);
+      expect(store.hero?.userId).toBe(7);
+      expect(store.hero?.user).toEqual({ id: 7, username: 'player1' });
+      expect(store.hero?.campaignId).toBe(3);
+      expect(store.hero?.campaign).toEqual({ id: 3, code: 'campaign-x', name: 'Campaign X' });
+      expect(store.hero?.ancestry).toEqual({ id: 2, code: 'human', name: 'Human' });
+      expect(store.hero?.name).toBe('Kaladin');
+      expect(store.hero?.level).toBe(5);
+      expect(store.hero?.currency).toBe(200);
+    });
+
+    it('preserves sub-resource arrays', () => {
+      const store = useHeroStore();
+      store.initNewHero();
+
+      // Add some local sub-resource data
+      store.hero!.cultures = [
+        { id: -1, heroId: 0, culture: { id: 1, code: 'alethi', name: 'Alethi' } },
+      ];
+
+      store.updateFromResponse({
+        id: 42,
+        userId: 7,
+        user: { id: 7, username: 'player1' },
+        campaignId: null,
+        campaign: { id: 0, code: '', name: '' },
+        ancestry: { id: 2, code: 'human', name: 'Human' },
+        startingKit: null,
+        activeSingerForm: null,
+        radiantOrder: null,
+        name: 'Test',
+        level: 1,
+        radiantIdeal: 0,
+        currentHealth: 0,
+        currentFocus: 0,
+        currentInvestiture: 0,
+        currency: 0,
+      });
+
+      // Sub-resource arrays should be untouched
+      expect(store.hero?.cultures).toHaveLength(1);
+      expect(store.hero!.cultures[0]!.culture.code).toBe('alethi');
+    });
+
+    it('updates enriched classifier refs', () => {
+      const store = useHeroStore();
+      store.initNewHero();
+
+      store.updateFromResponse({
+        id: 42,
+        userId: 7,
+        user: { id: 7, username: 'player1' },
+        campaignId: null,
+        campaign: { id: 0, code: '', name: '' },
+        ancestry: { id: 2, code: 'human', name: 'Human' },
+        startingKit: { id: 5, code: 'warrior-kit', name: 'Warrior Kit' },
+        activeSingerForm: { id: 8, code: 'dullform', name: 'Dullform' },
+        radiantOrder: { id: 10, code: 'windrunner', name: 'Windrunner' },
+        name: 'Test',
+        level: 1,
+        radiantIdeal: 3,
+        currentHealth: 0,
+        currentFocus: 0,
+        currentInvestiture: 0,
+        currency: 0,
+      });
+
+      expect(store.hero?.startingKit).toEqual({ id: 5, code: 'warrior-kit', name: 'Warrior Kit' });
+      expect(store.hero?.activeSingerForm).toEqual({ id: 8, code: 'dullform', name: 'Dullform' });
+      expect(store.hero?.radiantOrder).toEqual({
+        id: 10,
+        code: 'windrunner',
+        name: 'Windrunner',
+      });
+    });
+
+    it('does nothing when no hero loaded', () => {
+      const store = useHeroStore();
+
+      store.updateFromResponse({
+        id: 42,
+        userId: 7,
+        user: { id: 7, username: 'player1' },
+        campaignId: null,
+        campaign: { id: 0, code: '', name: '' },
+        ancestry: { id: 2, code: 'human', name: 'Human' },
+        startingKit: null,
+        activeSingerForm: null,
+        radiantOrder: null,
+        name: 'Test',
+        level: 1,
+        radiantIdeal: 0,
+        currentHealth: 0,
+        currentFocus: 0,
+        currentInvestiture: 0,
+        currency: 0,
+      });
+
+      expect(store.hero).toBeNull();
+    });
+
+    it('makes isNew false after response with real id', () => {
+      const store = useHeroStore();
+      store.initNewHero();
+      expect(store.isNew).toBe(true);
+
+      store.updateFromResponse({
+        id: 42,
+        userId: 7,
+        user: { id: 7, username: 'player1' },
+        campaignId: null,
+        campaign: { id: 0, code: '', name: '' },
+        ancestry: { id: 2, code: 'human', name: 'Human' },
+        startingKit: null,
+        activeSingerForm: null,
+        radiantOrder: null,
+        name: 'Test',
+        level: 1,
+        radiantIdeal: 0,
+        currentHealth: 0,
+        currentFocus: 0,
+        currentInvestiture: 0,
+        currency: 0,
+      });
+
+      expect(store.isNew).toBe(false);
+    });
+  });
 });

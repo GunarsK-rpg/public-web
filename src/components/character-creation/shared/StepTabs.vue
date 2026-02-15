@@ -9,11 +9,13 @@
         :tabindex="currentStep === step.id ? 0 : -1"
         :aria-selected="currentStep === step.id"
         :aria-controls="`step-panel-${step.id}`"
-        class="step-tab q-px-md q-py-sm text-center cursor-pointer"
+        class="step-tab q-px-md q-py-sm text-center"
         :class="{
           'step-tab--active': currentStep === step.id,
           'step-tab--done': isStepDone(step.id) && currentStep !== step.id,
+          'step-tab--disabled': !canNavigateTo(step.id),
           'text-negative': hasStepErrors(step.code),
+          'cursor-pointer': canNavigateTo(step.id),
         }"
         @click="goToStep(step.id)"
         @keydown.enter="goToStep(step.id)"
@@ -78,7 +80,17 @@ function hasStepErrors(stepCode: string): boolean {
   return stepErrors.value[stepCode] ?? false;
 }
 
+function canNavigateTo(step: number): boolean {
+  // In create mode, only allow backward navigation or to completed steps
+  if (wizardStore.mode === 'create') {
+    return step <= currentStep.value || wizardStore.isStepCompleted(step);
+  }
+  // In edit/levelup mode, all steps are accessible
+  return true;
+}
+
 function goToStep(step: number) {
+  if (!canNavigateTo(step)) return;
   // Only mark as completed if navigating forward/away
   if (step !== wizardStore.currentStep) {
     wizardStore.markStepCompleted(wizardStore.currentStep);
@@ -134,6 +146,15 @@ function navigateTabs(direction: number) {
 
   &--done {
     opacity: 0.8;
+  }
+
+  &--disabled {
+    opacity: 0.35;
+    cursor: default;
+
+    &:hover {
+      opacity: 0.35;
+    }
   }
 }
 

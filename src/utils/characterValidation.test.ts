@@ -170,32 +170,41 @@ describe('getStepValidation', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Ancestry & Culture Steps
+  // Ancestry (merged into Basic Setup)
   // ---------------------------------------------------------------------------
-  describe('ANCESTRY step', () => {
-    it('validates with selected ancestry', () => {
-      const data = createValidationData({
-        hero: createHero({ ancestry: { id: 1, code: 'test', name: 'Test' } }),
-      });
-      const result = getStepValidation(STEP_CODES.ANCESTRY, data);
-
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toHaveLength(0);
-    });
-
+  describe('BASIC_SETUP ancestry validation', () => {
     it('fails with null ancestry', () => {
       const data = createValidationData({
         hero: createHero({
+          name: 'Test',
+          level: 1,
           ancestry: null as unknown as { id: number; code: string; name: string },
         }),
       });
-      const result = getStepValidation(STEP_CODES.ANCESTRY, data);
+      const result = getStepValidation(STEP_CODES.BASIC_SETUP, data);
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Ancestry is required');
     });
+
+    it('validates with selected ancestry', () => {
+      const data = createValidationData({
+        hero: createHero({
+          name: 'Test',
+          level: 1,
+          ancestry: { id: 1, code: 'test', name: 'Test' },
+        }),
+      });
+      const result = getStepValidation(STEP_CODES.BASIC_SETUP, data);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
   });
 
+  // ---------------------------------------------------------------------------
+  // Culture Step
+  // ---------------------------------------------------------------------------
   describe('CULTURE step', () => {
     it('validates with at least one culture', () => {
       const data = createValidationData({
@@ -670,15 +679,6 @@ describe('getBudgetValidation', () => {
       expect(result.spent).toBe(0);
       expect(result.remaining).toBe(0);
       expect(result.isValid).toBe(true);
-    });
-
-    it('returns default budget for ANCESTRY', () => {
-      const data = createValidationData();
-      const result = getBudgetValidation(STEP_CODES.ANCESTRY, data);
-
-      expect(result.budget).toBe(0);
-      expect(result.spent).toBe(0);
-      expect(result.remaining).toBe(0);
     });
   });
 

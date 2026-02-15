@@ -113,7 +113,11 @@ function validateTalents(levelData: Level | undefined, talents: HeroTalent[]): B
   return { isValid: errors.length === 0, errors, warnings, budget, spent, remaining };
 }
 
-function validateBasicSetup(name: string, level: number): StepValidation {
+function validateBasicSetup(
+  name: string,
+  level: number,
+  ancestryId: number | null | undefined
+): StepValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -123,14 +127,6 @@ function validateBasicSetup(name: string, level: number): StepValidation {
   if (level < 1 || level > 20) {
     errors.push('Level must be between 1 and 20');
   }
-
-  return { isValid: errors.length === 0, errors, warnings };
-}
-
-function validateAncestry(ancestryId: number | null | undefined): StepValidation {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
   if (!ancestryId) {
     errors.push('Ancestry is required');
   }
@@ -190,9 +186,7 @@ export function getStepValidation(stepCode: StepCode, data: HeroValidationData):
 
   switch (stepCode) {
     case STEP_CODES.BASIC_SETUP:
-      return validateBasicSetup(hero.name, hero.level);
-    case STEP_CODES.ANCESTRY:
-      return validateAncestry(hero.ancestry?.id);
+      return validateBasicSetup(hero.name, hero.level, hero.ancestry?.id);
     case STEP_CODES.CULTURE:
       return validateCulture(hero.cultures);
     case STEP_CODES.ATTRIBUTES:

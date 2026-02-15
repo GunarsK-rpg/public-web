@@ -13,11 +13,20 @@ const mockHeroCultures = {
   }[],
 };
 
+const mockHeroExpertises = {
+  value: [] as {
+    id: number;
+    expertise: { id: number };
+    source?: { sourceType: string; sourceId: number };
+  }[],
+};
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     get hero() {
       return {
         cultures: mockHeroCultures.value,
+        expertises: mockHeroExpertises.value,
       };
     },
   }),
@@ -86,9 +95,19 @@ vi.mock('src/utils/arrayUtils', () => ({
 }));
 
 describe('CultureStep', () => {
+  const mockDeletionTracker = {
+    trackDeletion: vi.fn(),
+    getDeletions: vi.fn(() => []),
+    clearDeletions: vi.fn(),
+    clearAll: vi.fn(),
+  };
+
   const createWrapper = () =>
     shallowMount(CultureStep, {
       global: {
+        provide: {
+          deletionTracker: mockDeletionTracker,
+        },
         stubs: {
           QSelect: {
             template: `<select

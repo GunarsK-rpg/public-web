@@ -3,7 +3,6 @@
  */
 export const STEP_CODES = {
   BASIC_SETUP: 'basic-setup',
-  ANCESTRY: 'ancestry',
   CULTURE: 'culture',
   ATTRIBUTES: 'attributes',
   SKILLS: 'skills',
@@ -37,20 +36,12 @@ export const WIZARD_STEPS: WizardStep[] = [
     id: 1,
     code: STEP_CODES.BASIC_SETUP,
     name: 'Basic Setup',
-    description: 'Name, level, and campaign',
+    description: 'Name, level, ancestry, and campaign',
     icon: 'sym_o_badge',
     isOptional: false,
   },
   {
     id: 2,
-    code: STEP_CODES.ANCESTRY,
-    name: 'Ancestry',
-    description: 'Choose your ancestry',
-    icon: 'sym_o_diversity_3',
-    isOptional: false,
-  },
-  {
-    id: 3,
     code: STEP_CODES.CULTURE,
     name: 'Culture',
     description: 'Select cultural background',
@@ -58,7 +49,7 @@ export const WIZARD_STEPS: WizardStep[] = [
     isOptional: false,
   },
   {
-    id: 4,
+    id: 3,
     code: STEP_CODES.ATTRIBUTES,
     name: 'Attributes',
     description: 'Allocate attribute points',
@@ -66,7 +57,7 @@ export const WIZARD_STEPS: WizardStep[] = [
     isOptional: false,
   },
   {
-    id: 5,
+    id: 4,
     code: STEP_CODES.SKILLS,
     name: 'Skills',
     description: 'Assign skill ranks',
@@ -74,7 +65,7 @@ export const WIZARD_STEPS: WizardStep[] = [
     isOptional: false,
   },
   {
-    id: 6,
+    id: 5,
     code: STEP_CODES.EXPERTISES,
     name: 'Expertises',
     description: 'Select your expertises',
@@ -82,7 +73,7 @@ export const WIZARD_STEPS: WizardStep[] = [
     isOptional: false,
   },
   {
-    id: 7,
+    id: 6,
     code: STEP_CODES.PATHS,
     name: 'Paths',
     description: 'Choose paths and talents',
@@ -90,7 +81,7 @@ export const WIZARD_STEPS: WizardStep[] = [
     isOptional: false,
   },
   {
-    id: 8,
+    id: 7,
     code: STEP_CODES.STARTING_KIT,
     name: 'Starting Kit',
     description: 'Choose equipment bundle',
@@ -98,7 +89,7 @@ export const WIZARD_STEPS: WizardStep[] = [
     isOptional: false,
   },
   {
-    id: 9,
+    id: 8,
     code: STEP_CODES.EQUIPMENT,
     name: 'Equipment',
     description: 'Customize gear and currency',
@@ -106,7 +97,7 @@ export const WIZARD_STEPS: WizardStep[] = [
     isOptional: false,
   },
   {
-    id: 10,
+    id: 9,
     code: STEP_CODES.PERSONAL_DETAILS,
     name: 'Details',
     description: 'Biography, goals, connections',
@@ -114,7 +105,7 @@ export const WIZARD_STEPS: WizardStep[] = [
     isOptional: true,
   },
   {
-    id: 11,
+    id: 10,
     code: STEP_CODES.REVIEW,
     name: 'Review',
     description: 'Review and create',

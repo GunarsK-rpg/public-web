@@ -104,16 +104,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
+import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 
 const heroStore = useHeroStore();
 const equipStore = useHeroEquipmentStore();
 const classifiers = useClassifierStore();
+const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
 const startingKits = computed(() => classifiers.startingKits);
 const selectedKitId = computed(() => heroStore.hero?.startingKit?.id ?? null);
@@ -126,6 +128,20 @@ const isPrisonerKit = computed(() => {
 const startingCurrency = computed(() => heroStore.hero?.currency ?? 0);
 
 function selectKit(kitId: number) {
+  if (selectedKitId.value === kitId) return;
+
+  // Track all current equipment and kit-source expertises for deletion
+  // before the store clears them and applies new kit items
+  if (heroStore.hero) {
+    for (const equip of heroStore.hero.equipment) {
+      deletionTracker?.trackDeletion('equipment', equip.id);
+    }
+    for (const exp of heroStore.hero.expertises) {
+      if (exp.source?.sourceType === 'starting_kit') {
+        deletionTracker?.trackDeletion('expertises', exp.id);
+      }
+    }
+  }
   equipStore.setStartingKit(kitId);
 }
 

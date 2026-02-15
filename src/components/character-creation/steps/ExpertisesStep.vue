@@ -75,12 +75,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { findById, findByCode } from 'src/utils/arrayUtils';
+import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 import InfoBanner from '../shared/InfoBanner.vue';
 
@@ -88,6 +89,7 @@ const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 const { budget } = useStepValidation();
+const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
 const selectedCategory = ref('all');
 
@@ -167,7 +169,11 @@ function toggleExpertise(expertiseId: number, checked: boolean) {
       attrStore.addExpertise(expertiseId, { sourceType: 'intellect' });
     }
   } else if (!isReadOnly(expertiseId)) {
-    // Don't remove read-only expertises
+    // Track deletion before removing from local state
+    const heroExp = heroStore.hero?.expertises.find((e) => e.expertise.id === expertiseId);
+    if (heroExp) {
+      deletionTracker?.trackDeletion('expertises', heroExp.id);
+    }
     attrStore.removeExpertise(expertiseId);
   }
 }

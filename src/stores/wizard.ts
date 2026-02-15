@@ -126,7 +126,7 @@ export const useWizardStore = defineStore('wizard', () => {
       // Start at attributes step for level up - use step codes to avoid hardcoding numbers
       const attributesStepId = getStepIdByCode(STEP_CODES.ATTRIBUTES);
       currentStep.value = attributesStepId;
-      // Mark steps before attributes as completed (basic-setup, ancestry, culture)
+      // Mark steps before attributes as completed (basic-setup, culture)
       completedStepsSet.value = new Set(
         WIZARD_STEPS.filter((s) => s.id < attributesStepId).map((s) => s.id)
       );
