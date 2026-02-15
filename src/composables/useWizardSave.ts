@@ -70,7 +70,10 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
     }
   }
 
-  async function saveStep(stepCode: StepCode, hero: HeroSheet): Promise<void> {
+  async function saveStep(
+    stepCode: Exclude<StepCode, typeof STEP_CODES.REVIEW>,
+    hero: HeroSheet
+  ): Promise<void> {
     switch (stepCode) {
       case STEP_CODES.BASIC_SETUP:
         await saveHeroCore(hero);
@@ -168,6 +171,10 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
           'companions'
         );
         break;
+      default: {
+        const _exhaustive: never = stepCode;
+        throw new Error('Unhandled step code: ' + String(_exhaustive));
+      }
     }
   }
 

@@ -352,6 +352,24 @@ describe('useWizardSave', () => {
 
       expect(tracker.getDeletions('cultures')).toEqual([]);
     });
+
+    it('preserves failed deletion IDs for retry', async () => {
+      mockHero.value = makeHero({ id: 42 });
+      mockCurrentStepCode.value = 'culture';
+      tracker.trackDeletion('cultures', 5);
+      tracker.trackDeletion('cultures', 10);
+      mockDeleteSubResource
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce({ data: null });
+      const { saveAndAdvance } = useWizardSave(tracker);
+
+      await saveAndAdvance();
+
+      // Failed ID should be re-tracked for retry; successful one cleared
+      const remaining = tracker.getDeletions('cultures');
+      expect(remaining).toContain(5);
+      expect(remaining).not.toContain(10);
+    });
   });
 
   // ========================================

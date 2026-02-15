@@ -175,6 +175,7 @@ async function handleNext(): Promise<void> {
 function finishWizard() {
   const heroId = heroStore.hero?.id;
   const campId = heroStore.hero?.campaignId;
+  deletionTracker.clearAll();
   wizardStore.reset();
   heroStore.clearHero();
   if (heroId && heroId > 0 && campId) {
