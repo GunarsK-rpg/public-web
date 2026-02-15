@@ -95,6 +95,12 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
         );
         break;
       case STEP_CODES.SKILLS:
+        // Track previously-saved skills that were zeroed out for deletion
+        for (const skill of hero.skills) {
+          if (skill.id > 0 && skill.rank === 0 && skill.modifier === 0) {
+            deletionTracker.trackDeletion('skills', skill.id);
+          }
+        }
         await syncSubResource(
           hero.id,
           'skills',
@@ -193,22 +199,32 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
   ): Promise<void> {
     const itemsToSync = filter ? items.filter(filter) : items;
 
-    const upsertPromises = itemsToSync.map(async (item) => {
-      const payload = buildPayload(heroId, item);
-      const response = await heroService.upsertSubResource(heroId, apiPath, payload);
-      // Reconcile temp IDs with real DB IDs from the response
-      if (item.id <= 0 && response.data?.id > 0) {
-        item.id = response.data.id;
-      }
-    });
-
-    const deletionIds = deletionTracker.getDeletions(deletionKey);
-    const deletePromises = deletionIds.map((id) =>
-      heroService.deleteSubResource(heroId, apiPath, id)
+    // Upsert first, then delete — avoids racing on overlapping resources
+    const upsertResults = await Promise.allSettled(
+      itemsToSync.map(async (item) => {
+        const payload = buildPayload(heroId, item);
+        const response = await heroService.upsertSubResource(heroId, apiPath, payload);
+        // Reconcile temp IDs with real DB IDs from the response
+        if (item.id <= 0 && response.data?.id > 0) {
+          item.id = response.data.id;
+        }
+      })
     );
 
-    await Promise.all([...upsertPromises, ...deletePromises]);
+    const upsertFailures = upsertResults.filter((r) => r.status === 'rejected');
+    if (upsertFailures.length > 0) {
+      logger.error(`${upsertFailures.length} upsert(s) failed for ${apiPath}`);
+    }
+
+    const deletionIds = deletionTracker.getDeletions(deletionKey);
+    await Promise.allSettled(
+      deletionIds.map((id) => heroService.deleteSubResource(heroId, apiPath, id))
+    );
     deletionTracker.clearDeletions(deletionKey);
+
+    if (upsertFailures.length > 0) {
+      throw new Error(`Failed to save some ${apiPath}`);
+    }
   }
 
   return {

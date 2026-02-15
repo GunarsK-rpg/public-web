@@ -155,6 +155,7 @@ describe('ExpertisesStep', () => {
             trackDeletion: vi.fn(),
             getDeletions: vi.fn(() => []),
             clearDeletions: vi.fn(),
+            clearAll: vi.fn(),
           },
         },
       },

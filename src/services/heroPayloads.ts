@@ -27,7 +27,8 @@ function realIdSpread(id: number): { id: number } | Record<string, never> {
 }
 
 export function buildHeroCorePayload(hero: HeroSheet): HeroBase {
-  const payload: HeroBase = {
+  return {
+    ...realIdSpread(hero.id),
     name: hero.name,
     level: hero.level,
     radiantIdeal: hero.radiantIdeal,
@@ -44,12 +45,6 @@ export function buildHeroCorePayload(hero: HeroSheet): HeroBase {
     activeSingerForm: toOptionalClassifierInput(hero.activeSingerForm),
     radiantOrder: toOptionalClassifierInput(hero.radiantOrder),
   };
-
-  if (hero.id > 0) {
-    payload.id = hero.id;
-  }
-
-  return payload;
 }
 
 export function buildAttributePayload(heroId: number, attr: HeroAttribute): HeroAttributeBase {

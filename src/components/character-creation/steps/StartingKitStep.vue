@@ -128,6 +128,8 @@ const isPrisonerKit = computed(() => {
 const startingCurrency = computed(() => heroStore.hero?.currency ?? 0);
 
 function selectKit(kitId: number) {
+  if (selectedKitId.value === kitId) return;
+
   // Track all current equipment and kit-source expertises for deletion
   // before the store clears them and applies new kit items
   if (heroStore.hero) {

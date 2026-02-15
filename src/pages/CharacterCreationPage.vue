@@ -217,6 +217,11 @@ onMounted(async () => {
       if (props.characterId) {
         // Edit route — load existing hero
         const heroId = Number(props.characterId);
+        if (!Number.isFinite(heroId) || heroId <= 0) {
+          $q.notify({ type: 'negative', message: 'Invalid character ID' });
+          void router.replace('/campaigns');
+          return;
+        }
         const success = await wizardStore.startEdit(heroId);
         if (!success) {
           $q.notify({
@@ -231,6 +236,11 @@ onMounted(async () => {
       } else {
         // Create route — start fresh
         const campId = props.campaignId ? Number(props.campaignId) : undefined;
+        if (campId !== undefined && (!Number.isFinite(campId) || campId <= 0)) {
+          $q.notify({ type: 'negative', message: 'Invalid campaign ID' });
+          void router.replace('/campaigns');
+          return;
+        }
         wizardStore.startCreate(campId);
       }
     }

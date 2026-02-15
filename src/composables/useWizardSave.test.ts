@@ -376,12 +376,16 @@ describe('useWizardSave', () => {
   // ========================================
   describe('saving state', () => {
     it('sets saving true during save and false after', async () => {
+      let savingDuringCall = false;
+      mockCreate.mockImplementation(() => {
+        savingDuringCall = saving.value;
+        return Promise.resolve({ data: { id: 42 } });
+      });
       const { saveAndAdvance, saving } = useWizardSave(tracker);
 
       expect(saving.value).toBe(false);
-      const promise = saveAndAdvance();
-      // saving should be true during the operation
-      await promise;
+      await saveAndAdvance();
+      expect(savingDuringCall).toBe(true);
       expect(saving.value).toBe(false);
     });
 
