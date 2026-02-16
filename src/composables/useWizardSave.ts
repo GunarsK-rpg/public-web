@@ -26,6 +26,7 @@ import { logger } from 'src/utils/logger';
 export function useWizardSave(deletionTracker: DeletionTracker) {
   const router = useRouter();
   const heroStore = useHeroStore();
+  const heroAttributesStore = useHeroAttributesStore();
   const wizardStore = useWizardStore();
   const { currentStepCode, currentValidation } = useStepValidation();
 
@@ -183,11 +184,10 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
     const isCreate = hero.id === 0;
 
     // During creation, set current resources to their calculated max values
-    if (wizardStore.mode === 'create') {
-      const attrStore = useHeroAttributesStore();
-      hero.currentHealth = attrStore.getDerivedStatTotal('max_health');
-      hero.currentFocus = attrStore.getDerivedStatTotal('max_focus');
-      hero.currentInvestiture = attrStore.getDerivedStatTotal('max_investiture');
+    if (wizardStore.mode === 'create' && hero.id > 0) {
+      hero.currentHealth = heroAttributesStore.getDerivedStatTotal('max_health');
+      hero.currentFocus = heroAttributesStore.getDerivedStatTotal('max_focus');
+      hero.currentInvestiture = heroAttributesStore.getDerivedStatTotal('max_investiture');
     }
 
     const payload = buildHeroCorePayload(hero);
