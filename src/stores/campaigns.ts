@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Campaign, CampaignWithHeroes } from 'src/types';
+import type { Campaign, CampaignWithHeroes, Hero } from 'src/types';
 import { logger } from 'src/utils/logger';
 import campaignService from 'src/services/campaignService';
 import heroService from 'src/services/heroService';
@@ -58,7 +58,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
         campaignService.getById(id),
         heroService.getAll(id).catch((err) => {
           logger.warn('Failed to load heroes for campaign', { id, error: err });
-          return { data: { data: [] as never[], total: 0 } };
+          return { data: { data: [] as Hero[], total: 0 } };
         }),
       ]);
 

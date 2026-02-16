@@ -184,7 +184,7 @@ describe('useCampaignStore', () => {
       const store = useCampaignStore();
       await store.selectCampaign(2);
 
-      expect(store.currentCampaign?.heroes.length).toBe(2);
+      expect(store.currentCampaign?.heroes).toEqual(mockHeroesCampaign2);
     });
 
     it('sets error when campaign not found', async () => {
@@ -236,6 +236,7 @@ describe('useCampaignStore', () => {
       expect(store.currentCampaign?.id).toBe(1);
       expect(store.currentCampaign?.heroes).toEqual([]);
       expect(store.error).toBeNull();
+      expect(mockHeroGetAll).toHaveBeenCalledWith(1);
     });
   });
 

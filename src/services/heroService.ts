@@ -1,9 +1,9 @@
 import type { AxiosResponse } from 'axios';
-import type { Hero, HeroSheet } from 'src/types';
+import type { Hero, HeroSheet, PaginatedResponse } from 'src/types';
 import { api } from './api';
 
 export default {
-  getAll(campaignId?: number): Promise<AxiosResponse<{ data: Hero[]; total: number }>> {
+  getAll(campaignId?: number): Promise<AxiosResponse<PaginatedResponse<Hero>>> {
     const params = campaignId ? { campaign_id: campaignId } : {};
     return api.get('/heroes', { params });
   },
