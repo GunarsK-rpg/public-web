@@ -12,6 +12,7 @@ export interface DerivedStatDisplay {
   totalValue: number;
   totalDisplay: string;
   hasModifier: boolean;
+  valueDisplay: string | null;
 }
 
 /**
@@ -101,6 +102,8 @@ export function buildDerivedStatsList(
     const hasModifier = stat.code !== 'recovery_die';
 
     const firstEntry = statEntries[0];
+    let valueDisplay: string | null = null;
+
     if (firstEntry) {
       // Lookup-based stat - all entries for a stat should reference the same attribute
       const attrId = firstEntry.attr.id;
@@ -113,6 +116,7 @@ export function buildDerivedStatsList(
       );
 
       baseValue = entry?.value ?? 0;
+      valueDisplay = entry?.valueDisplay ?? null;
     } else {
       // Formula-based stat
       baseValue = calculateFormulaStat(stat.code, attrs, levelData, tierData);
@@ -126,11 +130,12 @@ export function buildDerivedStatsList(
       code: stat.code,
       name: stat.name,
       baseValue,
-      baseDisplay: formatValue(stat.code, baseValue),
+      baseDisplay: valueDisplay ?? formatValue(stat.code, baseValue),
       modifier,
       totalValue,
-      totalDisplay: formatValue(stat.code, totalValue),
+      totalDisplay: valueDisplay ?? formatValue(stat.code, totalValue),
       hasModifier,
+      valueDisplay,
     };
   });
 }

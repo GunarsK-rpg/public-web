@@ -12,6 +12,7 @@ export interface DerivedStatValue {
   attrMin: number;
   attrMax: number | null;
   value: number;
+  valueDisplay: string | null;
 }
 
 /** Hero derived stat - upsert payload */
@@ -34,4 +35,5 @@ export interface HeroDerivedStatSheet {
   baseValue: number | null;
   modifier: number;
   totalValue: number | null;
+  valueDisplay: string | null;
 }
