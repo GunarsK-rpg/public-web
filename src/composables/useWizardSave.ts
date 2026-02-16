@@ -96,6 +96,7 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
           buildAttributePayload,
           'attributes'
         );
+        await saveHeroCore(hero);
         break;
       case STEP_CODES.SKILLS:
         // Track previously-saved skills that were zeroed out for deletion
