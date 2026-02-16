@@ -9,7 +9,6 @@
         :selected="isTalentSelected(talentInfo.talent.id)"
         :available="talentInfo.available"
         :unmet-prereqs="talentInfo.unmetPrereqs"
-        :format-prereq="formatPrereq"
         @toggle="$emit('toggleTalent', talentInfo.talent.id, talentInfo.available)"
         @show-details="$emit('showDetails', $event)"
       />
@@ -41,5 +40,5 @@ defineEmits<{
   showDetails: [talent: Talent];
 }>();
 
-const { isTalentSelected, formatPrereq } = useTalentPrerequisites();
+const { isTalentSelected } = useTalentPrerequisites();
 </script>

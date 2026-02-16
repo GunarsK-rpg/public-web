@@ -9,21 +9,22 @@ const mockRemoveTalent = vi.fn();
 const mockSetRadiantOrder = vi.fn();
 const mockSetRadiantIdeal = vi.fn();
 
-const mockHeroTalents = {
-  value: [] as { id: number; heroId: number; talent: { id: number; code: string; name: string } }[],
-};
 const mockIsSinger = { value: false };
 const mockIsRadiant = { value: false };
 const mockRadiantOrderId = { value: null as number | null };
 const mockRadiantIdeal = { value: 1 };
 
+const mockHero: {
+  talents: { id: number; heroId: number; talent: { id: number; code: string; name: string } }[];
+} = { talents: [] };
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     get hero() {
-      return { talents: mockHeroTalents.value };
+      return mockHero;
     },
     get talents() {
-      return mockHeroTalents.value;
+      return mockHero.talents;
     },
   }),
 }));
@@ -85,7 +86,8 @@ const mockClassifiersData = {
       { id: 2, code: 'adhesion', name: 'Adhesion' },
       { id: 3, code: 'division', name: 'Division' },
     ],
-    talents: [] as Array<{ id: number; pathId?: number; specialtyId?: number }>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    talents: [] as any[],
     specialties: [] as Array<{ id: number; pathId: number }>,
   },
 };
@@ -119,7 +121,6 @@ vi.mock('src/composables/useTalentPrerequisites', () => ({
     getPathKeyTalent: mockGetPathKeyTalent,
     getSpecialtiesByPath: mockGetSpecialtiesByPath,
     toggleTalent: mockToggleTalent,
-    formatPrereq: vi.fn().mockReturnValue(''),
   }),
 }));
 
@@ -173,7 +174,7 @@ describe('PathsStep', () => {
           },
           TalentDetailDialog: {
             template: '<div class="talent-detail-dialog" v-if="modelValue" />',
-            props: ['modelValue', 'talent', 'formatPrereq'],
+            props: ['modelValue', 'talent'],
           },
           QList: {
             template: '<div class="q-list"><slot /></div>',
@@ -204,7 +205,7 @@ describe('PathsStep', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-    mockHeroTalents.value = [];
+    mockHero.talents = [];
     mockIsSinger.value = false;
     mockIsRadiant.value = false;
     mockRadiantOrderId.value = null;
@@ -459,18 +460,23 @@ describe('PathsStep', () => {
   // Path Removal with Key Talent
   // ========================================
   describe('path removal with key talent', () => {
-    it('removes key talent when path is deselected', async () => {
-      mockGetPathKeyTalent.mockReturnValue({ id: 100, name: 'Combat Training' });
+    it('removes all path talents when path is deselected', async () => {
+      // Set up a classifier talent belonging to warrior path (id: 1)
+      mockClassifiersData.value.talents = [{ id: 100, path: { id: 1 } }];
+      // Hero has this talent selected
+      mockHero.talents = [
+        { id: 1, heroId: 1, talent: { id: 100, code: 'combat-training', name: 'Combat Training' } },
+      ];
       const wrapper = createWrapper();
 
       // First select the path
       const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
       await warriorCard.trigger('click');
 
-      // Then deselect
+      // Then deselect — should remove talent id 100
       await warriorCard.trigger('click');
 
-      expect(mockRemoveTalent).toHaveBeenCalledWith(100);
+      expect(mockHero.talents).toEqual([]);
     });
   });
 
@@ -550,17 +556,23 @@ describe('PathsStep', () => {
     });
 
     it('handles remove event from HeroicPathPanel', async () => {
-      mockGetPathKeyTalent.mockReturnValue({ id: 99, name: 'Key Talent' });
       const wrapper = createWrapper();
 
       // First select a path
       const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
       await warriorCard.trigger('click');
 
+      // Set up classifier talent after path is selected so panel is visible
+      mockClassifiersData.value.talents = [{ id: 99, path: { id: 1 } }];
+      mockHero.talents = [
+        { id: 1, heroId: 1, talent: { id: 99, code: 'key-talent', name: 'Key Talent' } },
+      ];
+      await wrapper.vm.$nextTick();
+
       // Trigger remove button in stub
       await wrapper.find('.heroic-path-panel .emit-remove').trigger('click');
 
-      expect(mockRemoveTalent).toHaveBeenCalledWith(99);
+      expect(mockHero.talents).toEqual([]);
     });
   });
 
@@ -675,7 +687,7 @@ describe('PathsStep', () => {
         { id: 101, pathId: 2, specialtyId: 10 },
       ];
       mockClassifiersData.value.specialties = [{ id: 10, pathId: 2 }];
-      mockHeroTalents.value = [
+      mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
         { id: 2, heroId: 1, talent: { id: 101, code: 'scholar-lore', name: 'Lore Mastery' } },
       ];
@@ -689,7 +701,7 @@ describe('PathsStep', () => {
     it('syncs specialties from existing hero talents', () => {
       mockClassifiersData.value.talents = [{ id: 100, pathId: 1, specialtyId: 20 }];
       mockClassifiersData.value.specialties = [{ id: 20, pathId: 1 }];
-      mockHeroTalents.value = [
+      mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
       ];
 
@@ -700,7 +712,7 @@ describe('PathsStep', () => {
 
     it('handles talent without pathId', () => {
       mockClassifiersData.value.talents = [{ id: 100 }]; // No pathId
-      mockHeroTalents.value = [
+      mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 100, code: 'generic-talent', name: 'Generic Talent' } },
       ];
 
@@ -710,7 +722,7 @@ describe('PathsStep', () => {
     });
 
     it('handles talent with unknown talentId', () => {
-      mockHeroTalents.value = [
+      mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 999, code: 'unknown-talent', name: 'Unknown Talent' } },
       ]; // Unknown talent
 
@@ -722,7 +734,7 @@ describe('PathsStep', () => {
     it('handles specialty without pathId', () => {
       mockClassifiersData.value.talents = [{ id: 100, pathId: 1, specialtyId: 30 }];
       mockClassifiersData.value.specialties = []; // No specialty found
-      mockHeroTalents.value = [
+      mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
       ];
 

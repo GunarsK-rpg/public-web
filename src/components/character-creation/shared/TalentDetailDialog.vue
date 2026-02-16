@@ -20,7 +20,7 @@
           <q-separator class="q-my-sm" />
           <div class="text-caption text-muted">
             <strong>Prerequisites:</strong>
-            {{ prerequisites.map(formatPrereq).join(', ') }}
+            {{ prerequisites.map(formatPrerequisite).join(', ') }}
           </div>
         </template>
       </q-card-section>
@@ -30,12 +30,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { Talent, TalentPrerequisite } from 'src/types';
+import { formatPrerequisite } from 'src/utils/talentUtils';
+import type { Talent } from 'src/types';
 
 const props = defineProps<{
   modelValue: boolean;
   talent: Talent | null;
-  formatPrereq: (prereq: TalentPrerequisite) => string;
 }>();
 
 defineEmits<{
