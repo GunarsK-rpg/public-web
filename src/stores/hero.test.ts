@@ -424,6 +424,16 @@ describe('useHeroStore', () => {
       expect(mockPatchFocus).toHaveBeenCalledWith(1, 8);
       expect(store.hero?.currentFocus).toBe(8);
     });
+
+    it('handles API error', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockPatchFocus.mockRejectedValue(axiosError(500));
+
+      await store.patchFocus(8);
+
+      expect(store.error).toBeTruthy();
+    });
   });
 
   describe('patchInvestiture', () => {
@@ -437,6 +447,16 @@ describe('useHeroStore', () => {
       expect(mockPatchInvestiture).toHaveBeenCalledWith(1, 3);
       expect(store.hero?.currentInvestiture).toBe(3);
     });
+
+    it('handles API error', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockPatchInvestiture.mockRejectedValue(axiosError(500));
+
+      await store.patchInvestiture(3);
+
+      expect(store.error).toBeTruthy();
+    });
   });
 
   describe('patchCurrency', () => {
@@ -449,6 +469,16 @@ describe('useHeroStore', () => {
 
       expect(mockPatchCurrency).toHaveBeenCalledWith(1, 500);
       expect(store.hero?.currency).toBe(500);
+    });
+
+    it('handles API error', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockPatchCurrency.mockRejectedValue(axiosError(500));
+
+      await store.patchCurrency(500);
+
+      expect(store.error).toBeTruthy();
     });
   });
 

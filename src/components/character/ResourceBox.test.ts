@@ -1,14 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import ResourceBox from './ResourceBox.vue';
-
-vi.mock('src/constants/theme', () => ({
-  RPG_COLORS: {
-    focus: 'blue',
-    investiture: 'amber',
-    singerForm: 'purple',
-  },
-}));
 
 const stubs = {
   QBtn: {
@@ -108,6 +100,15 @@ describe('ResourceBox', () => {
       await input.setValue(20);
       await input.trigger('keyup.enter');
       expect(wrapper.emitted('update')).toEqual([[20]]);
+    });
+
+    it('falls back to current value when input is cleared', async () => {
+      const wrapper = createWrapper({ label: 'HP', current: 25, max: 30 });
+      await wrapper.find('.resource-value').trigger('click');
+      const input = wrapper.find('.resource-input');
+      await input.setValue('');
+      await input.trigger('keyup.enter');
+      expect(wrapper.emitted('update')).toEqual([[25]]);
     });
 
     it('cancels edit on escape', async () => {

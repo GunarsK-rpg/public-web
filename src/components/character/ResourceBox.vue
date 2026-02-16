@@ -11,7 +11,14 @@
         :disable="saving || current <= 0"
         @click="$emit('update', current - 1)"
       />
-      <span v-if="!editing" class="resource-value clickable" @click="startEdit">
+      <span
+        v-if="!editing"
+        class="resource-value clickable"
+        role="button"
+        tabindex="0"
+        @click="startEdit"
+        @keyup.enter="startEdit"
+      >
         {{ current }}{{ max != null ? ` / ${max}` : '' }}{{ suffix ? ` ${suffix}` : '' }}
       </span>
       <span v-else class="resource-edit">
@@ -92,7 +99,8 @@ function cancelEdit() {
 
 function commitEdit() {
   if (!editing.value) return;
-  const value = editValue.value;
+  const raw = editValue.value;
+  const value = Number.isFinite(raw) ? raw : props.current;
   editing.value = false;
   emit('update', value);
 }
