@@ -74,7 +74,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
 
       currentCampaign.value = {
         ...campaignResponse.data,
-        heroes: heroesResult.data.data ?? [],
+        heroes: heroesResult.data?.data ?? [],
       };
       logger.info('Campaign selected', { id, name: campaignResponse.data.name });
     } catch (err: unknown) {

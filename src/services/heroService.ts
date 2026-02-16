@@ -1,5 +1,5 @@
 import type { AxiosResponse } from 'axios';
-import type { Hero, HeroSheet, PaginatedResponse } from 'src/types';
+import type { Hero, HeroBase, HeroSheet, PaginatedResponse } from 'src/types';
 import { api } from './api';
 
 export default {
@@ -13,10 +13,10 @@ export default {
   getSheet(id: number): Promise<AxiosResponse<HeroSheet>> {
     return api.get(`/heroes/${id}/sheet`);
   },
-  create(hero: unknown): Promise<AxiosResponse<Hero>> {
+  create(hero: HeroBase): Promise<AxiosResponse<Hero>> {
     return api.post('/heroes', hero);
   },
-  update(id: number, hero: unknown): Promise<AxiosResponse<Hero>> {
+  update(id: number, hero: HeroBase): Promise<AxiosResponse<Hero>> {
     return api.put(`/heroes/${id}`, hero);
   },
   delete(id: number): Promise<AxiosResponse<void>> {
