@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import type { Campaign, CampaignWithHeroes } from 'src/types';
 import { logger } from 'src/utils/logger';
 import campaignService from 'src/services/campaignService';
+import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
 
 export const useCampaignStore = defineStore('campaigns', () => {
@@ -53,7 +54,10 @@ export const useCampaignStore = defineStore('campaigns', () => {
     error.value = null;
 
     try {
-      const response = await campaignService.getById(id);
+      const [campaignResponse, heroesResponse] = await Promise.all([
+        campaignService.getById(id),
+        heroService.getAll(id),
+      ]);
 
       // Only update state if this is still the latest request
       if (requestId !== selectRequestId) {
@@ -65,8 +69,11 @@ export const useCampaignStore = defineStore('campaigns', () => {
         return;
       }
 
-      currentCampaign.value = response.data;
-      logger.info('Campaign selected', { id, name: response.data.name });
+      currentCampaign.value = {
+        ...campaignResponse.data,
+        heroes: heroesResponse.data.data ?? [],
+      };
+      logger.info('Campaign selected', { id, name: campaignResponse.data.name });
     } catch (err: unknown) {
       if (requestId === selectRequestId) {
         handleError(err, {
