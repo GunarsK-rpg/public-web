@@ -54,9 +54,12 @@ export const useCampaignStore = defineStore('campaigns', () => {
     error.value = null;
 
     try {
-      const [campaignResponse, heroesResponse] = await Promise.all([
+      const [campaignResponse, heroesResult] = await Promise.all([
         campaignService.getById(id),
-        heroService.getAll(id),
+        heroService.getAll(id).catch((err) => {
+          logger.warn('Failed to load heroes for campaign', { id, error: err });
+          return { data: { data: [] as never[], total: 0 } };
+        }),
       ]);
 
       // Only update state if this is still the latest request
@@ -71,7 +74,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
 
       currentCampaign.value = {
         ...campaignResponse.data,
-        heroes: heroesResponse.data.data ?? [],
+        heroes: heroesResult.data.data ?? [],
       };
       logger.info('Campaign selected', { id, name: campaignResponse.data.name });
     } catch (err: unknown) {

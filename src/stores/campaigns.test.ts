@@ -225,6 +225,18 @@ describe('useCampaignStore', () => {
       expect(store.currentCampaign).toBeNull();
       expect(store.error).toBe('Failed to load campaign');
     });
+
+    it('still loads campaign when hero fetch fails', async () => {
+      mockHeroGetAll.mockRejectedValue(new Error('Hero service down'));
+      const store = useCampaignStore();
+
+      await store.selectCampaign(1);
+
+      expect(store.currentCampaign).not.toBeNull();
+      expect(store.currentCampaign?.id).toBe(1);
+      expect(store.currentCampaign?.heroes).toEqual([]);
+      expect(store.error).toBeNull();
+    });
   });
 
   // ========================================

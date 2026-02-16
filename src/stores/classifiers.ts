@@ -4,6 +4,7 @@ import { logger } from 'src/utils/logger';
 import classifierService from 'src/services/classifierService';
 import { handleError } from 'src/utils/errorHandling';
 import type {
+  Classifiers,
   AttributeType,
   Attribute,
   DerivedStat,
@@ -37,58 +38,6 @@ import type {
   Tier,
   Level,
 } from 'src/types';
-
-interface Classifiers {
-  // Attributes & Stats
-  attributeTypes: AttributeType[];
-  attributes: Attribute[];
-  derivedStats: DerivedStat[];
-  derivedStatValues: DerivedStatValue[];
-
-  // Skills & Expertises
-  skills: Skill[];
-  expertiseTypes: ExpertiseType[];
-  expertises: Expertise[];
-
-  // Actions
-  activationTypes: ActivationType[];
-  actionTypes: ActionType[];
-  actions: Action[];
-  actionLinks: ActionLink[];
-
-  // Paths & Talents
-  paths: Path[];
-  specialties: Specialty[];
-  surges: Surge[];
-  radiantOrders: RadiantOrder[];
-  singerForms: SingerForm[];
-  talents: Talent[];
-
-  // Equipment
-  units: Unit[];
-  equipmentTypes: EquipmentType[];
-  damageTypes: DamageType[];
-  equipmentAttributes: EquipmentAttribute[];
-  equipment: Equipment[];
-
-  // Conditions & Status
-  conditions: Condition[];
-  injuries: Injury[];
-
-  // Character Details
-  goalStatuses: GoalStatus[];
-  connectionTypes: ConnectionType[];
-  companionTypes: CompanionType[];
-
-  // Starting & Ancestry
-  startingKits: StartingKit[];
-  ancestries: Ancestry[];
-  cultures: Culture[];
-
-  // Progression
-  tiers: Tier[];
-  levels: Level[];
-}
 
 export const useClassifierStore = defineStore('classifiers', () => {
   const data = ref<Classifiers | null>(null);

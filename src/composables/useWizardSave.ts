@@ -1,7 +1,6 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { HeroSheet } from 'src/types';
-import type { Hero } from 'src/types/heroes';
 import { useHeroStore } from 'src/stores/hero';
 import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
@@ -184,7 +183,7 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
     const response = isCreate
       ? await heroService.create(payload)
       : await heroService.update(hero.id, payload);
-    heroStore.updateFromResponse(response.data as Hero);
+    heroStore.updateFromResponse(response.data);
 
     // After first create, update URL so browser refresh resumes via edit route
     if (isCreate && heroStore.hero && heroStore.hero.id > 0) {
