@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { HeroSheet } from 'src/types';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import type { DeletionTracker } from './useDeletionTracker';
@@ -25,6 +26,7 @@ import { logger } from 'src/utils/logger';
 export function useWizardSave(deletionTracker: DeletionTracker) {
   const router = useRouter();
   const heroStore = useHeroStore();
+  const heroAttributesStore = useHeroAttributesStore();
   const wizardStore = useWizardStore();
   const { currentStepCode, currentValidation } = useStepValidation();
 
@@ -95,6 +97,7 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
           buildAttributePayload,
           'attributes'
         );
+        await saveHeroCore(hero);
         break;
       case STEP_CODES.SKILLS:
         // Track previously-saved skills that were zeroed out for deletion
@@ -179,6 +182,14 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
 
   async function saveHeroCore(hero: HeroSheet): Promise<void> {
     const isCreate = hero.id === 0;
+
+    // During creation, set current resources to their calculated max values
+    if (wizardStore.mode === 'create' && hero.id > 0) {
+      hero.currentHealth = heroAttributesStore.getDerivedStatTotal('max_health');
+      hero.currentFocus = heroAttributesStore.getDerivedStatTotal('max_focus');
+      hero.currentInvestiture = heroAttributesStore.getDerivedStatTotal('max_investiture');
+    }
+
     const payload = buildHeroCorePayload(hero);
     const response = isCreate
       ? await heroService.create(payload)
