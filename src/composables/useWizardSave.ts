@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { HeroSheet } from 'src/types';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import type { DeletionTracker } from './useDeletionTracker';
@@ -179,6 +180,15 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
 
   async function saveHeroCore(hero: HeroSheet): Promise<void> {
     const isCreate = hero.id === 0;
+
+    // During creation, set current resources to their calculated max values
+    if (wizardStore.mode === 'create') {
+      const attrStore = useHeroAttributesStore();
+      hero.currentHealth = attrStore.getDerivedStatTotal('max_health');
+      hero.currentFocus = attrStore.getDerivedStatTotal('max_focus');
+      hero.currentInvestiture = attrStore.getDerivedStatTotal('max_investiture');
+    }
+
     const payload = buildHeroCorePayload(hero);
     const response = isCreate
       ? await heroService.create(payload)
