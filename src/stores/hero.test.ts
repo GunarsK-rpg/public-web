@@ -34,9 +34,14 @@ const mockHero = {
   cultures: [],
 };
 
-const { mockGetSheet } = vi.hoisted(() => ({
-  mockGetSheet: vi.fn(),
-}));
+const { mockGetSheet, mockPatchHealth, mockPatchFocus, mockPatchInvestiture, mockPatchCurrency } =
+  vi.hoisted(() => ({
+    mockGetSheet: vi.fn(),
+    mockPatchHealth: vi.fn(),
+    mockPatchFocus: vi.fn(),
+    mockPatchInvestiture: vi.fn(),
+    mockPatchCurrency: vi.fn(),
+  }));
 
 vi.mock('src/services/heroService', () => ({
   default: {
@@ -49,6 +54,10 @@ vi.mock('src/services/heroService', () => ({
     getSubResource: vi.fn(),
     upsertSubResource: vi.fn(),
     deleteSubResource: vi.fn(),
+    patchHealth: mockPatchHealth,
+    patchFocus: mockPatchFocus,
+    patchInvestiture: mockPatchInvestiture,
+    patchCurrency: mockPatchCurrency,
   },
 }));
 
@@ -359,91 +368,87 @@ describe('useHeroStore', () => {
   });
 
   // ========================================
-  // updateResources
+  // Resource patches
   // ========================================
-  describe('updateResources', () => {
-    it('updates health', () => {
+  describe('patchHealth', () => {
+    it('calls service and updates local state', async () => {
       const store = useHeroStore();
-      store.initNewHero();
-      const result = store.updateResources({ currentHealth: 15 });
+      await store.loadHero(1);
+      mockPatchHealth.mockResolvedValue({ data: { currentHealth: 15 } });
 
-      expect(result.success).toBe(true);
+      await store.patchHealth(15);
+
+      expect(mockPatchHealth).toHaveBeenCalledWith(1, 15);
       expect(store.hero?.currentHealth).toBe(15);
     });
 
-    it('updates focus', () => {
+    it('clamps negative values to 0', async () => {
       const store = useHeroStore();
-      store.initNewHero();
-      const result = store.updateResources({ currentFocus: 8 });
+      await store.loadHero(1);
+      mockPatchHealth.mockResolvedValue({ data: { currentHealth: 0 } });
 
-      expect(result.success).toBe(true);
+      await store.patchHealth(-5);
+
+      expect(mockPatchHealth).toHaveBeenCalledWith(1, 0);
+    });
+
+    it('floors decimal values', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockPatchHealth.mockResolvedValue({ data: { currentHealth: 10 } });
+
+      await store.patchHealth(10.7);
+
+      expect(mockPatchHealth).toHaveBeenCalledWith(1, 10);
+    });
+
+    it('handles API error', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockPatchHealth.mockRejectedValue(axiosError(500));
+
+      await store.patchHealth(15);
+
+      expect(store.error).toBeTruthy();
+    });
+  });
+
+  describe('patchFocus', () => {
+    it('calls service and updates local state', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockPatchFocus.mockResolvedValue({ data: { currentFocus: 8 } });
+
+      await store.patchFocus(8);
+
+      expect(mockPatchFocus).toHaveBeenCalledWith(1, 8);
       expect(store.hero?.currentFocus).toBe(8);
     });
+  });
 
-    it('updates investiture', () => {
+  describe('patchInvestiture', () => {
+    it('calls service and updates local state', async () => {
       const store = useHeroStore();
-      store.initNewHero();
-      const result = store.updateResources({ currentInvestiture: 3 });
+      await store.loadHero(1);
+      mockPatchInvestiture.mockResolvedValue({ data: { currentInvestiture: 3 } });
 
-      expect(result.success).toBe(true);
+      await store.patchInvestiture(3);
+
+      expect(mockPatchInvestiture).toHaveBeenCalledWith(1, 3);
       expect(store.hero?.currentInvestiture).toBe(3);
     });
+  });
 
-    it('updates multiple resources at once', () => {
+  describe('patchCurrency', () => {
+    it('calls service and updates local state', async () => {
       const store = useHeroStore();
-      store.initNewHero();
-      const result = store.updateResources({
-        currentHealth: 20,
-        currentFocus: 10,
-        currentInvestiture: 5,
-      });
+      await store.loadHero(1);
+      mockPatchCurrency.mockResolvedValue({ data: { currency: 500 } });
 
-      expect(result.success).toBe(true);
-      expect(store.hero?.currentHealth).toBe(20);
-      expect(store.hero?.currentFocus).toBe(10);
-      expect(store.hero?.currentInvestiture).toBe(5);
-    });
+      await store.patchCurrency(500);
 
-    it('clamps negative values to 0', () => {
-      const store = useHeroStore();
-      store.initNewHero();
-      store.updateResources({ currentHealth: -5 });
-
-      expect(store.hero?.currentHealth).toBe(0);
-    });
-
-    it('floors decimal values', () => {
-      const store = useHeroStore();
-      store.initNewHero();
-      store.updateResources({ currentHealth: 10.7 });
-
-      expect(store.hero?.currentHealth).toBe(10);
-    });
-
-    it('returns error when no hero loaded', () => {
-      const store = useHeroStore();
-      const result = store.updateResources({ currentHealth: 15 });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('No hero loaded');
-    });
-
-    it('handles exception during update', () => {
-      const store = useHeroStore();
-      store.initNewHero();
-
-      // Make currentHealth a getter that throws
-      Object.defineProperty(store.hero!, 'currentHealth', {
-        set: () => {
-          throw new Error('Update failed');
-        },
-        get: () => 0,
-      });
-
-      const result = store.updateResources({ currentHealth: 15 });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Failed to update resources');
+      expect(mockPatchCurrency).toHaveBeenCalledWith(1, 500);
+      expect(store.hero?.currency).toBe(500);
     });
   });
 

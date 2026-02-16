@@ -18,68 +18,44 @@
       <!-- Resources -->
       <div class="col-12 col-sm-6">
         <div class="row q-col-gutter-sm">
-          <!-- Health -->
           <div class="col-4">
-            <div class="resource-box">
-              <div class="resource-label">HP</div>
-              <div class="resource-value">{{ hero?.currentHealth }} / {{ maxHealth }}</div>
-              <q-linear-progress
-                :value="healthPercent"
-                color="negative"
-                track-color="grey-6"
-                role="progressbar"
-                :aria-valuenow="hero?.currentHealth ?? 0"
-                :aria-valuemin="0"
-                :aria-valuemax="maxHealth"
-                aria-label="Health"
-              />
-            </div>
+            <ResourceBox
+              label="HP"
+              :current="hero?.currentHealth ?? 0"
+              :max="maxHealth"
+              color="negative"
+              :saving="saving"
+              @update="heroStore.patchHealth($event)"
+            />
           </div>
-
-          <!-- Focus -->
           <div class="col-4">
-            <div class="resource-box">
-              <div class="resource-label">Focus</div>
-              <div class="resource-value">{{ hero?.currentFocus }} / {{ maxFocus }}</div>
-              <q-linear-progress
-                :value="focusPercent"
-                :color="RPG_COLORS.focus"
-                track-color="grey-6"
-                role="progressbar"
-                :aria-valuenow="hero?.currentFocus ?? 0"
-                :aria-valuemin="0"
-                :aria-valuemax="maxFocus"
-                aria-label="Focus"
-              />
-            </div>
+            <ResourceBox
+              label="Focus"
+              :current="hero?.currentFocus ?? 0"
+              :max="maxFocus"
+              :color="RPG_COLORS.focus"
+              :saving="saving"
+              @update="heroStore.patchFocus($event)"
+            />
           </div>
-
-          <!-- Investiture (Radiants only) -->
           <div v-if="isRadiant" class="col-4">
-            <div class="resource-box">
-              <div class="resource-label">Investiture</div>
-              <div class="resource-value">
-                {{ hero?.currentInvestiture }} / {{ maxInvestiture }}
-              </div>
-              <q-linear-progress
-                :value="investiturePercent"
-                :color="RPG_COLORS.investiture"
-                track-color="grey-6"
-                role="progressbar"
-                :aria-valuenow="hero?.currentInvestiture ?? 0"
-                :aria-valuemin="0"
-                :aria-valuemax="maxInvestiture"
-                aria-label="Investiture"
-              />
-            </div>
+            <ResourceBox
+              label="Investiture"
+              :current="hero?.currentInvestiture ?? 0"
+              :max="maxInvestiture"
+              :color="RPG_COLORS.investiture"
+              :saving="saving"
+              @update="heroStore.patchInvestiture($event)"
+            />
           </div>
-
-          <!-- Spheres (non-Radiants) -->
           <div v-else class="col-4">
-            <div class="resource-box">
-              <div class="resource-label">Spheres</div>
-              <div class="resource-value">{{ totalSpheres }} mk</div>
-            </div>
+            <ResourceBox
+              label="Spheres"
+              :current="hero?.currency ?? 0"
+              suffix="mk"
+              :saving="saving"
+              @update="heroStore.patchCurrency($event)"
+            />
           </div>
         </div>
       </div>
@@ -94,54 +70,20 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { RPG_COLORS } from 'src/constants/theme';
+import ResourceBox from './ResourceBox.vue';
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
 const hero = computed(() => heroStore.hero);
+const saving = computed(() => heroStore.saving);
 const maxHealth = computed(() => attrStore.getDerivedStatTotal('max_health'));
 const maxFocus = computed(() => attrStore.getDerivedStatTotal('max_focus'));
 const maxInvestiture = computed(() => attrStore.getDerivedStatTotal('max_investiture'));
 const isRadiant = computed(() => talentStore.isRadiant);
 
-// Progress bar helpers
-const clampProgress = (current: number, max: number) =>
-  max <= 0 ? 0 : Math.max(0, Math.min(1, current / max));
-
-const healthPercent = computed(() =>
-  hero.value ? clampProgress(hero.value.currentHealth, maxHealth.value) : 0
-);
-const focusPercent = computed(() =>
-  hero.value ? clampProgress(hero.value.currentFocus, maxFocus.value) : 0
-);
-const investiturePercent = computed(() =>
-  hero.value ? clampProgress(hero.value.currentInvestiture, maxInvestiture.value) : 0
-);
-
-// Classifier name lookups using nested ClassifierRef objects
 const orderName = computed(() => hero.value?.radiantOrder?.name);
 const ancestryName = computed(() => hero.value?.ancestry?.name);
 const activeSingerFormName = computed(() => hero.value?.activeSingerForm?.name);
 const cultureName = computed(() => hero.value?.cultures?.[0]?.culture?.name);
-const totalSpheres = computed(() => hero.value?.currency ?? 0);
 </script>
-
-<style scoped>
-.resource-box {
-  text-align: center;
-  padding: 8px;
-  border-radius: 4px;
-}
-
-.resource-label {
-  font-size: var(--font-size-sm);
-  text-transform: uppercase;
-  opacity: 0.7;
-}
-
-.resource-value {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-</style>
