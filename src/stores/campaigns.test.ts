@@ -9,26 +9,28 @@ const mockCampaigns = [
   { id: 2, name: 'Campaign Two', description: 'Second campaign' },
 ];
 
-const mockCampaignWithHeroes1 = {
+const mockCampaign1 = {
   id: 1,
   name: 'Campaign One',
   description: 'First campaign',
-  heroes: [{ id: 1, name: 'Hero A' }],
 };
 
-const mockCampaignWithHeroes2 = {
+const mockCampaign2 = {
   id: 2,
   name: 'Campaign Two',
   description: 'Second campaign',
-  heroes: [
-    { id: 2, name: 'Hero B' },
-    { id: 3, name: 'Hero C' },
-  ],
 };
 
-const { mockGetAll, mockGetById } = vi.hoisted(() => ({
+const mockHeroesCampaign1 = [{ id: 1, name: 'Hero A' }];
+const mockHeroesCampaign2 = [
+  { id: 2, name: 'Hero B' },
+  { id: 3, name: 'Hero C' },
+];
+
+const { mockGetAll, mockGetById, mockHeroGetAll } = vi.hoisted(() => ({
   mockGetAll: vi.fn(),
   mockGetById: vi.fn(),
+  mockHeroGetAll: vi.fn(),
 }));
 
 vi.mock('src/services/campaignService', () => ({
@@ -38,6 +40,12 @@ vi.mock('src/services/campaignService', () => ({
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+  },
+}));
+
+vi.mock('src/services/heroService', () => ({
+  default: {
+    getAll: mockHeroGetAll,
   },
 }));
 
@@ -56,9 +64,16 @@ describe('useCampaignStore', () => {
     vi.clearAllMocks();
     mockGetAll.mockResolvedValue({ data: mockCampaigns });
     mockGetById.mockImplementation((id: number) => {
-      if (id === 1) return Promise.resolve({ data: mockCampaignWithHeroes1 });
-      if (id === 2) return Promise.resolve({ data: mockCampaignWithHeroes2 });
+      if (id === 1) return Promise.resolve({ data: mockCampaign1 });
+      if (id === 2) return Promise.resolve({ data: mockCampaign2 });
       return Promise.reject(axiosError(404));
+    });
+    mockHeroGetAll.mockImplementation((campaignId: number) => {
+      if (campaignId === 1)
+        return Promise.resolve({ data: { data: mockHeroesCampaign1, total: 1 } });
+      if (campaignId === 2)
+        return Promise.resolve({ data: { data: mockHeroesCampaign2, total: 2 } });
+      return Promise.resolve({ data: { data: [], total: 0 } });
     });
   });
 
@@ -169,7 +184,7 @@ describe('useCampaignStore', () => {
       const store = useCampaignStore();
       await store.selectCampaign(2);
 
-      expect(store.currentCampaign?.heroes.length).toBe(2);
+      expect(store.currentCampaign?.heroes).toEqual(mockHeroesCampaign2);
     });
 
     it('sets error when campaign not found', async () => {
@@ -209,6 +224,19 @@ describe('useCampaignStore', () => {
 
       expect(store.currentCampaign).toBeNull();
       expect(store.error).toBe('Failed to load campaign');
+    });
+
+    it('still loads campaign when hero fetch fails', async () => {
+      mockHeroGetAll.mockRejectedValue(new Error('Hero service down'));
+      const store = useCampaignStore();
+
+      await store.selectCampaign(1);
+
+      expect(store.currentCampaign).not.toBeNull();
+      expect(store.currentCampaign?.id).toBe(1);
+      expect(store.currentCampaign?.heroes).toEqual([]);
+      expect(store.error).toBeNull();
+      expect(mockHeroGetAll).toHaveBeenCalledWith(1);
     });
   });
 

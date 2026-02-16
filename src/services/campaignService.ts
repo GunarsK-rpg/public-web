@@ -1,19 +1,21 @@
+import type { AxiosResponse } from 'axios';
+import type { Campaign, CampaignBase } from 'src/types';
 import { api } from './api';
 
 export default {
-  getAll() {
+  getAll(): Promise<AxiosResponse<Campaign[]>> {
     return api.get('/campaigns');
   },
-  getById(id: number) {
+  getById(id: number): Promise<AxiosResponse<Campaign>> {
     return api.get(`/campaigns/${id}`);
   },
-  create(campaign: unknown) {
+  create(campaign: CampaignBase): Promise<AxiosResponse<Campaign>> {
     return api.post('/campaigns', campaign);
   },
-  update(id: number, campaign: unknown) {
+  update(id: number, campaign: CampaignBase): Promise<AxiosResponse<Campaign>> {
     return api.put(`/campaigns/${id}`, campaign);
   },
-  delete(id: number) {
+  delete(id: number): Promise<AxiosResponse<void>> {
     return api.delete(`/campaigns/${id}`);
   },
 };

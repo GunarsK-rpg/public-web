@@ -26,6 +26,9 @@ export * from './culture';
 export * from './tiers';
 export * from './levels';
 
+// Classifier aggregate response
+export * from './classifiers';
+
 // Hero entity and data
 export * from './heroes';
 export * from './goals';
