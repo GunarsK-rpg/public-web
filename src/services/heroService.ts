@@ -35,4 +35,21 @@ export default {
   deleteSubResource(heroId: number, resource: string, subId: number): Promise<AxiosResponse<void>> {
     return api.delete(`/heroes/${heroId}/${resource}/${subId}`);
   },
+
+  // Resource patches
+  patchHealth(heroId: number, value: number): Promise<AxiosResponse<{ currentHealth: number }>> {
+    return api.patch(`/heroes/${heroId}/health`, { heroId, value });
+  },
+  patchFocus(heroId: number, value: number): Promise<AxiosResponse<{ currentFocus: number }>> {
+    return api.patch(`/heroes/${heroId}/focus`, { heroId, value });
+  },
+  patchInvestiture(
+    heroId: number,
+    value: number
+  ): Promise<AxiosResponse<{ currentInvestiture: number }>> {
+    return api.patch(`/heroes/${heroId}/investiture`, { heroId, value });
+  },
+  patchCurrency(heroId: number, value: number): Promise<AxiosResponse<{ currency: number }>> {
+    return api.patch(`/heroes/${heroId}/currency`, { heroId, value });
+  },
 };

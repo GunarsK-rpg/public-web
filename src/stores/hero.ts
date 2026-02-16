@@ -201,36 +201,55 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   // RESOURCES
   // ===================
-  function updateResources(resources: {
-    currentHealth?: number;
-    currentFocus?: number;
-    currentInvestiture?: number;
-  }): { success: boolean; error?: string } {
-    if (!hero.value) return { success: false, error: 'No hero loaded' };
-
+  async function patchResource<K extends keyof HeroSheet>(
+    serviceFn: (heroId: number, value: number) => Promise<{ data: Pick<HeroSheet, K> }>,
+    field: K,
+    value: number,
+    errorMessage: string
+  ): Promise<void> {
+    if (!hero.value) return;
     saving.value = true;
-    error.value = null;
-
     try {
-      // Validate resource values are non-negative integers
-      if (resources.currentHealth !== undefined) {
-        hero.value.currentHealth = Math.max(0, Math.floor(resources.currentHealth));
-      }
-      if (resources.currentFocus !== undefined) {
-        hero.value.currentFocus = Math.max(0, Math.floor(resources.currentFocus));
-      }
-      if (resources.currentInvestiture !== undefined) {
-        hero.value.currentInvestiture = Math.max(0, Math.floor(resources.currentInvestiture));
-      }
-      return { success: true };
+      const response = await serviceFn(hero.value.id, Math.max(0, Math.floor(value)));
+      hero.value[field] = response.data[field];
     } catch (err) {
-      const msg = 'Failed to update resources';
-      handleError(err, { errorRef: error, message: msg });
-      return { success: false, error: msg };
+      handleError(err, { errorRef: error, message: errorMessage });
     } finally {
       saving.value = false;
     }
   }
+
+  const patchHealth = (v: number) =>
+    patchResource(
+      (id, val) => heroService.patchHealth(id, val),
+      'currentHealth',
+      v,
+      'Failed to update health'
+    );
+
+  const patchFocus = (v: number) =>
+    patchResource(
+      (id, val) => heroService.patchFocus(id, val),
+      'currentFocus',
+      v,
+      'Failed to update focus'
+    );
+
+  const patchInvestiture = (v: number) =>
+    patchResource(
+      (id, val) => heroService.patchInvestiture(id, val),
+      'currentInvestiture',
+      v,
+      'Failed to update investiture'
+    );
+
+  const patchCurrency = (v: number) =>
+    patchResource(
+      (id, val) => heroService.patchCurrency(id, val),
+      'currency',
+      v,
+      'Failed to update currency'
+    );
 
   return {
     // State
@@ -270,6 +289,9 @@ export const useHeroStore = defineStore('hero', () => {
     updateFromResponse,
 
     // Resources
-    updateResources,
+    patchHealth,
+    patchFocus,
+    patchInvestiture,
+    patchCurrency,
   };
 });
