@@ -191,6 +191,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
         baseValue: null,
         modifier,
         totalValue: null,
+        valueDisplay: null,
       });
     }
   }

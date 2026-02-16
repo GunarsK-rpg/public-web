@@ -49,6 +49,7 @@ vi.mock('src/utils/derivedStats', () => ({
       hasModifier: true,
       modifier: 5,
       baseDisplay: '30',
+      valueDisplay: null,
     },
     {
       id: 2,
@@ -57,6 +58,7 @@ vi.mock('src/utils/derivedStats', () => ({
       hasModifier: true,
       modifier: 1,
       baseDisplay: '5',
+      valueDisplay: null,
     },
     {
       id: 3,
@@ -65,6 +67,7 @@ vi.mock('src/utils/derivedStats', () => ({
       hasModifier: false,
       modifier: 0,
       baseDisplay: '10',
+      valueDisplay: null,
     },
   ]),
 }));
@@ -310,6 +313,7 @@ describe('StatsTab', () => {
           totalValue: 25,
           totalDisplay: '25',
           hasModifier: true,
+          valueDisplay: null,
         },
       ]);
       const wrapper = createWrapper();
