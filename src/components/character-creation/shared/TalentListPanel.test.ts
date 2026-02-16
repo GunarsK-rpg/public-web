@@ -2,16 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import TalentListPanel from './TalentListPanel.vue';
 import type { TalentWithStatus } from 'src/composables/useTalentPrerequisites';
-import type { Talent, TalentPrerequisite } from 'src/types';
+import type { Talent } from 'src/types';
 
 // Mock the composable
 const mockIsTalentSelected = vi.fn();
-const mockFormatPrereq = vi.fn();
 
 vi.mock('src/composables/useTalentPrerequisites', () => ({
   useTalentPrerequisites: () => ({
     isTalentSelected: mockIsTalentSelected,
-    formatPrereq: mockFormatPrereq,
   }),
 }));
 
@@ -70,7 +68,7 @@ describe('TalentListPanel', () => {
             >
               <button class="details-btn" @click.stop="$emit('showDetails', talent)">Details</button>
             </div>`,
-            props: ['talent', 'selected', 'available', 'unmetPrereqs', 'formatPrereq'],
+            props: ['talent', 'selected', 'available', 'unmetPrereqs'],
             emits: ['toggle', 'showDetails'],
           },
         },
@@ -80,7 +78,6 @@ describe('TalentListPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsTalentSelected.mockReturnValue(false);
-    mockFormatPrereq.mockImplementation((prereq: TalentPrerequisite) => `Prereq: ${prereq.type}`);
   });
 
   // ========================================

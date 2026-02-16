@@ -76,16 +76,12 @@
     </template>
 
     <!-- Talent Detail Dialog -->
-    <TalentDetailDialog
-      v-model="talentDialogOpen"
-      :talent="selectedTalentForDetails"
-      :format-prereq="formatPrereq"
-    />
+    <TalentDetailDialog v-model="talentDialogOpen" :talent="selectedTalentForDetails" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, inject, onMounted, watch } from 'vue';
+import { computed, ref, inject, onMounted } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -109,8 +105,27 @@ const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
-const { getPathKeyTalent, getSpecialtiesByPath, toggleTalent, formatPrereq } =
-  useTalentPrerequisites();
+const { getSpecialtiesByPath, toggleTalent } = useTalentPrerequisites();
+
+// Collect all classifier talent IDs belonging to a path (key + path-level + all specialties)
+function getAllPathTalentIds(pathId: number): Set<number> {
+  const pathSpecialtyIds = new Set(
+    classifiers.specialties.filter((s) => s.path.id === pathId).map((s) => s.id)
+  );
+
+  const ids = new Set<number>();
+  for (const talent of classifiers.talents) {
+    // Key talent or path-level talent
+    if (talent.path?.id === pathId) {
+      ids.add(talent.id);
+    }
+    // Specialty talent (path is null, linked via specialties array)
+    if (talent.specialties?.some((s) => pathSpecialtyIds.has(s.id))) {
+      ids.add(talent.id);
+    }
+  }
+  return ids;
+}
 
 // Dialog state
 const talentDialogOpen = ref(false);
@@ -139,7 +154,7 @@ function getOrderSubtitle(order: {
   return '';
 }
 
-// Sync local UI state from hero store (for edit mode)
+// Sync local UI state from hero store (for edit mode / initial load)
 function syncLocalStateFromHero() {
   const pathIds = new Set<number>();
   const specialties = new Map<number, number>();
@@ -166,13 +181,6 @@ onMounted(() => {
   syncLocalStateFromHero();
 });
 
-watch(
-  () => heroStore.hero?.talents.length,
-  () => {
-    syncLocalStateFromHero();
-  }
-);
-
 // Derive selected paths from hero's talents
 const selectedPaths = computed((): PathSelection[] => {
   return selectedPathIds.value.map((pathId) => ({
@@ -190,14 +198,18 @@ function togglePath(pathId: number) {
   if (isPathSelected(pathId)) {
     selectedPathIds.value = selectedPathIds.value.filter((id) => id !== pathId);
     pathSpecialties.value.delete(pathId);
-    const keyTalent = getPathKeyTalent(pathId);
-    if (keyTalent) {
-      // Track talent deletion before removing from local state
-      const heroTalent = heroStore.hero?.talents.find((t) => t.talent.id === keyTalent.id);
-      if (heroTalent) {
-        deletionTracker?.trackDeletion('talents', heroTalent.id);
+
+    // Remove all talents belonging to this path (key + path-level + specialty)
+    const pathTalentIds = getAllPathTalentIds(pathId);
+    for (const ht of heroStore.hero?.talents ?? []) {
+      if (pathTalentIds.has(ht.talent.id)) {
+        deletionTracker?.trackDeletion('talents', ht.id);
       }
-      talentStore.removeTalent(keyTalent.id);
+    }
+    if (heroStore.hero) {
+      heroStore.hero.talents = heroStore.hero.talents.filter(
+        (t) => !pathTalentIds.has(t.talent.id)
+      );
     }
   } else {
     selectedPathIds.value.push(pathId);

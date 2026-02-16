@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import TalentDetailDialog from './TalentDetailDialog.vue';
-import type { Talent, TalentPrerequisite } from 'src/types';
+import type { Talent } from 'src/types';
 
 describe('TalentDetailDialog', () => {
   const createTalent = (overrides: Partial<Talent> = {}): Talent => ({
@@ -19,22 +19,9 @@ describe('TalentDetailDialog', () => {
     ...overrides,
   });
 
-  const defaultFormatPrereq = (prereq: TalentPrerequisite) => {
-    if (prereq.type === 'skill') return `Skill ${prereq.skillId} Rank ${prereq.skillRank}`;
-    if (prereq.type === 'talent') return `Talent ${prereq.talentIds?.join(', ') ?? 'N/A'}`;
-    return 'Unknown';
-  };
-
-  const createWrapper = (props: {
-    modelValue: boolean;
-    talent: Talent | null;
-    formatPrereq?: (prereq: TalentPrerequisite) => string;
-  }) =>
+  const createWrapper = (props: { modelValue: boolean; talent: Talent | null }) =>
     mount(TalentDetailDialog, {
-      props: {
-        formatPrereq: defaultFormatPrereq,
-        ...props,
-      },
+      props,
       global: {
         stubs: {
           // Note: Accessibility attributes (role, aria-modal) are provided by Quasar's QDialog.
@@ -132,23 +119,12 @@ describe('TalentDetailDialog', () => {
   describe('prerequisites display', () => {
     it('shows prerequisites when present', () => {
       const talent = createTalent({
-        prerequisites: [{ type: 'skill', skillId: 1, skillRank: 3 }],
-      });
-
-      const wrapper = createWrapper({
-        modelValue: true,
-        talent,
-      });
-
-      expect(wrapper.text()).toContain('Prerequisites:');
-      expect(wrapper.text()).toContain('Skill 1 Rank 3');
-    });
-
-    it('formats multiple prerequisites with commas', () => {
-      const talent = createTalent({
         prerequisites: [
-          { type: 'skill', skillId: 1, skillRank: 3 },
-          { type: 'skill', skillId: 2, skillRank: 2 },
+          {
+            type: 'skill',
+            codes: [{ id: 1, code: 'athletics', name: 'Athletics' }],
+            value: 3,
+          },
         ],
       });
 
@@ -157,7 +133,31 @@ describe('TalentDetailDialog', () => {
         talent,
       });
 
-      expect(wrapper.text()).toContain('Skill 1 Rank 3, Skill 2 Rank 2');
+      expect(wrapper.text()).toContain('Prerequisites:');
+      expect(wrapper.text()).toContain('Athletics 3+');
+    });
+
+    it('formats multiple prerequisites with commas', () => {
+      const talent = createTalent({
+        prerequisites: [
+          {
+            type: 'skill',
+            codes: [{ id: 1, code: 'athletics', name: 'Athletics' }],
+            value: 3,
+          },
+          {
+            type: 'talent',
+            codes: [{ id: 10, code: 'power-strike', name: 'Power Strike' }],
+          },
+        ],
+      });
+
+      const wrapper = createWrapper({
+        modelValue: true,
+        talent,
+      });
+
+      expect(wrapper.text()).toContain('Athletics 3+, Power Strike');
     });
 
     it('does not show prerequisites section when empty', () => {
@@ -178,17 +178,14 @@ describe('TalentDetailDialog', () => {
       expect(wrapper.text()).not.toContain('Prerequisites:');
     });
 
-    it('uses custom formatPrereq function', () => {
+    it('formats narrative prerequisite with description', () => {
       const talent = createTalent({
         prerequisites: [{ type: 'narrative', description: 'Must be a knight' }],
       });
 
-      const customFormat = (prereq: TalentPrerequisite) => prereq.description ?? 'Custom format';
-
       const wrapper = createWrapper({
         modelValue: true,
         talent,
-        formatPrereq: customFormat,
       });
 
       expect(wrapper.text()).toContain('Must be a knight');

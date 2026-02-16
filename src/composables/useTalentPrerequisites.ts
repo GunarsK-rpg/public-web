@@ -2,7 +2,6 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { createPrerequisiteFormatter } from 'src/utils/talentUtils';
 import { findById } from 'src/utils/arrayUtils';
 import type { Talent, TalentPrerequisite } from 'src/types';
 
@@ -36,9 +35,6 @@ export function useTalentPrerequisites() {
     return skills;
   });
 
-  // Radiant ideal level
-  const idealLevel = computed(() => heroStore.hero?.radiantIdeal ?? 0);
-
   // Hero level
   const heroLevel = computed(() => heroStore.hero?.level ?? 1);
 
@@ -61,21 +57,22 @@ export function useTalentPrerequisites() {
 
       switch (prereq.type) {
         case 'talent':
-          if (prereq.talentIds?.length) {
-            isMet = prereq.talentIds.some((id) => selectedTalentIds.has(id));
+          if (prereq.codes?.length) {
+            isMet = prereq.codes.some((ref) => selectedTalentIds.has(ref.id));
           }
           break;
         case 'skill':
-          if (prereq.skillId !== undefined && prereq.skillRank !== undefined) {
-            const currentRank = skills.get(prereq.skillId) ?? 0;
-            isMet = currentRank >= prereq.skillRank;
+          if (prereq.codes?.length && prereq.value !== undefined) {
+            const skillId = prereq.codes[0]!.id;
+            const currentRank = skills.get(skillId) ?? 0;
+            isMet = currentRank >= prereq.value;
           }
           break;
-        case 'ideal':
-          isMet = idealLevel.value >= (prereq.skillRank ?? 0);
-          break;
         case 'level':
-          isMet = heroLevel.value >= (prereq.skillRank ?? 0);
+          isMet = heroLevel.value >= (prereq.value ?? 0);
+          break;
+        case 'narrative':
+          isMet = true;
           break;
         default:
           isMet = true;
@@ -120,9 +117,6 @@ export function useTalentPrerequisites() {
   function isTalentSelected(talentId: number): boolean {
     return heroTalentIds.value.has(talentId);
   }
-
-  // Prerequisite formatter bound to classifiers
-  const formatPrereq = createPrerequisiteFormatter(classifiers.talents, classifiers.skills);
 
   // Talent lookup helpers
   function getTalentsByPath(pathId: number): Talent[] {
@@ -169,13 +163,11 @@ export function useTalentPrerequisites() {
     // State
     heroTalentIds,
     characterSkills,
-    idealLevel,
     heroLevel,
 
     // Prerequisite checking
     checkTalentPrerequisites,
     mapTalentsWithStatus,
-    formatPrereq,
     getPrerequisitesArray,
 
     // Talent actions

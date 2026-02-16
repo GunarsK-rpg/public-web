@@ -1,12 +1,11 @@
 import type { Classifier } from './classifier';
 import type { ClassifierRef, ClassifierInput } from './shared';
 
-/** Talent prerequisite (JSONB) */
+/** Talent prerequisite (JSONB -- enriched by get_talents) */
 export interface TalentPrerequisite {
   type: string;
-  talentIds?: number[];
-  skillId?: number;
-  skillRank?: number;
+  codes?: ClassifierRef[];
+  value?: number;
   description?: string;
 }
 

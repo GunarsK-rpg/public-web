@@ -181,6 +181,10 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
       const order = findById(classifierStore.radiantOrders, orderId);
       if (!order) return;
       heroStore.hero.radiantOrder = toClassifierRef(order);
+      // Ensure radiantIdeal is at least 1 when order is set (database constraint)
+      if (heroStore.hero.radiantIdeal === 0) {
+        heroStore.hero.radiantIdeal = 1;
+      }
       // Add new radiant key talent
       const keyTalent = classifierStore.talents.find(
         (t) => t.radiantOrder?.id === orderId && t.isKey
@@ -197,7 +201,8 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
 
   function setRadiantIdeal(level: number) {
     if (!heroStore.hero) return;
-    heroStore.hero.radiantIdeal = Math.max(0, Math.min(5, level));
+    const min = heroStore.hero.radiantOrder ? 1 : 0;
+    heroStore.hero.radiantIdeal = Math.max(min, Math.min(5, level));
   }
 
   return {

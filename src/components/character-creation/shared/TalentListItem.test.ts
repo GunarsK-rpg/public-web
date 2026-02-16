@@ -32,7 +32,6 @@ describe('TalentListItem', () => {
     selected: boolean;
     available: boolean;
     unmetPrereqs: TalentPrerequisite[];
-    formatPrereq: (prereq: TalentPrerequisite) => string;
   }) =>
     shallowMount(TalentListItem, {
       props,
@@ -70,12 +69,6 @@ describe('TalentListItem', () => {
       },
     });
 
-  const defaultFormatPrereq = (prereq: TalentPrerequisite) => {
-    if (prereq.type === 'skill') return `Skill ${prereq.skillId} Rank ${prereq.skillRank}`;
-    if (prereq.type === 'talent') return `Talent ${prereq.talentIds?.join(', ')}`;
-    return 'Unknown';
-  };
-
   // ========================================
   // Basic Rendering
   // ========================================
@@ -86,7 +79,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: true,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       expect(wrapper.text()).toContain('Power Strike');
@@ -98,7 +90,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: true,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       expect(wrapper.text()).toContain('Quick attack');
@@ -113,7 +104,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: true,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       expect(wrapper.text()).toContain('Full attack description');
@@ -130,7 +120,6 @@ describe('TalentListItem', () => {
         selected: true,
         available: true,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       const checkbox = wrapper.find('.q-checkbox');
@@ -143,7 +132,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: true,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       const checkbox = wrapper.find('.q-checkbox');
@@ -161,7 +149,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: false,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       expect(wrapper.find('.q-item').classes()).toContain('item-disabled');
@@ -173,7 +160,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: true,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       expect(wrapper.find('.q-item').classes()).not.toContain('item-disabled');
@@ -185,7 +171,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: false,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       const checkbox = wrapper.find('.q-checkbox');
@@ -198,7 +183,6 @@ describe('TalentListItem', () => {
         selected: true,
         available: false,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       const checkbox = wrapper.find('.q-checkbox');
@@ -211,7 +195,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: false,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       expect(wrapper.find('.q-icon').exists()).toBe(true);
@@ -223,24 +206,12 @@ describe('TalentListItem', () => {
   // ========================================
   describe('prerequisites', () => {
     it('shows unmet prerequisites when present', () => {
-      const prereqs: TalentPrerequisite[] = [{ type: 'skill', skillId: 1, skillRank: 3 }];
-
-      const wrapper = createWrapper({
-        talent: createTalent(),
-        selected: false,
-        available: false,
-        unmetPrereqs: prereqs,
-        formatPrereq: defaultFormatPrereq,
-      });
-
-      expect(wrapper.text()).toContain('Requires:');
-      expect(wrapper.text()).toContain('Skill 1 Rank 3');
-    });
-
-    it('formats multiple prerequisites with comma separator', () => {
       const prereqs: TalentPrerequisite[] = [
-        { type: 'skill', skillId: 1, skillRank: 3 },
-        { type: 'skill', skillId: 2, skillRank: 2 },
+        {
+          type: 'skill',
+          codes: [{ id: 1, code: 'athletics', name: 'Athletics' }],
+          value: 3,
+        },
       ];
 
       const wrapper = createWrapper({
@@ -248,10 +219,33 @@ describe('TalentListItem', () => {
         selected: false,
         available: false,
         unmetPrereqs: prereqs,
-        formatPrereq: defaultFormatPrereq,
       });
 
-      expect(wrapper.text()).toContain('Skill 1 Rank 3, Skill 2 Rank 2');
+      expect(wrapper.text()).toContain('Requires:');
+      expect(wrapper.text()).toContain('Athletics 3+');
+    });
+
+    it('formats multiple prerequisites with comma separator', () => {
+      const prereqs: TalentPrerequisite[] = [
+        {
+          type: 'skill',
+          codes: [{ id: 1, code: 'athletics', name: 'Athletics' }],
+          value: 3,
+        },
+        {
+          type: 'talent',
+          codes: [{ id: 10, code: 'power-strike', name: 'Power Strike' }],
+        },
+      ];
+
+      const wrapper = createWrapper({
+        talent: createTalent(),
+        selected: false,
+        available: false,
+        unmetPrereqs: prereqs,
+      });
+
+      expect(wrapper.text()).toContain('Athletics 3+, Power Strike');
     });
 
     it('does not show prerequisites section when array is empty', () => {
@@ -260,7 +254,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: true,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       expect(wrapper.text()).not.toContain('Requires:');
@@ -277,7 +270,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: true,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       await wrapper.find('.q-checkbox').trigger('change');
@@ -292,7 +284,6 @@ describe('TalentListItem', () => {
         selected: false,
         available: true,
         unmetPrereqs: [],
-        formatPrereq: defaultFormatPrereq,
       });
 
       // Info button exists - click event with .stop modifier tested via integration
