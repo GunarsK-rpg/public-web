@@ -201,7 +201,8 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
 
   function setRadiantIdeal(level: number) {
     if (!heroStore.hero) return;
-    heroStore.hero.radiantIdeal = Math.max(0, Math.min(5, level));
+    const min = heroStore.hero.radiantOrder ? 1 : 0;
+    heroStore.hero.radiantIdeal = Math.max(min, Math.min(5, level));
   }
 
   return {

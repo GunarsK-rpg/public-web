@@ -88,7 +88,7 @@ const mockClassifiersData = {
     ],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     talents: [] as any[],
-    specialties: [] as Array<{ id: number; pathId: number }>,
+    specialties: [] as Array<{ id: number; path: { id: number } }>,
   },
 };
 
@@ -681,12 +681,12 @@ describe('PathsStep', () => {
   // ========================================
   describe('sync local state from hero', () => {
     it('syncs path selections from existing hero talents', () => {
-      // Set up talents with pathId
+      // Set up talents with path and specialties
       mockClassifiersData.value.talents = [
-        { id: 100, pathId: 1 },
-        { id: 101, pathId: 2, specialtyId: 10 },
+        { id: 100, path: { id: 1 }, specialties: [] },
+        { id: 101, path: { id: 2 }, specialties: [{ id: 10 }] },
       ];
-      mockClassifiersData.value.specialties = [{ id: 10, pathId: 2 }];
+      mockClassifiersData.value.specialties = [{ id: 10, path: { id: 2 } }];
       mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
         { id: 2, heroId: 1, talent: { id: 101, code: 'scholar-lore', name: 'Lore Mastery' } },
@@ -699,8 +699,8 @@ describe('PathsStep', () => {
     });
 
     it('syncs specialties from existing hero talents', () => {
-      mockClassifiersData.value.talents = [{ id: 100, pathId: 1, specialtyId: 20 }];
-      mockClassifiersData.value.specialties = [{ id: 20, pathId: 1 }];
+      mockClassifiersData.value.talents = [{ id: 100, path: { id: 1 }, specialties: [{ id: 20 }] }];
+      mockClassifiersData.value.specialties = [{ id: 20, path: { id: 1 } }];
       mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
       ];
