@@ -9,9 +9,9 @@
             <div class="attribute-abbr">{{ attr.code.toUpperCase() }}</div>
             <div
               class="attribute-value"
-              :aria-label="`${attr.name}: ${attrStore.getAttributeValue(attr.code)}`"
+              :aria-label="`${attr.name}: ${attrStore.attributeValues[attr.code] ?? 0}`"
             >
-              {{ attrStore.getAttributeValue(attr.code) }}
+              {{ attrStore.attributeValues[attr.code] ?? 0 }}
             </div>
             <div class="attribute-name">{{ attr.name }}</div>
           </q-card-section>

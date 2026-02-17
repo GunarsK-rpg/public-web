@@ -370,6 +370,16 @@ describe('EquipmentItem', () => {
       expect(wrapper.text()).toContain('3/3 charges');
     });
 
+    it('shows partial charges for consumables', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(4),
+        charges: 1,
+        maxCharges: 3,
+      });
+
+      expect(wrapper.text()).toContain('1/3 charges');
+    });
+
     it('does not show details for items without special', () => {
       const wrapper = createWrapper({ equipment: eqRef(5) });
 

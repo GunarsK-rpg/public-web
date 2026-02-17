@@ -136,7 +136,7 @@ const detailsLine = computed(() => {
   }
 
   const deflect = getSpecialByType(special, SPECIAL.DEFLECT);
-  if (deflect?.value) {
+  if (deflect?.value != null) {
     parts.push(`Deflect ${deflect.value}`);
   }
 

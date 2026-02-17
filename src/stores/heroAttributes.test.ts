@@ -10,14 +10,14 @@ const mockClassifiers = {
   attributes: [
     {
       id: 1,
-      code: 'strength',
+      code: 'str',
       name: 'Strength',
       attrType: { id: 1, code: 'physical', name: 'Physical' },
       sortOrder: 1,
     },
     {
       id: 2,
-      code: 'speed',
+      code: 'spd',
       name: 'Speed',
       attrType: { id: 1, code: 'physical', name: 'Physical' },
       sortOrder: 2,
@@ -138,8 +138,8 @@ describe('useHeroAttributesStore', () => {
     // Add some attributes
     if (heroStore.hero) {
       heroStore.hero.attributes = [
-        { id: 1, heroId: 0, attribute: { id: 1, code: 'strength', name: 'Strength' }, value: 3 },
-        { id: 2, heroId: 0, attribute: { id: 2, code: 'speed', name: 'Speed' }, value: 2 },
+        { id: 1, heroId: 0, attribute: { id: 1, code: 'str', name: 'Strength' }, value: 3 },
+        { id: 2, heroId: 0, attribute: { id: 2, code: 'spd', name: 'Speed' }, value: 2 },
       ];
       heroStore.hero.skills = [
         {
@@ -171,8 +171,8 @@ describe('useHeroAttributesStore', () => {
       setupHeroWithAttributes();
       const store = useHeroAttributesStore();
 
-      expect(store.getAttributeValue('strength')).toBe(3);
-      expect(store.getAttributeValue('speed')).toBe(2);
+      expect(store.getAttributeValue('str')).toBe(3);
+      expect(store.getAttributeValue('spd')).toBe(2);
     });
 
     it('returns 0 for unknown attribute', () => {
@@ -184,7 +184,7 @@ describe('useHeroAttributesStore', () => {
 
     it('returns 0 when no hero loaded', () => {
       const store = useHeroAttributesStore();
-      expect(store.getAttributeValue('strength')).toBe(0);
+      expect(store.getAttributeValue('str')).toBe(0);
     });
   });
 
@@ -214,12 +214,12 @@ describe('useHeroAttributesStore', () => {
   // Defense Lookups
   // ========================================
   describe('getDefenseValue', () => {
-    it('returns defense value by attribute type code', () => {
+    it('calculates defense from formula with attribute bonuses', () => {
       setupHeroWithAttributes();
       const heroStore = useHeroStore();
       const store = useHeroAttributesStore();
 
-      // Add defense data
+      // Add defense data (API values are now ignored - frontend calculates)
       if (heroStore.hero) {
         heroStore.hero.defenses = [
           {
@@ -231,7 +231,57 @@ describe('useHeroAttributesStore', () => {
         ];
       }
 
-      expect(store.getDefenseValue('physical')).toBe(14);
+      // Formula: 10 + str(3) + spd(2) = 15
+      expect(store.getDefenseValue('physical')).toBe(15);
+    });
+
+    it('includes defense modifier in calculation', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.defenses = [
+          {
+            attributeType: { id: 1, code: 'physical', name: 'Physical' },
+            baseValue: 14,
+            modifier: 3,
+            totalValue: 17,
+          },
+        ];
+      }
+
+      // Formula: 10 + str(3) + spd(2) + modifier(3) = 18
+      expect(store.getDefenseValue('physical')).toBe(18);
+    });
+
+    it('includes special bonuses in defense calculation', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.defenses = [
+          {
+            attributeType: { id: 1, code: 'physical', name: 'Physical' },
+            baseValue: 15,
+            modifier: 0,
+            totalValue: 15,
+          },
+        ];
+        // Talent with defense_physical bonus
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'test_talent', name: 'Test' },
+            special: [{ type: 'defense_physical', value: 2 }],
+          },
+        ];
+      }
+
+      // Formula: 10 + str(3) + spd(2) + modifier(0) + bonus(2) = 17
+      expect(store.getDefenseValue('physical')).toBe(17);
     });
 
     it('returns 10 for unknown attribute type', () => {
@@ -256,6 +306,33 @@ describe('useHeroAttributesStore', () => {
       }
 
       expect(store.getDefenseValue('physical')).toBe(10);
+    });
+  });
+
+  // ========================================
+  // Attribute Values (with bonuses)
+  // ========================================
+  describe('attributeValues', () => {
+    it('includes special bonuses from talents', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'test', name: 'Test' },
+            special: [{ type: 'attribute_str', value: 2 }],
+          },
+        ];
+      }
+
+      // str base(3) + bonus(2) = 5
+      expect(store.attributeValues['str']).toBe(5);
+      // spd base(2) + no bonus = 2
+      expect(store.attributeValues['spd']).toBe(2);
     });
   });
 

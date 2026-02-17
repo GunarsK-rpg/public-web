@@ -57,7 +57,17 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     const attrType = findByCode(classifierStore.attributeTypes, attrTypeCode);
     if (!attrType) return 10;
     const defense = heroStore.hero.defenses.find((d) => d.attributeType.id === attrType.id);
-    return defense?.totalValue ?? 10;
+    if (!defense) return 10;
+
+    const statCode = `${attrTypeCode}_defense`;
+    const baseValue = calculateFormulaStat(
+      statCode,
+      attributeValues.value,
+      levelData.value,
+      tierData.value
+    );
+    const modifier = defense.modifier ?? 0;
+    return baseValue + modifier + getStatBonus(statCode);
   }
 
   // ===================
@@ -90,7 +100,9 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     );
   }
 
-  // Memoized attribute values for derived stat calculations (includes special bonuses)
+  // Memoized attribute values for derived stat calculations (includes special bonuses).
+  // Bonus keys are built as `attribute_${attr.code}` — matches SPECIAL constants
+  // (e.g. attr.code="str" -> SPECIAL.ATTRIBUTE_STR="attribute_str").
   const attributeValues = computed(() => {
     const attrs: Record<string, number> = {};
     for (const attr of classifierStore.attributes) {

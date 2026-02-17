@@ -37,6 +37,7 @@ vi.mock('src/stores/classifiers', () => ({
         radiantOrder: null,
         surge: null,
         isKey: true,
+        special: [],
       },
       {
         id: 2,
@@ -48,6 +49,7 @@ vi.mock('src/stores/classifiers', () => ({
         radiantOrder: null,
         surge: null,
         isKey: false,
+        special: [],
       },
       {
         id: 3,
@@ -59,6 +61,7 @@ vi.mock('src/stores/classifiers', () => ({
         radiantOrder: null,
         surge: null,
         isKey: false,
+        special: [],
       },
       {
         id: 4,
@@ -70,6 +73,7 @@ vi.mock('src/stores/classifiers', () => ({
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         surge: { id: 1, code: 'adhesion', name: 'Adhesion' },
         isKey: false,
+        special: [],
       },
       {
         id: 5,
@@ -81,6 +85,7 @@ vi.mock('src/stores/classifiers', () => ({
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         surge: { id: 2, code: 'gravitation', name: 'Gravitation' },
         isKey: false,
+        special: [],
       },
       {
         id: 6,
@@ -92,6 +97,7 @@ vi.mock('src/stores/classifiers', () => ({
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
         surge: null,
         isKey: false,
+        special: [],
       },
       {
         id: 7,
@@ -103,6 +109,7 @@ vi.mock('src/stores/classifiers', () => ({
         radiantOrder: null,
         surge: null,
         isKey: false,
+        special: [],
       },
       {
         id: 8,
@@ -114,6 +121,7 @@ vi.mock('src/stores/classifiers', () => ({
         radiantOrder: null,
         surge: null,
         isKey: true,
+        special: [],
       },
       {
         id: 9,
@@ -125,6 +133,7 @@ vi.mock('src/stores/classifiers', () => ({
         radiantOrder: null,
         surge: null,
         isKey: false,
+        special: [],
       },
     ],
     paths: [

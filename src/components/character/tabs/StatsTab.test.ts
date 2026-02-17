@@ -2,12 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import StatsTab from './StatsTab.vue';
 
-const mockGetAttributeValue = vi.fn();
 const mockGetDefenseValue = vi.fn();
+const mockAttributeValues: Record<string, number> = {
+  str: 3,
+  spd: 4,
+  int: 2,
+  wil: 3,
+  awa: 2,
+  pre: 1,
+};
 
 vi.mock('src/stores/heroAttributes', () => ({
   useHeroAttributesStore: () => ({
-    getAttributeValue: mockGetAttributeValue,
+    attributeValues: mockAttributeValues,
     getDefenseValue: mockGetDefenseValue,
     levelData: { level: 5, tier: 2 },
     tierData: { tier: 2, name: 'Journeyman' },
@@ -89,17 +96,6 @@ describe('StatsTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetAttributeValue.mockImplementation((code: string) => {
-      const values: Record<string, number> = {
-        str: 3,
-        spd: 4,
-        int: 2,
-        wil: 3,
-        awa: 2,
-        pre: 1,
-      };
-      return values[code] ?? 0;
-    });
     mockGetDefenseValue.mockImplementation((code: string) => {
       const values: Record<string, number> = {
         physical: 12,
@@ -174,15 +170,14 @@ describe('StatsTab', () => {
       expect(wrapper.text()).toContain('1'); // pre
     });
 
-    it('calls getAttributeValue for each attribute', () => {
-      createWrapper();
+    it('uses attributeValues for display', () => {
+      const wrapper = createWrapper();
 
-      expect(mockGetAttributeValue).toHaveBeenCalledWith('str');
-      expect(mockGetAttributeValue).toHaveBeenCalledWith('spd');
-      expect(mockGetAttributeValue).toHaveBeenCalledWith('int');
-      expect(mockGetAttributeValue).toHaveBeenCalledWith('wil');
-      expect(mockGetAttributeValue).toHaveBeenCalledWith('awa');
-      expect(mockGetAttributeValue).toHaveBeenCalledWith('pre');
+      // All attribute values from the mock should be rendered
+      expect(wrapper.text()).toContain('3'); // str
+      expect(wrapper.text()).toContain('4'); // spd
+      expect(wrapper.text()).toContain('2'); // int, awa
+      expect(wrapper.text()).toContain('1'); // pre
     });
   });
 
@@ -284,11 +279,15 @@ describe('StatsTab', () => {
   // ========================================
   describe('edge cases', () => {
     it('handles zero attribute values', () => {
-      mockGetAttributeValue.mockReturnValue(0);
+      // Override attribute values to all zeros
+      Object.keys(mockAttributeValues).forEach((k) => (mockAttributeValues[k] = 0));
       const wrapper = createWrapper();
 
       // Should render without error
       expect(wrapper.text()).toContain('0');
+
+      // Restore original values
+      Object.assign(mockAttributeValues, { str: 3, spd: 4, int: 2, wil: 3, awa: 2, pre: 1 });
     });
 
     it('handles zero defense values', () => {

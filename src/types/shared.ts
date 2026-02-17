@@ -1,4 +1,8 @@
-/** Unified special entry for equipment, talents, and singer forms */
+/**
+ * Unified special entry for equipment, talents, and singer forms.
+ * Fields use snake_case (display_value) to match the backend JSONB schema directly.
+ * No API transformation layer exists - these are stored/returned as-is.
+ */
 export interface SpecialEntry {
   type: string;
   value?: number;
