@@ -63,6 +63,10 @@ describe('ActionItem', () => {
       },
       global: {
         stubs: {
+          QExpansionItem: {
+            template:
+              '<div class="q-expansion-item"><div class="header"><slot name="header" /></div><div class="content"><slot /></div></div>',
+          },
           QItem: {
             template: '<div class="q-item"><slot /></div>',
           },
@@ -75,6 +79,12 @@ describe('ActionItem', () => {
           QBadge: {
             template: '<span class="q-badge" :title="title"><slot /></span>',
             props: ['color', 'title', 'outline'],
+          },
+          QCard: {
+            template: '<div class="q-card"><slot /></div>',
+          },
+          QCardSection: {
+            template: '<div class="q-card-section"><slot /></div>',
           },
         },
       },
@@ -100,10 +110,30 @@ describe('ActionItem', () => {
       expect(wrapper.text()).toContain('Power Strike');
     });
 
-    it('renders action description', () => {
+    it('renders action description in expanded content', () => {
       const wrapper = createWrapper({ description: 'A powerful attack' });
 
       expect(wrapper.text()).toContain('A powerful attack');
+    });
+
+    it('renders short description in header when available', () => {
+      const wrapper = createWrapper({
+        description: 'A very long description',
+        descriptionShort: 'Short summary',
+      });
+
+      const header = wrapper.find('.header');
+      expect(header.text()).toContain('Short summary');
+    });
+
+    it('falls back to full description in header when no short description', () => {
+      const wrapper = createWrapper({
+        description: 'A basic attack',
+        descriptionShort: null,
+      });
+
+      const header = wrapper.find('.header');
+      expect(header.text()).toContain('A basic attack');
     });
 
     it('renders activation type icon', () => {
@@ -294,8 +324,9 @@ describe('ActionItem', () => {
     it('handles empty special string as falsy', () => {
       const wrapper = createWrapper({ special: '' });
 
-      // Empty string should not show special section - check element doesn't exist
-      expect(wrapper.find('.text-italic').exists()).toBe(false);
+      // Empty string should not show special section
+      const content = wrapper.find('.content');
+      expect(content.find('.text-italic').exists()).toBe(false);
     });
 
     it('handles empty dice string as falsy', () => {

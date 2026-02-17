@@ -1,42 +1,51 @@
 <template>
-  <q-item>
-    <q-item-section avatar class="action-avatar">
-      <img
-        v-if="activationType?.icon"
-        :src="iconUrl"
-        :alt="activationType?.name ?? 'Action'"
-        :title="activationType?.name ?? 'Action'"
-        class="action-icon icon-theme-aware"
-      />
-    </q-item-section>
-    <q-item-section>
-      <q-item-label>{{ action.name }}</q-item-label>
-      <q-item-label caption>{{ action.description }}</q-item-label>
-      <q-item-label
-        v-if="action.special"
-        caption
-        :class="`text-italic text-${RPG_COLORS.specialAbility}`"
-      >
-        {{ action.special }}
-      </q-item-label>
-      <q-item-label v-if="action.dice" caption class="text-weight-medium">
-        Dice: {{ action.dice }}
-      </q-item-label>
-    </q-item-section>
-    <q-item-section side top>
-      <div class="column items-end q-gutter-xs">
-        <q-badge
-          v-for="cost in actionCosts"
-          :key="cost.label"
-          :color="cost.color"
-          :title="cost.title"
-          outline
+  <q-expansion-item switch-toggle-side dense class="action-expansion-item">
+    <template #header>
+      <q-item-section avatar class="action-avatar">
+        <img
+          v-if="activationType?.icon"
+          :src="iconUrl"
+          :alt="activationType?.name ?? 'Action'"
+          :title="activationType?.name ?? 'Action'"
+          class="action-icon icon-theme-aware"
+        />
+      </q-item-section>
+      <q-item-section>
+        <q-item-label>{{ action.name }}</q-item-label>
+        <q-item-label caption>{{
+          action.descriptionShort || action.description || 'No description available'
+        }}</q-item-label>
+      </q-item-section>
+      <q-item-section side top>
+        <div class="column items-end q-gutter-xs">
+          <q-badge
+            v-for="cost in actionCosts"
+            :key="cost.label"
+            :color="cost.color"
+            :title="cost.title"
+            outline
+          >
+            {{ cost.value }} {{ cost.label }}
+          </q-badge>
+        </div>
+      </q-item-section>
+    </template>
+
+    <q-card>
+      <q-card-section class="q-pt-sm q-pb-sm">
+        <div class="text-body2">{{ action.description }}</div>
+        <div
+          v-if="action.special"
+          :class="`text-caption text-italic text-${RPG_COLORS.specialAbility} q-mt-xs`"
         >
-          {{ cost.value }} {{ cost.label }}
-        </q-badge>
-      </div>
-    </q-item-section>
-  </q-item>
+          {{ action.special }}
+        </div>
+        <div v-if="action.dice" class="text-caption text-weight-medium q-mt-xs">
+          Dice: {{ action.dice }}
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-expansion-item>
 </template>
 
 <script setup lang="ts">
@@ -91,5 +100,9 @@ const actionCosts = computed(() => {
 .action-icon {
   width: 24px;
   height: 24px;
+}
+
+.action-expansion-item :deep(.q-expansion-item__container) {
+  border-bottom: none;
 }
 </style>
