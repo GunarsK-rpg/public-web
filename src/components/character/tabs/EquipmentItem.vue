@@ -172,10 +172,10 @@ function confirmRemove(): void {
   height: 24px;
 }
 
-.equipment-actions {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
+.q-item-section.equipment-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 2px;
 }

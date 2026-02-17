@@ -263,7 +263,7 @@ export const useHeroStore = defineStore('hero', () => {
       const payload = {
         heroId: hero.value.id,
         equipment: { code: equipmentCode },
-        amount,
+        amount: Math.min(Math.max(1, Math.floor(amount)), MAX_EQUIPMENT_STACK),
         isEquipped: false,
       };
       const response = await heroService.upsertSubResource<HeroEquipment>(

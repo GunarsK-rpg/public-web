@@ -37,6 +37,8 @@
           type="number"
           label="Amount"
           min="1"
+          :max="MAX_EQUIPMENT_STACK"
+          :hint="`Max ${MAX_EQUIPMENT_STACK}`"
           class="q-mt-md"
           aria-label="Amount"
         />
@@ -61,6 +63,7 @@
 import { ref, computed, watch } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
+import { MAX_EQUIPMENT_STACK } from 'src/constants';
 import type { Equipment } from 'src/types';
 
 const props = defineProps<{

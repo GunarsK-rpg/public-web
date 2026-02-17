@@ -197,6 +197,7 @@ describe('CharacterHeader', () => {
     it('navigates to edit route when edit button is clicked', async () => {
       const wrapper = createWrapper();
       const editBtn = wrapper.find('button[aria-label="Edit character"]');
+      expect(editBtn.exists()).toBe(true);
       await editBtn.trigger('click');
 
       expect(mockRouterPush).toHaveBeenCalledWith({
