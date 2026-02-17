@@ -97,7 +97,6 @@ describe('CharacterHeader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockRouterPush.mockReset();
     mockHero.value = {
       name: 'Kaladin',
       level: 5,

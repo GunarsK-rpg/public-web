@@ -5,6 +5,7 @@ import type { ClassifierRef } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
+import { MAX_EQUIPMENT_STACK } from 'src/constants';
 
 /**
  * Default empty Hero for new character creation
@@ -255,8 +256,8 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   // EQUIPMENT (sheet)
   // ===================
-  async function addEquipment(equipmentCode: string, amount: number = 1): Promise<void> {
-    if (!hero.value) return;
+  async function addEquipment(equipmentCode: string, amount: number = 1): Promise<boolean> {
+    if (!hero.value) return false;
     savingCount.value++;
     try {
       const payload = {
@@ -270,9 +271,16 @@ export const useHeroStore = defineStore('hero', () => {
         'equipment',
         payload
       );
-      hero.value.equipment.push(response.data);
+      const idx = hero.value.equipment.findIndex((e) => e.id === response.data.id);
+      if (idx !== -1) {
+        hero.value.equipment[idx] = response.data;
+      } else {
+        hero.value.equipment.push(response.data);
+      }
+      return true;
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to add equipment' });
+      return false;
     } finally {
       savingCount.value--;
     }
@@ -304,7 +312,7 @@ export const useHeroStore = defineStore('hero', () => {
         id: heroEquipmentId,
         heroId: hero.value.id,
         equipment: { code: existing.equipment.code },
-        amount: changes.amount ?? existing.amount,
+        amount: Math.min(changes.amount ?? existing.amount, MAX_EQUIPMENT_STACK),
         isEquipped: changes.isEquipped ?? existing.isEquipped,
         notes: changes.notes !== undefined ? changes.notes : existing.notes,
         customName: changes.customName !== undefined ? changes.customName : existing.customName,

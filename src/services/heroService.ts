@@ -30,7 +30,7 @@ export default {
     resource: string,
     data: unknown
   ): Promise<AxiosResponse<T>> {
-    return api.post(`/heroes/${heroId}/${resource}`, data);
+    return api.post<T>(`/heroes/${heroId}/${resource}`, data);
   },
   deleteSubResource(heroId: number, resource: string, subId: number): Promise<AxiosResponse<void>> {
     return api.delete(`/heroes/${heroId}/${resource}/${subId}`);

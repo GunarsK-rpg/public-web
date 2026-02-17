@@ -114,7 +114,8 @@ function onFilter(val: string, update: (fn: () => void) => void): void {
 async function onAdd(): Promise<void> {
   if (!selectedEquipment.value) return;
   const safeAmount = Number.isFinite(amount.value) ? Math.max(1, Math.floor(amount.value)) : 1;
-  await heroStore.addEquipment(selectedEquipment.value.code, safeAmount);
+  const success = await heroStore.addEquipment(selectedEquipment.value.code, safeAmount);
+  if (!success) return;
   selectedEquipment.value = null;
   amount.value = 1;
   emit('update:modelValue', false);

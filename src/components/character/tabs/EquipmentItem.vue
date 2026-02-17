@@ -47,7 +47,7 @@
           round
           size="xs"
           icon="add"
-          :disable="saving"
+          :disable="saving || heroEquipment.amount >= MAX_EQUIPMENT_STACK"
           aria-label="Increase amount"
           @click="changeAmount(1)"
         />
@@ -91,6 +91,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
 import { useChainedEntityIcon } from 'src/composables/useEntityIcon';
 import type { HeroEquipment, Equipment } from 'src/types';
+import { MAX_EQUIPMENT_STACK } from 'src/constants';
 
 const props = defineProps<{
   heroEquipment: HeroEquipment;
@@ -143,7 +144,7 @@ const detailsLine = computed(() => {
 
 function changeAmount(delta: number): void {
   const newAmount = props.heroEquipment.amount + delta;
-  if (newAmount < 1) return;
+  if (newAmount < 1 || newAmount > MAX_EQUIPMENT_STACK) return;
   void heroStore.updateEquipment(props.heroEquipment.id, { amount: newAmount });
 }
 
