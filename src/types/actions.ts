@@ -14,6 +14,7 @@ export interface Action extends Classifier {
   actionType: ClassifierRef;
   activationType: ClassifierRef;
   damageType: ClassifierRef | null;
+  descriptionShort?: string | null;
   special?: string | null;
   dice?: string | null;
   focusCost: number;

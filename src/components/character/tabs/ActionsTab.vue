@@ -104,6 +104,13 @@ function getActionsByTypeId(actionTypeId: number): Action[] {
     return classifiers.actions.filter((a) => a.actionType.id === actionTypeId);
   }
 
+  // Stormlight actions - all Radiants have them
+  const stormlightType = getActionTypeByCode('stormlight');
+  if (stormlightType && actionTypeId === stormlightType.id) {
+    if (!heroStore.hero?.radiantOrder) return [];
+    return classifiers.actions.filter((a) => a.actionType.id === actionTypeId);
+  }
+
   // Other action types - filter by actionLinks using pre-computed map
   const heroObjectIds = getHeroObjectIds(actionType.code);
   if (heroObjectIds.size === 0) return [];
