@@ -169,16 +169,6 @@ describe('StatsTab', () => {
       expect(wrapper.text()).toContain('2'); // int, awa
       expect(wrapper.text()).toContain('1'); // pre
     });
-
-    it('uses attributeValues for display', () => {
-      const wrapper = createWrapper();
-
-      // All attribute values from the mock should be rendered
-      expect(wrapper.text()).toContain('3'); // str
-      expect(wrapper.text()).toContain('4'); // spd
-      expect(wrapper.text()).toContain('2'); // int, awa
-      expect(wrapper.text()).toContain('1'); // pre
-    });
   });
 
   // ========================================
@@ -279,15 +269,16 @@ describe('StatsTab', () => {
   // ========================================
   describe('edge cases', () => {
     it('handles zero attribute values', () => {
-      // Override attribute values to all zeros
-      Object.keys(mockAttributeValues).forEach((k) => (mockAttributeValues[k] = 0));
-      const wrapper = createWrapper();
+      const original = { ...mockAttributeValues };
+      try {
+        Object.keys(mockAttributeValues).forEach((k) => (mockAttributeValues[k] = 0));
+        const wrapper = createWrapper();
 
-      // Should render without error
-      expect(wrapper.text()).toContain('0');
-
-      // Restore original values
-      Object.assign(mockAttributeValues, { str: 3, spd: 4, int: 2, wil: 3, awa: 2, pre: 1 });
+        // Should render without error
+        expect(wrapper.text()).toContain('0');
+      } finally {
+        Object.assign(mockAttributeValues, original);
+      }
     });
 
     it('handles zero defense values', () => {

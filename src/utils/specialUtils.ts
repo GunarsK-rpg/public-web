@@ -57,18 +57,18 @@ export function getHeroBonus(
 ): number {
   let total = 0;
   for (const t of talents) {
-    for (const entry of t.special) {
+    for (const entry of t.special ?? []) {
       if (entry.type === type && entry.value !== undefined) total += entry.value;
     }
   }
   for (const e of equipment) {
     if (!e.isEquipped) continue;
-    for (const entry of e.special) {
+    for (const entry of e.special ?? []) {
       if (entry.type === type && entry.value !== undefined) total += entry.value;
     }
   }
   if (singerForm) {
-    for (const entry of singerForm.special) {
+    for (const entry of singerForm.special ?? []) {
       if (entry.type === type && entry.value !== undefined) total += entry.value;
     }
   }

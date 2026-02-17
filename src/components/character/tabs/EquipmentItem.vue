@@ -27,9 +27,9 @@
         {{ heroEquipment.notes }}
       </q-item-label>
     </q-item-section>
-    <q-item-section side class="equipment-actions">
-      <!-- Amount controls -->
-      <div class="row no-wrap items-center q-mr-sm">
+    <q-item-section side>
+      <div class="row no-wrap items-center">
+        <!-- Amount controls -->
         <q-btn
           flat
           dense
@@ -51,35 +51,35 @@
           aria-label="Increase amount"
           @click="changeAmount(1)"
         />
+
+        <!-- Equip toggle -->
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          :icon="heroEquipment.isEquipped ? 'sym_o_shield' : 'sym_o_shield_question'"
+          :color="heroEquipment.isEquipped ? 'primary' : 'grey'"
+          :disable="saving"
+          :aria-label="heroEquipment.isEquipped ? 'Unequip' : 'Equip'"
+          @click="toggleEquipped"
+        >
+          <q-tooltip>{{ heroEquipment.isEquipped ? 'Unequip' : 'Equip' }}</q-tooltip>
+        </q-btn>
+
+        <!-- Remove -->
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          icon="delete"
+          color="negative"
+          :disable="saving"
+          aria-label="Remove equipment"
+          @click="confirmRemove"
+        />
       </div>
-
-      <!-- Equip toggle -->
-      <q-btn
-        flat
-        dense
-        round
-        size="sm"
-        :icon="heroEquipment.isEquipped ? 'sym_o_shield' : 'sym_o_shield_question'"
-        :color="heroEquipment.isEquipped ? 'primary' : 'grey'"
-        :disable="saving"
-        :aria-label="heroEquipment.isEquipped ? 'Unequip' : 'Equip'"
-        @click="toggleEquipped"
-      >
-        <q-tooltip>{{ heroEquipment.isEquipped ? 'Unequip' : 'Equip' }}</q-tooltip>
-      </q-btn>
-
-      <!-- Remove -->
-      <q-btn
-        flat
-        dense
-        round
-        size="sm"
-        icon="delete"
-        color="negative"
-        :disable="saving"
-        aria-label="Remove equipment"
-        @click="confirmRemove"
-      />
     </q-item-section>
   </q-item>
 </template>
@@ -141,7 +141,7 @@ const detailsLine = computed(() => {
   }
 
   const heq = props.heroEquipment;
-  if (heq.charges !== null && heq.maxCharges !== null) {
+  if (heq.charges != null && heq.maxCharges != null) {
     parts.push(`${heq.charges}/${heq.maxCharges} charges`);
   }
 
@@ -176,13 +176,5 @@ function confirmRemove(): void {
 .equipment-icon {
   width: 24px;
   height: 24px;
-}
-
-.q-item-section.equipment-actions {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 2px;
 }
 </style>
