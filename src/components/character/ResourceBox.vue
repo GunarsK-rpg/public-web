@@ -27,6 +27,7 @@
           v-model.number="editValue"
           type="number"
           min="0"
+          :max="max"
           class="resource-input"
           @blur="commitEdit"
           @keyup.enter="commitEdit"
@@ -41,8 +42,8 @@
         round
         size="xs"
         icon="add"
-        :disable="saving"
-        @click="$emit('update', current + 1)"
+        :disable="saving || (max != null && current >= max)"
+        @click="$emit('update', clamp(current + 1, 0, max ?? Infinity))"
       />
     </div>
     <q-linear-progress
@@ -61,6 +62,7 @@
 
 <script setup lang="ts">
 import { computed, ref, nextTick } from 'vue';
+import { clamp } from 'src/utils/numberUtils';
 
 const props = defineProps<{
   label: string;
@@ -81,7 +83,7 @@ const inputEl = ref<HTMLInputElement>();
 
 const progressValue = computed(() => {
   if (props.max == null || props.max <= 0) return 0;
-  return Math.max(0, Math.min(1, props.current / props.max));
+  return clamp(props.current / props.max, 0, 1);
 });
 
 function startEdit() {
@@ -100,9 +102,12 @@ function cancelEdit() {
 function commitEdit() {
   if (!editing.value) return;
   const raw = editValue.value;
-  const value = Number.isFinite(raw) ? raw : props.current;
+  const parsed = Number.isFinite(raw) ? raw : props.current;
+  const clamped = clamp(parsed, 0, props.max ?? Infinity);
   editing.value = false;
-  emit('update', value);
+  if (clamped !== props.current) {
+    emit('update', clamped);
+  }
 }
 </script>
 

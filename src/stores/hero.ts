@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Hero, HeroSheet } from 'src/types';
+import type { Hero, HeroSheet, HeroEquipment } from 'src/types';
 import type { ClassifierRef } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
+import { MAX_EQUIPMENT_STACK } from 'src/constants';
+import { clamp } from 'src/utils/numberUtils';
 
 /**
  * Default empty Hero for new character creation
@@ -46,7 +48,8 @@ function createEmptyHero(): HeroSheet {
 export const useHeroStore = defineStore('hero', () => {
   const hero = ref<HeroSheet | null>(null);
   const loading = ref(false);
-  const saving = ref(false);
+  const savingCount = ref(0);
+  const saving = computed(() => savingCount.value > 0);
   const error = ref<string | null>(null);
 
   // Track pending load requests to handle race conditions
@@ -208,14 +211,14 @@ export const useHeroStore = defineStore('hero', () => {
     errorMessage: string
   ): Promise<void> {
     if (!hero.value) return;
-    saving.value = true;
+    savingCount.value++;
     try {
       const response = await serviceFn(hero.value.id, Math.max(0, Math.floor(value)));
       hero.value[field] = response.data[field];
     } catch (err) {
       handleError(err, { errorRef: error, message: errorMessage });
     } finally {
-      saving.value = false;
+      savingCount.value--;
     }
   }
 
@@ -250,6 +253,88 @@ export const useHeroStore = defineStore('hero', () => {
       v,
       'Failed to update currency'
     );
+
+  // ===================
+  // EQUIPMENT (sheet)
+  // ===================
+  async function addEquipment(equipmentCode: string, amount: number = 1): Promise<boolean> {
+    if (!hero.value) return false;
+    savingCount.value++;
+    try {
+      const existing = hero.value.equipment.find((e) => e.equipment.code === equipmentCode);
+      const payload = {
+        heroId: hero.value.id,
+        equipment: { code: equipmentCode },
+        amount: clamp(Math.floor(amount), 1, MAX_EQUIPMENT_STACK),
+        isEquipped: existing?.isEquipped ?? false,
+      };
+      const response = await heroService.upsertSubResource<HeroEquipment>(
+        hero.value.id,
+        'equipment',
+        payload
+      );
+      if (!hero.value) return false;
+      const idx = hero.value.equipment.findIndex((e) => e.id === response.data.id);
+      if (idx !== -1) {
+        hero.value.equipment[idx] = response.data;
+      } else {
+        hero.value.equipment.push(response.data);
+      }
+      return true;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to add equipment' });
+      return false;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function removeEquipment(heroEquipmentId: number): Promise<void> {
+    if (!hero.value) return;
+    savingCount.value++;
+    try {
+      await heroService.deleteSubResource(hero.value.id, 'equipment', heroEquipmentId);
+      if (!hero.value) return;
+      hero.value.equipment = hero.value.equipment.filter((e) => e.id !== heroEquipmentId);
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to remove equipment' });
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function updateEquipment(
+    heroEquipmentId: number,
+    changes: Partial<Pick<HeroEquipment, 'amount' | 'isEquipped' | 'notes' | 'customName'>>
+  ): Promise<void> {
+    if (!hero.value) return;
+    const existing = hero.value.equipment.find((e) => e.id === heroEquipmentId);
+    if (!existing) return;
+    savingCount.value++;
+    try {
+      const payload = {
+        id: heroEquipmentId,
+        heroId: hero.value.id,
+        equipment: { code: existing.equipment.code },
+        amount: clamp(Math.floor(changes.amount ?? existing.amount), 1, MAX_EQUIPMENT_STACK),
+        isEquipped: changes.isEquipped ?? existing.isEquipped,
+        notes: changes.notes !== undefined ? changes.notes : existing.notes,
+        customName: changes.customName !== undefined ? changes.customName : existing.customName,
+      };
+      const response = await heroService.upsertSubResource<HeroEquipment>(
+        hero.value.id,
+        'equipment',
+        payload
+      );
+      if (!hero.value) return;
+      const idx = hero.value.equipment.findIndex((e) => e.id === heroEquipmentId);
+      if (idx !== -1) hero.value.equipment[idx] = response.data;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to update equipment' });
+    } finally {
+      savingCount.value--;
+    }
+  }
 
   return {
     // State
@@ -293,5 +378,10 @@ export const useHeroStore = defineStore('hero', () => {
     patchFocus,
     patchInvestiture,
     patchCurrency,
+
+    // Equipment (sheet)
+    addEquipment,
+    removeEquipment,
+    updateEquipment,
   };
 });

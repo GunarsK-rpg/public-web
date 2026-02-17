@@ -55,8 +55,8 @@
                 outlined
                 class="modifier-input q-ml-sm"
                 :prefix="getSkillModifier(skill.id) >= 0 ? '+' : ''"
-                :min="-10"
-                :max="10"
+                :min="MIN_SKILL_MODIFIER"
+                :max="MAX_SKILL_MODIFIER"
                 @update:model-value="setSkillModifier(skill.id, $event)"
               />
             </div>
@@ -75,6 +75,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { groupByKey, buildIdCodeMap } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
+import { MIN_SKILL_MODIFIER, MAX_SKILL_MODIFIER } from 'src/constants';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
 const heroStore = useHeroStore();
@@ -125,7 +126,7 @@ function getSkillModifier(skillId: number): number {
 }
 
 function setSkillModifier(skillId: number, value: string | number | null) {
-  const normalized = normalizeModifierInput(value, -10, 10);
+  const normalized = normalizeModifierInput(value, MIN_SKILL_MODIFIER, MAX_SKILL_MODIFIER);
   if (normalized !== null) {
     attrStore.setSkillModifier(skillId, normalized);
   }

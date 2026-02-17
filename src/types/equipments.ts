@@ -37,7 +37,6 @@ export interface HeroEquipmentBase {
   equipment: ClassifierInput;
   amount: number;
   isEquipped: boolean;
-  isPrimary: boolean;
   notes?: string | null;
   customName?: string | null;
 }

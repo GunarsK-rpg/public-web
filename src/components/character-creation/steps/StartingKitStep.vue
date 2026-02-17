@@ -110,6 +110,7 @@ import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
+import { clamp } from 'src/utils/numberUtils';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 
 const heroStore = useHeroStore();
@@ -152,7 +153,7 @@ function setStartingCurrency(val: string | number | null) {
   }
   const numVal = typeof val === 'string' ? Number(val) : val;
   if (Number.isNaN(numVal)) return;
-  equipStore.setCurrency(Math.max(0, Math.min(999999, numVal)));
+  equipStore.setCurrency(clamp(numVal, 0, 999999));
 }
 
 function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {

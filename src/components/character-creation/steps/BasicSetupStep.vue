@@ -101,6 +101,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { findByCode } from 'src/utils/arrayUtils';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
+import { clamp } from 'src/utils/numberUtils';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import SelectableCard from '../shared/SelectableCard.vue';
 
@@ -166,7 +167,7 @@ function setLevel(val: string | number | null) {
     const numVal = typeof val === 'string' ? Number(val) : val;
     if (!Number.isNaN(numVal)) {
       // Clamp level between 1 and 20
-      heroStore.setLevel(Math.max(1, Math.min(20, numVal)));
+      heroStore.setLevel(clamp(numVal, 1, 20));
     }
   }
 }

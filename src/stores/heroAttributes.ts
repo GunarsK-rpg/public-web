@@ -4,7 +4,13 @@ import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { findById, findByCode, findByProp, toClassifierRef } from 'src/utils/arrayUtils';
 import { calculateFormulaStat } from 'src/utils/derivedStats';
-import { MIN_ATTRIBUTE_VALUE, MAX_ATTRIBUTE_VALUE } from 'src/constants';
+import {
+  MIN_ATTRIBUTE_VALUE,
+  MAX_ATTRIBUTE_VALUE,
+  MIN_SKILL_MODIFIER,
+  MAX_SKILL_MODIFIER,
+} from 'src/constants';
+import { clamp } from 'src/utils/numberUtils';
 import type { ExpertiseSourceData } from 'src/types';
 
 export const useHeroAttributesStore = defineStore('heroAttributes', () => {
@@ -123,7 +129,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   // ===================
   function setAttribute(attrId: number, value: number) {
     if (!heroStore.hero) return;
-    const clampedValue = Math.max(MIN_ATTRIBUTE_VALUE, Math.min(MAX_ATTRIBUTE_VALUE, value));
+    const clampedValue = clamp(value, MIN_ATTRIBUTE_VALUE, MAX_ATTRIBUTE_VALUE);
     const existing = heroStore.hero.attributes.find((a) => a.attribute.id === attrId);
     if (existing) {
       existing.value = clampedValue;
@@ -142,7 +148,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   function setSkillRank(skillId: number, rank: number) {
     if (!heroStore.hero) return;
     const maxRank = levelData.value?.maxSkillRank ?? 2;
-    const clampedRank = Math.max(0, Math.min(maxRank, rank));
+    const clampedRank = clamp(rank, 0, maxRank);
     const existing = heroStore.hero.skills.find((s) => s.skill.id === skillId);
     if (existing) {
       existing.rank = clampedRank;
@@ -161,7 +167,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
 
   function setSkillModifier(skillId: number, modifier: number) {
     if (!heroStore.hero) return;
-    const clampedModifier = Math.max(MIN_ATTRIBUTE_VALUE, Math.min(MAX_ATTRIBUTE_VALUE, modifier));
+    const clampedModifier = clamp(modifier, MIN_SKILL_MODIFIER, MAX_SKILL_MODIFIER);
     const existing = heroStore.hero.skills.find((s) => s.skill.id === skillId);
     if (existing) {
       existing.modifier = clampedModifier;

@@ -16,7 +16,7 @@
 
     <template v-else-if="isLoaded">
       <!-- Character Header -->
-      <CharacterHeader />
+      <CharacterHeader :campaign-id="campaignId" :character-id="characterId" />
 
       <!-- Tab Navigation -->
       <q-tabs
@@ -27,6 +27,8 @@
         indicator-color="primary"
         align="justify"
         narrow-indicator
+        mobile-arrows
+        outside-arrows
       >
         <q-tab
           v-for="tab in tabs"

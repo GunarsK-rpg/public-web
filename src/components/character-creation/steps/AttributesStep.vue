@@ -102,6 +102,7 @@ import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
+import { clamp } from 'src/utils/numberUtils';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
 const attrStore = useHeroAttributesStore();
@@ -165,7 +166,7 @@ function getAttrValue(attrId: number): number {
 function setAttrValue(attrId: number, value: number | null) {
   if (value === null) return;
   const currentValue = getAttrValue(attrId);
-  const clampedValue = Math.max(0, Math.min(5, value));
+  const clampedValue = clamp(value, 0, 5);
   const pointsToSpend = clampedValue - currentValue;
 
   // If increasing, check budget

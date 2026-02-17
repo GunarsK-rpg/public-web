@@ -25,12 +25,12 @@ export default {
   getSubResource(heroId: number, resource: string): Promise<AxiosResponse<unknown>> {
     return api.get(`/heroes/${heroId}/${resource}`);
   },
-  upsertSubResource(
+  upsertSubResource<T = { id: number }>(
     heroId: number,
     resource: string,
     data: unknown
-  ): Promise<AxiosResponse<{ id: number }>> {
-    return api.post(`/heroes/${heroId}/${resource}`, data);
+  ): Promise<AxiosResponse<T>> {
+    return api.post<T>(`/heroes/${heroId}/${resource}`, data);
   },
   deleteSubResource(heroId: number, resource: string, subId: number): Promise<AxiosResponse<void>> {
     return api.delete(`/heroes/${heroId}/${resource}/${subId}`);

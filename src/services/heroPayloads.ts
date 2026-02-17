@@ -95,7 +95,6 @@ export function buildEquipmentPayload(heroId: number, equip: HeroEquipment): Her
     equipment: toClassifierInput(equip.equipment),
     amount: equip.amount,
     isEquipped: equip.isEquipped,
-    isPrimary: equip.isPrimary,
     notes: equip.notes ?? null,
     customName: equip.customName ?? null,
   };

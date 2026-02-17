@@ -499,7 +499,6 @@ describe('useWizardSave', () => {
             equipment: { id: 3, code: 'longsword', name: 'Longsword' },
             amount: 1,
             isEquipped: true,
-            isPrimary: true,
           },
         ],
       });
@@ -522,7 +521,6 @@ describe('useWizardSave', () => {
             equipment: { id: 3, code: 'longsword', name: 'Longsword' },
             amount: 1,
             isEquipped: true,
-            isPrimary: true,
           },
         ],
         expertises: [{ id: -1, heroId: 42, expertise: { id: 1, code: 'lore', name: 'Lore' } }],

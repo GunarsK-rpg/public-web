@@ -50,6 +50,7 @@ import { computed } from 'vue';
 import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { WIZARD_STEPS } from 'src/types';
+import { clamp } from 'src/utils/numberUtils';
 
 const wizardStore = useWizardStore();
 const { validate } = useStepValidation();
@@ -100,7 +101,7 @@ function goToStep(step: number) {
 
 function navigateTabs(direction: number) {
   const currentIndex = steps.findIndex((s) => s.id === currentStep.value);
-  const newIndex = Math.max(0, Math.min(steps.length - 1, currentIndex + direction));
+  const newIndex = clamp(currentIndex + direction, 0, steps.length - 1);
   const targetStep = steps[newIndex];
   if (newIndex !== currentIndex && targetStep) {
     // Use direct step navigation without marking current step complete
