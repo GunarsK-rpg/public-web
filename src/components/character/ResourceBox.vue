@@ -27,6 +27,7 @@
           v-model.number="editValue"
           type="number"
           min="0"
+          :max="max"
           class="resource-input"
           @blur="commitEdit"
           @keyup.enter="commitEdit"
@@ -41,8 +42,8 @@
         round
         size="xs"
         icon="add"
-        :disable="saving"
-        @click="$emit('update', current + 1)"
+        :disable="saving || (max != null && current >= max)"
+        @click="$emit('update', Math.min(current + 1, max ?? Infinity))"
       />
     </div>
     <q-linear-progress
@@ -100,9 +101,10 @@ function cancelEdit() {
 function commitEdit() {
   if (!editing.value) return;
   const raw = editValue.value;
-  const value = Number.isFinite(raw) ? raw : props.current;
+  const parsed = Number.isFinite(raw) ? raw : props.current;
+  const clamped = Math.min(Math.max(0, parsed), props.max ?? Infinity);
   editing.value = false;
-  emit('update', value);
+  emit('update', clamped);
 }
 </script>
 

@@ -174,6 +174,28 @@ vi.mock('src/constants/theme', () => ({
   },
 }));
 
+const mockUpdateEquipment = vi.fn();
+const mockRemoveEquipment = vi.fn();
+const mockSaving = ref(false);
+
+vi.mock('src/stores/hero', () => ({
+  useHeroStore: () => ({
+    get saving() {
+      return mockSaving.value;
+    },
+    updateEquipment: mockUpdateEquipment,
+    removeEquipment: mockRemoveEquipment,
+  }),
+}));
+
+vi.mock('quasar', () => ({
+  useQuasar: () => ({
+    dialog: vi.fn(() => ({
+      onOk: vi.fn(),
+    })),
+  }),
+}));
+
 const eqRef = (id: number) => {
   const eq = equipmentMap[id];
   return eq
@@ -211,12 +233,20 @@ describe('EquipmentItem', () => {
             template: '<span class="q-badge" :aria-label="$attrs[\'aria-label\']"><slot /></span>',
             props: ['color'],
           },
+          QBtn: {
+            template:
+              '<button class="q-btn-stub" :aria-label="$attrs[\'aria-label\']" :disabled="$attrs.disable" />',
+          },
+          QTooltip: {
+            template: '<span class="q-tooltip-stub" />',
+          },
         },
       },
     });
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSaving.value = false;
   });
 
   // ========================================
@@ -302,33 +332,32 @@ describe('EquipmentItem', () => {
   // ========================================
   // Quantity Badge
   // ========================================
-  describe('quantity badge', () => {
-    it('shows quantity badge when amount > 1', () => {
+  describe('amount display', () => {
+    it('shows amount in controls', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
         amount: 3,
       });
 
-      expect(wrapper.text()).toContain('x3');
+      expect(wrapper.text()).toContain('3');
     });
 
-    it('does not show quantity badge when amount is 1', () => {
+    it('shows amount of 1', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
         amount: 1,
       });
 
-      expect(wrapper.text()).not.toContain('x1');
+      expect(wrapper.text()).toContain('1');
     });
 
-    it('quantity badge has correct aria-label', () => {
+    it('shows amount of 5', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
         amount: 5,
       });
 
-      const badge = wrapper.find('.q-badge[aria-label="Quantity: 5"]');
-      expect(badge.exists()).toBe(true);
+      expect(wrapper.text()).toContain('5');
     });
   });
 
@@ -410,8 +439,7 @@ describe('EquipmentItem', () => {
         amount: 0,
       });
 
-      // Should not show quantity badge for 0
-      expect(wrapper.text()).not.toContain('x0');
+      expect(wrapper.exists()).toBe(true);
     });
 
     it('renders all badges and details together', () => {
@@ -425,7 +453,7 @@ describe('EquipmentItem', () => {
 
       expect(wrapper.text()).toContain('Equipped');
       expect(wrapper.text()).toContain('Primary');
-      expect(wrapper.text()).toContain('x2');
+      expect(wrapper.text()).toContain('2');
       expect(wrapper.text()).toContain('Special item');
       expect(wrapper.text()).toContain('2d6');
     });

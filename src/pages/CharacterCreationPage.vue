@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, provide, onMounted, type Component } from 'vue';
+import { ref, computed, provide, onMounted, onUnmounted, type Component } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useWizardStore } from 'stores/wizard';
@@ -165,7 +165,18 @@ const currentStepComponent = computed(() => {
 
 // Navigation
 function goBack() {
-  router.back();
+  if (wizardStore.mode === 'edit') {
+    $q.dialog({
+      title: 'Leave Edit Mode?',
+      message: 'Unsaved changes on this step will be lost.',
+      cancel: true,
+      persistent: false,
+    }).onOk(() => {
+      router.back();
+    });
+  } else {
+    router.back();
+  }
 }
 
 async function handleNext(): Promise<void> {
@@ -261,6 +272,12 @@ onMounted(async () => {
   } finally {
     initializing.value = false;
   }
+});
+
+onUnmounted(() => {
+  deletionTracker.clearAll();
+  wizardStore.reset();
+  heroStore.clearHero();
 });
 </script>
 

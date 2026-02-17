@@ -64,9 +64,19 @@ vi.mock('src/constants/theme', () => ({
   },
 }));
 
+vi.mock('vue-router', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+}));
+
 describe('CharacterHeader', () => {
   const createWrapper = () =>
     shallowMount(CharacterHeader, {
+      props: {
+        campaignId: '1',
+        characterId: '42',
+      },
       global: {
         stubs: {
           ResourceBox: {
@@ -74,6 +84,10 @@ describe('CharacterHeader', () => {
           },
           QSeparator: {
             template: '<hr class="q-separator" />',
+          },
+          QBtn: {
+            template:
+              '<button class="q-btn-stub" :aria-label="$attrs[\'aria-label\']"><slot /></button>',
           },
         },
       },
@@ -145,19 +159,19 @@ describe('CharacterHeader', () => {
       expect(boxes.some((b) => b.attributes('data-label') === 'Focus')).toBe(true);
     });
 
-    it('renders Investiture for radiants', () => {
+    it('renders Investiture and Marks for radiants', () => {
       mockIsRadiant.value = true;
       const wrapper = createWrapper();
       const boxes = wrapper.findAll('.resource-box-stub');
       expect(boxes.some((b) => b.attributes('data-label') === 'Investiture')).toBe(true);
-      expect(boxes.some((b) => b.attributes('data-label') === 'Spheres')).toBe(false);
+      expect(boxes.some((b) => b.attributes('data-label') === 'Marks')).toBe(true);
     });
 
-    it('renders Spheres for non-radiants', () => {
+    it('renders Marks without Investiture for non-radiants', () => {
       mockIsRadiant.value = false;
       const wrapper = createWrapper();
       const boxes = wrapper.findAll('.resource-box-stub');
-      expect(boxes.some((b) => b.attributes('data-label') === 'Spheres')).toBe(true);
+      expect(boxes.some((b) => b.attributes('data-label') === 'Marks')).toBe(true);
       expect(boxes.some((b) => b.attributes('data-label') === 'Investiture')).toBe(false);
     });
   });

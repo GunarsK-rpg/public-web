@@ -18,7 +18,15 @@
     </q-card>
 
     <!-- Tabs from cl_equipment_types classifier -->
-    <q-tabs v-model="activeTab" dense align="left" class="q-mb-md" narrow-indicator>
+    <q-tabs
+      v-model="activeTab"
+      dense
+      align="left"
+      class="q-mb-md"
+      narrow-indicator
+      mobile-arrows
+      outside-arrows
+    >
       <q-tab
         v-for="eqType in classifiers.equipmentTypes"
         :key="eqType.id"
@@ -44,8 +52,21 @@
         <div v-else class="text-center text-muted q-pa-lg">
           No {{ eqType.name.toLowerCase() }} in inventory.
         </div>
+        <div class="q-pa-sm q-mt-xs">
+          <q-btn
+            flat
+            dense
+            icon="add"
+            :label="`Add ${eqType.name}`"
+            color="primary"
+            size="sm"
+            @click="openAddDialog(eqType.id)"
+          />
+        </div>
       </q-tab-panel>
     </q-tab-panels>
+
+    <EquipmentAddDialog v-model="showAddDialog" :equipment-type-id="addDialogTypeId" />
   </div>
 </template>
 
@@ -56,6 +77,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 import EquipmentItem from './EquipmentItem.vue';
+import EquipmentAddDialog from './EquipmentAddDialog.vue';
 import type { HeroEquipment } from 'src/types';
 
 const heroStore = useHeroStore();
@@ -78,6 +100,15 @@ watch(
   },
   { immediate: true }
 );
+
+// Add dialog state
+const showAddDialog = ref(false);
+const addDialogTypeId = ref(0);
+
+function openAddDialog(equipmentTypeId: number): void {
+  addDialogTypeId.value = equipmentTypeId;
+  showAddDialog.value = true;
+}
 
 // Currency value in diamond marks
 const totalCurrencyValue = computed(() => heroStore.hero?.currency ?? 0);
