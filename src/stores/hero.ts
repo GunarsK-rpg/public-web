@@ -261,11 +261,12 @@ export const useHeroStore = defineStore('hero', () => {
     if (!hero.value) return false;
     savingCount.value++;
     try {
+      const existing = hero.value.equipment.find((e) => e.equipment.code === equipmentCode);
       const payload = {
         heroId: hero.value.id,
         equipment: { code: equipmentCode },
         amount: clamp(Math.floor(amount), 1, MAX_EQUIPMENT_STACK),
-        isEquipped: false,
+        isEquipped: existing?.isEquipped ?? false,
       };
       const response = await heroService.upsertSubResource<HeroEquipment>(
         hero.value.id,
