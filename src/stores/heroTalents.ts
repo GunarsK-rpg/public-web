@@ -4,6 +4,7 @@ import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { useHeroAttributesStore } from './heroAttributes';
 import { findById, findByCode, toClassifierRef } from 'src/utils/arrayUtils';
+import { clamp } from 'src/utils/numberUtils';
 
 export const useHeroTalentsStore = defineStore('heroTalents', () => {
   const heroStore = useHeroStore();
@@ -202,7 +203,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   function setRadiantIdeal(level: number) {
     if (!heroStore.hero) return;
     const min = heroStore.hero.radiantOrder ? 1 : 0;
-    heroStore.hero.radiantIdeal = Math.max(min, Math.min(5, level));
+    heroStore.hero.radiantIdeal = clamp(level, min, 5);
   }
 
   return {

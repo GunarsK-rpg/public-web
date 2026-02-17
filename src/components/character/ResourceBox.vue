@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import { computed, ref, nextTick } from 'vue';
+import { clamp } from 'src/utils/numberUtils';
 
 const props = defineProps<{
   label: string;
@@ -82,7 +83,7 @@ const inputEl = ref<HTMLInputElement>();
 
 const progressValue = computed(() => {
   if (props.max == null || props.max <= 0) return 0;
-  return Math.max(0, Math.min(1, props.current / props.max));
+  return clamp(props.current / props.max, 0, 1);
 });
 
 function startEdit() {
@@ -102,7 +103,7 @@ function commitEdit() {
   if (!editing.value) return;
   const raw = editValue.value;
   const parsed = Number.isFinite(raw) ? raw : props.current;
-  const clamped = Math.min(Math.max(0, parsed), props.max ?? Infinity);
+  const clamped = clamp(parsed, 0, props.max ?? Infinity);
   editing.value = false;
   if (clamped !== props.current) {
     emit('update', clamped);

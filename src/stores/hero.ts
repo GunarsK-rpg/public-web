@@ -6,6 +6,7 @@ import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
+import { clamp } from 'src/utils/numberUtils';
 
 /**
  * Default empty Hero for new character creation
@@ -263,7 +264,7 @@ export const useHeroStore = defineStore('hero', () => {
       const payload = {
         heroId: hero.value.id,
         equipment: { code: equipmentCode },
-        amount: Math.min(Math.max(1, Math.floor(amount)), MAX_EQUIPMENT_STACK),
+        amount: clamp(Math.floor(amount), 1, MAX_EQUIPMENT_STACK),
         isEquipped: false,
       };
       const response = await heroService.upsertSubResource<HeroEquipment>(
@@ -312,7 +313,7 @@ export const useHeroStore = defineStore('hero', () => {
         id: heroEquipmentId,
         heroId: hero.value.id,
         equipment: { code: existing.equipment.code },
-        amount: Math.min(changes.amount ?? existing.amount, MAX_EQUIPMENT_STACK),
+        amount: clamp(changes.amount ?? existing.amount, 1, MAX_EQUIPMENT_STACK),
         isEquipped: changes.isEquipped ?? existing.isEquipped,
         notes: changes.notes !== undefined ? changes.notes : existing.notes,
         customName: changes.customName !== undefined ? changes.customName : existing.customName,

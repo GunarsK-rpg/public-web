@@ -64,6 +64,7 @@ import { ref, computed, watch } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
+import { clamp } from 'src/utils/numberUtils';
 import type { Equipment } from 'src/types';
 
 const props = defineProps<{
@@ -116,7 +117,9 @@ function onFilter(val: string, update: (fn: () => void) => void): void {
 
 async function onAdd(): Promise<void> {
   if (!selectedEquipment.value) return;
-  const safeAmount = Number.isFinite(amount.value) ? Math.max(1, Math.floor(amount.value)) : 1;
+  const safeAmount = Number.isFinite(amount.value)
+    ? clamp(Math.floor(amount.value), 1, MAX_EQUIPMENT_STACK)
+    : 1;
   const success = await heroStore.addEquipment(selectedEquipment.value.code, safeAmount);
   if (!success) return;
   selectedEquipment.value = null;
