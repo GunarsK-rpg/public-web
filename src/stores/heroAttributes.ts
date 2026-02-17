@@ -4,7 +4,12 @@ import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { findById, findByCode, findByProp, toClassifierRef } from 'src/utils/arrayUtils';
 import { calculateFormulaStat } from 'src/utils/derivedStats';
-import { MIN_ATTRIBUTE_VALUE, MAX_ATTRIBUTE_VALUE } from 'src/constants';
+import {
+  MIN_ATTRIBUTE_VALUE,
+  MAX_ATTRIBUTE_VALUE,
+  MIN_SKILL_MODIFIER,
+  MAX_SKILL_MODIFIER,
+} from 'src/constants';
 import { clamp } from 'src/utils/numberUtils';
 import type { ExpertiseSourceData } from 'src/types';
 
@@ -162,7 +167,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
 
   function setSkillModifier(skillId: number, modifier: number) {
     if (!heroStore.hero) return;
-    const clampedModifier = clamp(modifier, MIN_ATTRIBUTE_VALUE, MAX_ATTRIBUTE_VALUE);
+    const clampedModifier = clamp(modifier, MIN_SKILL_MODIFIER, MAX_SKILL_MODIFIER);
     const existing = heroStore.hero.skills.find((s) => s.skill.id === skillId);
     if (existing) {
       existing.modifier = clampedModifier;

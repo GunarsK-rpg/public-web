@@ -85,16 +85,13 @@ const amount = ref(1);
 const filterText = ref('');
 
 // Reset dialog state when opened (or when equipment type changes)
-watch(
-  () => props.modelValue,
-  (open) => {
-    if (open) {
-      selectedEquipment.value = null;
-      amount.value = 1;
-      filterText.value = '';
-    }
+watch([() => props.modelValue, () => props.equipmentTypeId], () => {
+  if (props.modelValue) {
+    selectedEquipment.value = null;
+    amount.value = 1;
+    filterText.value = '';
   }
-);
+});
 
 // Filter equipment by type (if provided) and search text
 const filteredOptions = computed(() => {

@@ -715,7 +715,7 @@ describe('useHeroAttributesStore', () => {
       store.setSkillModifier(1, -100);
 
       const skill = heroStore.hero?.skills.find((s) => s.skill.id === 1);
-      expect(skill?.modifier).toBe(0);
+      expect(skill?.modifier).toBe(-10);
     });
 
     it('clamps modifier to max', () => {

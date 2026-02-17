@@ -272,6 +272,7 @@ export const useHeroStore = defineStore('hero', () => {
         'equipment',
         payload
       );
+      if (!hero.value) return false;
       const idx = hero.value.equipment.findIndex((e) => e.id === response.data.id);
       if (idx !== -1) {
         hero.value.equipment[idx] = response.data;
@@ -292,6 +293,7 @@ export const useHeroStore = defineStore('hero', () => {
     savingCount.value++;
     try {
       await heroService.deleteSubResource(hero.value.id, 'equipment', heroEquipmentId);
+      if (!hero.value) return;
       hero.value.equipment = hero.value.equipment.filter((e) => e.id !== heroEquipmentId);
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to remove equipment' });
@@ -313,7 +315,7 @@ export const useHeroStore = defineStore('hero', () => {
         id: heroEquipmentId,
         heroId: hero.value.id,
         equipment: { code: existing.equipment.code },
-        amount: clamp(changes.amount ?? existing.amount, 1, MAX_EQUIPMENT_STACK),
+        amount: clamp(Math.floor(changes.amount ?? existing.amount), 1, MAX_EQUIPMENT_STACK),
         isEquipped: changes.isEquipped ?? existing.isEquipped,
         notes: changes.notes !== undefined ? changes.notes : existing.notes,
         customName: changes.customName !== undefined ? changes.customName : existing.customName,
@@ -323,6 +325,7 @@ export const useHeroStore = defineStore('hero', () => {
         'equipment',
         payload
       );
+      if (!hero.value) return;
       const idx = hero.value.equipment.findIndex((e) => e.id === heroEquipmentId);
       if (idx !== -1) hero.value.equipment[idx] = response.data;
     } catch (err) {

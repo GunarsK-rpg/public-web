@@ -43,7 +43,7 @@
         size="xs"
         icon="add"
         :disable="saving || (max != null && current >= max)"
-        @click="$emit('update', Math.min(current + 1, max ?? Infinity))"
+        @click="$emit('update', clamp(current + 1, 0, max ?? Infinity))"
       />
     </div>
     <q-linear-progress

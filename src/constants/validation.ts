@@ -12,5 +12,9 @@ export const MAX_TEXT_LENGTH = 10000;
 export const MIN_ATTRIBUTE_VALUE = 0;
 export const MAX_ATTRIBUTE_VALUE = 10;
 
+// Skill modifier bounds (match SkillsStep UI: -10 to 10)
+export const MIN_SKILL_MODIFIER = -10;
+export const MAX_SKILL_MODIFIER = 10;
+
 // Equipment bounds
 export const MAX_EQUIPMENT_STACK = 999;
