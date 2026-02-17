@@ -16,7 +16,8 @@ vi.mock('src/stores/classifiers', () => ({
         name: 'Longsword',
         equipType: { id: 1, code: 'weapon', name: 'Weapon' },
         damageType: { id: 1, code: 'slashing', name: 'Slashing' },
-        special: { damage: '2d6' },
+        special: [{ type: 'damage', display_value: '2d6' }],
+        maxCharges: null,
         weight: 3,
         cost: 15,
         isCustom: false,
@@ -29,7 +30,11 @@ vi.mock('src/stores/classifiers', () => ({
         name: 'Longbow',
         equipType: { id: 1, code: 'weapon', name: 'Weapon' },
         damageType: null,
-        special: { damage: '1d8', range: '120 ft' },
+        special: [
+          { type: 'damage', display_value: '1d8' },
+          { type: 'range', display_value: '120 ft' },
+        ],
+        maxCharges: null,
         weight: 2,
         cost: 25,
         isCustom: false,
@@ -42,7 +47,8 @@ vi.mock('src/stores/classifiers', () => ({
         name: 'Chain Mail',
         equipType: { id: 2, code: 'armor', name: 'Armor' },
         damageType: null,
-        special: { deflect: '+2' },
+        special: [{ type: 'deflect', value: 2 }],
+        maxCharges: null,
         weight: 40,
         cost: 75,
         isCustom: false,
@@ -55,7 +61,8 @@ vi.mock('src/stores/classifiers', () => ({
         name: 'Healing Potion',
         equipType: { id: 3, code: 'consumable', name: 'Consumable' },
         damageType: null,
-        special: { charges: 3, maxCharges: 3 },
+        special: [],
+        maxCharges: 3,
         weight: 0.5,
         cost: 50,
         isCustom: false,
@@ -68,7 +75,8 @@ vi.mock('src/stores/classifiers', () => ({
         name: 'Backpack',
         equipType: { id: 4, code: 'gear', name: 'Gear' },
         damageType: null,
-        special: null,
+        special: [],
+        maxCharges: null,
         weight: 5,
         cost: 2,
         isCustom: false,
@@ -91,15 +99,7 @@ vi.mock('src/stores/classifiers', () => ({
 
 const equipmentMap: Record<
   number,
-  Pick<Equipment, 'id' | 'code' | 'name' | 'equipType' | 'damageType'> & {
-    special: {
-      damage?: string;
-      range?: string;
-      deflect?: string;
-      charges?: number;
-      maxCharges?: number;
-    } | null;
-  }
+  Pick<Equipment, 'id' | 'code' | 'name' | 'equipType' | 'damageType' | 'special'>
 > = {
   1: {
     id: 1,
@@ -107,7 +107,7 @@ const equipmentMap: Record<
     name: 'Longsword',
     equipType: { id: 1, code: 'weapon', name: 'Weapon' },
     damageType: { id: 1, code: 'slashing', name: 'Slashing' },
-    special: { damage: '2d6' },
+    special: [{ type: 'damage', display_value: '2d6' }],
   },
   2: {
     id: 2,
@@ -115,7 +115,10 @@ const equipmentMap: Record<
     name: 'Longbow',
     equipType: { id: 1, code: 'weapon', name: 'Weapon' },
     damageType: null,
-    special: { damage: '1d8', range: '120 ft' },
+    special: [
+      { type: 'damage', display_value: '1d8' },
+      { type: 'range', display_value: '120 ft' },
+    ],
   },
   3: {
     id: 3,
@@ -123,7 +126,7 @@ const equipmentMap: Record<
     name: 'Chain Mail',
     equipType: { id: 2, code: 'armor', name: 'Armor' },
     damageType: null,
-    special: { deflect: '+2' },
+    special: [{ type: 'deflect', value: 2 }],
   },
   4: {
     id: 4,
@@ -131,7 +134,7 @@ const equipmentMap: Record<
     name: 'Healing Potion',
     equipType: { id: 3, code: 'consumable', name: 'Consumable' },
     damageType: null,
-    special: { charges: 3, maxCharges: 3 },
+    special: [],
   },
   5: {
     id: 5,
@@ -139,7 +142,7 @@ const equipmentMap: Record<
     name: 'Backpack',
     equipType: { id: 4, code: 'gear', name: 'Gear' },
     damageType: null,
-    special: null,
+    special: [],
   },
 };
 
@@ -209,6 +212,9 @@ describe('EquipmentItem', () => {
         heroEquipment: {
           id: 1,
           equipment: eqRef(1),
+          special: [],
+          charges: null,
+          maxCharges: null,
           amount: 1,
           isEquipped: false,
           customName: undefined,
@@ -351,11 +357,15 @@ describe('EquipmentItem', () => {
     it('shows deflect for armor', () => {
       const wrapper = createWrapper({ equipment: eqRef(3) });
 
-      expect(wrapper.text()).toContain('Deflect +2');
+      expect(wrapper.text()).toContain('Deflect 2');
     });
 
     it('shows charges for consumables', () => {
-      const wrapper = createWrapper({ equipment: eqRef(4) });
+      const wrapper = createWrapper({
+        equipment: eqRef(4),
+        charges: 3,
+        maxCharges: 3,
+      });
 
       expect(wrapper.text()).toContain('3/3 charges');
     });

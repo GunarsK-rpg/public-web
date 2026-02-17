@@ -61,25 +61,21 @@
 import { computed } from 'vue';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { buildDerivedStatsList, type AttributeValues } from 'src/utils/derivedStats';
+import { buildDerivedStatsList } from 'src/utils/derivedStats';
 
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 
 const derivedStatsList = computed(() => {
-  // Build attrs dynamically from classifier codes
-  const attrs: AttributeValues = Object.fromEntries(
-    classifiers.attributes.map((attr) => [attr.code, attrStore.getAttributeValue(attr.code)])
-  );
-
   return buildDerivedStatsList(
     classifiers.derivedStats,
     classifiers.derivedStatValues,
     classifiers.attributes,
-    attrs,
+    attrStore.attributeValues,
     attrStore.levelData,
     attrStore.tierData,
-    (statId) => attrStore.getDerivedStatModifier(statId)
+    (statId) => attrStore.getDerivedStatModifier(statId),
+    (statCode) => attrStore.getStatBonus(statCode)
   );
 });
 </script>

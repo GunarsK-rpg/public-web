@@ -24,6 +24,7 @@ describe('TalentListItem', () => {
     ancestry: null,
     radiantOrder: null,
     surge: null,
+    special: [],
     ...overrides,
   });
 

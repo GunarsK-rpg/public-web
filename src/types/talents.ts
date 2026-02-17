@@ -1,5 +1,5 @@
 import type { Classifier } from './classifier';
-import type { ClassifierRef, ClassifierInput } from './shared';
+import type { ClassifierRef, ClassifierInput, SpecialEntry } from './shared';
 
 /** Talent prerequisite (JSONB -- enriched by get_talents) */
 export interface TalentPrerequisite {
@@ -19,6 +19,7 @@ export interface Talent extends Classifier {
   descriptionShort?: string | null;
   isKey: boolean;
   prerequisites?: TalentPrerequisite[] | null;
+  special: SpecialEntry[];
 }
 
 /** Hero talent - upsert payload */
@@ -33,4 +34,5 @@ export interface HeroTalentBase {
 export interface HeroTalent extends HeroTalentBase {
   id: number;
   talent: ClassifierRef;
+  special: SpecialEntry[];
 }

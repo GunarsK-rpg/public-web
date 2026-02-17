@@ -1,3 +1,10 @@
+/** Unified special entry for equipment, talents, and singer forms */
+export interface SpecialEntry {
+  type: string;
+  value?: number;
+  display_value?: string;
+}
+
 /** Minimal classifier reference for upsert payloads */
 export interface ClassifierInput {
   code: string;

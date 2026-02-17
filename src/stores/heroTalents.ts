@@ -68,6 +68,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
           id: heroStore.nextTempId(),
           heroId: heroStore.hero.id,
           talent: toClassifierRef(singerKeyTalent),
+          special: singerKeyTalent.special ?? [],
         });
       }
     }
@@ -132,6 +133,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
         talent: toClassifierRef(tal),
+        special: tal.special ?? [],
       });
     }
   }
@@ -195,6 +197,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
           id: heroStore.nextTempId(),
           heroId: heroStore.hero.id,
           talent: toClassifierRef(keyTalent),
+          special: keyTalent.special ?? [],
         });
       }
     }

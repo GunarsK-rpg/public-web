@@ -239,6 +239,7 @@ describe('buildTalentPayload', () => {
       heroId: 1,
       talent: { id: 9, code: 'shield-mastery', name: 'Shield Mastery' },
       notes: 'Favorite ability',
+      special: [],
     };
     const payload = buildTalentPayload(1, talent);
 
@@ -280,9 +281,11 @@ describe('buildEquipmentPayload', () => {
       equipment: { id: 13, code: 'longsword', name: 'Longsword' },
       amount: 1,
       isEquipped: true,
-
       notes: null,
       customName: 'Blade of Honor',
+      special: [],
+      charges: null,
+      maxCharges: null,
     };
     const payload = buildEquipmentPayload(1, equip);
 
@@ -298,6 +301,9 @@ describe('buildEquipmentPayload', () => {
       equipment: { id: 13, code: 'longsword', name: 'Longsword' },
       amount: 1,
       isEquipped: false,
+      special: [],
+      charges: null,
+      maxCharges: null,
     };
     const payload = buildEquipmentPayload(1, equip);
 

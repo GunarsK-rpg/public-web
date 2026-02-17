@@ -192,6 +192,7 @@ function createHeroTalent(overrides: Partial<HeroTalent> = {}): HeroTalent {
     id: nextHeroTalentId++,
     heroId: 1,
     talent: { id: 1, code: 'talent1', name: 'Talent 1' },
+    special: [],
     ...overrides,
   };
 }

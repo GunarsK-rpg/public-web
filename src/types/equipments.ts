@@ -1,5 +1,5 @@
 import type { Classifier } from './classifier';
-import type { ClassifierRef, ClassifierInput } from './shared';
+import type { ClassifierRef, ClassifierInput, SpecialEntry } from './shared';
 
 /** Equipment type classifier (cl_equipment_types) */
 export interface EquipmentType extends Classifier {
@@ -9,13 +9,10 @@ export interface EquipmentType extends Classifier {
 /** Damage type classifier (cl_damage_types) */
 export type DamageType = Classifier;
 
-/** Equipment special properties (JSONB) */
-export interface EquipmentSpecial {
-  damage?: string;
-  range?: string;
-  deflect?: number;
-  charges?: number;
-  maxCharges?: number;
+/** Equipment attribute reference with trait parameters (from map table) */
+export interface EquipmentAttributeRef extends ClassifierRef {
+  value: number | null;
+  isExpert: boolean;
 }
 
 /** Equipment classifier (cl_equipments) */
@@ -23,11 +20,12 @@ export interface Equipment extends Classifier {
   equipType: ClassifierRef;
   damageType: ClassifierRef | null;
   unit: ClassifierRef | null;
-  special?: EquipmentSpecial | null;
+  special: SpecialEntry[];
+  maxCharges: number | null;
   weight: number;
-  cost: number;
+  cost: number | null;
   isCustom: boolean;
-  attributes: ClassifierRef[];
+  attributes: EquipmentAttributeRef[];
 }
 
 /** Hero equipment - upsert payload */
@@ -45,4 +43,7 @@ export interface HeroEquipmentBase {
 export interface HeroEquipment extends HeroEquipmentBase {
   id: number;
   equipment: ClassifierRef;
+  special: SpecialEntry[];
+  charges: number | null;
+  maxCharges: number | null;
 }

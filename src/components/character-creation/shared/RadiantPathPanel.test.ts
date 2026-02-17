@@ -71,6 +71,7 @@ describe('RadiantPathPanel', () => {
     ancestry: null,
     radiantOrder: { id: 1, code: 'order-light', name: 'Order of Light' },
     surge: null,
+    special: [],
   });
 
   const createWrapper = (props: { orderId: number | null; idealLevel: number }) =>

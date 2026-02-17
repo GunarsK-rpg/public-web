@@ -92,6 +92,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useChainedEntityIcon } from 'src/composables/useEntityIcon';
 import type { HeroEquipment, Equipment } from 'src/types';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
+import { getSpecialByType, SPECIAL } from 'src/utils/specialUtils';
 
 const props = defineProps<{
   heroEquipment: HeroEquipment;
@@ -118,25 +119,30 @@ const {
 // Build details line from special properties
 const detailsLine = computed(() => {
   const eq = equipment.value;
-  if (!eq?.special) return '';
+  const special = eq?.special ?? [];
+  if (!special.length && props.heroEquipment.charges === null) return '';
 
   const parts: string[] = [];
 
-  if (eq.special.damage) {
-    const damageTypeName = eq.damageType?.name;
-    parts.push(`${eq.special.damage}${damageTypeName ? ` ${damageTypeName}` : ''}`);
+  const damage = getSpecialByType(special, SPECIAL.DAMAGE);
+  if (damage?.display_value) {
+    const damageTypeName = eq?.damageType?.name;
+    parts.push(`${damage.display_value}${damageTypeName ? ` ${damageTypeName}` : ''}`);
   }
 
-  if (eq.special.range) {
-    parts.push(eq.special.range);
+  const range = getSpecialByType(special, SPECIAL.RANGE);
+  if (range?.display_value) {
+    parts.push(range.display_value);
   }
 
-  if (eq.special.deflect) {
-    parts.push(`Deflect ${eq.special.deflect}`);
+  const deflect = getSpecialByType(special, SPECIAL.DEFLECT);
+  if (deflect?.value) {
+    parts.push(`Deflect ${deflect.value}`);
   }
 
-  if (eq.special.charges !== undefined && eq.special.maxCharges !== undefined) {
-    parts.push(`${eq.special.charges}/${eq.special.maxCharges} charges`);
+  const heq = props.heroEquipment;
+  if (heq.charges !== null && heq.maxCharges !== null) {
+    parts.push(`${heq.charges}/${heq.maxCharges} charges`);
   }
 
   return parts.join(' · ');

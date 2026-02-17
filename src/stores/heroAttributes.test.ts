@@ -303,22 +303,6 @@ describe('useHeroAttributesStore', () => {
   // ========================================
   // Derived Stats
   // ========================================
-  describe('getDerivedStatValue', () => {
-    it('returns stored stat value', () => {
-      setupHeroWithAttributes();
-      const store = useHeroAttributesStore();
-
-      expect(store.getDerivedStatValue('health')).toBe(17);
-    });
-
-    it('returns 0 for unknown stat', () => {
-      setupHeroWithAttributes();
-      const store = useHeroAttributesStore();
-
-      expect(store.getDerivedStatValue('unknown')).toBe(0);
-    });
-  });
-
   describe('getDerivedStatModifier', () => {
     it('returns stat modifier', () => {
       setupHeroWithAttributes();
@@ -381,80 +365,6 @@ describe('useHeroAttributesStore', () => {
 
       const total = store.getDerivedStatTotal('unknown');
       expect(total).toBe(0);
-    });
-  });
-
-  describe('getDerivedStatDisplay', () => {
-    it('returns formatted string with modifier', () => {
-      setupHeroWithAttributes();
-      const heroStore = useHeroStore();
-      const store = useHeroAttributesStore();
-
-      // Set up stat with modifier
-      if (heroStore.hero) {
-        heroStore.hero.derivedStats = [
-          {
-            derivedStat: { id: 1, code: 'health', name: 'Health' },
-            baseValue: 15,
-            modifier: 2,
-            totalValue: 17,
-            valueDisplay: null,
-          },
-        ];
-      }
-
-      const display = store.getDerivedStatDisplay('health');
-      expect(display).toContain('(');
-      expect(display).toContain('+');
-    });
-
-    it('returns formatted string without modifier', () => {
-      setupHeroWithAttributes();
-      const heroStore = useHeroStore();
-      const store = useHeroAttributesStore();
-
-      if (heroStore.hero) {
-        heroStore.hero.derivedStats = [
-          {
-            derivedStat: { id: 1, code: 'health', name: 'Health' },
-            baseValue: 15,
-            modifier: 0,
-            totalValue: 15,
-            valueDisplay: null,
-          },
-        ];
-      }
-
-      const display = store.getDerivedStatDisplay('health');
-      expect(display).not.toContain('(');
-    });
-
-    it('returns empty string for unknown stat', () => {
-      setupHeroWithAttributes();
-      const store = useHeroAttributesStore();
-
-      expect(store.getDerivedStatDisplay('unknown')).toBe('');
-    });
-
-    it('handles stat without unit', () => {
-      setupHeroWithAttributes();
-      const heroStore = useHeroStore();
-      const store = useHeroAttributesStore();
-
-      if (heroStore.hero) {
-        heroStore.hero.derivedStats = [
-          {
-            derivedStat: { id: 1, code: 'health', name: 'Health' },
-            baseValue: 15,
-            modifier: 0,
-            totalValue: 15,
-            valueDisplay: null,
-          },
-        ];
-      }
-
-      const display = store.getDerivedStatDisplay('health');
-      expect(typeof display).toBe('string');
     });
   });
 

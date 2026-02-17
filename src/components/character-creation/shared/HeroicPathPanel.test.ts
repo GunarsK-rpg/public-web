@@ -70,6 +70,7 @@ describe('HeroicPathPanel', () => {
     ancestry: null,
     radiantOrder: null,
     surge: null,
+    special: [],
   });
 
   const createWrapper = (props: {

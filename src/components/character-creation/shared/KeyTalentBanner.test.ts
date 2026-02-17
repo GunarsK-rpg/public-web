@@ -16,6 +16,7 @@ describe('KeyTalentBanner', () => {
     ancestry: null,
     radiantOrder: null,
     surge: null,
+    special: [],
     ...overrides,
   });
 
