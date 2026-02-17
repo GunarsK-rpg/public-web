@@ -46,7 +46,8 @@ function createEmptyHero(): HeroSheet {
 export const useHeroStore = defineStore('hero', () => {
   const hero = ref<HeroSheet | null>(null);
   const loading = ref(false);
-  const saving = ref(false);
+  const savingCount = ref(0);
+  const saving = computed(() => savingCount.value > 0);
   const error = ref<string | null>(null);
 
   // Track pending load requests to handle race conditions
@@ -208,14 +209,14 @@ export const useHeroStore = defineStore('hero', () => {
     errorMessage: string
   ): Promise<void> {
     if (!hero.value) return;
-    saving.value = true;
+    savingCount.value++;
     try {
       const response = await serviceFn(hero.value.id, Math.max(0, Math.floor(value)));
       hero.value[field] = response.data[field];
     } catch (err) {
       handleError(err, { errorRef: error, message: errorMessage });
     } finally {
-      saving.value = false;
+      savingCount.value--;
     }
   }
 
@@ -256,48 +257,48 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   async function addEquipment(equipmentCode: string, amount: number = 1): Promise<void> {
     if (!hero.value) return;
-    saving.value = true;
+    savingCount.value++;
     try {
       const payload = {
         heroId: hero.value.id,
         equipment: { code: equipmentCode },
         amount,
         isEquipped: false,
-        isPrimary: false,
       };
-      const response = await heroService.upsertSubResource(hero.value.id, 'equipment', payload);
-      const created = response.data as unknown as HeroEquipment;
-      hero.value.equipment.push(created);
+      const response = await heroService.upsertSubResource<HeroEquipment>(
+        hero.value.id,
+        'equipment',
+        payload
+      );
+      hero.value.equipment.push(response.data);
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to add equipment' });
     } finally {
-      saving.value = false;
+      savingCount.value--;
     }
   }
 
   async function removeEquipment(heroEquipmentId: number): Promise<void> {
     if (!hero.value) return;
-    saving.value = true;
+    savingCount.value++;
     try {
       await heroService.deleteSubResource(hero.value.id, 'equipment', heroEquipmentId);
       hero.value.equipment = hero.value.equipment.filter((e) => e.id !== heroEquipmentId);
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to remove equipment' });
     } finally {
-      saving.value = false;
+      savingCount.value--;
     }
   }
 
   async function updateEquipment(
     heroEquipmentId: number,
-    changes: Partial<
-      Pick<HeroEquipment, 'amount' | 'isEquipped' | 'isPrimary' | 'notes' | 'customName'>
-    >
+    changes: Partial<Pick<HeroEquipment, 'amount' | 'isEquipped' | 'notes' | 'customName'>>
   ): Promise<void> {
     if (!hero.value) return;
     const existing = hero.value.equipment.find((e) => e.id === heroEquipmentId);
     if (!existing) return;
-    saving.value = true;
+    savingCount.value++;
     try {
       const payload = {
         id: heroEquipmentId,
@@ -305,18 +306,20 @@ export const useHeroStore = defineStore('hero', () => {
         equipment: { code: existing.equipment.code },
         amount: changes.amount ?? existing.amount,
         isEquipped: changes.isEquipped ?? existing.isEquipped,
-        isPrimary: changes.isPrimary ?? existing.isPrimary,
         notes: changes.notes !== undefined ? changes.notes : existing.notes,
         customName: changes.customName !== undefined ? changes.customName : existing.customName,
       };
-      const response = await heroService.upsertSubResource(hero.value.id, 'equipment', payload);
-      const updated = response.data as unknown as HeroEquipment;
+      const response = await heroService.upsertSubResource<HeroEquipment>(
+        hero.value.id,
+        'equipment',
+        payload
+      );
       const idx = hero.value.equipment.findIndex((e) => e.id === heroEquipmentId);
-      if (idx !== -1) hero.value.equipment[idx] = updated;
+      if (idx !== -1) hero.value.equipment[idx] = response.data;
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to update equipment' });
     } finally {
-      saving.value = false;
+      savingCount.value--;
     }
   }
 

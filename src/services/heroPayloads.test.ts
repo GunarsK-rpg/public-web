@@ -280,7 +280,7 @@ describe('buildEquipmentPayload', () => {
       equipment: { id: 13, code: 'longsword', name: 'Longsword' },
       amount: 1,
       isEquipped: true,
-      isPrimary: true,
+
       notes: null,
       customName: 'Blade of Honor',
     };
@@ -298,7 +298,6 @@ describe('buildEquipmentPayload', () => {
       equipment: { id: 13, code: 'longsword', name: 'Longsword' },
       amount: 1,
       isEquipped: false,
-      isPrimary: false,
     };
     const payload = buildEquipmentPayload(1, equip);
 

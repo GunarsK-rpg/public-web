@@ -64,9 +64,11 @@ vi.mock('src/constants/theme', () => ({
   },
 }));
 
+const mockRouterPush = vi.fn();
+
 vi.mock('vue-router', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: mockRouterPush,
   }),
 }));
 
@@ -95,6 +97,7 @@ describe('CharacterHeader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRouterPush.mockReset();
     mockHero.value = {
       name: 'Kaladin',
       level: 5,
@@ -188,6 +191,19 @@ describe('CharacterHeader', () => {
       const wrapper = createWrapper();
       expect(wrapper.text()).not.toContain('Warform');
       expect(wrapper.text()).not.toContain('Mateform');
+    });
+  });
+
+  describe('edit button', () => {
+    it('navigates to edit route when edit button is clicked', async () => {
+      const wrapper = createWrapper();
+      const editBtn = wrapper.find('button[aria-label="Edit character"]');
+      await editBtn.trigger('click');
+
+      expect(mockRouterPush).toHaveBeenCalledWith({
+        name: 'character-edit',
+        params: { campaignId: '1', characterId: '42' },
+      });
     });
   });
 

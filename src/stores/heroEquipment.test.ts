@@ -230,15 +230,6 @@ describe('useHeroEquipmentStore', () => {
       expect(heroStore.hero!.equipment[0]!.isEquipped).toBe(false);
     });
 
-    it('sets isPrimary to false by default', () => {
-      const store = useHeroEquipmentStore();
-      const heroStore = useHeroStore();
-
-      store.addEquipment(1);
-
-      expect(heroStore.hero!.equipment[0]!.isPrimary).toBe(false);
-    });
-
     it('generates temp id for new equipment', () => {
       const store = useHeroEquipmentStore();
       const heroStore = useHeroStore();
@@ -366,7 +357,7 @@ describe('useHeroEquipmentStore', () => {
   });
 
   // ========================================
-  // Equipment - Equipped/Primary
+  // Equipment - Equipped
   // ========================================
   describe('setEquipmentEquipped', () => {
     it('sets equipment as equipped', () => {
@@ -406,49 +397,6 @@ describe('useHeroEquipmentStore', () => {
       heroStore.clearHero();
 
       store.setEquipmentEquipped(1, true);
-
-      expect(heroStore.hero).toBeNull();
-    });
-  });
-
-  describe('setEquipmentPrimary', () => {
-    it('sets equipment as primary', () => {
-      const store = useHeroEquipmentStore();
-      const heroStore = useHeroStore();
-
-      store.addEquipment(1);
-      store.setEquipmentPrimary(1, true);
-
-      expect(heroStore.hero!.equipment[0]!.isPrimary).toBe(true);
-    });
-
-    it('sets equipment as not primary', () => {
-      const store = useHeroEquipmentStore();
-      const heroStore = useHeroStore();
-
-      store.addEquipment(1);
-      store.setEquipmentPrimary(1, true);
-      store.setEquipmentPrimary(1, false);
-
-      expect(heroStore.hero!.equipment[0]!.isPrimary).toBe(false);
-    });
-
-    it('does nothing for non-existent equipment', () => {
-      const store = useHeroEquipmentStore();
-      const heroStore = useHeroStore();
-
-      store.addEquipment(1);
-      store.setEquipmentPrimary(999, true);
-
-      expect(heroStore.hero!.equipment[0]!.isPrimary).toBe(false);
-    });
-
-    it('does nothing when no hero loaded', () => {
-      const store = useHeroEquipmentStore();
-      const heroStore = useHeroStore();
-      heroStore.clearHero();
-
-      store.setEquipmentPrimary(1, true);
 
       expect(heroStore.hero).toBeNull();
     });

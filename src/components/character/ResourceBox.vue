@@ -104,7 +104,9 @@ function commitEdit() {
   const parsed = Number.isFinite(raw) ? raw : props.current;
   const clamped = Math.min(Math.max(0, parsed), props.max ?? Infinity);
   editing.value = false;
-  emit('update', clamped);
+  if (clamped !== props.current) {
+    emit('update', clamped);
+  }
 }
 </script>
 

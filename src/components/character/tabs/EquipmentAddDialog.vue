@@ -48,7 +48,7 @@
           flat
           label="Add"
           color="primary"
-          :disable="!selectedEquipment || amount < 1 || saving"
+          :disable="!selectedEquipment || !Number.isFinite(amount) || amount < 1 || saving"
           :loading="saving"
           @click="onAdd"
         />
@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
 import type { Equipment } from 'src/types';
@@ -79,6 +79,18 @@ const saving = computed(() => heroStore.saving);
 const selectedEquipment = ref<Equipment | null>(null);
 const amount = ref(1);
 const filterText = ref('');
+
+// Reset dialog state when opened (or when equipment type changes)
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (open) {
+      selectedEquipment.value = null;
+      amount.value = 1;
+      filterText.value = '';
+    }
+  }
+);
 
 // Filter equipment by type (if provided) and search text
 const filteredOptions = computed(() => {
@@ -101,7 +113,8 @@ function onFilter(val: string, update: (fn: () => void) => void): void {
 
 async function onAdd(): Promise<void> {
   if (!selectedEquipment.value) return;
-  await heroStore.addEquipment(selectedEquipment.value.code, Math.max(1, Math.floor(amount.value)));
+  const safeAmount = Number.isFinite(amount.value) ? Math.max(1, Math.floor(amount.value)) : 1;
+  await heroStore.addEquipment(selectedEquipment.value.code, safeAmount);
   selectedEquipment.value = null;
   amount.value = 1;
   emit('update:modelValue', false);

@@ -38,7 +38,6 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
         equipment: { id: equip.id, code: equip.code, name: equip.name },
         amount: Math.min(validAmount, MAX_EQUIPMENT_STACK),
         isEquipped: false,
-        isPrimary: false,
       });
     }
   }
@@ -68,14 +67,6 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     const item = heroStore.hero.equipment.find((e) => e.equipment.id === equipmentId);
     if (item) {
       item.isEquipped = isEquipped;
-    }
-  }
-
-  function setEquipmentPrimary(equipmentId: number, isPrimary: boolean) {
-    if (!heroStore.hero) return;
-    const item = heroStore.hero.equipment.find((e) => e.equipment.id === equipmentId);
-    if (item) {
-      item.isPrimary = isPrimary;
     }
   }
 
@@ -128,7 +119,6 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     addEquipment,
     removeEquipment,
     setEquipmentEquipped,
-    setEquipmentPrimary,
 
     // Starting Kit
     setStartingKit,

@@ -167,13 +167,6 @@ vi.mock('src/composables/useEntityIcon', () => ({
   },
 }));
 
-vi.mock('src/constants/theme', () => ({
-  RPG_COLORS: {
-    equipmentPrimary: 'amber',
-    badgeMuted: 'grey',
-  },
-}));
-
 const mockUpdateEquipment = vi.fn();
 const mockRemoveEquipment = vi.fn();
 const mockSaving = ref(false);
@@ -188,11 +181,17 @@ vi.mock('src/stores/hero', () => ({
   }),
 }));
 
+let dialogOkCallback: (() => void) | null = null;
+const mockDialog = vi.fn(() => ({
+  onOk: vi.fn((cb: () => void) => {
+    dialogOkCallback = cb;
+    return { onCancel: vi.fn() };
+  }),
+}));
+
 vi.mock('quasar', () => ({
   useQuasar: () => ({
-    dialog: vi.fn(() => ({
-      onOk: vi.fn(),
-    })),
+    dialog: mockDialog,
   }),
 }));
 
@@ -212,7 +211,6 @@ describe('EquipmentItem', () => {
           equipment: eqRef(1),
           amount: 1,
           isEquipped: false,
-          isPrimary: false,
           customName: undefined,
           notes: undefined,
           ...heroEquipment,
@@ -247,6 +245,7 @@ describe('EquipmentItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSaving.value = false;
+    dialogOkCallback = null;
   });
 
   // ========================================
@@ -297,35 +296,6 @@ describe('EquipmentItem', () => {
       });
 
       expect(wrapper.text()).not.toContain('Equipped');
-    });
-
-    it('shows Primary badge when primary', () => {
-      const wrapper = createWrapper({
-        equipment: eqRef(1),
-        isPrimary: true,
-      });
-
-      expect(wrapper.text()).toContain('Primary');
-    });
-
-    it('does not show Primary badge when not primary', () => {
-      const wrapper = createWrapper({
-        equipment: eqRef(1),
-        isPrimary: false,
-      });
-
-      expect(wrapper.text()).not.toContain('Primary');
-    });
-
-    it('shows both badges when equipped and primary', () => {
-      const wrapper = createWrapper({
-        equipment: eqRef(1),
-        isEquipped: true,
-        isPrimary: true,
-      });
-
-      expect(wrapper.text()).toContain('Equipped');
-      expect(wrapper.text()).toContain('Primary');
     });
   });
 
@@ -423,6 +393,94 @@ describe('EquipmentItem', () => {
   });
 
   // ========================================
+  // Interactions
+  // ========================================
+  describe('interactions', () => {
+    it('calls updateEquipment with increased amount on + click', async () => {
+      const wrapper = createWrapper({ equipment: eqRef(1), amount: 3 });
+      const increaseBtn = wrapper.find('button[aria-label="Increase amount"]');
+      await increaseBtn.trigger('click');
+
+      expect(mockUpdateEquipment).toHaveBeenCalledWith(1, { amount: 4 });
+    });
+
+    it('calls updateEquipment with decreased amount on - click', async () => {
+      const wrapper = createWrapper({ equipment: eqRef(1), amount: 3 });
+      const decreaseBtn = wrapper.find('button[aria-label="Decrease amount"]');
+      await decreaseBtn.trigger('click');
+
+      expect(mockUpdateEquipment).toHaveBeenCalledWith(1, { amount: 2 });
+    });
+
+    it('does not decrease amount below 1', async () => {
+      const wrapper = createWrapper({ equipment: eqRef(1), amount: 1 });
+      const decreaseBtn = wrapper.find('button[aria-label="Decrease amount"]');
+      await decreaseBtn.trigger('click');
+
+      expect(mockUpdateEquipment).not.toHaveBeenCalled();
+    });
+
+    it('calls updateEquipment to equip item', async () => {
+      const wrapper = createWrapper({ equipment: eqRef(1), isEquipped: false });
+      const equipBtn = wrapper.find('button[aria-label="Equip"]');
+      await equipBtn.trigger('click');
+
+      expect(mockUpdateEquipment).toHaveBeenCalledWith(1, { isEquipped: true });
+    });
+
+    it('calls updateEquipment to unequip item', async () => {
+      const wrapper = createWrapper({ equipment: eqRef(1), isEquipped: true });
+      const unequipBtn = wrapper.find('button[aria-label="Unequip"]');
+      await unequipBtn.trigger('click');
+
+      expect(mockUpdateEquipment).toHaveBeenCalledWith(1, { isEquipped: false });
+    });
+
+    it('opens confirmation dialog on remove click', async () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+      const removeBtn = wrapper.find('button[aria-label="Remove equipment"]');
+      await removeBtn.trigger('click');
+
+      expect(mockDialog).toHaveBeenCalled();
+    });
+
+    it('calls removeEquipment when dialog confirmed', async () => {
+      const wrapper = createWrapper({ equipment: eqRef(1), id: 42 } as Partial<HeroEquipment>);
+      const removeBtn = wrapper.find('button[aria-label="Remove equipment"]');
+      await removeBtn.trigger('click');
+
+      expect(dialogOkCallback).not.toBeNull();
+      dialogOkCallback!();
+
+      expect(mockRemoveEquipment).toHaveBeenCalledWith(42);
+    });
+
+    it('does not call removeEquipment when dialog not confirmed', async () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+      const removeBtn = wrapper.find('button[aria-label="Remove equipment"]');
+      await removeBtn.trigger('click');
+
+      // Don't call dialogOkCallback
+      expect(mockRemoveEquipment).not.toHaveBeenCalled();
+    });
+
+    it('disables all action buttons when saving', () => {
+      mockSaving.value = true;
+      const wrapper = createWrapper({ equipment: eqRef(1), amount: 3 });
+
+      const decreaseBtn = wrapper.find('button[aria-label="Decrease amount"]');
+      const increaseBtn = wrapper.find('button[aria-label="Increase amount"]');
+      const equipBtn = wrapper.find('button[aria-label="Equip"]');
+      const removeBtn = wrapper.find('button[aria-label="Remove equipment"]');
+
+      expect(decreaseBtn.attributes('disabled')).toBeDefined();
+      expect(increaseBtn.attributes('disabled')).toBeDefined();
+      expect(equipBtn.attributes('disabled')).toBeDefined();
+      expect(removeBtn.attributes('disabled')).toBeDefined();
+    });
+  });
+
+  // ========================================
   // Edge Cases
   // ========================================
   describe('edge cases', () => {
@@ -446,13 +504,11 @@ describe('EquipmentItem', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
         isEquipped: true,
-        isPrimary: true,
         amount: 2,
         notes: 'Special item',
       });
 
       expect(wrapper.text()).toContain('Equipped');
-      expect(wrapper.text()).toContain('Primary');
       expect(wrapper.text()).toContain('2');
       expect(wrapper.text()).toContain('Special item');
       expect(wrapper.text()).toContain('2d6');

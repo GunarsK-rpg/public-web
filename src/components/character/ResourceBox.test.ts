@@ -102,13 +102,13 @@ describe('ResourceBox', () => {
       expect(wrapper.emitted('update')).toEqual([[20]]);
     });
 
-    it('falls back to current value when input is cleared', async () => {
+    it('does not emit when input is cleared (falls back to current)', async () => {
       const wrapper = createWrapper({ label: 'HP', current: 25, max: 30 });
       await wrapper.find('.resource-value').trigger('click');
       const input = wrapper.find('.resource-input');
       await input.setValue('');
       await input.trigger('keyup.enter');
-      expect(wrapper.emitted('update')).toEqual([[25]]);
+      expect(wrapper.emitted('update')).toBeUndefined();
     });
 
     it('cancels edit on escape', async () => {

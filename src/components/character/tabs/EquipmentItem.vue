@@ -19,14 +19,6 @@
         >
           Equipped
         </q-badge>
-        <q-badge
-          v-if="heroEquipment.isPrimary"
-          :color="RPG_COLORS.equipmentPrimary"
-          class="q-ml-xs"
-          aria-label="Primary weapon"
-        >
-          Primary
-        </q-badge>
       </q-item-label>
       <q-item-label v-if="detailsLine" caption>
         {{ detailsLine }}
@@ -76,22 +68,6 @@
         <q-tooltip>{{ heroEquipment.isEquipped ? 'Unequip' : 'Equip' }}</q-tooltip>
       </q-btn>
 
-      <!-- Primary toggle (only for equipped items) -->
-      <q-btn
-        v-if="heroEquipment.isEquipped"
-        flat
-        dense
-        round
-        size="sm"
-        icon="star"
-        :color="heroEquipment.isPrimary ? RPG_COLORS.equipmentPrimary : 'grey'"
-        :disable="saving"
-        :aria-label="heroEquipment.isPrimary ? 'Remove primary' : 'Set as primary'"
-        @click="togglePrimary"
-      >
-        <q-tooltip>{{ heroEquipment.isPrimary ? 'Remove primary' : 'Set as primary' }}</q-tooltip>
-      </q-btn>
-
       <!-- Remove -->
       <q-btn
         flat
@@ -114,7 +90,6 @@ import { useQuasar } from 'quasar';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
 import { useChainedEntityIcon } from 'src/composables/useEntityIcon';
-import { RPG_COLORS } from 'src/constants/theme';
 import type { HeroEquipment, Equipment } from 'src/types';
 
 const props = defineProps<{
@@ -173,16 +148,8 @@ function changeAmount(delta: number): void {
 }
 
 function toggleEquipped(): void {
-  const isEquipped = !props.heroEquipment.isEquipped;
-  const changes: { isEquipped: boolean; isPrimary?: boolean } = { isEquipped };
-  // Unequipping also removes primary
-  if (!isEquipped) changes.isPrimary = false;
-  void heroStore.updateEquipment(props.heroEquipment.id, changes);
-}
-
-function togglePrimary(): void {
   void heroStore.updateEquipment(props.heroEquipment.id, {
-    isPrimary: !props.heroEquipment.isPrimary,
+    isEquipped: !props.heroEquipment.isEquipped,
   });
 }
 
