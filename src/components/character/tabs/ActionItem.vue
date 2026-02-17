@@ -33,10 +33,11 @@
 
     <q-card>
       <q-card-section class="q-pt-sm q-pb-sm">
-        <div class="text-body2">{{ action.description }}</div>
+        <div class="text-body2">{{ action.description || 'No description available' }}</div>
         <div
           v-if="action.special"
-          :class="`text-caption text-italic text-${RPG_COLORS.specialAbility} q-mt-xs`"
+          class="text-caption text-italic q-mt-xs"
+          :class="`text-${RPG_COLORS.specialAbility}`"
         >
           {{ action.special }}
         </div>
