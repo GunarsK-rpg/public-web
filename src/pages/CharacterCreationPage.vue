@@ -2,36 +2,21 @@
   <q-page class="character-creation-page">
     <!-- Sticky Header with Step Navigation -->
     <div class="creation-header bg-dark text-white">
-      <!-- Top row: back button and title -->
-      <div class="row items-center q-px-sm q-py-xs">
-        <q-btn
-          flat
-          round
-          dense
-          icon="arrow_back"
-          color="white"
-          aria-label="Go back"
-          @click="goBack"
-        />
-        <div class="text-subtitle1 q-ml-sm">
-          {{ wizardStore.mode === 'edit' ? 'Edit Character' : 'Create Character' }}
-        </div>
-        <q-space />
+      <div class="row items-center no-wrap">
+        <StepTabs class="col" />
         <q-btn
           flat
           round
           dense
           icon="refresh"
           color="negative"
+          class="q-mr-xs"
           aria-label="Reset character creation"
           @click="confirmReset"
         >
           <q-tooltip>Reset</q-tooltip>
         </q-btn>
       </div>
-
-      <!-- Horizontal scrollable step tabs -->
-      <StepTabs />
     </div>
 
     <!-- Loading state -->
@@ -164,21 +149,6 @@ const currentStepComponent = computed(() => {
 });
 
 // Navigation
-function goBack() {
-  if (wizardStore.mode === 'edit') {
-    $q.dialog({
-      title: 'Leave Edit Mode?',
-      message: 'Unsaved changes on this step will be lost.',
-      cancel: true,
-      persistent: false,
-    }).onOk(() => {
-      router.back();
-    });
-  } else {
-    router.back();
-  }
-}
-
 async function handleNext(): Promise<void> {
   await saveAndAdvance();
 }
