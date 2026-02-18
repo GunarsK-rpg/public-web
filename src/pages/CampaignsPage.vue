@@ -6,6 +6,14 @@
         <q-space />
         <q-btn
           color="primary"
+          icon="sym_o_add"
+          label="Create Campaign"
+          :disable="campaignStore.saving"
+          class="q-mr-sm"
+          @click="promptCreateCampaign"
+        />
+        <q-btn
+          color="primary"
           icon="sym_o_person_add"
           label="Create Character"
           @click="createStandaloneCharacter"
@@ -50,9 +58,12 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'stores/campaigns';
+import { MAX_CAMPAIGN_NAME_LENGTH } from 'src/constants/validation';
 
+const $q = useQuasar();
 const router = useRouter();
 const campaignStore = useCampaignStore();
 
@@ -71,5 +82,29 @@ function selectCampaign(id: number): void {
 
 function createStandaloneCharacter(): void {
   void router.push({ name: 'character-create-standalone' });
+}
+
+function promptCreateCampaign(): void {
+  $q.dialog({
+    title: 'Create Campaign',
+    message: 'Enter a name for the new campaign:',
+    prompt: {
+      model: '',
+      type: 'text',
+      maxlength: MAX_CAMPAIGN_NAME_LENGTH,
+      isValid: (val: string) => val.trim().length > 0,
+    },
+    cancel: true,
+    persistent: false,
+  }).onOk((name: string) => {
+    void campaignStore.createCampaign({ name: name.trim() }).then((campaign) => {
+      if (campaign) {
+        void router.push({
+          name: 'campaign-detail',
+          params: { campaignId: String(campaign.id) },
+        });
+      }
+    });
+  });
 }
 </script>

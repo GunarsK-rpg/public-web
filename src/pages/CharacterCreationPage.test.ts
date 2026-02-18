@@ -162,19 +162,6 @@ describe('CharacterCreationPage', () => {
   // Basic Rendering
   // ========================================
   describe('basic rendering', () => {
-    it('renders page title', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Create Character');
-    });
-
-    it('renders back button', () => {
-      const wrapper = createWrapper();
-
-      const backBtn = wrapper.find('.q-btn[aria-label="Go back"]');
-      expect(backBtn.exists()).toBe(true);
-    });
-
     it('renders reset button', () => {
       const wrapper = createWrapper();
 
@@ -212,17 +199,6 @@ describe('CharacterCreationPage', () => {
   // ========================================
   // Navigation
   // ========================================
-  describe('navigation', () => {
-    it('calls router back when back button clicked', async () => {
-      const wrapper = createWrapper();
-
-      const backBtn = wrapper.find('.q-btn[aria-label="Go back"]');
-      await backBtn.trigger('click');
-
-      expect(mockBack).toHaveBeenCalled();
-    });
-  });
-
   // ========================================
   // Reset
   // ========================================

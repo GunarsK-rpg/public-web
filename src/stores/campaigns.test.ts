@@ -1,25 +1,32 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useCampaignStore } from './campaigns';
+import { useAuthStore } from './auth';
 import { axiosError } from 'src/test-utils/axiosHelpers';
+import type { Campaign } from 'src/types';
 
 // Mock campaign data
-const mockCampaigns = [
-  { id: 1, name: 'Campaign One', description: 'First campaign' },
-  { id: 2, name: 'Campaign Two', description: 'Second campaign' },
+const mockCampaigns: Campaign[] = [
+  {
+    id: 1,
+    name: 'Campaign One',
+    description: 'First campaign',
+    userId: 10,
+    code: 'abc-123',
+    user: { id: 10, username: 'owner' },
+  },
+  {
+    id: 2,
+    name: 'Campaign Two',
+    description: 'Second campaign',
+    userId: 20,
+    code: 'def-456',
+    user: { id: 20, username: 'other' },
+  },
 ];
 
-const mockCampaign1 = {
-  id: 1,
-  name: 'Campaign One',
-  description: 'First campaign',
-};
-
-const mockCampaign2 = {
-  id: 2,
-  name: 'Campaign Two',
-  description: 'Second campaign',
-};
+const mockCampaign1 = mockCampaigns[0]!;
+const mockCampaign2 = mockCampaigns[1]!;
 
 const mockHeroesCampaign1 = [{ id: 1, name: 'Hero A' }];
 const mockHeroesCampaign2 = [
@@ -27,19 +34,24 @@ const mockHeroesCampaign2 = [
   { id: 3, name: 'Hero C' },
 ];
 
-const { mockGetAll, mockGetById, mockHeroGetAll } = vi.hoisted(() => ({
-  mockGetAll: vi.fn(),
-  mockGetById: vi.fn(),
-  mockHeroGetAll: vi.fn(),
-}));
+const { mockGetAll, mockGetById, mockCreate, mockUpdate, mockDelete, mockHeroGetAll } = vi.hoisted(
+  () => ({
+    mockGetAll: vi.fn(),
+    mockGetById: vi.fn(),
+    mockCreate: vi.fn(),
+    mockUpdate: vi.fn(),
+    mockDelete: vi.fn(),
+    mockHeroGetAll: vi.fn(),
+  })
+);
 
 vi.mock('src/services/campaignService', () => ({
   default: {
     getAll: mockGetAll,
     getById: mockGetById,
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
+    create: mockCreate,
+    update: mockUpdate,
+    delete: mockDelete,
   },
 }));
 
@@ -58,11 +70,26 @@ vi.mock('src/utils/logger', () => ({
   },
 }));
 
+vi.mock('src/services/auth', () => ({
+  default: {
+    login: vi.fn(),
+    logout: vi.fn(),
+    refresh: vi.fn(),
+    tokenStatus: vi.fn(),
+  },
+}));
+
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 describe('useCampaignStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-    mockGetAll.mockResolvedValue({ data: mockCampaigns });
+    mockGetAll.mockImplementation(() =>
+      Promise.resolve({ data: mockCampaigns.map((c) => ({ ...c })) })
+    );
     mockGetById.mockImplementation((id: number) => {
       if (id === 1) return Promise.resolve({ data: mockCampaign1 });
       if (id === 2) return Promise.resolve({ data: mockCampaign2 });
@@ -104,6 +131,16 @@ describe('useCampaignStore', () => {
     it('hasCampaigns is false when empty', () => {
       const store = useCampaignStore();
       expect(store.hasCampaigns).toBe(false);
+    });
+
+    it('starts not saving', () => {
+      const store = useCampaignStore();
+      expect(store.saving).toBe(false);
+    });
+
+    it('isOwner is false when no current campaign', () => {
+      const store = useCampaignStore();
+      expect(store.isOwner).toBe(false);
     });
   });
 
@@ -237,6 +274,235 @@ describe('useCampaignStore', () => {
       expect(store.currentCampaign?.heroes).toEqual([]);
       expect(store.error).toBeNull();
       expect(mockHeroGetAll).toHaveBeenCalledWith(1);
+    });
+  });
+
+  // ========================================
+  // createCampaign
+  // ========================================
+  describe('createCampaign', () => {
+    const newCampaign: Campaign = {
+      id: 3,
+      name: 'New Campaign',
+      description: 'A new one',
+      userId: 10,
+      code: 'ghi-789',
+      user: { id: 10, username: 'owner' },
+    };
+
+    it('creates campaign and prepends to list', async () => {
+      mockCreate.mockResolvedValue({ data: newCampaign });
+      const store = useCampaignStore();
+      await store.fetchCampaigns();
+
+      const result = await store.createCampaign({ name: 'New Campaign', description: 'A new one' });
+
+      expect(result).toEqual(newCampaign);
+      expect(store.campaigns[0]!.id).toBe(3);
+      expect(store.campaigns.length).toBe(3);
+    });
+
+    it('calls campaignService.create with correct data', async () => {
+      mockCreate.mockResolvedValue({ data: newCampaign });
+      const store = useCampaignStore();
+
+      await store.createCampaign({ name: 'New Campaign', description: 'A new one' });
+
+      expect(mockCreate).toHaveBeenCalledWith({ name: 'New Campaign', description: 'A new one' });
+    });
+
+    it('returns null on API error', async () => {
+      mockCreate.mockRejectedValue(new Error('Server error'));
+      const store = useCampaignStore();
+
+      const result = await store.createCampaign({ name: 'Fail' });
+
+      expect(result).toBeNull();
+      expect(store.error).toBe('Failed to create campaign');
+    });
+
+    it('sets saving during operation', async () => {
+      let resolveFn: (v: unknown) => void;
+      mockCreate.mockReturnValue(new Promise((resolve) => (resolveFn = resolve)));
+      const store = useCampaignStore();
+
+      const promise = store.createCampaign({ name: 'Test' });
+      expect(store.saving).toBe(true);
+
+      resolveFn!({ data: newCampaign });
+      await promise;
+      expect(store.saving).toBe(false);
+    });
+  });
+
+  // ========================================
+  // updateCampaign
+  // ========================================
+  describe('updateCampaign', () => {
+    const updatedCampaign: Campaign = {
+      ...mockCampaign1,
+      name: 'Updated Name',
+      description: 'Updated desc',
+    };
+
+    it('updates campaign in list', async () => {
+      mockUpdate.mockResolvedValue({ data: updatedCampaign });
+      const store = useCampaignStore();
+      await store.fetchCampaigns();
+
+      const result = await store.updateCampaign(1, {
+        name: 'Updated Name',
+        description: 'Updated desc',
+      });
+
+      expect(result).toEqual(updatedCampaign);
+      expect(store.campaigns[0]!.name).toBe('Updated Name');
+    });
+
+    it('updates currentCampaign if it matches', async () => {
+      mockUpdate.mockResolvedValue({ data: updatedCampaign });
+      const store = useCampaignStore();
+      await store.selectCampaign(1);
+
+      await store.updateCampaign(1, { name: 'Updated Name', description: 'Updated desc' });
+
+      expect(store.currentCampaign?.name).toBe('Updated Name');
+    });
+
+    it('does not update currentCampaign if different id', async () => {
+      mockUpdate.mockResolvedValue({ data: updatedCampaign });
+      const store = useCampaignStore();
+      await store.selectCampaign(2);
+
+      await store.updateCampaign(1, { name: 'Updated Name' });
+
+      expect(store.currentCampaign?.name).toBe('Campaign Two');
+    });
+
+    it('preserves heroes on currentCampaign update', async () => {
+      mockUpdate.mockResolvedValue({ data: updatedCampaign });
+      const store = useCampaignStore();
+      await store.selectCampaign(1);
+      const heroesBefore = store.currentCampaign?.heroes;
+
+      await store.updateCampaign(1, { name: 'Updated Name' });
+
+      expect(store.currentCampaign?.heroes).toEqual(heroesBefore);
+    });
+
+    it('returns null on API error', async () => {
+      mockUpdate.mockRejectedValue(new Error('Server error'));
+      const store = useCampaignStore();
+
+      const result = await store.updateCampaign(1, { name: 'Fail' });
+
+      expect(result).toBeNull();
+      expect(store.error).toBe('Failed to update campaign');
+    });
+
+    it('sets saving during operation', async () => {
+      let resolveFn: (v: unknown) => void;
+      mockUpdate.mockReturnValue(new Promise((resolve) => (resolveFn = resolve)));
+      const store = useCampaignStore();
+
+      const promise = store.updateCampaign(1, { name: 'Test' });
+      expect(store.saving).toBe(true);
+
+      resolveFn!({ data: updatedCampaign });
+      await promise;
+      expect(store.saving).toBe(false);
+    });
+  });
+
+  // ========================================
+  // deleteCampaign
+  // ========================================
+  describe('deleteCampaign', () => {
+    it('removes campaign from list', async () => {
+      mockDelete.mockResolvedValue({});
+      const store = useCampaignStore();
+      await store.fetchCampaigns();
+
+      const result = await store.deleteCampaign(1);
+
+      expect(result).toBe(true);
+      expect(store.campaigns.length).toBe(1);
+      expect(store.campaigns[0]!.id).toBe(2);
+    });
+
+    it('clears currentCampaign if deleted', async () => {
+      mockDelete.mockResolvedValue({});
+      const store = useCampaignStore();
+      await store.selectCampaign(1);
+
+      await store.deleteCampaign(1);
+
+      expect(store.currentCampaign).toBeNull();
+    });
+
+    it('does not clear currentCampaign if different id', async () => {
+      mockDelete.mockResolvedValue({});
+      const store = useCampaignStore();
+      await store.fetchCampaigns();
+      await store.selectCampaign(2);
+
+      await store.deleteCampaign(1);
+
+      expect(store.currentCampaign?.id).toBe(2);
+    });
+
+    it('returns false on API error', async () => {
+      mockDelete.mockRejectedValue(new Error('Server error'));
+      const store = useCampaignStore();
+
+      const result = await store.deleteCampaign(1);
+
+      expect(result).toBe(false);
+      expect(store.error).toBe('Failed to delete campaign');
+    });
+
+    it('sets saving during operation', async () => {
+      let resolveFn: (v: unknown) => void;
+      mockDelete.mockReturnValue(new Promise((resolve) => (resolveFn = resolve)));
+      const store = useCampaignStore();
+
+      const promise = store.deleteCampaign(1);
+      expect(store.saving).toBe(true);
+
+      resolveFn!({});
+      await promise;
+      expect(store.saving).toBe(false);
+    });
+  });
+
+  // ========================================
+  // isOwner
+  // ========================================
+  describe('isOwner', () => {
+    it('returns true when username matches campaign owner', async () => {
+      const store = useCampaignStore();
+      const authStore = useAuthStore();
+      authStore.username = 'owner';
+      await store.selectCampaign(1);
+
+      expect(store.isOwner).toBe(true);
+    });
+
+    it('returns false when username does not match', async () => {
+      const store = useCampaignStore();
+      const authStore = useAuthStore();
+      authStore.username = 'someone_else';
+      await store.selectCampaign(1);
+
+      expect(store.isOwner).toBe(false);
+    });
+
+    it('returns false when no current campaign', () => {
+      const store = useCampaignStore();
+      const authStore = useAuthStore();
+      authStore.username = 'owner';
+
+      expect(store.isOwner).toBe(false);
     });
   });
 

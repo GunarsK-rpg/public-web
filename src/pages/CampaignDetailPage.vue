@@ -20,9 +20,62 @@
       </div>
 
       <template v-else>
-        <div class="text-h5 q-mb-sm">{{ campaign.name }}</div>
-        <div class="text-body2 text-grey q-mb-lg">
+        <div class="row items-center q-mb-xs">
+          <div class="text-h5">{{ campaign.name }}</div>
+          <template v-if="isOwner">
+            <q-btn
+              flat
+              dense
+              round
+              icon="sym_o_edit"
+              size="sm"
+              class="q-ml-sm"
+              :disable="saving"
+              aria-label="Edit campaign"
+              @click="promptEditCampaign"
+            />
+            <q-btn
+              flat
+              dense
+              round
+              icon="sym_o_delete"
+              size="sm"
+              color="negative"
+              :disable="saving"
+              aria-label="Delete campaign"
+              @click="confirmDeleteCampaign"
+            />
+          </template>
+        </div>
+        <div v-if="campaign.description" class="text-body2 text-grey q-mb-sm">
           {{ campaign.description }}
+        </div>
+
+        <div v-if="isOwner" class="row items-center q-mb-lg">
+          <div class="text-caption text-grey-6">Invite code:</div>
+          <q-input
+            :model-value="campaign.code"
+            dense
+            readonly
+            borderless
+            class="q-ml-xs"
+            input-class="text-caption"
+            style="max-width: 280px"
+          >
+            <template v-slot:append>
+              <q-btn
+                flat
+                dense
+                round
+                icon="sym_o_content_copy"
+                size="xs"
+                aria-label="Copy invite code"
+                @click="copyInviteCode"
+              >
+                <q-tooltip>Copy invite code</q-tooltip>
+              </q-btn>
+            </template>
+          </q-input>
         </div>
 
         <div class="row items-center q-mb-md">
@@ -39,13 +92,7 @@
         <div v-if="campaign.heroes.length === 0" class="text-center q-pa-xl">
           <q-icon name="person_off" size="64px" color="grey-5" aria-hidden="true" />
           <div class="text-h6 text-grey-7 q-mt-md">No characters</div>
-          <div class="text-body2 text-grey-6 q-mb-md">No characters in this campaign yet.</div>
-          <q-btn
-            color="primary"
-            icon="sym_o_add"
-            label="Create Your First Character"
-            @click="createCharacter"
-          />
+          <div class="text-body2 text-grey-6">No characters in this campaign yet.</div>
         </div>
 
         <div v-else class="row q-col-gutter-md">
@@ -80,17 +127,20 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { useQuasar, copyToClipboard } from 'quasar';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'src/stores/campaigns';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
+import { MAX_CAMPAIGN_NAME_LENGTH } from 'src/constants/validation';
 
 const props = defineProps<{
   campaignId: string;
 }>();
 
+const $q = useQuasar();
 const router = useRouter();
 const campaignStore = useCampaignStore();
 const classifiers = useClassifierStore();
@@ -99,6 +149,8 @@ const { showWarning } = useErrorHandler();
 const campaign = computed(() => campaignStore.currentCampaign);
 const loading = computed(() => campaignStore.loading);
 const error = computed(() => campaignStore.error);
+const isOwner = computed(() => campaignStore.isOwner);
+const saving = computed(() => campaignStore.saving);
 
 onMounted(async () => {
   const campaignId = Number(props.campaignId);
@@ -140,6 +192,52 @@ function createCharacter(): void {
   void router.push({
     name: 'character-create',
     params: { campaignId: props.campaignId },
+  });
+}
+
+function promptEditCampaign(): void {
+  if (!campaign.value) return;
+  $q.dialog({
+    title: 'Edit Campaign',
+    message: 'Campaign name:',
+    prompt: {
+      model: campaign.value.name,
+      type: 'text',
+      maxlength: MAX_CAMPAIGN_NAME_LENGTH,
+      isValid: (val: string) => val.trim().length > 0,
+    },
+    cancel: true,
+    persistent: false,
+  }).onOk((name: string) => {
+    if (!campaign.value) return;
+    void campaignStore.updateCampaign(campaign.value.id, {
+      name: name.trim(),
+      description: campaign.value.description ?? null,
+    });
+  });
+}
+
+function confirmDeleteCampaign(): void {
+  if (!campaign.value) return;
+  $q.dialog({
+    title: 'Delete Campaign',
+    message: `Delete "${campaign.value.name}"? This cannot be undone.`,
+    cancel: true,
+    persistent: false,
+  }).onOk(() => {
+    if (!campaign.value) return;
+    void campaignStore.deleteCampaign(campaign.value.id).then((deleted) => {
+      if (deleted) {
+        void router.push({ name: 'campaigns' });
+      }
+    });
+  });
+}
+
+function copyInviteCode(): void {
+  if (!campaign.value) return;
+  void copyToClipboard(campaign.value.code).then(() => {
+    $q.notify({ message: 'Invite code copied', type: 'positive', timeout: 1500 });
   });
 }
 </script>
