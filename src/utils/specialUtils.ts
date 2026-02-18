@@ -26,11 +26,16 @@ export const SPECIAL = {
   // Item property types (display_value)
   DAMAGE: 'damage',
   RANGE: 'range',
-  THROWN: 'thrown',
   SKILL: 'skill',
   REACH: 'reach',
   LOADED: 'loaded',
   RADIUS: 'radius',
+
+  // Action-specific types
+  DEFENSE: 'defense',
+  COST: 'cost',
+  DURATION: 'duration',
+  NARRATIVE: 'narrative',
 
   // Flag types (value: 1)
   SPECIALIST: 'specialist',

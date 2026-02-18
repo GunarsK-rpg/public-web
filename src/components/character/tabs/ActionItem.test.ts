@@ -43,6 +43,7 @@ vi.mock('src/constants/theme', () => ({
     focusCost: 'blue',
     investitureCost: 'amber',
     specialAbility: 'purple',
+    badgeMuted: 'grey',
   },
 }));
 
@@ -58,6 +59,7 @@ describe('ActionItem', () => {
           actionType: { id: 1, code: 'action-type', name: 'Action Type' },
           focusCost: 0,
           investitureCost: 0,
+          special: [],
           ...action,
         } as Action,
       },
@@ -173,18 +175,53 @@ describe('ActionItem', () => {
   // Special Ability
   // ========================================
   describe('special ability', () => {
-    it('renders special text when present', () => {
+    it('renders narrative entries as italic text in body', () => {
       const wrapper = createWrapper({
-        special: 'Deals double damage on critical',
+        special: [{ type: 'narrative', display_value: 'Deals double damage on critical' }],
       });
 
-      expect(wrapper.text()).toContain('Deals double damage on critical');
+      const content = wrapper.find('.content');
+      expect(content.text()).toContain('Deals double damage on critical');
+      expect(content.find('.text-italic').exists()).toBe(true);
     });
 
-    it('does not render special section when absent', () => {
-      const wrapper = createWrapper({ special: null });
+    it('renders typed entries as badges in header', () => {
+      const wrapper = createWrapper({
+        special: [{ type: 'defense', display_value: 'Physical defense' }],
+      });
 
-      expect(wrapper.text()).not.toContain('critical');
+      const header = wrapper.find('.header');
+      const badges = header.findAll('.q-badge');
+      expect(badges.some((b) => b.text().includes('Physical defense'))).toBe(true);
+    });
+
+    it('splits mixed entries between header badges and body text', () => {
+      const wrapper = createWrapper({
+        special: [
+          { type: 'defense', display_value: 'Physical defense' },
+          { type: 'skill', display_value: 'Athletics' },
+          { type: 'narrative', display_value: 'Once per scene' },
+        ],
+      });
+
+      const header = wrapper.find('.header');
+      const content = wrapper.find('.content');
+
+      // Typed entries in header as badges
+      expect(header.text()).toContain('Physical defense');
+      expect(header.text()).toContain('Athletics');
+
+      // Narrative entries in body as italic text
+      expect(content.text()).toContain('Once per scene');
+      expect(content.find('.text-italic').exists()).toBe(true);
+    });
+
+    it('does not render special sections when empty', () => {
+      const wrapper = createWrapper({ special: [] });
+
+      const header = wrapper.find('.header');
+      expect(header.findAll('.q-badge').length).toBe(0);
+      expect(wrapper.find('.content .text-italic').exists()).toBe(false);
     });
   });
 
@@ -192,16 +229,20 @@ describe('ActionItem', () => {
   // Dice Display
   // ========================================
   describe('dice display', () => {
-    it('renders dice when present', () => {
+    it('renders dice as badge in header when present', () => {
       const wrapper = createWrapper({ dice: '2d6+4' });
 
-      expect(wrapper.text()).toContain('Dice: 2d6+4');
+      const header = wrapper.find('.header');
+      const badges = header.findAll('.q-badge');
+      expect(badges.some((b) => b.text().includes('2d6+4'))).toBe(true);
     });
 
-    it('does not render dice section when absent', () => {
+    it('does not render dice badge when absent', () => {
       const wrapper = createWrapper({ dice: null });
 
-      expect(wrapper.text()).not.toContain('Dice:');
+      const header = wrapper.find('.header');
+      const badges = header.findAll('.q-badge');
+      expect(badges.some((b) => /\b\d+d\d+\b/.test(b.text()))).toBe(false);
     });
   });
 
@@ -279,7 +320,10 @@ describe('ActionItem', () => {
       const wrapper = createWrapper({
         name: 'Ultimate Strike',
         description: 'The most powerful attack',
-        special: 'Ignores armor',
+        special: [
+          { type: 'defense', display_value: 'Physical defense' },
+          { type: 'narrative', display_value: 'Ignores armor' },
+        ],
         dice: '4d10+8',
         focusCost: 5,
         investitureCost: 10,
@@ -287,8 +331,9 @@ describe('ActionItem', () => {
 
       expect(wrapper.text()).toContain('Ultimate Strike');
       expect(wrapper.text()).toContain('The most powerful attack');
-      expect(wrapper.text()).toContain('Ignores armor');
-      expect(wrapper.text()).toContain('Dice: 4d10+8');
+      expect(wrapper.find('.header').text()).toContain('Physical defense');
+      expect(wrapper.find('.content').text()).toContain('Ignores armor');
+      expect(wrapper.find('.header').text()).toContain('4d10+8');
       expect(wrapper.text()).toContain('5 Focus');
       expect(wrapper.text()).toContain('10 Inv');
     });
@@ -331,10 +376,10 @@ describe('ActionItem', () => {
       expect(img.attributes('title')).toBe('Action');
     });
 
-    it('handles empty special string as falsy', () => {
-      const wrapper = createWrapper({ special: '' });
+    it('handles empty special array', () => {
+      const wrapper = createWrapper({ special: [] });
 
-      // Empty string should not show special section
+      // Empty array should not show special section
       const content = wrapper.find('.content');
       expect(content.find('.text-italic').exists()).toBe(false);
     });
@@ -342,7 +387,9 @@ describe('ActionItem', () => {
     it('handles empty dice string as falsy', () => {
       const wrapper = createWrapper({ dice: '' });
 
-      expect(wrapper.text()).not.toContain('Dice:');
+      const header = wrapper.find('.header');
+      const badges = header.findAll('.q-badge');
+      expect(badges.length).toBe(0);
     });
 
     it('handles activationType with id 0', () => {

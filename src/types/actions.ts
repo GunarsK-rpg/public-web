@@ -1,5 +1,5 @@
 import type { Classifier } from './classifier';
-import type { ClassifierRef } from './shared';
+import type { ClassifierRef, SpecialEntry } from './shared';
 
 /** Activation type classifier (cl_activation_types) */
 export interface ActivationType extends Classifier {
@@ -15,7 +15,7 @@ export interface Action extends Classifier {
   activationType: ClassifierRef;
   damageType: ClassifierRef | null;
   descriptionShort?: string | null;
-  special?: string | null;
+  special: SpecialEntry[];
   dice?: string | null;
   focusCost: number;
   investitureCost: number;
