@@ -39,6 +39,9 @@
           <q-badge v-if="action.dice" :color="RPG_COLORS.badgeMuted" outline>
             {{ action.dice }}
           </q-badge>
+          <q-badge v-if="action.damageType" :color="RPG_COLORS.badgeMuted" outline>
+            {{ action.damageType.name }}
+          </q-badge>
         </div>
       </q-item-section>
     </template>
@@ -88,7 +91,6 @@ const TYPED_SPECIAL: Set<string> = new Set([
   SPECIAL.SKILL,
   SPECIAL.DEFENSE,
   SPECIAL.RANGE,
-  SPECIAL.COST,
   SPECIAL.DURATION,
   SPECIAL.REACH,
   SPECIAL.RADIUS,
