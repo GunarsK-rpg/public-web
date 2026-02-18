@@ -24,7 +24,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
   const isOwner = computed(() => {
     if (!currentCampaign.value) return false;
     const authStore = useAuthStore();
-    return currentCampaign.value.user.username === authStore.username;
+    return currentCampaign.value.user?.username === authStore.username;
   });
 
   async function fetchCampaigns(): Promise<void> {
@@ -186,6 +186,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
     currentCampaign.value = null;
     loading.value = false;
     error.value = null;
+    savingCount.value = 0;
   }
 
   return {

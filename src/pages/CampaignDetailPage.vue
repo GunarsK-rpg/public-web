@@ -236,8 +236,12 @@ function confirmDeleteCampaign(): void {
 
 function copyInviteCode(): void {
   if (!campaign.value) return;
-  void copyToClipboard(campaign.value.code).then(() => {
-    $q.notify({ message: 'Invite code copied', type: 'positive', timeout: 1500 });
-  });
+  void copyToClipboard(campaign.value.code)
+    .then(() => {
+      $q.notify({ message: 'Invite code copied', type: 'positive', timeout: 1500 });
+    })
+    .catch(() => {
+      $q.notify({ message: 'Failed to copy invite code', type: 'negative', timeout: 2000 });
+    });
 }
 </script>
