@@ -1,7 +1,15 @@
 <template>
   <div class="actions-tab">
     <!-- Tabs from cl_action_types classifier -->
-    <q-tabs v-model="activeTab" dense align="left" class="q-mb-md" narrow-indicator>
+    <q-tabs
+      v-model="activeTab"
+      dense
+      align="left"
+      class="q-mb-md"
+      narrow-indicator
+      mobile-arrows
+      outside-arrows
+    >
       <q-tab
         v-for="actionType in classifiers.actionTypes"
         :key="actionType.id"

@@ -27,6 +27,17 @@
           >
             {{ cost.value }} {{ cost.label }}
           </q-badge>
+          <q-badge
+            v-for="tag in typedEntries"
+            :key="tag.type + (tag.display_value ?? tag.value)"
+            :color="RPG_COLORS.badgeMuted"
+            outline
+          >
+            {{ tag.display_value ?? tag.value }}
+          </q-badge>
+          <q-badge v-if="action.dice" :color="RPG_COLORS.badgeMuted" outline>
+            {{ action.dice }}
+          </q-badge>
         </div>
       </q-item-section>
     </template>
@@ -34,15 +45,16 @@
     <q-card>
       <q-card-section class="q-pt-sm q-pb-sm">
         <div class="text-body2">{{ action.description || 'No description available' }}</div>
-        <div
-          v-if="action.special"
-          class="text-caption text-italic q-mt-xs"
-          :class="`text-${RPG_COLORS.specialAbility}`"
-        >
-          {{ action.special }}
-        </div>
-        <div v-if="action.dice" class="text-caption text-weight-medium q-mt-xs">
-          Dice: {{ action.dice }}
+        <div v-if="narrativeEntries.length" class="q-mt-xs">
+          <span
+            v-for="(entry, i) in narrativeEntries"
+            :key="i"
+            class="text-caption text-italic"
+            :class="`text-${RPG_COLORS.specialAbility}`"
+          >
+            {{ entry.display_value ?? entry.value
+            }}{{ i < narrativeEntries.length - 1 ? ' · ' : '' }}
+          </span>
         </div>
       </q-card-section>
     </q-card>
@@ -54,6 +66,7 @@ import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
 import { RPG_COLORS } from 'src/constants/theme';
+import { SPECIAL } from 'src/utils/specialUtils';
 import type { Action } from 'src/types';
 
 const props = defineProps<{
@@ -67,6 +80,29 @@ const { entity: activationType, iconUrl } = useEntityIcon(
   computed(() => props.action.activationType?.id),
   computed(() => classifiers.activationTypes),
   'actions'
+);
+
+// Types shown as badge tags in the header
+const TYPED_SPECIAL: Set<string> = new Set([
+  SPECIAL.SKILL,
+  SPECIAL.DEFENSE,
+  SPECIAL.RANGE,
+  SPECIAL.COST,
+  SPECIAL.DURATION,
+  SPECIAL.REACH,
+  SPECIAL.RADIUS,
+]);
+
+const typedEntries = computed(() =>
+  (props.action.special ?? []).filter(
+    (s) => TYPED_SPECIAL.has(s.type) && (s.display_value || s.value != null)
+  )
+);
+
+const narrativeEntries = computed(() =>
+  (props.action.special ?? []).filter(
+    (s) => !TYPED_SPECIAL.has(s.type) && (s.display_value || s.value != null)
+  )
 );
 
 // Consolidate cost badges into a single array for cleaner template
