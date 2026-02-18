@@ -189,15 +189,27 @@ describe('ActionsTab', () => {
   // Equipment Actions
   // ========================================
   describe('equipment actions', () => {
-    it('renders equipment actions for owned equipment', () => {
+    it('renders equipment actions for equipped equipment', () => {
       mockHero.value = {
-        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' } }],
+        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: true }],
         talents: [],
         radiantOrder: null,
       };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Sword Slash');
+    });
+
+    it('does not show actions for unequipped equipment', () => {
+      mockHero.value = {
+        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: false }],
+        talents: [],
+        radiantOrder: null,
+      };
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).not.toContain('Sword Slash');
+      expect(wrapper.text()).toContain('No equipment available');
     });
 
     it('shows empty message when no equipment', () => {
@@ -223,11 +235,11 @@ describe('ActionsTab', () => {
       expect(wrapper.text()).not.toContain('Bow Shot');
     });
 
-    it('renders multiple equipment actions', () => {
+    it('renders multiple equipment actions for equipped items', () => {
       mockHero.value = {
         equipment: [
-          { equipment: { id: 1, code: 'e1', name: 'Equip1' } }, // Sword
-          { equipment: { id: 2, code: 'e2', name: 'Equip2' } }, // Bow
+          { equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: true }, // Sword
+          { equipment: { id: 2, code: 'e2', name: 'Equip2' }, isEquipped: true }, // Bow
         ],
         talents: [],
         radiantOrder: null,
@@ -236,6 +248,21 @@ describe('ActionsTab', () => {
 
       expect(wrapper.text()).toContain('Sword Slash');
       expect(wrapper.text()).toContain('Bow Shot');
+    });
+
+    it('only shows actions for equipped items in mixed inventory', () => {
+      mockHero.value = {
+        equipment: [
+          { equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: true }, // Sword - equipped
+          { equipment: { id: 2, code: 'e2', name: 'Equip2' }, isEquipped: false }, // Bow - in backpack
+        ],
+        talents: [],
+        radiantOrder: null,
+      };
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Sword Slash');
+      expect(wrapper.text()).not.toContain('Bow Shot');
     });
   });
 
@@ -319,7 +346,7 @@ describe('ActionsTab', () => {
 
     it('handles hero with all action types', () => {
       mockHero.value = {
-        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' } }],
+        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: true }],
         talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }],
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
       };

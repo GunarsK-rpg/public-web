@@ -778,6 +778,7 @@ describe('useHeroTalentsStore', () => {
         id: -999,
         heroId: heroStore.hero!.id,
         talent: { id: 7, code: 'singer_key', name: 'Singer Key' },
+        special: [],
       });
 
       const initialCount = heroStore.hero!.talents.length;

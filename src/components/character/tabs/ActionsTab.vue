@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode } from 'src/utils/arrayUtils';
@@ -43,8 +43,23 @@ import type { Action } from 'src/types';
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
-// Default to first action type
-const activeTab = ref(classifiers.actionTypes[0]?.id ?? 0);
+// Sentinel value for uninitialized tab state (action type IDs are always >= 1)
+const UNINITIALIZED_TAB = -1;
+
+// Active tab with sync to actionTypes (handles async classifier loading)
+const activeTab = ref(classifiers.actionTypes[0]?.id ?? UNINITIALIZED_TAB);
+
+// Sync activeTab when actionTypes become available (async classifier init)
+watch(
+  () => classifiers.actionTypes,
+  (types) => {
+    const firstType = types[0];
+    if (firstType && activeTab.value === UNINITIALIZED_TAB) {
+      activeTab.value = firstType.id;
+    }
+  },
+  { immediate: true }
+);
 
 // Pre-compute action links map for O(1) lookup: objectId → Set<actionId>
 const actionLinksMap = computed(() => {
@@ -74,13 +89,18 @@ function getActionTypeByCode(code: string) {
 
 // Configuration map for extracting hero object IDs by action type
 const heroObjectExtractors: Record<string, () => number[]> = {
-  equipment: () => (heroStore.hero?.equipment || []).map((e) => e.equipment.id),
+  equipment: () =>
+    (heroStore.hero?.equipment || []).filter((e) => e.isEquipped).map((e) => e.equipment.id),
   talent: () => (heroStore.hero?.talents || []).map((t) => t.talent.id),
   surge: () => {
     const order = heroStore.hero?.radiantOrder;
     if (!order) return [];
     const fullOrder = findById(classifiers.radiantOrders, order.id);
-    return fullOrder ? [fullOrder.surge1.id, fullOrder.surge2.id] : [];
+    if (!fullOrder) return [];
+    const ids: number[] = [];
+    if (fullOrder.surge1?.id != null) ids.push(fullOrder.surge1.id);
+    if (fullOrder.surge2?.id != null) ids.push(fullOrder.surge2.id);
+    return ids;
   },
 };
 

@@ -84,6 +84,7 @@ export function calculateFormulaStat(
  * @param levelData - hero's level data
  * @param tierData - hero's tier data
  * @param getModifier - function to get hero's modifier for a stat
+ * @param getBonus - optional function to get special bonus for a stat (talents, equipment, singer form)
  * @returns display list for rendering
  */
 export function buildDerivedStatsList(
@@ -93,7 +94,8 @@ export function buildDerivedStatsList(
   attrs: AttributeValues,
   levelData: Level | undefined,
   tierData: Tier | undefined,
-  getModifier: (statId: number) => number
+  getModifier: (statId: number) => number,
+  getBonus?: (statCode: string) => number
 ): DerivedStatDisplay[] {
   return derivedStats.map((stat) => {
     // Check if this stat has lookup table entries
@@ -123,7 +125,8 @@ export function buildDerivedStatsList(
     }
 
     const modifier = getModifier(stat.id);
-    const totalValue = hasModifier ? baseValue + modifier : baseValue;
+    const bonus = getBonus?.(stat.code) ?? 0;
+    const totalValue = hasModifier ? baseValue + modifier + bonus : baseValue;
 
     return {
       id: stat.id,

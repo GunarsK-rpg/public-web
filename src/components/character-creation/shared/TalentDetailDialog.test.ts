@@ -16,6 +16,7 @@ describe('TalentDetailDialog', () => {
     ancestry: null,
     radiantOrder: null,
     surge: null,
+    special: [],
     ...overrides,
   });
 

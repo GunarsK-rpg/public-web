@@ -4,6 +4,7 @@ import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { findById, findByCode, findByProp, toClassifierRef } from 'src/utils/arrayUtils';
 import { calculateFormulaStat } from 'src/utils/derivedStats';
+import { getHeroBonus, SPECIAL } from 'src/utils/specialUtils';
 import {
   MIN_ATTRIBUTE_VALUE,
   MAX_ATTRIBUTE_VALUE,
@@ -28,6 +29,12 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     return findById(classifierStore.tiers, levelData.value?.tier.id);
   });
 
+  const activeSingerForm = computed(() => {
+    const formRef = heroStore.hero?.activeSingerForm;
+    if (!formRef) return null;
+    return findById(classifierStore.singerForms, formRef.id) ?? null;
+  });
+
   // ===================
   // ATTRIBUTE LOOKUPS
   // ===================
@@ -50,7 +57,17 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     const attrType = findByCode(classifierStore.attributeTypes, attrTypeCode);
     if (!attrType) return 10;
     const defense = heroStore.hero.defenses.find((d) => d.attributeType.id === attrType.id);
-    return defense?.totalValue ?? 10;
+    if (!defense) return 10;
+
+    const statCode = `${attrTypeCode}_defense`;
+    const baseValue = calculateFormulaStat(
+      statCode,
+      attributeValues.value,
+      levelData.value,
+      tierData.value
+    );
+    const modifier = defense.modifier ?? 0;
+    return baseValue + modifier + getStatBonus(statCode);
   }
 
   // ===================
@@ -73,11 +90,24 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   // ===================
   // DERIVED STATS
   // ===================
-  // Memoized attribute values for derived stat calculations
+  function bonus(type: string): number {
+    if (!heroStore.hero) return 0;
+    return getHeroBonus(
+      heroStore.hero.talents,
+      heroStore.hero.equipment,
+      activeSingerForm.value,
+      type
+    );
+  }
+
+  // Memoized attribute values for derived stat calculations (includes special bonuses).
+  // Bonus keys are built as `attribute_${attr.code}` — matches SPECIAL constants
+  // (e.g. attr.code="str" -> SPECIAL.ATTRIBUTE_STR="attribute_str").
   const attributeValues = computed(() => {
     const attrs: Record<string, number> = {};
     for (const attr of classifierStore.attributes) {
-      attrs[attr.code] = getAttributeValue(attr.code);
+      const base = getAttributeValue(attr.code);
+      attrs[attr.code] = base + bonus(`attribute_${attr.code}`);
     }
     return attrs;
   });
@@ -89,8 +119,30 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     return heroStore.hero.derivedStats.find((s) => s.derivedStat.id === stat.id);
   }
 
-  function getDerivedStatValue(statCode: string): number {
-    return getHeroDerivedStat(statCode)?.totalValue ?? 0;
+  function getStatBonus(statCode: string): number {
+    const level = heroStore.hero?.level ?? 1;
+    const tier = tierData.value?.id ?? 1;
+
+    switch (statCode) {
+      case 'max_health':
+        return bonus(SPECIAL.HEALTH_PER_LEVEL) * level;
+      case 'max_focus':
+        return bonus(SPECIAL.FOCUS) + bonus(SPECIAL.FOCUS_PER_TIER) * tier;
+      case 'max_investiture':
+        return bonus(SPECIAL.INVESTITURE_PER_TIER) * tier;
+      case 'deflect':
+        return bonus(SPECIAL.DEFLECT);
+      case 'physical_defense':
+        return bonus(SPECIAL.DEFENSE_PHYSICAL);
+      case 'cognitive_defense':
+        return bonus(SPECIAL.DEFENSE_COGNITIVE);
+      case 'spiritual_defense':
+        return bonus(SPECIAL.DEFENSE_SPIRITUAL);
+      case 'movement':
+        return bonus(SPECIAL.MOVEMENT) - bonus(SPECIAL.CUMBERSOME);
+      default:
+        return 0;
+    }
   }
 
   function getDerivedStatTotal(statCode: string): number {
@@ -103,25 +155,13 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     const heroStat = getHeroDerivedStat(statCode);
     const modifier = heroStat?.modifier ?? 0;
 
-    return baseValue + modifier;
+    return baseValue + modifier + getStatBonus(statCode);
   }
 
   function getDerivedStatModifier(statId: number): number {
     if (!heroStore.hero?.derivedStats) return 0;
     const stat = heroStore.hero.derivedStats.find((s) => s.derivedStat.id === statId);
     return stat?.modifier ?? 0;
-  }
-
-  function getDerivedStatDisplay(statCode: string): string {
-    const heroStat = getHeroDerivedStat(statCode);
-    if (!heroStat) return '';
-    const modifier = heroStat.modifier ?? 0;
-    const total = getDerivedStatTotal(statCode);
-    if (modifier) {
-      const baseValue = total - modifier;
-      return `${total} (${baseValue} + ${modifier})`;
-    }
-    return `${total}`;
   }
 
   // ===================
@@ -236,6 +276,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     tierData,
 
     // Attribute lookups
+    attributeValues,
     getAttributeValue,
     getAttributeValueById,
     getDefenseValue,
@@ -245,10 +286,9 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     getSkillModifier,
 
     // Derived stats
-    getDerivedStatValue,
+    getStatBonus,
     getDerivedStatTotal,
     getDerivedStatModifier,
-    getDerivedStatDisplay,
 
     // Mutations
     setAttribute,

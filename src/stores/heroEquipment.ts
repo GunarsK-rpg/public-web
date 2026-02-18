@@ -36,6 +36,9 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
         equipment: { id: equip.id, code: equip.code, name: equip.name },
+        special: equip.special ?? [],
+        charges: equip.maxCharges ?? null,
+        maxCharges: equip.maxCharges ?? null,
         amount: Math.min(validAmount, MAX_EQUIPMENT_STACK),
         isEquipped: false,
       });

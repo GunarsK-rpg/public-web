@@ -18,6 +18,7 @@ function createMockTalent(overrides: Partial<Talent> & { id: number }): Talent {
     ancestry: null,
     radiantOrder: null,
     surge: null,
+    special: [],
     ...overrides,
   };
 }

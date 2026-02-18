@@ -26,6 +26,7 @@ describe('TalentListPanel', () => {
     ancestry: null,
     radiantOrder: null,
     surge: null,
+    special: [],
   };
 
   const createTalent = (overrides: Partial<Talent> = {}): Talent => ({
