@@ -209,6 +209,7 @@ describe('ActionsTab', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('Sword Slash');
+      expect(wrapper.text()).toContain('No equipment available');
     });
 
     it('shows empty message when no equipment', () => {
