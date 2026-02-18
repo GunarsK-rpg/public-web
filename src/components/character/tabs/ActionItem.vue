@@ -28,12 +28,13 @@
             {{ cost.value }} {{ cost.label }}
           </q-badge>
           <q-badge
-            v-for="tag in typedEntries"
-            :key="tag.type + (tag.display_value ?? tag.value)"
+            v-for="(tag, idx) in typedEntries"
+            :key="idx + ':' + tag.type"
             :color="RPG_COLORS.badgeMuted"
+            :title="tag.type"
             outline
           >
-            {{ tag.display_value ?? tag.value }}
+            {{ tag.display_value || tag.value }}
           </q-badge>
           <q-badge v-if="action.dice" :color="RPG_COLORS.badgeMuted" outline>
             {{ action.dice }}
@@ -52,7 +53,7 @@
             class="text-caption text-italic"
             :class="`text-${RPG_COLORS.specialAbility}`"
           >
-            {{ entry.display_value ?? entry.value
+            {{ entry.display_value || entry.value
             }}{{ i < narrativeEntries.length - 1 ? ' · ' : '' }}
           </span>
         </div>

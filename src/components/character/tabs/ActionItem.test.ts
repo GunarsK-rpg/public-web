@@ -59,6 +59,7 @@ describe('ActionItem', () => {
           actionType: { id: 1, code: 'action-type', name: 'Action Type' },
           focusCost: 0,
           investitureCost: 0,
+          special: [],
           ...action,
         } as Action,
       },
@@ -241,7 +242,7 @@ describe('ActionItem', () => {
 
       const header = wrapper.find('.header');
       const badges = header.findAll('.q-badge');
-      expect(badges.some((b) => b.text().includes('d'))).toBe(false);
+      expect(badges.some((b) => /\b\d+d\d+\b/.test(b.text()))).toBe(false);
     });
   });
 
