@@ -11,6 +11,15 @@
       <q-icon name="error" size="xs" class="q-mr-xs" aria-hidden="true" />
       {{ displayError }}
     </div>
+    <div
+      v-else-if="displayWarning"
+      class="text-warning text-caption q-mr-sm"
+      role="status"
+      aria-live="polite"
+    >
+      <q-icon name="warning" size="xs" class="q-mr-xs" aria-hidden="true" />
+      {{ displayWarning }}
+    </div>
     <q-btn
       v-if="!isLastStep"
       color="primary"
@@ -59,6 +68,11 @@ const displayError = computed(() => {
   if (props.saveError) return props.saveError;
   const errors = currentValidation.value.errors;
   return errors.length > 0 ? errors[0] : null;
+});
+
+const displayWarning = computed(() => {
+  const warnings = currentValidation.value.warnings;
+  return warnings.length > 0 ? warnings[0] : null;
 });
 
 function previousStep() {

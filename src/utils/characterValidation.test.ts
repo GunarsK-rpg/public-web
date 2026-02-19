@@ -107,6 +107,9 @@ const createValidationData = (overrides: Partial<HeroValidationData> = {}): Hero
   hero: createHero(),
   levelData: createLevel(),
   intellectValue: 2,
+  talentsModifier: 0,
+  skillsModifier: 0,
+  expertisesModifier: 0,
   ...overrides,
 });
 
@@ -229,7 +232,7 @@ describe('getStepValidation', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Attributes Step (Budget-based)
+  // Attributes Step (Budget-based, soft warnings)
   // ---------------------------------------------------------------------------
   describe('ATTRIBUTES step', () => {
     it('validates when budget is exactly spent', () => {
@@ -251,7 +254,7 @@ describe('getStepValidation', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('fails when budget is exceeded', () => {
+    it('warns when budget is exceeded (soft validation)', () => {
       const attributes = [
         createAttribute({ attribute: { id: 1, code: 'test', name: 'Test' }, value: 5 }),
         createAttribute({ attribute: { id: 2, code: 'test', name: 'Test' }, value: 5 }),
@@ -263,8 +266,8 @@ describe('getStepValidation', () => {
       });
       const result = getStepValidation(STEP_CODES.ATTRIBUTES, data);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Attribute points exceeded');
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('Attribute points exceeded');
     });
 
     it('warns when budget is not fully spent', () => {
@@ -282,7 +285,7 @@ describe('getStepValidation', () => {
       expect(result.warnings).toContain('8 attribute points remaining');
     });
 
-    it('fails with attribute value above 5', () => {
+    it('fails with attribute value above 5 (DB constraint)', () => {
       const attributes = [
         createAttribute({ attribute: { id: 1, code: 'test', name: 'Test' }, value: 6 }),
       ];
@@ -296,7 +299,7 @@ describe('getStepValidation', () => {
       expect(result.errors).toContain('Attribute values must be between 0 and 5');
     });
 
-    it('fails with negative attribute value', () => {
+    it('fails with negative attribute value (DB constraint)', () => {
       const attributes = [
         createAttribute({ attribute: { id: 1, code: 'test', name: 'Test' }, value: -1 }),
       ];
@@ -312,7 +315,7 @@ describe('getStepValidation', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Skills Step (Budget-based)
+  // Skills Step (Budget-based, soft warnings)
   // ---------------------------------------------------------------------------
   describe('SKILLS step', () => {
     it('validates when skill budget is exactly spent', () => {
@@ -332,7 +335,7 @@ describe('getStepValidation', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('fails when skill budget is exceeded', () => {
+    it('warns when skill budget is exceeded (soft validation)', () => {
       const skills = [
         createSkill({ skill: { id: 1, code: 'test', name: 'Test' }, rank: 2 }),
         createSkill({ skill: { id: 2, code: 'test', name: 'Test' }, rank: 2 }),
@@ -346,11 +349,11 @@ describe('getStepValidation', () => {
       });
       const result = getStepValidation(STEP_CODES.SKILLS, data);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Skill ranks exceeded');
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('Skill ranks exceeded');
     });
 
-    it('fails when skill rank exceeds maximum', () => {
+    it('warns when skill rank exceeds maximum (soft validation)', () => {
       const skills = [createSkill({ skill: { id: 1, code: 'test', name: 'Test' }, rank: 3 })]; // Max is 2
       const data = createValidationData({
         hero: createHero({ skills }),
@@ -358,8 +361,8 @@ describe('getStepValidation', () => {
       });
       const result = getStepValidation(STEP_CODES.SKILLS, data);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Skill rank exceeds maximum of 2');
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('Skill rank exceeds maximum of 2');
     });
 
     it('warns when skill budget is not fully spent', () => {
@@ -373,10 +376,30 @@ describe('getStepValidation', () => {
       expect(result.isValid).toBe(true);
       expect(result.warnings).toContain('6 skill ranks remaining');
     });
+
+    it('applies skillsModifier to budget', () => {
+      const skills = [
+        createSkill({ skill: { id: 1, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 2, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 3, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 4, code: 'test', name: 'Test' }, rank: 2 }),
+        createSkill({ skill: { id: 5, code: 'test', name: 'Test' }, rank: 2 }),
+      ]; // Total: 10, Budget: 8 + 3 = 11
+      const data = createValidationData({
+        hero: createHero({ skills }),
+        levelData: createLevel({ skillRanks: 8, maxSkillRank: 2 }),
+        skillsModifier: 3,
+      });
+      const result = getStepValidation(STEP_CODES.SKILLS, data);
+
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).not.toContain('Skill ranks exceeded');
+      expect(result.warnings).toContain('1 skill ranks remaining');
+    });
   });
 
   // ---------------------------------------------------------------------------
-  // Expertises Step (Budget: base + intellect)
+  // Expertises Step (Budget: base + intellect, soft warnings)
   // ---------------------------------------------------------------------------
   describe('EXPERTISES step', () => {
     it('validates within budget (base 2 + intellect)', () => {
@@ -395,7 +418,7 @@ describe('getStepValidation', () => {
       expect(result.isValid).toBe(true);
     });
 
-    it('fails when expertise slots exceeded', () => {
+    it('warns when expertise slots exceeded (soft validation)', () => {
       const expertises = [
         createExpertise({ expertise: { id: 1, code: 'test', name: 'Test' } }),
         createExpertise({ expertise: { id: 2, code: 'test', name: 'Test' } }),
@@ -409,8 +432,8 @@ describe('getStepValidation', () => {
       });
       const result = getStepValidation(STEP_CODES.EXPERTISES, data);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Expertise slots exceeded');
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('Expertise slots exceeded');
     });
 
     it('excludes starting_kit expertises from count', () => {
@@ -436,10 +459,29 @@ describe('getStepValidation', () => {
 
       expect(result.isValid).toBe(true);
     });
+
+    it('applies expertisesModifier to budget', () => {
+      const expertises = [
+        createExpertise({ expertise: { id: 1, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 2, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 3, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 4, code: 'test', name: 'Test' } }),
+        createExpertise({ expertise: { id: 5, code: 'test', name: 'Test' } }),
+      ]; // Total: 5, Budget: 2 + 2 + 2 = 6
+      const data = createValidationData({
+        hero: createHero({ expertises }),
+        intellectValue: 2,
+        expertisesModifier: 2,
+      });
+      const result = getStepValidation(STEP_CODES.EXPERTISES, data);
+
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).not.toContain('Expertise slots exceeded');
+    });
   });
 
   // ---------------------------------------------------------------------------
-  // Paths Step (Talent slots)
+  // Paths Step (Talent slots, soft warnings)
   // ---------------------------------------------------------------------------
   describe('PATHS step', () => {
     it('validates with talents within budget', () => {
@@ -456,18 +498,18 @@ describe('getStepValidation', () => {
       expect(result.isValid).toBe(true);
     });
 
-    it('fails with no talents', () => {
+    it('warns with no talents (soft validation)', () => {
       const data = createValidationData({
         hero: createHero({ talents: [] }),
         levelData: createLevel({ talentSlots: 3 }),
       });
       const result = getStepValidation(STEP_CODES.PATHS, data);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('At least one talent is required');
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('No talents selected');
     });
 
-    it('fails when talent slots exceeded', () => {
+    it('warns when talent slots exceeded (soft validation)', () => {
       const talents = [
         createTalent({ talent: { id: 1, code: 'test', name: 'Test' } }),
         createTalent({ talent: { id: 2, code: 'test', name: 'Test' } }),
@@ -480,8 +522,26 @@ describe('getStepValidation', () => {
       });
       const result = getStepValidation(STEP_CODES.PATHS, data);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Talent slots exceeded (4/3)');
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('Talent slots exceeded');
+    });
+
+    it('applies talentsModifier to budget', () => {
+      const talents = [
+        createTalent({ talent: { id: 1, code: 'test', name: 'Test' } }),
+        createTalent({ talent: { id: 2, code: 'test', name: 'Test' } }),
+        createTalent({ talent: { id: 3, code: 'test', name: 'Test' } }),
+        createTalent({ talent: { id: 4, code: 'test', name: 'Test' } }),
+      ]; // Total: 4, Budget: 3 + 2 = 5
+      const data = createValidationData({
+        hero: createHero({ talents }),
+        levelData: createLevel({ talentSlots: 3 }),
+        talentsModifier: 2,
+      });
+      const result = getStepValidation(STEP_CODES.PATHS, data);
+
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).not.toContain('Talent slots exceeded (4/5)');
     });
   });
 
@@ -593,8 +653,35 @@ describe('getStepValidation', () => {
       expect(result.errors).toContain('Level must be between 1 and 20');
       expect(result.errors).toContain('Ancestry is required');
       expect(result.errors).toContain('At least one culture is required');
-      expect(result.errors).toContain('At least one talent is required');
       expect(result.errors).toContain('Starting kit is required');
+    });
+
+    it('collects warnings from all required steps', () => {
+      const data = createValidationData({
+        hero: createHero({
+          name: 'Test',
+          level: 1,
+          ancestry: { id: 1, code: 'test', name: 'Test' },
+          cultures: [createCulture()],
+          attributes: [], // 0 spent, 12 budget => warning
+          skills: [], // 0 spent, 8 budget => warning
+          expertises: [],
+          talents: [], // no talents => warning
+          startingKit: { id: 1, code: 'test', name: 'Test' },
+        }),
+        levelData: createLevel({
+          attributePoints: 12,
+          skillRanks: 8,
+          talentSlots: 3,
+        }),
+      });
+      const result = getStepValidation(STEP_CODES.REVIEW, data);
+
+      expect(result.isValid).toBe(true);
+      expect(result.warnings.length).toBeGreaterThan(0);
+      expect(result.warnings).toContain('12 attribute points remaining');
+      expect(result.warnings).toContain('8 skill ranks remaining');
+      expect(result.warnings).toContain('No talents selected');
     });
   });
 });
@@ -636,6 +723,20 @@ describe('getBudgetValidation', () => {
       expect(result.remaining).toBe(5);
       expect(result.maxRank).toBe(2);
     });
+
+    it('includes skillsModifier in budget', () => {
+      const skills = [createSkill({ rank: 2 })];
+      const data = createValidationData({
+        hero: createHero({ skills }),
+        levelData: createLevel({ skillRanks: 8 }),
+        skillsModifier: 3,
+      });
+      const result = getBudgetValidation(STEP_CODES.SKILLS, data);
+
+      expect(result.budget).toBe(11);
+      expect(result.spent).toBe(2);
+      expect(result.remaining).toBe(9);
+    });
   });
 
   describe('EXPERTISES budget', () => {
@@ -651,6 +752,20 @@ describe('getBudgetValidation', () => {
       expect(result.spent).toBe(2);
       expect(result.remaining).toBe(3);
     });
+
+    it('includes expertisesModifier in budget', () => {
+      const expertises = [createExpertise()];
+      const data = createValidationData({
+        hero: createHero({ expertises }),
+        intellectValue: 2, // Budget: 2 + 2 + 1 = 5
+        expertisesModifier: 1,
+      });
+      const result = getBudgetValidation(STEP_CODES.EXPERTISES, data);
+
+      expect(result.budget).toBe(5);
+      expect(result.spent).toBe(1);
+      expect(result.remaining).toBe(4);
+    });
   });
 
   describe('PATHS budget', () => {
@@ -665,6 +780,20 @@ describe('getBudgetValidation', () => {
       expect(result.budget).toBe(3);
       expect(result.spent).toBe(1);
       expect(result.remaining).toBe(2);
+    });
+
+    it('includes talentsModifier in budget', () => {
+      const talents = [createTalent()];
+      const data = createValidationData({
+        hero: createHero({ talents }),
+        levelData: createLevel({ talentSlots: 3 }),
+        talentsModifier: 2,
+      });
+      const result = getBudgetValidation(STEP_CODES.PATHS, data);
+
+      expect(result.budget).toBe(5);
+      expect(result.spent).toBe(1);
+      expect(result.remaining).toBe(4);
     });
   });
 
@@ -701,6 +830,16 @@ describe('getBudgetValidation', () => {
       const result = getBudgetValidation(STEP_CODES.EXPERTISES, data);
 
       expect(result.budget).toBe(2); // Base slots only
+    });
+
+    it('handles negative modifiers', () => {
+      const data = createValidationData({
+        levelData: createLevel({ skillRanks: 8 }),
+        skillsModifier: -3,
+      });
+      const result = getBudgetValidation(STEP_CODES.SKILLS, data);
+
+      expect(result.budget).toBe(5);
     });
   });
 });

@@ -67,6 +67,7 @@ import { useQuasar } from 'quasar';
 import { useWizardStore } from 'stores/wizard';
 import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
+import { useCampaignStore } from 'stores/campaigns';
 import { useSwipeNavigation } from 'src/composables/useSwipeNavigation';
 import { useDeletionTracker } from 'src/composables/useDeletionTracker';
 import { useWizardSave } from 'src/composables/useWizardSave';
@@ -99,6 +100,7 @@ const $q = useQuasar();
 const wizardStore = useWizardStore();
 const heroStore = useHeroStore();
 const classifierStore = useClassifierStore();
+const campaignStore = useCampaignStore();
 
 // Deletion tracker — provided to step components via inject
 const deletionTracker = useDeletionTracker();
@@ -199,6 +201,10 @@ onMounted(async () => {
   try {
     if (!classifierStore.initialized) {
       await classifierStore.initialize();
+    }
+    // Ensure campaigns are available for modifier-based validation
+    if (!campaignStore.hasCampaigns) {
+      await campaignStore.fetchCampaigns();
     }
     if (!wizardStore.isActive) {
       if (props.characterId) {

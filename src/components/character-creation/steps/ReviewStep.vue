@@ -20,6 +20,21 @@
       Character is ready to create!
     </q-banner>
 
+    <q-banner
+      v-if="validationWarnings.length > 0"
+      class="banner-warning q-mb-md"
+      role="status"
+      aria-live="polite"
+    >
+      <template v-slot:avatar>
+        <q-icon name="sym_o_warning" aria-hidden="true" />
+      </template>
+      <div class="text-subtitle2">Warnings</div>
+      <ul class="q-pl-md q-my-xs">
+        <li v-for="(warning, i) in validationWarnings" :key="i">{{ warning }}</li>
+      </ul>
+    </q-banner>
+
     <!-- Character Summary -->
     <div class="row q-col-gutter-md">
       <!-- Basic Info -->
@@ -189,6 +204,7 @@ const classifiers = useClassifierStore();
 const { allStepsValidation } = useStepValidation();
 
 const validationErrors = computed(() => allStepsValidation.value.errors);
+const validationWarnings = computed(() => allStepsValidation.value.warnings);
 const isValid = computed(() => allStepsValidation.value.isValid);
 
 // Basic info lookups

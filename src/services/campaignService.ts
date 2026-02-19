@@ -13,7 +13,7 @@ export default {
     return api.post('/campaigns', campaign);
   },
   update(id: number, campaign: CampaignBase): Promise<AxiosResponse<Campaign>> {
-    return api.put(`/campaigns/${id}`, campaign);
+    return api.put(`/campaigns/${id}`, { ...campaign, id });
   },
   delete(id: number): Promise<AxiosResponse<void>> {
     return api.delete(`/campaigns/${id}`);

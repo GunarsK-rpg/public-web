@@ -2,6 +2,7 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useWizardStore } from 'src/stores/wizard';
+import { useCampaignStore } from 'src/stores/campaigns';
 import { STEP_CODES } from 'src/types/wizard';
 import {
   getStepValidation,
@@ -17,13 +18,21 @@ export function useStepValidation() {
   const heroStore = useHeroStore();
   const attrStore = useHeroAttributesStore();
   const wizardStore = useWizardStore();
+  const campaignStore = useCampaignStore();
 
   const validationData = computed<HeroValidationData | null>(() => {
     if (!heroStore.hero) return null;
+
+    const campaignId = heroStore.hero.campaignId;
+    const campaign = campaignId ? campaignStore.campaigns.find((c) => c.id === campaignId) : null;
+
     return {
       hero: heroStore.hero,
       levelData: attrStore.levelData,
       intellectValue: attrStore.getAttributeValue('int'),
+      talentsModifier: campaign?.talentsModifier ?? 0,
+      skillsModifier: campaign?.skillsModifier ?? 0,
+      expertisesModifier: campaign?.expertisesModifier ?? 0,
     };
   });
 

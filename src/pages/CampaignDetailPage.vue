@@ -32,7 +32,7 @@
               class="q-ml-sm"
               :disable="saving"
               aria-label="Edit campaign"
-              @click="promptEditCampaign"
+              @click="editCampaign"
             />
             <q-btn
               flat
@@ -134,7 +134,6 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
-import { MAX_CAMPAIGN_NAME_LENGTH } from 'src/constants/validation';
 
 const props = defineProps<{
   campaignId: string;
@@ -195,25 +194,10 @@ function createCharacter(): void {
   });
 }
 
-function promptEditCampaign(): void {
-  if (!campaign.value) return;
-  $q.dialog({
-    title: 'Edit Campaign',
-    message: 'Campaign name:',
-    prompt: {
-      model: campaign.value.name,
-      type: 'text',
-      maxlength: MAX_CAMPAIGN_NAME_LENGTH,
-      isValid: (val: string) => val.trim().length > 0,
-    },
-    cancel: true,
-    persistent: false,
-  }).onOk((name: string) => {
-    if (!campaign.value) return;
-    void campaignStore.updateCampaign(campaign.value.id, {
-      name: name.trim(),
-      description: campaign.value.description ?? null,
-    });
+function editCampaign(): void {
+  void router.push({
+    name: 'campaign-edit',
+    params: { campaignId: props.campaignId },
   });
 }
 

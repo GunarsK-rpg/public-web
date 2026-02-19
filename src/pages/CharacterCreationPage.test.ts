@@ -53,6 +53,14 @@ vi.mock('stores/classifiers', () => ({
   }),
 }));
 
+vi.mock('stores/campaigns', () => ({
+  useCampaignStore: () => ({
+    hasCampaigns: true,
+    campaigns: [],
+    fetchCampaigns: vi.fn(),
+  }),
+}));
+
 vi.mock('src/composables/useSwipeNavigation', () => ({
   useSwipeNavigation: vi.fn(),
 }));
