@@ -54,6 +54,7 @@
     "yarn": ">= 1.22.22"
   },
   "overrides": {
-    "lodash": "4.17.23"
+    "lodash": "4.17.23",
+    "serialize-javascript": "^7.0.3"
   }
 }
