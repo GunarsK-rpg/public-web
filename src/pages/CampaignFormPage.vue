@@ -95,8 +95,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
 import { useCampaignStore } from 'src/stores/campaigns';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 import {
   MAX_CAMPAIGN_NAME_LENGTH,
   MIN_CAMPAIGN_MODIFIER,
@@ -109,8 +109,8 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const $q = useQuasar();
 const campaignStore = useCampaignStore();
+const { handleError, showWarning } = useErrorHandler();
 
 const isEditMode = computed(() => !!props.campaignId);
 const saving = computed(() => campaignStore.saving);
@@ -184,7 +184,7 @@ async function handleSubmit(): Promise<void> {
           params: { campaignId: props.campaignId },
         });
       } else {
-        $q.notify({ type: 'negative', message: campaignStore.error ?? 'Failed to save campaign' });
+        showWarning(campaignStore.error ?? 'Failed to save campaign');
       }
     } else {
       const result = await campaignStore.createCampaign(data);
@@ -194,14 +194,11 @@ async function handleSubmit(): Promise<void> {
           params: { campaignId: String(result.id) },
         });
       } else {
-        $q.notify({
-          type: 'negative',
-          message: campaignStore.error ?? 'Failed to create campaign',
-        });
+        showWarning(campaignStore.error ?? 'Failed to create campaign');
       }
     }
-  } catch {
-    $q.notify({ type: 'negative', message: 'An unexpected error occurred' });
+  } catch (error) {
+    handleError(error as Error);
   }
 }
 
