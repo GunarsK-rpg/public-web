@@ -13,6 +13,9 @@ const mockCampaigns: Campaign[] = [
     description: 'First campaign',
     userId: 10,
     code: 'abc-123',
+    talentsModifier: 0,
+    skillsModifier: 0,
+    expertisesModifier: 0,
     user: { id: 10, username: 'owner' },
   },
   {
@@ -21,6 +24,9 @@ const mockCampaigns: Campaign[] = [
     description: 'Second campaign',
     userId: 20,
     code: 'def-456',
+    talentsModifier: 0,
+    skillsModifier: 0,
+    expertisesModifier: 0,
     user: { id: 20, username: 'other' },
   },
 ];
@@ -287,6 +293,9 @@ describe('useCampaignStore', () => {
       description: 'A new one',
       userId: 10,
       code: 'ghi-789',
+      talentsModifier: 0,
+      skillsModifier: 0,
+      expertisesModifier: 0,
       user: { id: 10, username: 'owner' },
     };
 

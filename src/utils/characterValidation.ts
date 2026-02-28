@@ -42,13 +42,13 @@ function validateAttributes(
   const remaining = budget - spent;
 
   if (remaining < 0) {
-    errors.push('Attribute points exceeded');
+    warnings.push('Attribute points exceeded');
   }
   if (remaining > 0) {
     warnings.push(`${remaining} attribute points remaining`);
   }
 
-  // Check for invalid attribute values (only add error once)
+  // Check for invalid attribute values (DB CHECK constraint)
   const hasInvalidAttr = attributes.some((attr) => attr.value < 0 || attr.value > 5);
   if (hasInvalidAttr) {
     errors.push('Attribute values must be between 0 and 5');
@@ -57,57 +57,68 @@ function validateAttributes(
   return { isValid: errors.length === 0, errors, warnings, budget, spent, remaining };
 }
 
-function validateSkills(levelData: Level | undefined, skills: HeroSkill[]): SkillsBudgetValidation {
+function validateSkills(
+  levelData: Level | undefined,
+  skills: HeroSkill[],
+  skillsModifier: number
+): SkillsBudgetValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  const budget = levelData?.skillRanks ?? 0;
+  const budget = (levelData?.skillRanks ?? 0) + skillsModifier;
   const maxRank = levelData?.maxSkillRank ?? 2;
   const spent = skills.reduce((sum, s) => sum + s.rank, 0);
   const remaining = budget - spent;
 
   if (remaining < 0) {
-    errors.push('Skill ranks exceeded');
+    warnings.push('Skill ranks exceeded');
   }
   if (remaining > 0) {
     warnings.push(`${remaining} skill ranks remaining`);
   }
 
-  // Check for skill ranks exceeding max (only add error once)
   const hasExceedingRank = skills.some((skill) => skill.rank > maxRank);
   if (hasExceedingRank) {
-    errors.push(`Skill rank exceeds maximum of ${maxRank}`);
+    warnings.push(`Skill rank exceeds maximum of ${maxRank}`);
   }
 
   return { isValid: errors.length === 0, errors, warnings, budget, spent, remaining, maxRank };
 }
 
-function validateExpertises(intellectValue: number, expertises: HeroExpertise[]): BudgetValidation {
+function validateExpertises(
+  intellectValue: number,
+  expertises: HeroExpertise[],
+  expertisesModifier: number
+): BudgetValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  const budget = BASE_EXPERTISE_SLOTS + intellectValue;
+  const budget = BASE_EXPERTISE_SLOTS + intellectValue + expertisesModifier;
   // Count only non-starting-kit expertises
   const spent = expertises.filter((e) => e.source?.sourceType !== 'starting_kit').length;
   const remaining = budget - spent;
 
   if (remaining < 0) {
-    errors.push('Expertise slots exceeded');
+    warnings.push('Expertise slots exceeded');
   }
 
   return { isValid: errors.length === 0, errors, warnings, budget, spent, remaining };
 }
 
-function validateTalents(levelData: Level | undefined, talents: HeroTalent[]): BudgetValidation {
+function validateTalents(
+  levelData: Level | undefined,
+  talents: HeroTalent[],
+  talentsModifier: number
+): BudgetValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  const budget = levelData?.talentSlots ?? 0;
+  const budget = (levelData?.talentSlots ?? 0) + talentsModifier;
   const spent = talents.length;
   const remaining = budget - spent;
 
   if (remaining < 0) {
-    errors.push('Talent slots exceeded');
+    warnings.push('Talent slots exceeded');
   }
 
   return { isValid: errors.length === 0, errors, warnings, budget, spent, remaining };
@@ -145,20 +156,18 @@ function validateCulture(cultures: HeroCulture[]): StepValidation {
   return { isValid: errors.length === 0, errors, warnings };
 }
 
-function validatePaths(levelData: Level | undefined, talents: HeroTalent[]): StepValidation {
-  const errors: string[] = [];
-  const warnings: string[] = [];
+function validatePaths(
+  levelData: Level | undefined,
+  talents: HeroTalent[],
+  talentsModifier: number
+): StepValidation {
+  const talentValidation = validateTalents(levelData, talents, talentsModifier);
 
   if (talents.length === 0) {
-    errors.push('At least one talent is required');
+    talentValidation.warnings.push('No talents selected');
   }
 
-  const talentBudget = levelData?.talentSlots ?? 0;
-  if (talents.length > talentBudget) {
-    errors.push(`Talent slots exceeded (${talents.length}/${talentBudget})`);
-  }
-
-  return { isValid: errors.length === 0, errors, warnings };
+  return talentValidation;
 }
 
 function validateStartingKit(startingKitId: number | null | undefined): StepValidation {
@@ -179,10 +188,14 @@ export interface HeroValidationData {
   hero: HeroSheet;
   levelData: Level | undefined;
   intellectValue: number;
+  talentsModifier: number;
+  skillsModifier: number;
+  expertisesModifier: number;
 }
 
 export function getStepValidation(stepCode: StepCode, data: HeroValidationData): StepValidation {
-  const { hero, levelData, intellectValue } = data;
+  const { hero, levelData, intellectValue, talentsModifier, skillsModifier, expertisesModifier } =
+    data;
 
   switch (stepCode) {
     case STEP_CODES.BASIC_SETUP:
@@ -192,11 +205,11 @@ export function getStepValidation(stepCode: StepCode, data: HeroValidationData):
     case STEP_CODES.ATTRIBUTES:
       return validateAttributes(levelData, hero.attributes);
     case STEP_CODES.SKILLS:
-      return validateSkills(levelData, hero.skills);
+      return validateSkills(levelData, hero.skills, skillsModifier);
     case STEP_CODES.EXPERTISES:
-      return validateExpertises(intellectValue, hero.expertises);
+      return validateExpertises(intellectValue, hero.expertises, expertisesModifier);
     case STEP_CODES.PATHS:
-      return validatePaths(levelData, hero.talents);
+      return validatePaths(levelData, hero.talents, talentsModifier);
     case STEP_CODES.STARTING_KIT:
       return validateStartingKit(hero.startingKit?.id);
     case STEP_CODES.EQUIPMENT:
@@ -204,13 +217,16 @@ export function getStepValidation(stepCode: StepCode, data: HeroValidationData):
       return { isValid: true, errors: [], warnings: [] };
     case STEP_CODES.REVIEW: {
       const errors: string[] = [];
+      const warnings: string[] = [];
       const requiredSteps = WIZARD_STEPS.filter(
         (s) => !s.isOptional && s.code !== STEP_CODES.REVIEW
       );
       for (const step of requiredSteps) {
-        errors.push(...getStepValidation(step.code, data).errors);
+        const stepResult = getStepValidation(step.code, data);
+        errors.push(...stepResult.errors);
+        warnings.push(...stepResult.warnings);
       }
-      return { isValid: errors.length === 0, errors, warnings: [] };
+      return { isValid: errors.length === 0, errors, warnings };
     }
     default:
       return { isValid: true, errors: [], warnings: [] };
@@ -242,17 +258,18 @@ export function getBudgetValidation(
   stepCode: StepCode,
   data: HeroValidationData
 ): BudgetValidation | SkillsBudgetValidation {
-  const { hero, levelData, intellectValue } = data;
+  const { hero, levelData, intellectValue, talentsModifier, skillsModifier, expertisesModifier } =
+    data;
 
   switch (stepCode) {
     case STEP_CODES.ATTRIBUTES:
       return validateAttributes(levelData, hero.attributes);
     case STEP_CODES.SKILLS:
-      return validateSkills(levelData, hero.skills);
+      return validateSkills(levelData, hero.skills, skillsModifier);
     case STEP_CODES.EXPERTISES:
-      return validateExpertises(intellectValue, hero.expertises);
+      return validateExpertises(intellectValue, hero.expertises, expertisesModifier);
     case STEP_CODES.PATHS:
-      return validateTalents(levelData, hero.talents);
+      return validateTalents(levelData, hero.talents, talentsModifier);
     default:
       return DEFAULT_BUDGET;
   }

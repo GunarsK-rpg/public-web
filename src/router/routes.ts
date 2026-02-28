@@ -28,11 +28,24 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'My Campaigns' },
       },
       {
+        path: 'campaigns/new',
+        name: 'campaign-create',
+        component: () => import('pages/CampaignFormPage.vue'),
+        meta: { title: 'Create Campaign' },
+      },
+      {
         path: 'campaigns/:campaignId(\\d+)',
         name: 'campaign-detail',
         component: () => import('pages/CampaignDetailPage.vue'),
         props: true,
         meta: { title: 'Campaign' },
+      },
+      {
+        path: 'campaigns/:campaignId(\\d+)/edit',
+        name: 'campaign-edit',
+        component: () => import('pages/CampaignFormPage.vue'),
+        props: true,
+        meta: { title: 'Edit Campaign' },
       },
       {
         path: 'campaigns/:campaignId(\\d+)/characters/new',
