@@ -46,6 +46,8 @@
                 label="Talents"
                 outlined
                 dense
+                :min="MIN_CAMPAIGN_MODIFIER"
+                :max="MAX_CAMPAIGN_MODIFIER"
               />
             </div>
             <div class="col-4">
@@ -55,6 +57,8 @@
                 label="Skill Ranks"
                 outlined
                 dense
+                :min="MIN_CAMPAIGN_MODIFIER"
+                :max="MAX_CAMPAIGN_MODIFIER"
               />
             </div>
             <div class="col-4">
@@ -64,6 +68,8 @@
                 label="Expertises"
                 outlined
                 dense
+                :min="MIN_CAMPAIGN_MODIFIER"
+                :max="MAX_CAMPAIGN_MODIFIER"
               />
             </div>
           </div>
@@ -89,8 +95,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
 import { useCampaignStore } from 'src/stores/campaigns';
-import { MAX_CAMPAIGN_NAME_LENGTH } from 'src/constants/validation';
+import {
+  MAX_CAMPAIGN_NAME_LENGTH,
+  MIN_CAMPAIGN_MODIFIER,
+  MAX_CAMPAIGN_MODIFIER,
+} from 'src/constants/validation';
 import type { Campaign, CampaignBase } from 'src/types';
 
 const props = defineProps<{
@@ -98,6 +109,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const $q = useQuasar();
 const campaignStore = useCampaignStore();
 
 const isEditMode = computed(() => !!props.campaignId);
@@ -162,23 +174,34 @@ async function handleSubmit(): Promise<void> {
     expertisesModifier: form.value.expertisesModifier || 0,
   };
 
-  if (isEditMode.value) {
-    const id = Number(props.campaignId);
-    const result = await campaignStore.updateCampaign(id, data);
-    if (result) {
-      void router.push({
-        name: 'campaign-detail',
-        params: { campaignId: props.campaignId },
-      });
+  try {
+    if (isEditMode.value) {
+      const id = Number(props.campaignId);
+      const result = await campaignStore.updateCampaign(id, data);
+      if (result) {
+        void router.push({
+          name: 'campaign-detail',
+          params: { campaignId: props.campaignId },
+        });
+      } else {
+        $q.notify({ type: 'negative', message: campaignStore.error ?? 'Failed to save campaign' });
+      }
+    } else {
+      const result = await campaignStore.createCampaign(data);
+      if (result) {
+        void router.push({
+          name: 'campaign-detail',
+          params: { campaignId: String(result.id) },
+        });
+      } else {
+        $q.notify({
+          type: 'negative',
+          message: campaignStore.error ?? 'Failed to create campaign',
+        });
+      }
     }
-  } else {
-    const result = await campaignStore.createCampaign(data);
-    if (result) {
-      void router.push({
-        name: 'campaign-detail',
-        params: { campaignId: String(result.id) },
-      });
-    }
+  } catch {
+    $q.notify({ type: 'negative', message: 'An unexpected error occurred' });
   }
 }
 

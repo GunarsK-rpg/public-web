@@ -19,5 +19,7 @@ export const MAX_SKILL_MODIFIER = 10;
 // Equipment bounds
 export const MAX_EQUIPMENT_STACK = 999;
 
-// Campaign bounds (match database varchar(100) constraint)
+// Campaign bounds (match database constraints)
 export const MAX_CAMPAIGN_NAME_LENGTH = 100;
+export const MIN_CAMPAIGN_MODIFIER = -100;
+export const MAX_CAMPAIGN_MODIFIER = 100;

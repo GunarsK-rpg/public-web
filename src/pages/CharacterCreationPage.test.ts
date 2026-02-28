@@ -55,7 +55,7 @@ vi.mock('stores/classifiers', () => ({
 
 vi.mock('stores/campaigns', () => ({
   useCampaignStore: () => ({
-    hasCampaigns: true,
+    hasCampaigns: false,
     campaigns: [],
     fetchCampaigns: vi.fn(),
   }),

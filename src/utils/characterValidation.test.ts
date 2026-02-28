@@ -541,7 +541,7 @@ describe('getStepValidation', () => {
       const result = getStepValidation(STEP_CODES.PATHS, data);
 
       expect(result.isValid).toBe(true);
-      expect(result.warnings).not.toContain('Talent slots exceeded (4/5)');
+      expect(result.warnings).not.toContain('Talent slots exceeded');
     });
   });
 
