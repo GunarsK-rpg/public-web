@@ -118,7 +118,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
       handleError(err, { errorRef: error, message: 'Failed to create campaign' });
       return null;
     } finally {
-      savingCount.value--;
+      savingCount.value = Math.max(0, savingCount.value - 1);
     }
   }
 
@@ -147,7 +147,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
       handleError(err, { errorRef: error, message: 'Failed to update campaign' });
       return null;
     } finally {
-      savingCount.value--;
+      savingCount.value = Math.max(0, savingCount.value - 1);
     }
   }
 
@@ -169,7 +169,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
       handleError(err, { errorRef: error, message: 'Failed to delete campaign' });
       return false;
     } finally {
-      savingCount.value--;
+      savingCount.value = Math.max(0, savingCount.value - 1);
     }
   }
 
