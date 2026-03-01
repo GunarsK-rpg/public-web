@@ -148,7 +148,7 @@ describe('CharacterCreationPage', () => {
           StepNavigation: {
             template: '<div class="step-navigation" />',
             props: ['saving', 'saveError'],
-            emits: ['next', 'finish'],
+            emits: ['next', 'finish', 'save-close'],
           },
           BasicSetupStep: { template: '<div class="basic-setup-step" />' },
           CultureStep: { template: '<div class="culture-step" />' },

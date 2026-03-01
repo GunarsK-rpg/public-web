@@ -283,11 +283,13 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+$bottom-nav-height: 48px; // matches q-tabs dense height in MainLayout footer
+
 .character-creation-page {
   display: flex;
   flex-direction: column;
   // Fill available viewport height (minus app header + bottom nav)
-  height: calc(100vh - #{$toolbar-min-height} - 48px);
+  height: calc(100vh - #{$toolbar-min-height} - #{$bottom-nav-height});
   padding: 0 !important;
 }
 
