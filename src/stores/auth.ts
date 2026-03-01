@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import authService from 'src/services/auth';
+import { scheduleProactiveRefresh, clearProactiveRefresh } from 'src/services/tokenRefresh';
 import { Level, LevelValues, type LevelKey } from 'src/constants/permissions';
 import { logger, setUserContext, clearUserContext } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
@@ -37,13 +38,16 @@ export const useAuthStore = defineStore('auth', () => {
       if (isValid) {
         username.value = response.data.username ?? '';
         scopes.value = response.data.scopes ?? {};
+        scheduleProactiveRefresh(response.data.ttl_seconds);
       } else {
+        clearProactiveRefresh();
         username.value = '';
         scopes.value = {};
         clearUserContext();
       }
       return isValid;
     } catch (error) {
+      clearProactiveRefresh();
       isAuthenticated.value = false;
       username.value = '';
       scopes.value = {};
@@ -66,6 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
         setUserContext({ id: response.data.user_id });
       }
 
+      scheduleProactiveRefresh(response.data.expires_in);
       return true;
     } catch (error) {
       logger.error('Login failed', toError(error));
@@ -84,6 +89,7 @@ export const useAuthStore = defineStore('auth', () => {
         error: toError(error).message,
       });
     } finally {
+      clearProactiveRefresh();
       isAuthenticated.value = false;
       username.value = '';
       scopes.value = {};

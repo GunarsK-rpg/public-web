@@ -24,6 +24,17 @@ vi.mock('src/services/auth', () => ({
   },
 }));
 
+// Mock token refresh
+const { mockScheduleProactiveRefresh, mockClearProactiveRefresh } = vi.hoisted(() => ({
+  mockScheduleProactiveRefresh: vi.fn(),
+  mockClearProactiveRefresh: vi.fn(),
+}));
+
+vi.mock('src/services/tokenRefresh', () => ({
+  scheduleProactiveRefresh: mockScheduleProactiveRefresh,
+  clearProactiveRefresh: mockClearProactiveRefresh,
+}));
+
 // Mock logger
 vi.mock('src/utils/logger', () => ({
   logger: {
@@ -73,7 +84,7 @@ describe('useAuthStore', () => {
   describe('login', () => {
     it('sets state on successful login', async () => {
       mockLogin.mockResolvedValue({
-        data: { username: 'testuser', scopes: { heroes: 'edit' }, user_id: 1 },
+        data: { username: 'testuser', scopes: { heroes: 'edit' }, user_id: 1, expires_in: 900 },
       });
 
       const store = useAuthStore();
@@ -83,6 +94,17 @@ describe('useAuthStore', () => {
       expect(store.isAuthenticated).toBe(true);
       expect(store.username).toBe('testuser');
       expect(store.scopes).toEqual({ heroes: 'edit' });
+    });
+
+    it('schedules proactive refresh on successful login', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: {}, expires_in: 900 },
+      });
+
+      const store = useAuthStore();
+      await store.login('testuser', 'password');
+
+      expect(mockScheduleProactiveRefresh).toHaveBeenCalledWith(900);
     });
 
     it('falls back to login username when response has no username', async () => {
@@ -135,7 +157,7 @@ describe('useAuthStore', () => {
   describe('logout', () => {
     it('clears state and navigates to login', async () => {
       mockLogin.mockResolvedValue({
-        data: { username: 'testuser', scopes: { heroes: 'edit' } },
+        data: { username: 'testuser', scopes: { heroes: 'edit' }, expires_in: 900 },
       });
       mockLogout.mockResolvedValue({});
 
@@ -151,9 +173,24 @@ describe('useAuthStore', () => {
       expect(mockPush).toHaveBeenCalledWith({ name: 'login' });
     });
 
+    it('clears proactive refresh on logout', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: {}, expires_in: 900 },
+      });
+      mockLogout.mockResolvedValue({});
+
+      const store = useAuthStore();
+      await store.login('testuser', 'password');
+      mockClearProactiveRefresh.mockClear();
+
+      await store.logout();
+
+      expect(mockClearProactiveRefresh).toHaveBeenCalled();
+    });
+
     it('clears state even when logout request fails', async () => {
       mockLogin.mockResolvedValue({
-        data: { username: 'testuser', scopes: {} },
+        data: { username: 'testuser', scopes: {}, expires_in: 900 },
       });
       mockLogout.mockRejectedValue(new Error('Network error'));
 
@@ -173,7 +210,7 @@ describe('useAuthStore', () => {
   describe('checkAuthStatus', () => {
     it('sets state when token is valid', async () => {
       mockTokenStatus.mockResolvedValue({
-        data: { valid: true, username: 'testuser', scopes: { heroes: 'read' } },
+        data: { valid: true, username: 'testuser', scopes: { heroes: 'read' }, ttl_seconds: 600 },
       });
 
       const store = useAuthStore();
@@ -185,7 +222,18 @@ describe('useAuthStore', () => {
       expect(store.scopes).toEqual({ heroes: 'read' });
     });
 
-    it('returns false when token is invalid', async () => {
+    it('schedules proactive refresh when token is valid', async () => {
+      mockTokenStatus.mockResolvedValue({
+        data: { valid: true, username: 'testuser', scopes: {}, ttl_seconds: 600 },
+      });
+
+      const store = useAuthStore();
+      await store.checkAuthStatus();
+
+      expect(mockScheduleProactiveRefresh).toHaveBeenCalledWith(600);
+    });
+
+    it('returns false and clears refresh when token is invalid', async () => {
       mockTokenStatus.mockResolvedValue({
         data: { valid: false },
       });
@@ -195,9 +243,11 @@ describe('useAuthStore', () => {
 
       expect(result).toBe(false);
       expect(store.isAuthenticated).toBe(false);
+      expect(mockScheduleProactiveRefresh).not.toHaveBeenCalled();
+      expect(mockClearProactiveRefresh).toHaveBeenCalled();
     });
 
-    it('returns false and clears state on error', async () => {
+    it('returns false and clears refresh on error', async () => {
       mockTokenStatus.mockRejectedValue(new Error('Network error'));
 
       const store = useAuthStore();
@@ -207,6 +257,7 @@ describe('useAuthStore', () => {
       expect(store.isAuthenticated).toBe(false);
       expect(store.username).toBe('');
       expect(store.scopes).toEqual({});
+      expect(mockClearProactiveRefresh).toHaveBeenCalled();
     });
   });
 
