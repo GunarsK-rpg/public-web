@@ -7,7 +7,6 @@ import BasicSetupStep from './BasicSetupStep.vue';
 const mockSetName = vi.fn();
 const mockSetLevel = vi.fn();
 const mockSetCampaign = vi.fn();
-const mockFetchCampaigns = vi.fn();
 
 const mockSetAncestry = vi.fn();
 const mockSetSingerForm = vi.fn();
@@ -59,33 +58,13 @@ vi.mock('src/stores/heroAttributes', () => ({
   }),
 }));
 
-const mockHasCampaigns = { value: true };
-
 vi.mock('src/stores/campaigns', () => ({
   useCampaignStore: () => ({
     campaigns: [
       { id: 1, code: 'campaign-1', name: 'Campaign 1' },
       { id: 2, code: 'campaign-2', name: 'Campaign 2' },
     ],
-    get hasCampaigns() {
-      return mockHasCampaigns.value;
-    },
-    fetchCampaigns: mockFetchCampaigns,
   }),
-}));
-
-const mockNotify = { fn: vi.fn() };
-
-vi.mock('quasar', () => ({
-  useQuasar: () => ({
-    notify: (...args: unknown[]) => mockNotify.fn(...args),
-  }),
-}));
-
-const mockLoggerError = { fn: vi.fn() };
-
-vi.mock('src/utils/logger', () => ({
-  logger: { error: (...args: unknown[]) => mockLoggerError.fn(...args) },
 }));
 
 const mockClassifierData = {
@@ -175,25 +154,6 @@ describe('BasicSetupStep', () => {
             ],
             emits: ['update:modelValue'],
           },
-          QSelect: {
-            template: `<select
-              class="q-select"
-              :value="modelValue"
-              @change="$emit('update:modelValue', Number($event.target.value) || null)"
-            >
-              <option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-            </select>`,
-            props: [
-              'modelValue',
-              'options',
-              'label',
-              'outlined',
-              'emitValue',
-              'mapOptions',
-              'clearable',
-            ],
-            emits: ['update:modelValue'],
-          },
           QBanner: {
             template: '<div class="q-banner"><slot name="avatar" /><slot /></div>',
           },
@@ -223,9 +183,7 @@ describe('BasicSetupStep', () => {
     mockHeroLevel.value = 1;
     mockHeroName.value = 'Test Hero';
     mockHeroCampaignId.value = null;
-    mockHasCampaigns.value = true;
     mockLevelData.value = { attributePoints: 10, skillRanks: 10, talentSlots: 3 };
-    mockFetchCampaigns.mockResolvedValue(undefined);
     mockHeroAncestry.value = { id: 1, code: 'human', name: 'Human' };
     mockActiveSingerForm.value = null;
     mockHeroTalents.value = [];
@@ -270,12 +228,6 @@ describe('BasicSetupStep', () => {
       const inputs = wrapper.findAll('.q-input');
       expect(inputs.length).toBeGreaterThanOrEqual(2);
     });
-
-    it('renders campaign select', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.find('.q-select').exists()).toBe(true);
-    });
   });
 
   // ========================================
@@ -315,24 +267,6 @@ describe('BasicSetupStep', () => {
       await inputs[1]!.setValue('5');
 
       expect(mockSetLevel).toHaveBeenCalled();
-    });
-  });
-
-  // ========================================
-  // Campaign Select
-  // ========================================
-  describe('campaign select', () => {
-    it('calls setCampaign with full ClassifierRef on selection', async () => {
-      const wrapper = createWrapper();
-
-      const select = wrapper.find('.q-select');
-      await select.setValue(1);
-
-      expect(mockSetCampaign).toHaveBeenCalledWith({
-        id: 1,
-        code: 'campaign-1',
-        name: 'Campaign 1',
-      });
     });
   });
 
@@ -401,53 +335,6 @@ describe('BasicSetupStep', () => {
   });
 
   // ========================================
-  // Campaign Fetch on Mount
-  // ========================================
-  describe('campaign fetch on mount', () => {
-    it('does not fetch campaigns if already loaded', async () => {
-      mockHasCampaigns.value = true;
-      createWrapper();
-
-      // Wait for mount using flushPromises pattern
-      await vi.waitFor(() => {
-        // Component should not call fetch when campaigns already loaded
-        expect(mockFetchCampaigns).not.toHaveBeenCalled();
-      });
-    });
-
-    it('fetches campaigns if not loaded', async () => {
-      mockHasCampaigns.value = false;
-      createWrapper();
-
-      // Wait for mount using flushPromises pattern
-      await vi.waitFor(() => {
-        expect(mockFetchCampaigns).toHaveBeenCalled();
-      });
-    });
-  });
-
-  // ========================================
-  // Campaign Selection
-  // ========================================
-  describe('campaign selection', () => {
-    it('calls setCampaign with null when clearing', async () => {
-      const wrapper = createWrapper();
-
-      const select = wrapper.find('.q-select');
-      await select.setValue('');
-
-      expect(mockSetCampaign).toHaveBeenCalledWith(null);
-    });
-
-    it('displays campaign options', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Campaign 1');
-      expect(wrapper.text()).toContain('Campaign 2');
-    });
-  });
-
-  // ========================================
   // Name Input Null Handling
   // ========================================
   describe('name input edge cases', () => {
@@ -462,7 +349,6 @@ describe('BasicSetupStep', () => {
               props: ['modelValue', 'label', 'type', 'min', 'max', 'rules', 'outlined'],
               emits: ['update:modelValue'],
             },
-            QSelect: { template: '<div class="q-select"></div>', props: ['modelValue', 'options'] },
             QBanner: { template: '<div class="q-banner"><slot /></div>' },
             QIcon: { template: '<span class="q-icon" />' },
           },
@@ -498,7 +384,6 @@ describe('BasicSetupStep', () => {
               props: ['modelValue', 'label', 'type', 'min', 'max', 'rules', 'outlined'],
               emits: ['update:modelValue'],
             },
-            QSelect: { template: '<div class="q-select"></div>', props: ['modelValue', 'options'] },
             QBanner: { template: '<div class="q-banner"><slot /></div>' },
             QIcon: { template: '<span class="q-icon" />' },
           },
@@ -531,7 +416,6 @@ describe('BasicSetupStep', () => {
               props: ['modelValue', 'label', 'type', 'min', 'max', 'rules', 'outlined'],
               emits: ['update:modelValue'],
             },
-            QSelect: { template: '<div class="q-select"></div>', props: ['modelValue', 'options'] },
             QBanner: { template: '<div class="q-banner"><slot /></div>' },
             QIcon: { template: '<span class="q-icon" />' },
           },
@@ -552,44 +436,6 @@ describe('BasicSetupStep', () => {
       await buttons[1]!.trigger('click');
 
       expect(mockSetLevel).not.toHaveBeenCalled();
-    });
-  });
-
-  // ========================================
-  // Campaign Fetch Error Handling
-  // ========================================
-  describe('campaign fetch error handling', () => {
-    it('shows notification and logs error when fetch fails with Error', async () => {
-      mockHasCampaigns.value = false;
-      const testError = new Error('Network error');
-      mockFetchCampaigns.mockRejectedValueOnce(testError);
-
-      createWrapper();
-
-      // Wait for async error handling
-      await vi.waitFor(() => {
-        expect(mockLoggerError.fn).toHaveBeenCalledWith('Failed to fetch campaigns', testError);
-      });
-      expect(mockNotify.fn).toHaveBeenCalledWith({
-        type: 'warning',
-        message: 'Could not load campaigns. You can continue without selecting one.',
-        position: 'top',
-      });
-    });
-
-    it('handles non-Error throw correctly', async () => {
-      mockHasCampaigns.value = false;
-      mockFetchCampaigns.mockRejectedValueOnce('string error');
-
-      createWrapper();
-
-      await vi.waitFor(() => {
-        expect(mockLoggerError.fn).toHaveBeenCalledWith(
-          'Failed to fetch campaigns',
-          expect.objectContaining({ message: 'string error' })
-        );
-      });
-      expect(mockNotify.fn).toHaveBeenCalled();
     });
   });
 

@@ -48,6 +48,13 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Edit Campaign' },
       },
       {
+        path: 'join/:code',
+        name: 'join-campaign',
+        component: () => import('pages/JoinCampaignPage.vue'),
+        props: true,
+        meta: { title: 'Join Campaign' },
+      },
+      {
         path: 'characters',
         name: 'my-characters',
         component: () => import('pages/MyCharactersPage.vue'),
