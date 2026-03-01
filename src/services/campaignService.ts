@@ -10,7 +10,7 @@ export default {
     return api.get(`/campaigns/${id}`);
   },
   getByCode(code: string): Promise<AxiosResponse<Campaign>> {
-    return api.get(`/campaigns/join/${code}`);
+    return api.get(`/campaigns/join/${encodeURIComponent(code)}`);
   },
   create(campaign: CampaignBase): Promise<AxiosResponse<Campaign>> {
     return api.post('/campaigns', campaign);

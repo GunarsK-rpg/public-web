@@ -82,6 +82,7 @@ import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useCampaignStore } from 'src/stores/campaigns';
 import { useClassifierStore } from 'src/stores/classifiers';
+import campaignService from 'src/services/campaignService';
 import { findByCode } from 'src/utils/arrayUtils';
 import { clamp } from 'src/utils/numberUtils';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
@@ -110,10 +111,18 @@ const availableForms = computed(() =>
   })
 );
 
-onMounted(() => {
+onMounted(async () => {
   // Resolve campaign code if campaignId was set (e.g., from invite URL) but code is missing
   if (heroStore.hero?.campaignId && !heroStore.hero.campaign?.code) {
-    const campaign = campaignStore.campaigns.find((c) => c.id === heroStore.hero!.campaignId);
+    let campaign = campaignStore.campaigns.find((c) => c.id === heroStore.hero!.campaignId);
+    if (!campaign) {
+      try {
+        const { data } = await campaignService.getById(heroStore.hero.campaignId);
+        campaign = data;
+      } catch {
+        return;
+      }
+    }
     if (campaign) {
       heroStore.setCampaign({ id: campaign.id, code: campaign.code, name: campaign.name });
     }
