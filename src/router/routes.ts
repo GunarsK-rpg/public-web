@@ -15,6 +15,19 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
+  {
+    path: '/register',
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'register',
+        component: () => import('pages/RegisterPage.vue'),
+        meta: { title: 'Register', public: true },
+      },
+    ],
+  },
+
   // Protected routes
   {
     path: '/',
