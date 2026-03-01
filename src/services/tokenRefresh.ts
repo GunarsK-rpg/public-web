@@ -1,5 +1,6 @@
 import type { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { authApi } from './authApi';
+import type { LoginResponse } from './auth';
 
 interface QueueItem {
   resolve: (value: boolean) => void;
@@ -9,9 +10,13 @@ interface RetryableConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
+const REFRESH_BUFFER_SECONDS = 60;
+const MIN_REFRESH_DELAY_SECONDS = 10;
+
 let isRefreshing = false;
 let failedQueue: QueueItem[] = [];
 let onAuthFailureCallback: (() => void) | null = null;
+let refreshTimerId: ReturnType<typeof setTimeout> | null = null;
 const registeredInstances = new WeakSet<AxiosInstance>();
 
 function processQueue(success: boolean): void {
@@ -25,6 +30,21 @@ export function setAuthFailureCallback(callback: () => void): void {
   onAuthFailureCallback = callback;
 }
 
+export function scheduleProactiveRefresh(ttlSeconds: number): void {
+  clearProactiveRefresh();
+  const delay = Math.max(ttlSeconds - REFRESH_BUFFER_SECONDS, MIN_REFRESH_DELAY_SECONDS);
+  refreshTimerId = setTimeout(() => {
+    void refreshToken();
+  }, delay * 1000);
+}
+
+export function clearProactiveRefresh(): void {
+  if (refreshTimerId !== null) {
+    clearTimeout(refreshTimerId);
+    refreshTimerId = null;
+  }
+}
+
 export async function refreshToken(): Promise<boolean> {
   if (isRefreshing) {
     return new Promise((resolve) => {
@@ -35,11 +55,15 @@ export async function refreshToken(): Promise<boolean> {
   isRefreshing = true;
 
   try {
-    await authApi.post('/refresh');
+    const response = await authApi.post<LoginResponse>('/refresh');
     processQueue(true);
+    if (response.data.expires_in > 0) {
+      scheduleProactiveRefresh(response.data.expires_in);
+    }
     return true;
   } catch {
     processQueue(false);
+    clearProactiveRefresh();
     onAuthFailureCallback?.();
     return false;
   } finally {

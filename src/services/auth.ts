@@ -23,7 +23,7 @@ export default {
     return authApi.post('/logout');
   },
   refresh() {
-    return authApi.post('/refresh');
+    return authApi.post<LoginResponse>('/refresh');
   },
   tokenStatus() {
     return authApi.get<TokenStatusResponse>('/token-status');
