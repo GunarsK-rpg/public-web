@@ -96,6 +96,7 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 
 async function handleRegister(): Promise<void> {
+  if (loading.value) return;
   loading.value = true;
   error.value = null;
 

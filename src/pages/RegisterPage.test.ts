@@ -227,6 +227,9 @@ describe('RegisterPage', () => {
 
       expect(wrapper.find('.q-btn--loading').exists()).toBe(true);
 
+      await wrapper.find('.q-form').trigger('submit');
+      expect(mockRegister).toHaveBeenCalledTimes(1);
+
       resolveRegister({ data: { user_id: 1, username: 'testuser', email: 'test@example.com' } });
       await submitPromise;
     });
