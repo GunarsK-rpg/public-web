@@ -762,6 +762,270 @@ describe('useHeroAttributesStore', () => {
   });
 
   // ========================================
+  // getStatBonus - All bonus types
+  // ========================================
+  describe('getStatBonus', () => {
+    it('returns health_per_level bonus multiplied by level', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.level = 5;
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'hardy', name: 'Hardy' },
+            special: [{ type: 'health_per_level', value: 1 }],
+          },
+        ];
+      }
+
+      // health_per_level(1) * level(5) = 5
+      expect(store.getStatBonus('max_health')).toBe(5);
+    });
+
+    it('returns focus_per_tier bonus multiplied by tier', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'composed', name: 'Composed' },
+            special: [{ type: 'focus_per_tier', value: 1 }],
+          },
+        ];
+      }
+
+      // focus_per_tier(1) * tier(1) = 1
+      expect(store.getStatBonus('max_focus')).toBe(1);
+    });
+
+    it('returns flat focus bonus from talent', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'focus_talent', name: 'Focus Talent' },
+            special: [{ type: 'focus', value: 3 }],
+          },
+        ];
+      }
+
+      // flat focus(3) + focus_per_tier(0) * tier(1) = 3
+      expect(store.getStatBonus('max_focus')).toBe(3);
+    });
+
+    it('returns investiture_per_tier bonus multiplied by tier', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'invested', name: 'Invested' },
+            special: [{ type: 'investiture_per_tier', value: 1 }],
+          },
+        ];
+      }
+
+      // investiture_per_tier(1) * tier(1) = 1
+      expect(store.getStatBonus('max_investiture')).toBe(1);
+    });
+
+    it('returns deflect bonus from equipment', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.equipment = [
+          {
+            id: 1,
+            heroId: 0,
+            equipment: { id: 1, code: 'chain', name: 'Chain Armor' },
+            special: [{ type: 'deflect', value: 3 }],
+            charges: null,
+            maxCharges: null,
+            amount: 1,
+            isEquipped: true,
+            customName: null,
+            notes: null,
+          },
+        ];
+      }
+
+      expect(store.getStatBonus('deflect')).toBe(3);
+    });
+
+    it('returns movement bonus minus cumbersome', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'surefooted', name: 'Surefooted' },
+            special: [{ type: 'movement', value: 10 }],
+          },
+        ];
+        heroStore.hero.equipment = [
+          {
+            id: 1,
+            heroId: 0,
+            equipment: { id: 1, code: 'chain', name: 'Chain Armor' },
+            special: [{ type: 'cumbersome', value: 3 }],
+            charges: null,
+            maxCharges: null,
+            amount: 1,
+            isEquipped: true,
+            customName: null,
+            notes: null,
+          },
+        ];
+      }
+
+      // movement(10) - cumbersome(3) = 7
+      expect(store.getStatBonus('movement')).toBe(7);
+    });
+
+    it('returns physical defense bonus from equipment', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.equipment = [
+          {
+            id: 1,
+            heroId: 0,
+            equipment: { id: 1, code: 'shield', name: 'Shield' },
+            special: [{ type: 'defense_physical', value: 1 }],
+            charges: null,
+            maxCharges: null,
+            amount: 1,
+            isEquipped: true,
+            customName: null,
+            notes: null,
+          },
+        ];
+      }
+
+      expect(store.getStatBonus('physical_defense')).toBe(1);
+    });
+
+    it('returns cognitive and spiritual defense bonuses from talent', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'collected', name: 'Collected' },
+            special: [
+              { type: 'defense_cognitive', value: 2 },
+              { type: 'defense_spiritual', value: 2 },
+            ],
+          },
+        ];
+      }
+
+      expect(store.getStatBonus('cognitive_defense')).toBe(2);
+      expect(store.getStatBonus('spiritual_defense')).toBe(2);
+    });
+
+    it('returns 0 for unknown stat code', () => {
+      setupHeroWithAttributes();
+      const store = useHeroAttributesStore();
+
+      expect(store.getStatBonus('unknown_stat')).toBe(0);
+    });
+
+    it('returns 0 when no hero loaded', () => {
+      const store = useHeroAttributesStore();
+
+      expect(store.getStatBonus('max_health')).toBe(0);
+    });
+
+    it('ignores unequipped equipment bonuses', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.equipment = [
+          {
+            id: 1,
+            heroId: 0,
+            equipment: { id: 1, code: 'chain', name: 'Chain Armor' },
+            special: [{ type: 'deflect', value: 3 }],
+            charges: null,
+            maxCharges: null,
+            amount: 1,
+            isEquipped: false,
+            customName: null,
+            notes: null,
+          },
+        ];
+      }
+
+      expect(store.getStatBonus('deflect')).toBe(0);
+    });
+
+    it('combines talent and equipment bonuses for same stat', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'test', name: 'Test' },
+            special: [{ type: 'deflect', value: 2 }],
+          },
+        ];
+        heroStore.hero.equipment = [
+          {
+            id: 1,
+            heroId: 0,
+            equipment: { id: 1, code: 'chain', name: 'Chain Armor' },
+            special: [{ type: 'deflect', value: 3 }],
+            charges: null,
+            maxCharges: null,
+            amount: 1,
+            isEquipped: true,
+            customName: null,
+            notes: null,
+          },
+        ];
+      }
+
+      expect(store.getStatBonus('deflect')).toBe(5);
+    });
+  });
+
+  // ========================================
   // Edge Cases - No Hero
   // ========================================
   describe('no hero edge cases', () => {

@@ -506,6 +506,132 @@ describe('buildDerivedStatsList', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Bonus Callback (getBonus parameter)
+  // ---------------------------------------------------------------------------
+  describe('bonus callback', () => {
+    it('includes bonus in totalValue for formula stats', () => {
+      const derivedStats = [createDerivedStat({ id: 1, code: 'max_health', name: 'Max Health' })];
+      const attrs = createAttrs({ str: 2 });
+      const level = createLevel({ healthBase: 10 });
+      const tier = createTier({ id: 1 });
+
+      const result = buildDerivedStatsList(
+        derivedStats,
+        [],
+        [],
+        attrs,
+        level,
+        tier,
+        () => 0,
+        (statCode) => (statCode === 'max_health' ? 5 : 0)
+      );
+
+      expect(result[0]!.baseValue).toBe(12); // 10 + (2 * 1)
+      expect(result[0]!.totalValue).toBe(17); // 12 + 0 + 5
+    });
+
+    it('combines modifier and bonus', () => {
+      const derivedStats = [createDerivedStat({ id: 1, code: 'deflect', name: 'Deflect' })];
+      const attrs = createAttrs();
+
+      const result = buildDerivedStatsList(
+        derivedStats,
+        [],
+        [],
+        attrs,
+        undefined,
+        undefined,
+        () => 1, // modifier
+        () => 3 // bonus
+      );
+
+      // deflect base(0) + modifier(1) + bonus(3) = 4
+      expect(result[0]!.totalValue).toBe(4);
+    });
+
+    it('includes bonus in lookup-based stats', () => {
+      const derivedStats = [createDerivedStat({ id: 1, code: 'movement', name: 'Movement' })];
+      const attributes = [createAttribute({ id: 1, code: 'spd', name: 'Speed' })];
+      const derivedStatValues = [
+        createDerivedStatValue({
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'spd', name: 'Speed' },
+          attrMin: 0,
+          attrMax: null,
+          value: 25,
+        }),
+      ];
+      const attrs = createAttrs({ spd: 2 });
+
+      const result = buildDerivedStatsList(
+        derivedStats,
+        derivedStatValues,
+        attributes,
+        attrs,
+        undefined,
+        undefined,
+        () => 0,
+        (statCode) => (statCode === 'movement' ? 7 : 0) // +10 movement - 3 cumbersome
+      );
+
+      // base(25) + modifier(0) + bonus(7) = 32
+      expect(result[0]!.totalValue).toBe(32);
+      expect(result[0]!.totalDisplay).toBe('32 ft');
+    });
+
+    it('does not apply bonus to recovery_die', () => {
+      const derivedStats = [
+        createDerivedStat({ id: 1, code: 'recovery_die', name: 'Recovery Die' }),
+      ];
+      const attributes = [createAttribute({ id: 1, code: 'str' })];
+      const derivedStatValues = [
+        createDerivedStatValue({
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'str', name: 'Strength' },
+          attrMin: 0,
+          attrMax: null,
+          value: 8,
+        }),
+      ];
+      const attrs = createAttrs({ str: 2 });
+
+      const result = buildDerivedStatsList(
+        derivedStats,
+        derivedStatValues,
+        attributes,
+        attrs,
+        undefined,
+        undefined,
+        () => 0,
+        () => 99 // Should be ignored for recovery_die
+      );
+
+      expect(result[0]!.totalValue).toBe(8); // No bonus applied
+    });
+
+    it('defaults to 0 when getBonus not provided', () => {
+      const derivedStats = [createDerivedStat({ id: 1, code: 'max_health', name: 'Max Health' })];
+      const attrs = createAttrs({ str: 2 });
+      const level = createLevel({ healthBase: 10 });
+      const tier = createTier({ id: 1 });
+
+      const result = buildDerivedStatsList(
+        derivedStats,
+        [],
+        [],
+        attrs,
+        level,
+        tier,
+        () => 3
+        // getBonus omitted
+      );
+
+      // base(12) + modifier(3) + bonus(0) = 15
+      expect(result[0]!.totalValue).toBe(15);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // Edge Cases
   // ---------------------------------------------------------------------------
   describe('edge cases', () => {
