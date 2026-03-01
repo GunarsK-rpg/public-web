@@ -198,11 +198,11 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
 
     // After first create, update URL so browser refresh resumes via edit route
     if (isCreate && heroStore.hero && heroStore.hero.id > 0) {
-      const campId = heroStore.hero.campaignId;
       const heroId = heroStore.hero.id;
-      if (campId) {
-        void router.replace(`/campaigns/${campId}/characters/${heroId}/edit`);
-      }
+      void router.replace({
+        name: 'character-edit',
+        params: { characterId: String(heroId) },
+      });
     }
   }
 

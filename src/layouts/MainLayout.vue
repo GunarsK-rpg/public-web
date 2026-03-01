@@ -2,16 +2,6 @@
   <q-layout view="hHh lpR fFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn
-          v-show="showBackButton"
-          flat
-          dense
-          round
-          icon="arrow_back"
-          aria-label="Back"
-          @click="goBack"
-        />
-
         <q-toolbar-title>{{ pageTitle }}</q-toolbar-title>
 
         <q-btn
@@ -37,12 +27,6 @@
             <q-list class="account-menu">
               <q-item-label header>{{ username }}</q-item-label>
               <q-separator />
-              <q-item clickable v-close-popup @click="goToCampaigns">
-                <q-item-section avatar>
-                  <q-icon name="list" aria-hidden="true" />
-                </q-item-section>
-                <q-item-section>Campaigns</q-item-section>
-              </q-item>
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
                   <q-icon name="logout" aria-hidden="true" />
@@ -60,6 +44,29 @@
         <router-view />
       </main>
     </q-page-container>
+
+    <q-footer v-if="isAuthenticated" elevated class="bg-white text-grey-8">
+      <q-tabs
+        :model-value="activeNavTab"
+        dense
+        active-color="primary"
+        indicator-color="primary"
+        class="bottom-nav"
+      >
+        <q-tab
+          name="campaigns"
+          icon="sym_o_swords"
+          label="Campaigns"
+          @click="navigateTo('campaigns')"
+        />
+        <q-tab
+          name="my-characters"
+          icon="sym_o_person"
+          label="Characters"
+          @click="navigateTo('my-characters')"
+        />
+      </q-tabs>
+    </q-footer>
   </q-layout>
 </template>
 
@@ -83,8 +90,15 @@ const pageTitle = computed(() => {
   return (route.meta?.title as string) || 'Cosmere RPG';
 });
 
-const showBackButton = computed(() => {
-  return route.name !== 'campaigns' && route.name !== 'login';
+const characterRoutes = new Set([
+  'my-characters',
+  'character-sheet',
+  'character-create',
+  'character-edit',
+]);
+
+const activeNavTab = computed(() => {
+  return characterRoutes.has(route.name as string) ? 'my-characters' : 'campaigns';
 });
 
 function toggleDarkMode(): void {
@@ -96,19 +110,14 @@ function toggleDarkMode(): void {
   }
 }
 
-function goBack(): void {
-  router.back();
-}
-
-async function goToCampaigns(): Promise<void> {
+async function navigateTo(routeName: string): Promise<void> {
   try {
-    await router.push({ name: 'campaigns' });
+    await router.push({ name: routeName });
   } catch (err) {
-    // Only log unexpected navigation failures
     if (
       !isNavigationFailure(err, NavigationFailureType.duplicated | NavigationFailureType.cancelled)
     ) {
-      logger.warn('Navigation to campaigns failed', { error: toError(err).message });
+      logger.warn('Navigation failed', { error: toError(err).message });
     }
   }
 }
@@ -136,5 +145,9 @@ onMounted(() => {
 <style scoped>
 .account-menu {
   min-width: 150px;
+}
+
+:global(body.body--dark) .bottom-nav {
+  background: var(--q-dark);
 }
 </style>

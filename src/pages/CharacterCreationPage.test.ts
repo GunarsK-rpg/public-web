@@ -14,11 +14,16 @@ const mockClearHero = vi.fn();
 const mockCurrentStep = ref(1);
 const mockIsActive = ref(true);
 const mockInitialized = ref(true);
+let mockRouteQuery: Record<string, string> = {};
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     back: mockBack,
     push: mockPush,
+    replace: vi.fn(),
+  }),
+  useRoute: () => ({
+    query: mockRouteQuery,
   }),
 }));
 
@@ -143,7 +148,7 @@ describe('CharacterCreationPage', () => {
           StepNavigation: {
             template: '<div class="step-navigation" />',
             props: ['saving', 'saveError'],
-            emits: ['next', 'finish'],
+            emits: ['next', 'finish', 'save-close'],
           },
           BasicSetupStep: { template: '<div class="basic-setup-step" />' },
           CultureStep: { template: '<div class="culture-step" />' },
@@ -164,6 +169,7 @@ describe('CharacterCreationPage', () => {
     mockCurrentStep.value = 1;
     mockIsActive.value = true;
     mockInitialized.value = true;
+    mockRouteQuery = {};
   });
 
   // ========================================

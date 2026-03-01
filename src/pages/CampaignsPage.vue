@@ -4,19 +4,7 @@
       <div class="row items-center q-mb-md">
         <div class="text-h5">My Campaigns</div>
         <q-space />
-        <q-btn
-          color="primary"
-          icon="sym_o_add"
-          label="Create Campaign"
-          class="q-mr-sm"
-          @click="createCampaign"
-        />
-        <q-btn
-          color="primary"
-          icon="sym_o_person_add"
-          label="Create Character"
-          @click="createStandaloneCharacter"
-        />
+        <q-btn color="primary" icon="sym_o_add" label="Create Campaign" @click="createCampaign" />
       </div>
 
       <q-spinner-dots v-if="loading" size="50px" color="primary" />
@@ -74,10 +62,6 @@ onMounted(() => {
 
 function selectCampaign(id: number): void {
   void router.push({ name: 'campaign-detail', params: { campaignId: String(id) } });
-}
-
-function createStandaloneCharacter(): void {
-  void router.push({ name: 'character-create-standalone' });
 }
 
 function createCampaign(): void {

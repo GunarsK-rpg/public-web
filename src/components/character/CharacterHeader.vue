@@ -86,7 +86,6 @@ import { RPG_COLORS } from 'src/constants/theme';
 import ResourceBox from './ResourceBox.vue';
 
 const props = defineProps<{
-  campaignId: string;
   characterId: string;
 }>();
 
@@ -109,10 +108,7 @@ const cultureName = computed(() => hero.value?.cultures?.[0]?.culture?.name);
 function goToEdit(): void {
   void router.push({
     name: 'character-edit',
-    params: {
-      campaignId: props.campaignId,
-      characterId: props.characterId,
-    },
+    params: { characterId: props.characterId },
   });
 }
 </script>

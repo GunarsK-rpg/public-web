@@ -42,6 +42,7 @@
       :save-error="saveError"
       @next="handleNext"
       @finish="finishWizard"
+      @save-close="handleSaveAndClose"
     />
 
     <!-- Reset Confirmation Dialog -->
@@ -62,7 +63,7 @@
 
 <script setup lang="ts">
 import { ref, computed, provide, onMounted, onUnmounted, type Component } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useWizardStore } from 'stores/wizard';
 import { useHeroStore } from 'stores/hero';
@@ -91,11 +92,17 @@ import PersonalDetailsStep from 'components/character-creation/steps/PersonalDet
 import ReviewStep from 'components/character-creation/steps/ReviewStep.vue';
 
 const props = defineProps<{
-  campaignId?: string;
   characterId?: string;
 }>();
 
 const router = useRouter();
+const route = useRoute();
+
+// campaignId comes from query param (e.g. /characters/new?campaignId=5)
+const queryCampaignId = computed(() => {
+  const val = route.query.campaignId;
+  return typeof val === 'string' ? val : undefined;
+});
 const $q = useQuasar();
 const wizardStore = useWizardStore();
 const heroStore = useHeroStore();
@@ -155,17 +162,27 @@ async function handleNext(): Promise<void> {
   await saveAndAdvance();
 }
 
-function finishWizard() {
+function closeWizardAndNavigate(): void {
   const heroId = heroStore.hero?.id;
-  const campId = heroStore.hero?.campaignId;
   deletionTracker.clearAll();
   wizardStore.reset();
   heroStore.clearHero();
-  if (heroId && heroId > 0 && campId) {
-    void router.push(`/campaigns/${campId}/characters/${heroId}`);
+  if (heroId && heroId > 0) {
+    void router.push({ name: 'character-sheet', params: { characterId: String(heroId) } });
   } else {
-    void router.push('/campaigns');
+    void router.push({ name: 'my-characters' });
   }
+}
+
+async function handleSaveAndClose(): Promise<void> {
+  const saved = await saveAndAdvance();
+  if (saved) {
+    closeWizardAndNavigate();
+  }
+}
+
+function finishWizard() {
+  closeWizardAndNavigate();
 }
 
 // Reset
@@ -177,17 +194,22 @@ function resetWizard() {
   deletionTracker.clearAll();
   wizardStore.reset();
   heroStore.clearHero();
-  const campId = props.campaignId ? Number(props.campaignId) : undefined;
+  const campId =
+    queryCampaignId.value !== undefined && queryCampaignId.value !== ''
+      ? Number(queryCampaignId.value)
+      : undefined;
   if (campId !== undefined && (!Number.isFinite(campId) || campId <= 0)) {
     $q.notify({ type: 'negative', message: 'Invalid campaign ID' });
-    void router.replace('/campaigns');
+    void router.replace({ name: 'campaigns' });
     return;
   }
   wizardStore.startCreate(campId);
   // If we were on an edit route, switch URL back to create
   if (props.characterId) {
-    const newPath = campId ? `/campaigns/${campId}/characters/new` : '/characters/new';
-    void router.replace(newPath);
+    const createRoute = campId
+      ? { name: 'character-create', query: { campaignId: String(campId) } }
+      : { name: 'character-create' };
+    void router.replace(createRoute);
   }
   $q.notify({
     type: 'info',
@@ -212,7 +234,7 @@ onMounted(async () => {
         const heroId = Number(props.characterId);
         if (!Number.isFinite(heroId) || heroId <= 0) {
           $q.notify({ type: 'negative', message: 'Invalid character ID' });
-          void router.replace('/campaigns');
+          void router.replace({ name: 'my-characters' });
           return;
         }
         const success = await wizardStore.startEdit(heroId);
@@ -223,15 +245,18 @@ onMounted(async () => {
             caption: 'Unable to load the character for editing.',
             timeout: 5000,
           });
-          void router.replace('/campaigns');
+          void router.replace({ name: 'my-characters' });
           return;
         }
       } else {
         // Create route — start fresh
-        const campId = props.campaignId ? Number(props.campaignId) : undefined;
+        const campId =
+          queryCampaignId.value !== undefined && queryCampaignId.value !== ''
+            ? Number(queryCampaignId.value)
+            : undefined;
         if (campId !== undefined && (!Number.isFinite(campId) || campId <= 0)) {
           $q.notify({ type: 'negative', message: 'Invalid campaign ID' });
-          void router.replace('/campaigns');
+          void router.replace({ name: 'campaigns' });
           return;
         }
         wizardStore.startCreate(campId);
@@ -258,20 +283,23 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+$bottom-nav-height: 48px; // matches q-tabs dense height in MainLayout footer
+
 .character-creation-page {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  // Fill available viewport height (minus app header + bottom nav)
+  height: calc(100vh - #{$toolbar-min-height} - #{$bottom-nav-height});
   padding: 0 !important;
 }
 
 .step-content {
   flex: 1;
+  overflow-y: auto;
+  min-height: 0; // allow flex child to shrink and scroll
 }
 
 .creation-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  flex-shrink: 0;
 }
 </style>

@@ -105,12 +105,6 @@ describe('CampaignsPage', () => {
       expect(wrapper.text()).toContain('My Campaigns');
     });
 
-    it('renders create character button', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Create Character');
-    });
-
     it('renders campaign cards', () => {
       const wrapper = createWrapper();
 
@@ -173,19 +167,6 @@ describe('CampaignsPage', () => {
         name: 'campaign-detail',
         params: { campaignId: '1' },
       });
-    });
-
-    it('navigates to character creation on button click', async () => {
-      const wrapper = createWrapper();
-
-      const createBtn = wrapper
-        .findAll('.q-btn')
-        .find((b) => b.text().includes('Create Character'));
-      expect(createBtn).toBeDefined();
-      expect(createBtn!.exists()).toBe(true);
-      await createBtn!.trigger('click');
-
-      expect(mockPush).toHaveBeenCalledWith({ name: 'character-create-standalone' });
     });
 
     it('fetches campaigns on mount', () => {
