@@ -52,15 +52,15 @@
         </div>
 
         <div v-if="isOwner" class="row items-center q-mb-lg">
-          <div class="text-caption text-grey-6">Invite code:</div>
+          <div class="text-caption text-grey-6">Invite link:</div>
           <q-input
-            :model-value="campaign.code"
+            :model-value="inviteUrl"
             dense
             readonly
             borderless
             class="q-ml-xs"
             input-class="text-caption"
-            style="max-width: 280px"
+            style="flex: 0 1 auto"
           >
             <template v-slot:append>
               <q-btn
@@ -69,10 +69,10 @@
                 round
                 icon="sym_o_content_copy"
                 size="xs"
-                aria-label="Copy invite code"
-                @click="copyInviteCode"
+                aria-label="Copy invite link"
+                @click="copyInviteLink"
               >
-                <q-tooltip>Copy invite code</q-tooltip>
+                <q-tooltip>Copy invite link</q-tooltip>
               </q-btn>
             </template>
           </q-input>
@@ -215,14 +215,23 @@ function confirmDeleteCampaign(): void {
   });
 }
 
-function copyInviteCode(): void {
+const inviteUrl = computed(() => {
+  if (!campaign.value) return '';
+  const resolved = router.resolve({
+    name: 'join-campaign',
+    params: { code: campaign.value.code },
+  });
+  return `${window.location.origin}${resolved.href}`;
+});
+
+function copyInviteLink(): void {
   if (!campaign.value) return;
-  void copyToClipboard(campaign.value.code)
+  void copyToClipboard(inviteUrl.value)
     .then(() => {
-      $q.notify({ message: 'Invite code copied', type: 'positive', timeout: 1500 });
+      $q.notify({ message: 'Invite link copied', type: 'positive', timeout: 1500 });
     })
     .catch(() => {
-      $q.notify({ message: 'Failed to copy invite code', type: 'negative', timeout: 2000 });
+      $q.notify({ message: 'Failed to copy invite link', type: 'negative', timeout: 2000 });
     });
 }
 </script>
