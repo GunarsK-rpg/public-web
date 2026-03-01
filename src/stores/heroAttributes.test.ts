@@ -786,7 +786,7 @@ describe('useHeroAttributesStore', () => {
       expect(store.getStatBonus('max_health')).toBe(5);
     });
 
-    it('returns focus bonus (flat + per_tier)', () => {
+    it('returns focus_per_tier bonus multiplied by tier', () => {
       setupHeroWithAttributes();
       const heroStore = useHeroStore();
       const store = useHeroAttributesStore();
@@ -804,6 +804,26 @@ describe('useHeroAttributesStore', () => {
 
       // focus_per_tier(1) * tier(1) = 1
       expect(store.getStatBonus('max_focus')).toBe(1);
+    });
+
+    it('returns flat focus bonus from talent', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.talents = [
+          {
+            id: 1,
+            heroId: 0,
+            talent: { id: 1, code: 'focus_talent', name: 'Focus Talent' },
+            special: [{ type: 'focus', value: 3 }],
+          },
+        ];
+      }
+
+      // flat focus(3) + focus_per_tier(0) * tier(1) = 3
+      expect(store.getStatBonus('max_focus')).toBe(3);
     });
 
     it('returns investiture_per_tier bonus multiplied by tier', () => {
@@ -885,7 +905,32 @@ describe('useHeroAttributesStore', () => {
       expect(store.getStatBonus('movement')).toBe(7);
     });
 
-    it('returns cognitive defense bonus from talent', () => {
+    it('returns physical defense bonus from equipment', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.equipment = [
+          {
+            id: 1,
+            heroId: 0,
+            equipment: { id: 1, code: 'shield', name: 'Shield' },
+            special: [{ type: 'defense_physical', value: 1 }],
+            charges: null,
+            maxCharges: null,
+            amount: 1,
+            isEquipped: true,
+            customName: null,
+            notes: null,
+          },
+        ];
+      }
+
+      expect(store.getStatBonus('physical_defense')).toBe(1);
+    });
+
+    it('returns cognitive and spiritual defense bonuses from talent', () => {
       setupHeroWithAttributes();
       const heroStore = useHeroStore();
       const store = useHeroAttributesStore();
