@@ -47,7 +47,7 @@
 
     <q-footer v-if="isAuthenticated" elevated class="bg-white text-grey-8">
       <q-tabs
-        v-model="activeNavTab"
+        :model-value="activeNavTab"
         dense
         active-color="primary"
         indicator-color="primary"
@@ -147,7 +147,7 @@ onMounted(() => {
   min-width: 150px;
 }
 
-.body--dark .bottom-nav {
+:global(body.body--dark) .bottom-nav {
   background: var(--q-dark);
 }
 </style>

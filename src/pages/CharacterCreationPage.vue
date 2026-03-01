@@ -162,22 +162,7 @@ async function handleNext(): Promise<void> {
   await saveAndAdvance();
 }
 
-async function handleSaveAndClose(): Promise<void> {
-  const saved = await saveAndAdvance();
-  if (saved) {
-    const heroId = heroStore.hero?.id;
-    deletionTracker.clearAll();
-    wizardStore.reset();
-    heroStore.clearHero();
-    if (heroId && heroId > 0) {
-      void router.push({ name: 'character-sheet', params: { characterId: String(heroId) } });
-    } else {
-      void router.push({ name: 'my-characters' });
-    }
-  }
-}
-
-function finishWizard() {
+function closeWizardAndNavigate(): void {
   const heroId = heroStore.hero?.id;
   deletionTracker.clearAll();
   wizardStore.reset();
@@ -189,6 +174,17 @@ function finishWizard() {
   }
 }
 
+async function handleSaveAndClose(): Promise<void> {
+  const saved = await saveAndAdvance();
+  if (saved) {
+    closeWizardAndNavigate();
+  }
+}
+
+function finishWizard() {
+  closeWizardAndNavigate();
+}
+
 // Reset
 function confirmReset() {
   showResetDialog.value = true;
@@ -198,7 +194,10 @@ function resetWizard() {
   deletionTracker.clearAll();
   wizardStore.reset();
   heroStore.clearHero();
-  const campId = queryCampaignId.value ? Number(queryCampaignId.value) : undefined;
+  const campId =
+    queryCampaignId.value !== undefined && queryCampaignId.value !== ''
+      ? Number(queryCampaignId.value)
+      : undefined;
   if (campId !== undefined && (!Number.isFinite(campId) || campId <= 0)) {
     $q.notify({ type: 'negative', message: 'Invalid campaign ID' });
     void router.replace({ name: 'campaigns' });
@@ -251,7 +250,10 @@ onMounted(async () => {
         }
       } else {
         // Create route — start fresh
-        const campId = queryCampaignId.value ? Number(queryCampaignId.value) : undefined;
+        const campId =
+          queryCampaignId.value !== undefined && queryCampaignId.value !== ''
+            ? Number(queryCampaignId.value)
+            : undefined;
         if (campId !== undefined && (!Number.isFinite(campId) || campId <= 0)) {
           $q.notify({ type: 'negative', message: 'Invalid campaign ID' });
           void router.replace({ name: 'campaigns' });

@@ -14,14 +14,16 @@ const mockClearHero = vi.fn();
 const mockCurrentStep = ref(1);
 const mockIsActive = ref(true);
 const mockInitialized = ref(true);
+let mockRouteQuery: Record<string, string> = {};
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     back: mockBack,
     push: mockPush,
+    replace: vi.fn(),
   }),
   useRoute: () => ({
-    query: {},
+    query: mockRouteQuery,
   }),
 }));
 
@@ -167,6 +169,7 @@ describe('CharacterCreationPage', () => {
     mockCurrentStep.value = 1;
     mockIsActive.value = true;
     mockInitialized.value = true;
+    mockRouteQuery = {};
   });
 
   // ========================================
