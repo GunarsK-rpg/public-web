@@ -21,6 +21,16 @@
       {{ displayWarning }}
     </div>
     <q-btn
+      v-if="isEditMode && !isLastStep"
+      flat
+      dense
+      label="Save & Close"
+      icon="check"
+      class="q-mr-sm"
+      :loading="saving"
+      @click="$emit('save-close')"
+    />
+    <q-btn
       v-if="!isLastStep"
       color="primary"
       dense
@@ -55,6 +65,7 @@ const props = defineProps<{
 defineEmits<{
   next: [];
   finish: [];
+  'save-close': [];
 }>();
 
 const wizardStore = useWizardStore();
@@ -62,6 +73,7 @@ const { currentStepCode, currentValidation, allStepsValidation } = useStepValida
 
 const currentStep = computed(() => wizardStore.currentStep);
 const isLastStep = computed(() => currentStepCode.value === STEP_CODES.REVIEW);
+const isEditMode = computed(() => wizardStore.mode === 'edit');
 const isReadyToFinish = computed(() => allStepsValidation.value.isValid);
 
 const displayError = computed(() => {
@@ -82,9 +94,7 @@ function previousStep() {
 
 <style scoped lang="scss">
 .creation-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 100;
+  flex-shrink: 0;
   background-color: var(--q-dark-page);
   border-top: 1px solid $color-border-dark;
 

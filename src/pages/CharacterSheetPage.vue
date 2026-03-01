@@ -16,7 +16,7 @@
 
     <template v-else-if="isLoaded">
       <!-- Character Header -->
-      <CharacterHeader :campaign-id="campaignId" :character-id="characterId" />
+      <CharacterHeader :character-id="characterId" />
 
       <!-- Tab Navigation -->
       <q-tabs
@@ -90,7 +90,6 @@ const tabComponents: Record<string, Component> = {
 };
 
 const props = defineProps<{
-  campaignId: string;
   characterId: string;
 }>();
 
@@ -108,12 +107,6 @@ const classifierError = computed(() => classifierStore.error);
 
 onMounted(async () => {
   try {
-    const campaignId = Number(props.campaignId);
-    if (isNaN(campaignId) || campaignId <= 0) {
-      heroStore.setError('Invalid campaign ID');
-      return;
-    }
-
     const characterId = Number(props.characterId);
     if (isNaN(characterId) || characterId <= 0) {
       heroStore.setError('Invalid character ID');
@@ -135,9 +128,14 @@ onUnmounted(() => {
 });
 
 function goBack(): void {
-  void router.push({
-    name: 'campaign-detail',
-    params: { campaignId: props.campaignId },
-  });
+  const campaignId = heroStore.hero?.campaignId;
+  if (campaignId) {
+    void router.push({
+      name: 'campaign-detail',
+      params: { campaignId: String(campaignId) },
+    });
+  } else {
+    void router.push({ name: 'my-characters' });
+  }
 }
 </script>

@@ -253,7 +253,7 @@ describe('CampaignDetailPage', () => {
 
       expect(mockPush).toHaveBeenCalledWith({
         name: 'character-sheet',
-        params: { campaignId: '1', characterId: '1' },
+        params: { characterId: '1' },
       });
     });
 
@@ -268,7 +268,7 @@ describe('CampaignDetailPage', () => {
 
       expect(mockPush).toHaveBeenCalledWith({
         name: 'character-create',
-        params: { campaignId: '1' },
+        query: { campaignId: '1' },
       });
     });
   });

@@ -76,7 +76,6 @@ describe('CharacterHeader', () => {
   const createWrapper = () =>
     shallowMount(CharacterHeader, {
       props: {
-        campaignId: '1',
         characterId: '42',
       },
       global: {
@@ -202,7 +201,7 @@ describe('CharacterHeader', () => {
 
       expect(mockRouterPush).toHaveBeenCalledWith({
         name: 'character-edit',
-        params: { campaignId: '1', characterId: '42' },
+        params: { characterId: '42' },
       });
     });
   });

@@ -176,10 +176,7 @@ onMounted(async () => {
 function selectCharacter(characterId: number): void {
   void router.push({
     name: 'character-sheet',
-    params: {
-      campaignId: props.campaignId,
-      characterId: String(characterId),
-    },
+    params: { characterId: String(characterId) },
   });
 }
 
@@ -190,7 +187,7 @@ function goBack(): void {
 function createCharacter(): void {
   void router.push({
     name: 'character-create',
-    params: { campaignId: props.campaignId },
+    query: { campaignId: props.campaignId },
   });
 }
 

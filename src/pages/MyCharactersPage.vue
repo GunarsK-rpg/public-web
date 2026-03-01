@@ -1,0 +1,97 @@
+<template>
+  <q-page padding>
+    <div class="q-pa-md">
+      <div class="row items-center q-mb-md">
+        <div class="text-h5">My Characters</div>
+        <q-space />
+        <q-btn
+          color="primary"
+          icon="sym_o_person_add"
+          label="Create Character"
+          @click="createCharacter"
+        />
+      </div>
+
+      <q-spinner-dots v-if="loading" size="50px" color="primary" />
+
+      <q-banner v-else-if="error" class="bg-negative text-white q-mb-md">
+        {{ error }}
+      </q-banner>
+
+      <div v-else-if="heroes.length === 0" class="text-center q-pa-xl">
+        <q-icon name="person_off" size="64px" color="grey-5" aria-hidden="true" />
+        <div class="text-h6 text-grey-7 q-mt-md">No characters yet</div>
+        <div class="text-body2 text-grey-6">Create your first character to get started.</div>
+      </div>
+
+      <div v-else class="row q-col-gutter-md">
+        <div v-for="hero in heroes" :key="hero.id" class="col-12 col-sm-6 col-md-4">
+          <q-card
+            class="card-interactive cursor-pointer"
+            tabindex="0"
+            role="button"
+            :aria-label="`View character: ${hero.name}`"
+            @click="selectCharacter(hero)"
+            @keydown.enter="selectCharacter(hero)"
+            @keydown.space.prevent="selectCharacter(hero)"
+          >
+            <q-card-section>
+              <div class="text-h6">{{ hero.name }}</div>
+              <div class="text-subtitle2">
+                Level {{ hero.level }}
+                <span v-if="hero.radiantOrder"> &middot; {{ hero.radiantOrder.name }} </span>
+              </div>
+            </q-card-section>
+
+            <q-card-section>
+              <div class="text-caption">HP: {{ hero.currentHealth }}</div>
+              <div v-if="hero.campaign?.name" class="text-caption text-grey">
+                {{ hero.campaign.name }}
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
+    </div>
+  </q-page>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import type { Hero } from 'src/types';
+import heroService from 'src/services/heroService';
+import { logger } from 'src/utils/logger';
+import { toError } from 'src/utils/errorHandling';
+
+const router = useRouter();
+
+const heroes = ref<Hero[]>([]);
+const loading = ref(false);
+const error = ref<string | null>(null);
+
+onMounted(async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const response = await heroService.getAll();
+    heroes.value = response.data.data;
+  } catch (err) {
+    logger.error('Failed to load characters', { error: toError(err).message });
+    error.value = 'Failed to load characters';
+  } finally {
+    loading.value = false;
+  }
+});
+
+function selectCharacter(hero: Hero): void {
+  void router.push({
+    name: 'character-sheet',
+    params: { characterId: String(hero.id) },
+  });
+}
+
+function createCharacter(): void {
+  void router.push({ name: 'character-create' });
+}
+</script>

@@ -20,6 +20,9 @@ vi.mock('vue-router', () => ({
     back: mockBack,
     push: mockPush,
   }),
+  useRoute: () => ({
+    query: {},
+  }),
 }));
 
 vi.mock('quasar', () => ({
