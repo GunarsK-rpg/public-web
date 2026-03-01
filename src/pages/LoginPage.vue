@@ -6,6 +6,10 @@
         <div class="text-subtitle2">Character Sheet Manager</div>
       </q-card-section>
 
+      <q-card-section v-if="registered" class="bg-positive text-white" role="status">
+        Registration successful. Please log in.
+      </q-card-section>
+
       <q-card-section>
         <q-form @submit="handleLogin" class="q-gutter-md">
           <q-input
@@ -38,12 +42,17 @@
       <q-card-section v-if="error" class="text-negative" role="alert" aria-live="polite">
         {{ error }}
       </q-card-section>
+
+      <q-card-section class="text-center">
+        Don't have an account?
+        <router-link :to="{ name: 'register' }" class="text-primary">Register</router-link>
+      </q-card-section>
     </q-card>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from 'stores/auth';
 
@@ -55,6 +64,7 @@ const username = ref('');
 const password = ref('');
 const loading = ref(false);
 const error = ref<string | null>(null);
+const registered = computed(() => route.query.registered === '1');
 
 /**
  * Validates that redirect URL is safe (relative path only)

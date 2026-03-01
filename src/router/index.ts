@@ -42,7 +42,7 @@ export default defineRouter(function (/* { store, ssrContext } */) {
           return;
         }
       }
-    } else if (to.name === 'login' && authStore.isAuthenticated) {
+    } else if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
       next({ name: 'campaigns' });
       return;
     }

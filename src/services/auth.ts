@@ -8,6 +8,12 @@ export interface LoginResponse {
   scopes?: Record<string, string>;
 }
 
+export interface RegisterResponse {
+  user_id: number;
+  username: string;
+  email: string;
+}
+
 export interface TokenStatusResponse {
   valid: boolean;
   ttl_seconds: number;
@@ -27,5 +33,8 @@ export default {
   },
   tokenStatus() {
     return authApi.get<TokenStatusResponse>('/token-status');
+  },
+  register(data: { username: string; email: string; password: string }) {
+    return authApi.post<RegisterResponse>('/register', { ...data, role_code: 'rpg-player' });
   },
 };
