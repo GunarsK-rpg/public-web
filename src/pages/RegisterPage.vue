@@ -117,7 +117,10 @@ async function handleRegister(): Promise<void> {
           error.value = 'Username or email is already taken.';
           break;
         case 400:
-          error.value = serverMessage || 'Invalid input. Please check your fields.';
+          error.value =
+            typeof serverMessage === 'string' && serverMessage.trim()
+              ? serverMessage.trim().slice(0, 200)
+              : 'Invalid input. Please check your fields.';
           break;
         case 403:
           error.value = 'Registration is not available at this time.';

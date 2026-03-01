@@ -188,6 +188,49 @@ describe('RegisterPage', () => {
       expect(mockPush).not.toHaveBeenCalled();
     });
 
+    it('shows forbidden error on 403', async () => {
+      mockRegister.mockRejectedValue({
+        isAxiosError: true,
+        response: { status: 403, data: { error: 'role not allowed' } },
+      });
+      const wrapper = createWrapper();
+
+      const inputs = wrapper.findAll('.q-input');
+      await inputs[0]!.setValue('testuser');
+      await inputs[1]!.setValue('test@example.com');
+      await inputs[2]!.setValue('password123');
+      await inputs[3]!.setValue('password123');
+
+      await wrapper.find('.q-form').trigger('submit');
+
+      expect(wrapper.text()).toContain('Registration is not available at this time.');
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it('shows loading state during submission', async () => {
+      let resolveRegister!: (value: unknown) => void;
+      mockRegister.mockReturnValue(
+        new Promise((resolve) => {
+          resolveRegister = resolve;
+        })
+      );
+      const wrapper = createWrapper();
+
+      const inputs = wrapper.findAll('.q-input');
+      await inputs[0]!.setValue('testuser');
+      await inputs[1]!.setValue('test@example.com');
+      await inputs[2]!.setValue('password123');
+      await inputs[3]!.setValue('password123');
+
+      const submitPromise = wrapper.find('.q-form').trigger('submit');
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('.q-btn--loading').exists()).toBe(true);
+
+      resolveRegister({ data: { user_id: 1, username: 'testuser', email: 'test@example.com' } });
+      await submitPromise;
+    });
+
     it('shows server error message on 400', async () => {
       mockRegister.mockRejectedValue({
         isAxiosError: true,
