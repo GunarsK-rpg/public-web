@@ -45,7 +45,7 @@
       </main>
     </q-page-container>
 
-    <q-footer v-if="isAuthenticated" elevated class="bg-white text-grey-8">
+    <q-footer v-if="isAuthenticated" elevated class="bottom-nav-footer">
       <q-tabs
         :model-value="activeNavTab"
         dense
@@ -147,7 +147,8 @@ onMounted(() => {
   min-width: 150px;
 }
 
-:global(body.body--dark) .bottom-nav {
-  background: var(--q-dark);
+.bottom-nav-footer {
+  background: var(--app-background);
+  color: var(--app-text-muted);
 }
 </style>

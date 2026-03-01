@@ -233,7 +233,7 @@ describe('useAuthStore', () => {
       expect(mockScheduleProactiveRefresh).toHaveBeenCalledWith(600);
     });
 
-    it('returns false when token is invalid', async () => {
+    it('returns false and clears refresh when token is invalid', async () => {
       mockTokenStatus.mockResolvedValue({
         data: { valid: false },
       });
@@ -243,9 +243,11 @@ describe('useAuthStore', () => {
 
       expect(result).toBe(false);
       expect(store.isAuthenticated).toBe(false);
+      expect(mockScheduleProactiveRefresh).not.toHaveBeenCalled();
+      expect(mockClearProactiveRefresh).toHaveBeenCalled();
     });
 
-    it('returns false and clears state on error', async () => {
+    it('returns false and clears refresh on error', async () => {
       mockTokenStatus.mockRejectedValue(new Error('Network error'));
 
       const store = useAuthStore();
@@ -255,6 +257,7 @@ describe('useAuthStore', () => {
       expect(store.isAuthenticated).toBe(false);
       expect(store.username).toBe('');
       expect(store.scopes).toEqual({});
+      expect(mockClearProactiveRefresh).toHaveBeenCalled();
     });
   });
 

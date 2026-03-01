@@ -12,6 +12,7 @@ interface RetryableConfig extends InternalAxiosRequestConfig {
 
 const REFRESH_BUFFER_SECONDS = 60;
 const MIN_REFRESH_DELAY_SECONDS = 10;
+const MAX_TIMEOUT_MS = 2_147_483_647;
 
 let isRefreshing = false;
 let failedQueue: QueueItem[] = [];
@@ -32,10 +33,11 @@ export function setAuthFailureCallback(callback: () => void): void {
 
 export function scheduleProactiveRefresh(ttlSeconds: number): void {
   clearProactiveRefresh();
-  const delay = Math.max(ttlSeconds - REFRESH_BUFFER_SECONDS, MIN_REFRESH_DELAY_SECONDS);
+  const delaySec = Math.max(ttlSeconds - REFRESH_BUFFER_SECONDS, MIN_REFRESH_DELAY_SECONDS);
+  const delayMs = Math.min(delaySec * 1000, MAX_TIMEOUT_MS);
   refreshTimerId = setTimeout(() => {
     void refreshToken();
-  }, delay * 1000);
+  }, delayMs);
 }
 
 export function clearProactiveRefresh(): void {

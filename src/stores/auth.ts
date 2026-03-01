@@ -40,12 +40,14 @@ export const useAuthStore = defineStore('auth', () => {
         scopes.value = response.data.scopes ?? {};
         scheduleProactiveRefresh(response.data.ttl_seconds);
       } else {
+        clearProactiveRefresh();
         username.value = '';
         scopes.value = {};
         clearUserContext();
       }
       return isValid;
     } catch (error) {
+      clearProactiveRefresh();
       isAuthenticated.value = false;
       username.value = '';
       scopes.value = {};
