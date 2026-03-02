@@ -3,6 +3,27 @@ import { shallowMount } from '@vue/test-utils';
 import ActionItem from './ActionItem.vue';
 import type { Action, ClassifierRef } from 'src/types';
 
+// Hero store mock
+const mockPatchFocus = vi.fn().mockResolvedValue(undefined);
+const mockPatchInvestiture = vi.fn().mockResolvedValue(undefined);
+const mockHeroData = {
+  value: {
+    id: 1,
+    currentFocus: 10,
+    currentInvestiture: 5,
+  } as { id: number; currentFocus: number; currentInvestiture: number } | null,
+};
+
+vi.mock('src/stores/hero', () => ({
+  useHeroStore: () => ({
+    get hero() {
+      return mockHeroData.value;
+    },
+    patchFocus: mockPatchFocus,
+    patchInvestiture: mockPatchInvestiture,
+  }),
+}));
+
 // Reactive mock data
 const mockEntityIconData = {
   value: {
@@ -93,6 +114,21 @@ describe('ActionItem', () => {
           QCardSection: {
             template: '<div class="q-card-section"><slot /></div>',
           },
+          QBtn: {
+            template:
+              '<button class="q-btn" :class="$attrs.class" :disable="disable || undefined" @click="$emit(\'click\', $event)"><slot /></button>',
+            props: [
+              'disable',
+              'size',
+              'flat',
+              'round',
+              'dense',
+              'icon',
+              'color',
+              'loading',
+              'title',
+            ],
+          },
         },
       },
     });
@@ -105,6 +141,7 @@ describe('ActionItem', () => {
       entity: { id: 1, code: 'action', name: 'Action', icon: 'action.svg' },
       iconUrl: '/icons/actions/action.svg',
     };
+    mockHeroData.value = { id: 1, currentFocus: 10, currentInvestiture: 5 };
   });
 
   // ========================================
@@ -410,6 +447,102 @@ describe('ActionItem', () => {
       });
 
       expect(wrapper.exists()).toBe(true);
+    });
+  });
+
+  // ========================================
+  // Use Action Button
+  // ========================================
+  describe('use action button', () => {
+    // Visibility
+    it('shows use button when focusCost > 0', () => {
+      const wrapper = createWrapper({ focusCost: 1 });
+      expect(wrapper.find('.use-action-btn').exists()).toBe(true);
+    });
+
+    it('shows use button when investitureCost > 0', () => {
+      const wrapper = createWrapper({ investitureCost: 1 });
+      expect(wrapper.find('.use-action-btn').exists()).toBe(true);
+    });
+
+    it('shows use button when both costs > 0', () => {
+      const wrapper = createWrapper({ focusCost: 1, investitureCost: 1 });
+      expect(wrapper.find('.use-action-btn').exists()).toBe(true);
+    });
+
+    it('does not show use button when both costs are 0', () => {
+      const wrapper = createWrapper({ focusCost: 0, investitureCost: 0 });
+      expect(wrapper.find('.use-action-btn').exists()).toBe(false);
+    });
+
+    // Disabled state
+    it('disables button when focus insufficient', () => {
+      mockHeroData.value = { id: 1, currentFocus: 0, currentInvestiture: 5 };
+      const wrapper = createWrapper({ focusCost: 1 });
+      expect(wrapper.find('.use-action-btn').attributes('disable')).toBeDefined();
+    });
+
+    it('disables button when investiture insufficient', () => {
+      mockHeroData.value = { id: 1, currentFocus: 10, currentInvestiture: 0 };
+      const wrapper = createWrapper({ investitureCost: 1 });
+      expect(wrapper.find('.use-action-btn').attributes('disable')).toBeDefined();
+    });
+
+    it('disables button when both resources insufficient', () => {
+      mockHeroData.value = { id: 1, currentFocus: 0, currentInvestiture: 0 };
+      const wrapper = createWrapper({ focusCost: 1, investitureCost: 1 });
+      expect(wrapper.find('.use-action-btn').attributes('disable')).toBeDefined();
+    });
+
+    it('enables button when resources are sufficient', () => {
+      mockHeroData.value = { id: 1, currentFocus: 10, currentInvestiture: 5 };
+      const wrapper = createWrapper({ focusCost: 1, investitureCost: 1 });
+      expect(wrapper.find('.use-action-btn').attributes('disable')).toBeUndefined();
+    });
+
+    it('disables button when hero is null', () => {
+      mockHeroData.value = null;
+      const wrapper = createWrapper({ focusCost: 1 });
+      expect(wrapper.find('.use-action-btn').attributes('disable')).toBeDefined();
+    });
+
+    // Behavior
+    it('calls patchFocus on use when focusCost > 0', async () => {
+      mockHeroData.value = { id: 1, currentFocus: 10, currentInvestiture: 5 };
+      const wrapper = createWrapper({ focusCost: 2 });
+      await wrapper.find('.use-action-btn').trigger('click');
+      expect(mockPatchFocus).toHaveBeenCalledWith(8);
+    });
+
+    it('calls patchInvestiture on use when investitureCost > 0', async () => {
+      mockHeroData.value = { id: 1, currentFocus: 10, currentInvestiture: 5 };
+      const wrapper = createWrapper({ investitureCost: 3 });
+      await wrapper.find('.use-action-btn').trigger('click');
+      expect(mockPatchInvestiture).toHaveBeenCalledWith(2);
+    });
+
+    it('calls both patch methods when both costs > 0', async () => {
+      mockHeroData.value = { id: 1, currentFocus: 10, currentInvestiture: 5 };
+      const wrapper = createWrapper({ focusCost: 1, investitureCost: 1 });
+      await wrapper.find('.use-action-btn').trigger('click');
+      expect(mockPatchFocus).toHaveBeenCalledWith(9);
+      expect(mockPatchInvestiture).toHaveBeenCalledWith(4);
+    });
+
+    it('does not call patchFocus when focusCost is 0', async () => {
+      mockHeroData.value = { id: 1, currentFocus: 10, currentInvestiture: 5 };
+      const wrapper = createWrapper({ focusCost: 0, investitureCost: 1 });
+      await wrapper.find('.use-action-btn').trigger('click');
+      expect(mockPatchFocus).not.toHaveBeenCalled();
+      expect(mockPatchInvestiture).toHaveBeenCalledWith(4);
+    });
+
+    it('does not call any patch when resources insufficient', async () => {
+      mockHeroData.value = { id: 1, currentFocus: 0, currentInvestiture: 0 };
+      const wrapper = createWrapper({ focusCost: 1 });
+      await wrapper.find('.use-action-btn').trigger('click');
+      expect(mockPatchFocus).not.toHaveBeenCalled();
+      expect(mockPatchInvestiture).not.toHaveBeenCalled();
     });
   });
 });

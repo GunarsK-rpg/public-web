@@ -16,8 +16,15 @@
           action.descriptionShort || action.description || 'No description available'
         }}</q-item-label>
       </q-item-section>
-      <q-item-section side top>
-        <div class="column items-end q-gutter-xs">
+      <q-item-section side>
+        <div class="row items-center no-wrap q-gutter-xs">
+          <SpecialBadges :specials="typedEntries" />
+          <q-badge v-if="action.dice" :color="RPG_COLORS.badgeMuted" outline>
+            {{ action.dice }}
+          </q-badge>
+          <q-badge v-if="action.damageType" :color="RPG_COLORS.badgeMuted" outline>
+            {{ action.damageType.name }}
+          </q-badge>
           <q-badge
             v-for="cost in actionCosts"
             :key="cost.label"
@@ -27,13 +34,19 @@
           >
             {{ cost.value }} {{ cost.label }}
           </q-badge>
-          <SpecialBadges :specials="typedEntries" />
-          <q-badge v-if="action.dice" :color="RPG_COLORS.badgeMuted" outline>
-            {{ action.dice }}
-          </q-badge>
-          <q-badge v-if="action.damageType" :color="RPG_COLORS.badgeMuted" outline>
-            {{ action.damageType.name }}
-          </q-badge>
+          <q-btn
+            v-if="hasDeductibleCost"
+            class="use-action-btn"
+            size="sm"
+            flat
+            dense
+            color="primary"
+            label="Use"
+            :disable="!canUse"
+            :loading="using"
+            title="Use action"
+            @click.stop="useAction"
+          />
         </div>
       </q-item-section>
     </template>
@@ -58,8 +71,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { useHeroStore } from 'src/stores/hero';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
 import { RPG_COLORS } from 'src/constants/theme';
 import { SPECIAL } from 'src/utils/specialUtils';
@@ -71,6 +85,7 @@ const props = defineProps<{
 }>();
 
 const classifiers = useClassifierStore();
+const heroStore = useHeroStore();
 
 // Use entity icon composable for activation type lookup
 const { entity: activationType, iconUrl } = useEntityIcon(
@@ -100,6 +115,42 @@ const narrativeEntries = computed(() =>
     (s) => !TYPED_SPECIAL.has(s.type) && (s.display_value || s.value != null)
   )
 );
+
+// Use action
+const hasDeductibleCost = computed(
+  () => props.action.focusCost > 0 || props.action.investitureCost > 0
+);
+
+const canUse = computed(() => {
+  if (!heroStore.hero) return false;
+  if (props.action.focusCost > 0 && heroStore.hero.currentFocus < props.action.focusCost)
+    return false;
+  if (
+    props.action.investitureCost > 0 &&
+    heroStore.hero.currentInvestiture < props.action.investitureCost
+  )
+    return false;
+  return true;
+});
+
+const using = ref(false);
+
+async function useAction(): Promise<void> {
+  if (!heroStore.hero || !canUse.value || using.value) return;
+  using.value = true;
+  try {
+    if (props.action.focusCost > 0) {
+      await heroStore.patchFocus(heroStore.hero.currentFocus - props.action.focusCost);
+    }
+    if (props.action.investitureCost > 0) {
+      await heroStore.patchInvestiture(
+        heroStore.hero.currentInvestiture - props.action.investitureCost
+      );
+    }
+  } finally {
+    using.value = false;
+  }
+}
 
 // Consolidate cost badges into a single array for cleaner template
 const actionCosts = computed(() => {
