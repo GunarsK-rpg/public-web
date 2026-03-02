@@ -1,47 +1,25 @@
 <template>
   <div class="step-tabs-container">
-    <div class="step-tabs row no-wrap" role="tablist" aria-label="Character creation steps">
-      <div
+    <q-tabs
+      :model-value="currentStep"
+      dense
+      align="left"
+      narrow-indicator
+      mobile-arrows
+      outside-arrows
+      @update:model-value="goToStep"
+    >
+      <q-tab
         v-for="step in steps"
         :key="step.id"
-        :id="`step-tab-${step.id}`"
-        role="tab"
-        :tabindex="currentStep === step.id ? 0 : -1"
-        :aria-selected="currentStep === step.id"
-        :aria-controls="`step-panel-${step.id}`"
-        class="step-tab q-px-md q-py-sm text-center"
-        :class="{
-          'step-tab--active': currentStep === step.id,
-          'step-tab--done': isStepDone(step.id) && currentStep !== step.id,
-          'step-tab--disabled': !canNavigateTo(step.id),
-          'text-negative': hasStepErrors(step.code),
-          'cursor-pointer': canNavigateTo(step.id),
-        }"
-        @click="goToStep(step.id)"
-        @keydown.enter="goToStep(step.id)"
-        @keydown.space.prevent="goToStep(step.id)"
-        @keydown.left="navigateTabs(-1)"
-        @keydown.right="navigateTabs(1)"
-      >
-        <div class="step-tab-name text-caption text-uppercase">
-          <q-icon
-            v-if="stepErrors[step.code]"
-            name="error"
-            size="xs"
-            class="q-mr-xs"
-            :aria-label="`${step.name} has validation errors`"
-          />
-          {{ step.name }}
-        </div>
-      </div>
-    </div>
-    <q-linear-progress
-      :value="Math.min(currentStep / totalSteps, 1)"
-      color="primary"
-      size="3px"
-      class="step-progress"
-      aria-hidden="true"
-    />
+        :name="step.id"
+        :label="step.name"
+        :disable="!canNavigateTo(step.id)"
+        :alert="hasStepErrors(step.code) ? 'negative' : false"
+        :alert-icon="hasStepErrors(step.code) ? 'error' : undefined"
+        :class="{ 'text-negative': hasStepErrors(step.code) }"
+      />
+    </q-tabs>
   </div>
 </template>
 
@@ -50,13 +28,11 @@ import { computed } from 'vue';
 import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { WIZARD_STEPS } from 'src/types';
-import { clamp } from 'src/utils/numberUtils';
 
 const wizardStore = useWizardStore();
 const { validate } = useStepValidation();
 
 const steps = WIZARD_STEPS;
-const totalSteps = steps.length;
 
 const currentStep = computed(() => wizardStore.currentStep);
 
@@ -73,10 +49,6 @@ const stepErrors = computed(() => {
   return errors;
 });
 
-function isStepDone(step: number): boolean {
-  return wizardStore.isStepCompleted(step);
-}
-
 function hasStepErrors(stepCode: string): boolean {
   return stepErrors.value[stepCode] ?? false;
 }
@@ -92,82 +64,10 @@ function canNavigateTo(step: number): boolean {
 
 function goToStep(step: number) {
   if (!canNavigateTo(step)) return;
-  // Only mark as completed if navigating forward/away
-  if (step !== wizardStore.currentStep) {
+  // Only mark as completed if navigating forward
+  if (step > wizardStore.currentStep) {
     wizardStore.markStepCompleted(wizardStore.currentStep);
   }
   wizardStore.goToStep(step);
 }
-
-function navigateTabs(direction: number) {
-  const currentIndex = steps.findIndex((s) => s.id === currentStep.value);
-  const newIndex = clamp(currentIndex + direction, 0, steps.length - 1);
-  const targetStep = steps[newIndex];
-  if (newIndex !== currentIndex && targetStep) {
-    // Use direct step navigation without marking current step complete
-    // This allows keyboard exploration without unintended side effects
-    wizardStore.goToStep(targetStep.id);
-  }
-}
 </script>
-
-<style scoped lang="scss">
-.step-tabs-container {
-  overflow-x: auto;
-  overflow-y: hidden;
-  position: relative;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.step-tabs {
-  min-width: max-content;
-}
-
-.step-tab {
-  min-width: clamp(60px, 20vw, 100px);
-  opacity: 0.6;
-  transition:
-    opacity 0.2s,
-    border-color 0.2s;
-  border-bottom: 3px solid transparent;
-  white-space: nowrap;
-
-  &:hover {
-    opacity: 0.8;
-  }
-
-  &--active {
-    opacity: 1;
-    border-bottom-color: var(--q-primary);
-    background: $color-overlay-light;
-  }
-
-  &--done {
-    opacity: 0.8;
-  }
-
-  &--disabled {
-    opacity: 0.35;
-    cursor: default;
-
-    &:hover {
-      opacity: 0.35;
-    }
-  }
-}
-
-.step-tab-name {
-  font-size: 10px;
-  letter-spacing: 0.5px;
-}
-
-.step-progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-</style>

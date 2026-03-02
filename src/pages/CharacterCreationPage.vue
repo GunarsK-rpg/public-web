@@ -1,9 +1,9 @@
 <template>
   <q-page class="character-creation-page">
     <!-- Sticky Header with Step Navigation -->
-    <div class="creation-header bg-dark text-white">
+    <div class="creation-header">
       <div class="row items-center no-wrap">
-        <StepTabs class="col" />
+        <StepTabs class="col q-my-md" />
         <q-btn
           flat
           round

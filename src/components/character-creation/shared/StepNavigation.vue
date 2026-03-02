@@ -1,10 +1,18 @@
 <template>
-  <div class="creation-footer q-pa-sm row items-center">
-    <q-btn v-if="currentStep > 1" flat dense icon="arrow_back" label="Back" @click="previousStep" />
+  <div class="creation-footer q-pa-sm row items-center no-wrap">
+    <q-btn
+      v-if="currentStep > 1"
+      flat
+      dense
+      round
+      icon="arrow_back"
+      aria-label="Previous step"
+      @click="previousStep"
+    />
     <q-space />
     <div
       v-if="displayError"
-      class="text-negative text-caption q-mr-sm"
+      class="status-message text-negative text-caption q-mr-sm"
       role="alert"
       aria-live="polite"
     >
@@ -13,7 +21,7 @@
     </div>
     <div
       v-else-if="displayWarning"
-      class="text-warning text-caption q-mr-sm"
+      class="status-message text-warning text-caption q-mr-sm"
       role="status"
       aria-live="polite"
     >
@@ -24,18 +32,18 @@
       v-if="isEditMode && !isLastStep"
       flat
       dense
-      label="Save & Close"
-      icon="check"
-      class="q-mr-sm"
+      label="Save"
+      class="q-mx-sm q-px-md"
       :loading="saving"
       @click="$emit('save-close')"
     />
     <q-btn
       v-if="!isLastStep"
-      color="primary"
+      flat
       dense
-      label="Next"
-      icon-right="arrow_forward"
+      round
+      icon="arrow_forward"
+      aria-label="Next step"
       :loading="saving"
       @click="$emit('next')"
     />
@@ -44,7 +52,7 @@
       color="primary"
       dense
       label="Finish"
-      icon="check"
+      class="q-px-md"
       :disable="!isReadyToFinish"
       @click="$emit('finish')"
     />
@@ -102,5 +110,13 @@ function previousStep() {
     background-color: $color-background-light;
     border-top-color: $color-border-light;
   }
+}
+
+.status-message {
+  min-width: 0;
+  flex-shrink: 1;
+  text-align: right;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 </style>
