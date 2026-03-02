@@ -95,7 +95,7 @@ const visibleSkills = computed(() => {
   const order = findById(classifiers.radiantOrders, talentStore.radiantOrderId ?? 0);
   const surgeIds = order ? new Set([order.surge1.id, order.surge2.id]) : null;
   return classifiers.skills.filter(
-    (s) => !s.surge || (surgeIds && s.surge && surgeIds.has(s.surge.id)),
+    (s) => !s.surge || (surgeIds && s.surge && surgeIds.has(s.surge.id))
   );
 });
 

@@ -165,6 +165,13 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   function setRadiantOrder(orderId: number | null) {
     if (!heroStore.hero) return;
 
+    // No-op if same order
+    if (orderId === (heroStore.hero.radiantOrder?.id ?? null)) return;
+
+    // Validate new order before destructive removal of previous data
+    const newOrder = orderId !== null ? findById(classifierStore.radiantOrders, orderId) : null;
+    if (orderId !== null && !newOrder) return;
+
     // Remove all radiant talents and surge skills from previous order
     if (heroStore.hero.radiantOrder) {
       const prevOrderId = heroStore.hero.radiantOrder.id;
@@ -197,9 +204,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
       heroStore.hero.radiantOrder = null;
       heroStore.hero.radiantIdeal = 0;
     } else {
-      const order = findById(classifierStore.radiantOrders, orderId);
-      if (!order) return;
-      heroStore.hero.radiantOrder = toClassifierRef(order);
+      heroStore.hero.radiantOrder = toClassifierRef(newOrder!);
       // Ensure radiantIdeal is at least 1 when order is set (database constraint)
       if (heroStore.hero.radiantIdeal === 0) {
         heroStore.hero.radiantIdeal = 1;
@@ -217,9 +222,11 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
         });
       }
 
-      // Grant rank 1 in each surge skill
+      // Grant rank 1 in each surge skill (don't downgrade existing higher ranks)
       for (const skillId of getSurgeSkillIds(orderId)) {
-        attrStore.setSkillRank(skillId, 1);
+        if (attrStore.getSkillRank(skillId) < 1) {
+          attrStore.setSkillRank(skillId, 1);
+        }
       }
     }
   }

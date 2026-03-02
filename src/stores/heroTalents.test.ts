@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useHeroTalentsStore } from './heroTalents';
 import { useHeroStore } from './hero';
+import { useHeroAttributesStore } from './heroAttributes';
 import { useClassifierStore } from './classifiers';
 
 // Mock classifiers data
@@ -617,6 +618,28 @@ describe('useHeroTalentsStore', () => {
       const adhesionSkill = heroStore.hero!.skills.find((s) => s.skill.id === 102);
       expect(gravitationSkill?.rank).toBe(1);
       expect(adhesionSkill?.rank).toBe(1);
+    });
+
+    it('does not downgrade existing higher surge skill ranks', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+      const attrStore = useHeroAttributesStore();
+
+      // Pre-seed a surge skill at rank 3
+      heroStore.hero!.skills.push({
+        id: -1,
+        heroId: heroStore.hero!.id,
+        skill: { id: 101, code: 'gravitation', name: 'Gravitation' },
+        rank: 3,
+        modifier: 0,
+      });
+
+      store.setRadiantOrder(1); // windrunner: gravitation (101) + adhesion (102)
+
+      // Gravitation should stay at 3, not be downgraded to 1
+      expect(attrStore.getSkillRank(101)).toBe(3);
+      // Adhesion should be granted at 1
+      expect(attrStore.getSkillRank(102)).toBe(1);
     });
 
     it('removes surge skills when clearing order', () => {
