@@ -10,6 +10,7 @@ const mockCampaign = ref({
   id: 1,
   name: 'Test Campaign',
   description: 'Campaign description',
+  code: 'test-code',
   heroes: [
     { id: 1, name: 'Hero 1', level: 5, currentHealth: 20, maxHealth: 30, radiantOrder: null },
     {
@@ -125,6 +126,7 @@ describe('CampaignDetailPage', () => {
       id: 1,
       name: 'Test Campaign',
       description: 'Campaign description',
+      code: 'test-code',
       heroes: [
         { id: 1, name: 'Hero 1', level: 5, currentHealth: 20, maxHealth: 30, radiantOrder: null },
         {
@@ -163,10 +165,10 @@ describe('CampaignDetailPage', () => {
       expect(wrapper.text()).toContain('Characters');
     });
 
-    it('renders create character button', () => {
+    it('renders add character button', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Create Character');
+      expect(wrapper.text()).toContain('Add Character');
     });
   });
 
@@ -257,18 +259,16 @@ describe('CampaignDetailPage', () => {
       });
     });
 
-    it('navigates to character creation on button click', async () => {
+    it('navigates to join page on add character button click', async () => {
       const wrapper = createWrapper();
 
-      const createBtns = wrapper
-        .findAll('.q-btn')
-        .filter((b) => b.text().includes('Create Character'));
-      expect(createBtns.length).toBeGreaterThan(0);
-      await createBtns[0]!.trigger('click');
+      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add Character'));
+      expect(addBtns.length).toBeGreaterThan(0);
+      await addBtns[0]!.trigger('click');
 
       expect(mockPush).toHaveBeenCalledWith({
-        name: 'character-create',
-        query: { campaignId: '1' },
+        name: 'join-campaign',
+        params: { code: 'test-code' },
       });
     });
   });

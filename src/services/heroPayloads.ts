@@ -1,5 +1,5 @@
 import type { ClassifierRef, ClassifierInput } from 'src/types/shared';
-import type { HeroSheet, HeroBase } from 'src/types/heroes';
+import type { Hero, HeroBase } from 'src/types/heroes';
 import type { HeroAttribute, HeroAttributeBase } from 'src/types/attributes';
 import type { HeroSkill, HeroSkillBase } from 'src/types/skills';
 import type { HeroExpertise, HeroExpertiseBase } from 'src/types/expertises';
@@ -26,7 +26,7 @@ function realIdSpread(id: number): { id: number } | Record<string, never> {
   return id > 0 ? { id } : {};
 }
 
-export function buildHeroCorePayload(hero: HeroSheet): HeroBase {
+export function buildHeroCorePayload(hero: Hero): HeroBase {
   return {
     ...realIdSpread(hero.id),
     name: hero.name,
@@ -36,7 +36,7 @@ export function buildHeroCorePayload(hero: HeroSheet): HeroBase {
     currentFocus: hero.currentFocus,
     currentInvestiture: hero.currentInvestiture,
     currency: hero.currency,
-    campaign: toClassifierInput(hero.campaign),
+    campaign: toOptionalClassifierInput(hero.campaign),
     ancestry: toClassifierInput(hero.ancestry),
     appearance: hero.appearance ?? null,
     biography: hero.biography ?? null,

@@ -36,6 +36,27 @@
       points, {{ levelData.skillRanks }} skill ranks, and {{ levelData.talentSlots }} talent slots.
     </q-banner>
 
+    <!-- Campaign -->
+    <template v-if="campaignName && !heroStore.isNew">
+      <q-separator class="q-my-md" />
+      <div class="text-subtitle1 q-mb-md">Campaign</div>
+      <q-card flat bordered>
+        <q-card-section class="row items-center">
+          <div>
+            <div class="text-body1">{{ campaignName }}</div>
+          </div>
+          <q-space />
+          <q-btn
+            flat
+            color="negative"
+            label="Leave Campaign"
+            icon="sym_o_logout"
+            @click="leaveCampaign"
+          />
+        </q-card-section>
+      </q-card>
+    </template>
+
     <!-- Ancestry Selection -->
     <q-separator class="q-my-md" />
     <div class="text-subtitle1 q-mb-md">Choose your character's ancestry</div>
@@ -77,17 +98,22 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useCampaignStore } from 'src/stores/campaigns';
 import { useClassifierStore } from 'src/stores/classifiers';
+import heroService from 'src/services/heroService';
 import campaignService from 'src/services/campaignService';
+import { buildHeroCorePayload } from 'src/services/heroPayloads';
 import { findByCode } from 'src/utils/arrayUtils';
 import { clamp } from 'src/utils/numberUtils';
+import { logger } from 'src/utils/logger';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import SelectableCard from '../shared/SelectableCard.vue';
 
+const $q = useQuasar();
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
@@ -97,6 +123,7 @@ const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
 const currentLevel = computed(() => heroStore.hero?.level ?? 1);
 const levelData = computed(() => attrStore.levelData);
+const campaignName = computed(() => heroStore.hero?.campaign?.name);
 
 // Ancestry
 const ancestries = computed(() => classifiers.ancestries);
@@ -171,5 +198,25 @@ function selectAncestry(id: number) {
 
 function selectForm(id: number) {
   talentStore.setSingerForm(id);
+}
+
+function leaveCampaign(): void {
+  $q.dialog({
+    title: 'Leave Campaign',
+    message: `Remove this character from "${campaignName.value}"? You can reassign them later.`,
+    cancel: true,
+    persistent: false,
+  }).onOk(() => {
+    if (!heroStore.hero || heroStore.hero.id <= 0) return;
+    heroStore.setCampaign(null);
+    const payload = buildHeroCorePayload(heroStore.hero);
+    void heroService.update(heroStore.hero.id, payload).then(
+      (response) => heroStore.updateFromResponse(response.data),
+      (err) => {
+        logger.error('Failed to leave campaign', { error: err });
+        $q.notify({ message: 'Failed to leave campaign', type: 'negative', timeout: 2000 });
+      }
+    );
+  });
 }
 </script>

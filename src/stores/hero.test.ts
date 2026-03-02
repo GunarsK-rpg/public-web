@@ -592,7 +592,7 @@ describe('useHeroStore', () => {
       store.setCampaign(null);
 
       expect(store.hero?.campaignId).toBeNull();
-      expect(store.hero?.campaign).toEqual({ id: 0, code: '', name: '' });
+      expect(store.hero?.campaign).toBeNull();
     });
 
     it('does nothing when no hero loaded', () => {

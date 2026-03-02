@@ -17,7 +17,7 @@ function createEmptyHero(): HeroSheet {
     userId: 0,
     user: { id: 0, username: '' },
     campaignId: null,
-    campaign: { id: 0, code: '', name: '' },
+    campaign: null,
     ancestry: { id: 0, code: '', name: '' },
     startingKit: null,
     activeSingerForm: null,
@@ -166,7 +166,7 @@ export const useHeroStore = defineStore('hero', () => {
     if (!hero.value) return;
     hero.value.campaignId = campaignId;
     if (campaignId === null) {
-      hero.value.campaign = { id: 0, code: '', name: '' };
+      hero.value.campaign = null;
     }
   }
 
@@ -177,7 +177,7 @@ export const useHeroStore = defineStore('hero', () => {
       hero.value.campaign = { id: campaign.id, code: campaign.code, name: campaign.name };
     } else {
       hero.value.campaignId = null;
-      hero.value.campaign = { id: 0, code: '', name: '' };
+      hero.value.campaign = null;
     }
   }
 

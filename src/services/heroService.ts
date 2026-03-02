@@ -4,7 +4,8 @@ import { api } from './api';
 
 export default {
   getAll(campaignId?: number): Promise<AxiosResponse<PaginatedResponse<Hero>>> {
-    const params = campaignId ? { campaign_id: campaignId } : {};
+    const params: Record<string, unknown> = {};
+    if (campaignId) params.campaign_id = campaignId;
     return api.get('/heroes', { params });
   },
   getById(id: number): Promise<AxiosResponse<Hero>> {
