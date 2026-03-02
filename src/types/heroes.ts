@@ -23,7 +23,7 @@ export interface HeroBase {
   currentFocus: number;
   currentInvestiture: number;
   currency: number;
-  campaign: ClassifierInput;
+  campaign: ClassifierInput | null;
   ancestry: ClassifierInput;
   startingKit?: ClassifierInput | null;
   activeSingerForm?: ClassifierInput | null;
@@ -36,7 +36,7 @@ export interface Hero extends HeroBase {
   userId: number;
   user: UserRef;
   campaignId: number | null;
-  campaign: CampaignRef;
+  campaign: CampaignRef | null;
   ancestry: ClassifierRef;
   startingKit: ClassifierRef | null;
   activeSingerForm: ClassifierRef | null;

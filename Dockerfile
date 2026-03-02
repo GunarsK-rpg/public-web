@@ -23,9 +23,10 @@ ARG VITE_AUTH_URL
 RUN npm run build
 
 # Production stage
-FROM nginx:1.29-alpine
+FROM nginx:1.29.5-alpine
 
-# Security update - ensure package index is refreshed
+# Security update - CACHE_BUST is set by CI to force fresh apk upgrade
+ARG CACHE_BUST
 RUN apk update && apk upgrade --no-cache
 
 # Copy built assets

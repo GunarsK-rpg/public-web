@@ -83,9 +83,9 @@
           <q-space />
           <q-btn
             color="primary"
-            icon="sym_o_add"
-            label="Create Character"
-            @click="createCharacter"
+            icon="sym_o_person_add"
+            label="Add Character"
+            @click="goToJoinPage"
           />
         </div>
 
@@ -184,10 +184,11 @@ function goBack(): void {
   void router.push({ name: 'campaigns' });
 }
 
-function createCharacter(): void {
+function goToJoinPage(): void {
+  if (!campaign.value) return;
   void router.push({
-    name: 'character-create',
-    query: { campaignId: props.campaignId },
+    name: 'join-campaign',
+    params: { code: campaign.value.code },
   });
 }
 
