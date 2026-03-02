@@ -73,8 +73,11 @@ const talentTabs = computed((): TalentTab[] => {
   const tabs: TalentTab[] = [];
 
   // Path tabs - driven by key talents
+  const seenPaths = new Set<number>();
   for (const keyTalent of heroTalents.value.filter((t) => t.isKey && t.path)) {
     const pathId = keyTalent.path!.id;
+    if (seenPaths.has(pathId)) continue;
+    seenPaths.add(pathId);
     const path = findById(classifiers.paths, pathId);
     if (!path) continue;
     const pathTalents = heroTalents.value.filter((t) => talentBelongsToPath(t, pathId));

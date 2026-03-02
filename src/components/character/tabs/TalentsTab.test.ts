@@ -208,7 +208,7 @@ describe('TalentsTab', () => {
             props: ['name', 'label'],
           },
           QTabPanels: {
-            template: '<div class="q-tab-panels"><slot /></div>',
+            template: '<div class="q-tab-panels" :data-active="modelValue"><slot /></div>',
             props: ['modelValue'],
           },
           QTabPanel: {
@@ -331,29 +331,33 @@ describe('TalentsTab', () => {
         createHeroTalent({ talent: { id: 3, code: 't3', name: 'T3' } }),
       ];
       const wrapper = createWrapper();
-      expect(wrapper.text()).toContain('Quick Strike');
-      expect(wrapper.text()).toContain('Parry');
-      expect(wrapper.text()).toContain('Shield Bash');
+      const panel = wrapper.find('.q-tab-panel[data-name="path-1"]');
+      expect(panel.text()).toContain('Quick Strike');
+      expect(panel.text()).toContain('Parry');
+      expect(panel.text()).toContain('Shield Bash');
     });
 
     it('renders radiant bond talents', () => {
       setRadiantHero();
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 't6', name: 'T6' } })];
       const wrapper = createWrapper();
-      expect(wrapper.text()).toContain('Spren Bond');
+      const panel = wrapper.find('.q-tab-panel[data-name="order-1"]');
+      expect(panel.text()).toContain('Spren Bond');
     });
 
     it('renders surge talents', () => {
       setRadiantHero();
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } })];
       const wrapper = createWrapper();
-      expect(wrapper.text()).toContain('Lashing');
+      const panel = wrapper.find('.q-tab-panel[data-name="surge-1"]');
+      expect(panel.text()).toContain('Lashing');
     });
 
     it('renders ancestry talents', () => {
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 7, code: 't7', name: 'T7' } })];
       const wrapper = createWrapper();
-      expect(wrapper.text()).toContain('Warform');
+      const panel = wrapper.find('.q-tab-panel[data-name="ancestry-2"]');
+      expect(panel.text()).toContain('Warform');
     });
   });
 
@@ -378,8 +382,7 @@ describe('TalentsTab', () => {
     it('sets first tab as active by default', () => {
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 't1', name: 'T1' } })];
       const wrapper = createWrapper();
-      const tabs = wrapper.find('.q-tabs');
-      expect(tabs.exists()).toBe(true);
+      expect(wrapper.find('.q-tab-panels').attributes('data-active')).toBe('path-1');
     });
 
     it('renders all talent categories together', () => {

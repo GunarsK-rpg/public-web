@@ -48,7 +48,8 @@ describe('TalentItem', () => {
             props: ['color', 'outline'],
           },
           PrerequisiteList: {
-            template: '<div class="prerequisite-list" />',
+            template:
+              '<div class="prerequisite-list" :data-prerequisites="JSON.stringify(prerequisites)" />',
             props: ['prerequisites'],
           },
         },
@@ -65,22 +66,22 @@ describe('TalentItem', () => {
   describe('collapsed state (header)', () => {
     it('renders talent name', () => {
       const wrapper = createWrapper();
-      expect(wrapper.text()).toContain('Swift Strike');
+      expect(wrapper.find('.header').text()).toContain('Swift Strike');
     });
 
     it('renders short description', () => {
       const wrapper = createWrapper();
-      expect(wrapper.text()).toContain('Quick attack');
+      expect(wrapper.find('.header').text()).toContain('Quick attack');
     });
 
     it('falls back to full description when short is missing', () => {
       const wrapper = createWrapper({ descriptionShort: null });
-      expect(wrapper.text()).toContain('A quick attack that deals damage');
+      expect(wrapper.find('.header').text()).toContain('A quick attack that deals damage');
     });
 
     it('shows key talent badge when isKey is true', () => {
       const wrapper = createWrapper({ isKey: true });
-      expect(wrapper.text()).toContain('Key');
+      expect(wrapper.find('.header').text()).toContain('Key');
     });
 
     it('does not show key badge when isKey is false', () => {
@@ -101,12 +102,12 @@ describe('TalentItem', () => {
       expect(content.text()).toContain('A quick attack that deals damage');
     });
 
-    it('renders PrerequisiteList component', () => {
-      const wrapper = createWrapper({
-        prerequisites: [{ type: 'level', value: 3 }],
-      });
+    it('renders PrerequisiteList with correct prerequisites', () => {
+      const prerequisites = [{ type: 'level', value: 3 }];
+      const wrapper = createWrapper({ prerequisites });
       const prereqs = wrapper.find('.prerequisite-list');
       expect(prereqs.exists()).toBe(true);
+      expect(JSON.parse(prereqs.attributes('data-prerequisites')!)).toEqual(prerequisites);
     });
   });
 
