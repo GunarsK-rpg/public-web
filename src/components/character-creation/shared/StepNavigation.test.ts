@@ -59,13 +59,25 @@ describe('StepNavigation', () => {
             template: `<button
               class="q-btn"
               :class="{ 'q-btn--loading': loading }"
+              :data-icon="icon"
+              :data-label="label"
               :disabled="disable"
               @click="$emit('click')"
             >
               <slot />
               {{ label }}
             </button>`,
-            props: ['label', 'loading', 'disable', 'icon', 'iconRight', 'color', 'flat', 'dense'],
+            props: [
+              'label',
+              'loading',
+              'disable',
+              'icon',
+              'iconRight',
+              'color',
+              'flat',
+              'dense',
+              'round',
+            ],
             emits: ['click'],
           },
           QSpace: {
@@ -77,6 +89,14 @@ describe('StepNavigation', () => {
         },
       },
     });
+
+  function findBtnByIcon(wrapper: ReturnType<typeof createWrapper>, icon: string) {
+    return wrapper.find(`[data-icon="${icon}"]`);
+  }
+
+  function findBtnByLabel(wrapper: ReturnType<typeof createWrapper>, label: string) {
+    return wrapper.find(`[data-label="${label}"]`);
+  }
 
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -94,7 +114,7 @@ describe('StepNavigation', () => {
     it('renders Next button on non-last step', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Next');
+      expect(findBtnByIcon(wrapper, 'arrow_forward').exists()).toBe(true);
     });
 
     it('renders Finish button on last step', () => {
@@ -102,7 +122,7 @@ describe('StepNavigation', () => {
 
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Finish');
+      expect(findBtnByLabel(wrapper, 'Finish').exists()).toBe(true);
     });
 
     it('does not render Back button on first step', () => {
@@ -110,7 +130,7 @@ describe('StepNavigation', () => {
 
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).not.toContain('Back');
+      expect(findBtnByIcon(wrapper, 'arrow_back').exists()).toBe(false);
     });
 
     it('renders Back button on steps after first', () => {
@@ -118,7 +138,7 @@ describe('StepNavigation', () => {
 
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Back');
+      expect(findBtnByIcon(wrapper, 'arrow_back').exists()).toBe(true);
     });
   });
 
@@ -130,22 +150,18 @@ describe('StepNavigation', () => {
       mockCurrentStep.value = 2;
 
       const wrapper = createWrapper();
-      const buttons = wrapper.findAll('.q-btn');
-      const backButton = buttons.find((b) => b.text().includes('Back'));
-      expect(backButton).toBeDefined();
+      const backButton = findBtnByIcon(wrapper, 'arrow_back');
 
-      await backButton!.trigger('click');
+      await backButton.trigger('click');
 
       expect(mockPreviousStep).toHaveBeenCalled();
     });
 
     it('emits next event when Next clicked', async () => {
       const wrapper = createWrapper();
-      const buttons = wrapper.findAll('.q-btn');
-      const nextButton = buttons.find((b) => b.text().includes('Next'));
-      expect(nextButton).toBeDefined();
+      const nextButton = findBtnByIcon(wrapper, 'arrow_forward');
 
-      await nextButton!.trigger('click');
+      await nextButton.trigger('click');
 
       expect(wrapper.emitted('next')).toBeTruthy();
     });
@@ -155,11 +171,9 @@ describe('StepNavigation', () => {
       mockAllStepsValidation.value = { isValid: true, errors: [], warnings: [] };
 
       const wrapper = createWrapper();
-      const buttons = wrapper.findAll('.q-btn');
-      const finishButton = buttons.find((b) => b.text().includes('Finish'));
-      expect(finishButton).toBeDefined();
+      const finishButton = findBtnByLabel(wrapper, 'Finish');
 
-      await finishButton!.trigger('click');
+      await finishButton.trigger('click');
 
       expect(wrapper.emitted('finish')).toBeTruthy();
     });
@@ -235,10 +249,9 @@ describe('StepNavigation', () => {
       mockAllStepsValidation.value = { isValid: false, errors: ['Not complete'], warnings: [] };
 
       const wrapper = createWrapper();
-      const buttons = wrapper.findAll('.q-btn');
-      const finishButton = buttons.find((b) => b.text().includes('Finish'));
+      const finishButton = findBtnByLabel(wrapper, 'Finish');
 
-      expect(finishButton?.attributes('disabled')).toBeDefined();
+      expect(finishButton.attributes('disabled')).toBeDefined();
     });
 
     it('enables Finish when all steps valid', () => {
@@ -246,10 +259,9 @@ describe('StepNavigation', () => {
       mockAllStepsValidation.value = { isValid: true, errors: [], warnings: [] };
 
       const wrapper = createWrapper();
-      const buttons = wrapper.findAll('.q-btn');
-      const finishButton = buttons.find((b) => b.text().includes('Finish'));
+      const finishButton = findBtnByLabel(wrapper, 'Finish');
 
-      expect(finishButton?.attributes('disabled')).toBeUndefined();
+      expect(finishButton.attributes('disabled')).toBeUndefined();
     });
   });
 
@@ -259,18 +271,16 @@ describe('StepNavigation', () => {
   describe('loading state', () => {
     it('shows loading state on Next button when saving', () => {
       const wrapper = createWrapper({ saving: true });
-      const buttons = wrapper.findAll('.q-btn');
-      const nextButton = buttons.find((b) => b.text().includes('Next'));
+      const nextButton = findBtnByIcon(wrapper, 'arrow_forward');
 
-      expect(nextButton?.classes()).toContain('q-btn--loading');
+      expect(nextButton.classes()).toContain('q-btn--loading');
     });
 
     it('does not show loading state by default', () => {
       const wrapper = createWrapper();
-      const buttons = wrapper.findAll('.q-btn');
-      const nextButton = buttons.find((b) => b.text().includes('Next'));
+      const nextButton = findBtnByIcon(wrapper, 'arrow_forward');
 
-      expect(nextButton?.classes()).not.toContain('q-btn--loading');
+      expect(nextButton.classes()).not.toContain('q-btn--loading');
     });
   });
 
@@ -284,8 +294,8 @@ describe('StepNavigation', () => {
 
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Next');
-      expect(wrapper.text()).not.toContain('Finish');
+      expect(findBtnByIcon(wrapper, 'arrow_forward').exists()).toBe(true);
+      expect(findBtnByLabel(wrapper, 'Finish').exists()).toBe(false);
     });
 
     it('shows both Back and Next on middle steps', () => {
@@ -294,8 +304,8 @@ describe('StepNavigation', () => {
 
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Back');
-      expect(wrapper.text()).toContain('Next');
+      expect(findBtnByIcon(wrapper, 'arrow_back').exists()).toBe(true);
+      expect(findBtnByIcon(wrapper, 'arrow_forward').exists()).toBe(true);
     });
 
     it('shows Back and Finish on last step', () => {
@@ -304,9 +314,9 @@ describe('StepNavigation', () => {
 
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Back');
-      expect(wrapper.text()).toContain('Finish');
-      expect(wrapper.text()).not.toContain('Next');
+      expect(findBtnByIcon(wrapper, 'arrow_back').exists()).toBe(true);
+      expect(findBtnByLabel(wrapper, 'Finish').exists()).toBe(true);
+      expect(findBtnByIcon(wrapper, 'arrow_forward').exists()).toBe(false);
     });
   });
 });

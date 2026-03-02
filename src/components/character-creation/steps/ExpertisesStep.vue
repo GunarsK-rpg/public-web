@@ -29,9 +29,11 @@
     <q-tabs
       v-model="selectedCategory"
       dense
+      align="left"
+      narrow-indicator
+      mobile-arrows
+      outside-arrows
       class="q-mb-md"
-      active-color="primary"
-      indicator-color="primary"
     >
       <q-tab name="all" label="All" />
       <q-tab
