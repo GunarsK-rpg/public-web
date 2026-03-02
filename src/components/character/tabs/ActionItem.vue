@@ -27,15 +27,7 @@
           >
             {{ cost.value }} {{ cost.label }}
           </q-badge>
-          <q-badge
-            v-for="(tag, idx) in typedEntries"
-            :key="idx + ':' + tag.type"
-            :color="RPG_COLORS.badgeMuted"
-            :title="tag.type"
-            outline
-          >
-            {{ tag.display_value || tag.value }}
-          </q-badge>
+          <SpecialBadges :specials="typedEntries" />
           <q-badge v-if="action.dice" :color="RPG_COLORS.badgeMuted" outline>
             {{ action.dice }}
           </q-badge>
@@ -71,6 +63,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
 import { RPG_COLORS } from 'src/constants/theme';
 import { SPECIAL } from 'src/utils/specialUtils';
+import SpecialBadges from 'src/components/shared/SpecialBadges.vue';
 import type { Action } from 'src/types';
 
 const props = defineProps<{

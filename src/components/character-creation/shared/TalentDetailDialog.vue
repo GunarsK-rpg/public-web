@@ -16,13 +16,10 @@
         <div class="text-body2 talent-description">
           {{ talent.description }}
         </div>
-        <template v-if="prerequisites.length">
-          <q-separator class="q-my-sm" />
-          <div class="text-caption text-muted">
-            <strong>Prerequisites:</strong>
-            {{ prerequisites.map(formatPrerequisite).join(', ') }}
-          </div>
-        </template>
+        <PrerequisiteList :prerequisites="prerequisites" />
+        <div v-if="talent.special?.length" class="q-mt-sm">
+          <SpecialBadges :specials="talent.special" />
+        </div>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -30,7 +27,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { formatPrerequisite } from 'src/utils/talentUtils';
+import PrerequisiteList from 'src/components/shared/PrerequisiteList.vue';
+import SpecialBadges from 'src/components/shared/SpecialBadges.vue';
 import type { Talent } from 'src/types';
 
 const props = defineProps<{

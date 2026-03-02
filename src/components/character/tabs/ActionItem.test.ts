@@ -82,6 +82,11 @@ describe('ActionItem', () => {
             template: '<span class="q-badge" :title="title"><slot /></span>',
             props: ['color', 'title', 'outline'],
           },
+          SpecialBadges: {
+            template:
+              '<span v-for="(s, i) in specials" :key="i" class="q-badge" :title="s.type">{{ s.display_value || s.value }}</span>',
+            props: ['specials'],
+          },
           QCard: {
             template: '<div class="q-card"><slot /></div>',
           },
