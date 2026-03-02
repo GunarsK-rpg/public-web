@@ -1,242 +1,157 @@
 <template>
   <div class="talents-tab">
-    <!-- Paths with talents -->
-    <q-expansion-item
-      v-for="path in pathsWithTalents"
-      :key="path.id"
-      :label="path.name"
-      :aria-label="`${path.name} path talents`"
-      default-opened
-      switch-toggle-side
-      class="q-mb-sm"
-    >
-      <template #header>
-        <q-item-section>
-          <q-item-label class="text-weight-bold">{{ path.name }}</q-item-label>
-          <q-item-label caption>Path</q-item-label>
-        </q-item-section>
-      </template>
+    <template v-if="talentTabs.length > 0">
+      <q-tabs
+        v-model="activeTab"
+        dense
+        align="left"
+        class="q-mb-md"
+        narrow-indicator
+        mobile-arrows
+        outside-arrows
+      >
+        <q-tab v-for="tab in talentTabs" :key="tab.key" :name="tab.key" :label="tab.label" />
+      </q-tabs>
 
-      <q-card>
-        <q-card-section class="q-pt-none">
-          <!-- Key Talent -->
-          <template v-if="keyTalentsByPath[path.id]">
-            <div class="q-mb-md">
-              <div class="section-title section-title--sm">Key Talent</div>
-              <talent-item :talent="keyTalentsByPath[path.id]!" />
-            </div>
-          </template>
+      <q-tab-panels v-model="activeTab" animated>
+        <q-tab-panel v-for="tab in talentTabs" :key="tab.key" :name="tab.key" class="q-pa-none">
+          <q-list v-if="tab.talents.length" bordered separator>
+            <TalentItem v-for="talent in tab.talents" :key="talent.id" :talent="talent" />
+          </q-list>
+          <div v-else class="text-center text-muted q-pa-lg">No talents in this category.</div>
+        </q-tab-panel>
+      </q-tab-panels>
+    </template>
 
-          <!-- General Path Talents (no specialty) -->
-          <template v-if="generalTalentsByPath[path.id]?.length">
-            <div class="q-mb-md">
-              <div class="section-title section-title--sm">Path Talents</div>
-              <talent-item
-                v-for="talent in generalTalentsByPath[path.id]"
-                :key="talent.id"
-                :talent="talent"
-              />
-            </div>
-          </template>
-
-          <!-- Specialties for this path -->
-          <template v-for="specialty in specialtiesByPath[path.id]" :key="specialty.id">
-            <template v-if="talentsBySpecialty[specialty.id]?.length">
-              <div class="specialty-section">
-                <div class="specialty-title">{{ specialty.name }}</div>
-                <talent-item
-                  v-for="talent in talentsBySpecialty[specialty.id]"
-                  :key="talent.id"
-                  :talent="talent"
-                />
-              </div>
-            </template>
-          </template>
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
-
-    <!-- Radiant Order -->
-    <q-expansion-item
-      v-if="talentStore.isRadiant && radiantOrder"
-      :label="radiantOrder.name"
-      :aria-label="`${radiantOrder.name} radiant order talents`"
-      default-opened
-      class="q-mb-sm"
-    >
-      <template #header>
-        <q-item-section>
-          <q-item-label class="text-weight-bold">{{ radiantOrder.name }}</q-item-label>
-          <q-item-label caption
-            >Radiant Order - Ideal {{ heroStore.hero?.radiantIdeal ?? 0 }}</q-item-label
-          >
-        </q-item-section>
-      </template>
-
-      <q-card>
-        <q-card-section class="q-pt-none">
-          <!-- Order Core Talents -->
-          <div class="specialty-section">
-            <div class="specialty-title">{{ radiantOrder.name }} Bond</div>
-            <div v-if="sprenBondTalents.length === 0" class="text-empty q-pa-sm">
-              No bond talents acquired
-            </div>
-            <talent-item v-for="talent in sprenBondTalents" :key="talent.id" :talent="talent" />
-          </div>
-
-          <!-- Surges -->
-          <div v-for="surge in orderSurges" :key="surge.id" class="specialty-section">
-            <div class="specialty-title">{{ surge.name }}</div>
-            <div v-if="!surgeTalentsMap[surge.id]?.length" class="text-empty q-pa-sm">
-              No {{ surge.name }} talents acquired
-            </div>
-            <talent-item
-              v-for="talent in surgeTalentsMap[surge.id] ?? []"
-              :key="talent.id"
-              :talent="talent"
-            />
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
-
-    <!-- Ancestry Talents (e.g., Singer Forms) -->
-    <q-expansion-item
-      v-if="ancestryTalents.length > 0"
-      :label="ancestryTalentName"
-      :aria-label="`${ancestryTalentName} ancestry talents`"
-      default-opened
-      class="q-mb-sm"
-    >
-      <template #header>
-        <q-item-section>
-          <q-item-label class="text-weight-bold">{{ ancestryTalentName }}</q-item-label>
-          <q-item-label caption>Ancestry Talents</q-item-label>
-        </q-item-section>
-      </template>
-
-      <q-card>
-        <q-card-section class="q-pt-none">
-          <talent-item v-for="talent in ancestryTalents" :key="talent.id" :talent="talent" />
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
-
-    <!-- Empty state -->
-    <div v-if="heroTalents.length === 0" class="text-empty q-pa-md">No talents acquired</div>
+    <div v-else class="text-empty q-pa-md">No talents acquired</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById, groupByKey } from 'src/utils/arrayUtils';
-import type { Talent, Path, Specialty, Surge } from 'src/types';
+import { findById } from 'src/utils/arrayUtils';
+import type { Talent } from 'src/types';
 import TalentItem from './TalentItem.vue';
+
+interface TalentTab {
+  key: string;
+  label: string;
+  talents: Talent[];
+}
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 
-// Get all hero talents as Talent objects
-const heroTalents = computed((): Talent[] => {
-  return heroStore.talents
+// Resolve hero talents to full Talent objects
+const heroTalents = computed((): Talent[] =>
+  heroStore.talents
     .map((t) => findById(classifiers.talents, t.talent.id))
-    .filter((t): t is Talent => t !== undefined);
-});
-
-// Get unique paths that have talents
-const pathsWithTalents = computed((): Path[] => {
-  const pathIds = new Set(
-    heroTalents.value.map((t) => t.path?.id).filter((id): id is number => id !== undefined)
-  );
-  return Array.from(pathIds)
-    .map((id) => findById(classifiers.paths, id))
-    .filter((p): p is Path => p !== undefined);
-});
-
-// Get radiant order details
-const radiantOrder = computed(() =>
-  findById(classifiers.radiantOrders, heroStore.hero?.radiantOrder?.id)
+    .filter((t): t is Talent => t !== undefined)
 );
 
-// Ancestry talents (e.g., singer talents)
-const ancestryTalents = computed(() => heroTalents.value.filter((t) => t.ancestry !== null));
-const ancestryTalentName = computed(() => ancestryTalents.value[0]?.ancestry?.name);
-
-// Pre-computed lookups to avoid repeated filter calls in template
-const keyTalentsByPath = computed((): Record<number, Talent | undefined> => {
-  const result: Record<number, Talent | undefined> = {};
-  for (const path of pathsWithTalents.value) {
-    result[path.id] = heroTalents.value.find((t) => t.path?.id === path.id && t.isKey);
+// Specialty ID → Path ID lookup
+const specialtyPathMap = computed(() => {
+  const map = new Map<number, number>();
+  for (const s of classifiers.specialties) {
+    map.set(s.id, s.path.id);
   }
-  return result;
+  return map;
 });
 
-const generalTalentsByPath = computed((): Record<number, Talent[]> => {
-  const result: Record<number, Talent[]> = {};
-  for (const path of pathsWithTalents.value) {
-    result[path.id] = heroTalents.value.filter(
-      (t) => t.path?.id === path.id && !t.isKey && t.specialties.length === 0
-    );
+// Check if a talent belongs to a given path (via direct path or specialty)
+function talentBelongsToPath(talent: Talent, pathId: number): boolean {
+  if (talent.path?.id === pathId) return true;
+  return talent.specialties.some((s) => specialtyPathMap.value.get(s.id) === pathId);
+}
+
+// Build tabs dynamically from hero's talent sources
+const talentTabs = computed((): TalentTab[] => {
+  const tabs: TalentTab[] = [];
+
+  // Path tabs - driven by key talents
+  const seenPaths = new Set<number>();
+  for (const keyTalent of heroTalents.value.filter((t) => t.isKey && t.path)) {
+    const pathId = keyTalent.path!.id;
+    if (seenPaths.has(pathId)) continue;
+    seenPaths.add(pathId);
+    const path = findById(classifiers.paths, pathId);
+    if (!path) continue;
+    const pathTalents = heroTalents.value.filter((t) => talentBelongsToPath(t, pathId));
+    // Key talent first
+    pathTalents.sort((a, b) => (a.isKey === b.isKey ? 0 : a.isKey ? -1 : 1));
+    tabs.push({
+      key: `path-${path.id}`,
+      label: path.name,
+      talents: pathTalents,
+    });
   }
-  return result;
-});
 
-// All specialties grouped by path (for paths that have talents)
-const specialtiesByPath = computed((): Record<number, Specialty[]> => {
-  return groupByKey(classifiers.specialties, (s) => s.path.id);
-});
+  // Radiant order tabs - bond tab + one tab per surge
+  if (talentStore.isRadiant && heroStore.hero?.radiantOrder) {
+    const order = findById(classifiers.radiantOrders, heroStore.hero.radiantOrder.id);
+    if (order) {
+      // Bond talents (order-specific, no surge)
+      const bondTalents = heroTalents.value.filter(
+        (t) => t.radiantOrder?.id === order.id && !t.surge
+      );
+      if (bondTalents.length > 0) {
+        tabs.push({
+          key: `order-${order.id}`,
+          label: order.name,
+          talents: bondTalents,
+        });
+      }
 
-const talentsBySpecialty = computed((): Record<number, Talent[]> => {
-  const result: Record<number, Talent[]> = {};
-  for (const specialty of classifiers.specialties) {
-    const talents = heroTalents.value.filter((t) =>
-      t.specialties.some((s) => s.id === specialty.id)
-    );
-    if (talents.length > 0) {
-      result[specialty.id] = talents;
+      // Surge tabs
+      const surgeRefs = [order.surge1, order.surge2];
+      for (const surgeRef of surgeRefs) {
+        const surge = findById(classifiers.surges, surgeRef.id);
+        if (!surge) continue;
+        const surgeTalents = heroTalents.value.filter((t) => t.surge?.id === surge.id);
+        if (surgeTalents.length > 0) {
+          tabs.push({
+            key: `surge-${surge.id}`,
+            label: surge.name,
+            talents: surgeTalents,
+          });
+        }
+      }
     }
   }
-  return result;
-});
 
-// Get the two surges for the radiant order
-const orderSurges = computed((): Surge[] => {
-  if (!radiantOrder.value) return [];
-  const surge1 = findById(classifiers.surges, radiantOrder.value.surge1.id);
-  const surge2 = findById(classifiers.surges, radiantOrder.value.surge2.id);
-  return [surge1, surge2].filter((s): s is Surge => s !== undefined);
-});
-
-// Get radiant order talents that are for the order itself (not surge-specific)
-const sprenBondTalents = computed((): Talent[] => {
-  if (!radiantOrder.value) return [];
-  return heroTalents.value.filter((t) => t.radiantOrder?.id === radiantOrder.value?.id && !t.surge);
-});
-
-// Pre-computed surge talents map
-const surgeTalentsMap = computed((): Record<number, Talent[]> => {
-  const result: Record<number, Talent[]> = {};
-  for (const surge of orderSurges.value) {
-    result[surge.id] = heroTalents.value.filter((t) => t.surge?.id === surge.id);
+  // Ancestry tab
+  const ancestryTalents = heroTalents.value.filter((t) => t.ancestry !== null);
+  const firstAncestry = ancestryTalents[0]?.ancestry;
+  if (firstAncestry) {
+    tabs.push({
+      key: `ancestry-${firstAncestry.id}`,
+      label: firstAncestry.name,
+      talents: ancestryTalents,
+    });
   }
-  return result;
+
+  return tabs;
 });
+
+// Active tab state with sync
+const UNINITIALIZED = '__none__';
+const activeTab = ref(UNINITIALIZED);
+
+watch(
+  talentTabs,
+  (tabs) => {
+    const first = tabs[0];
+    if (
+      first &&
+      (activeTab.value === UNINITIALIZED || !tabs.some((t) => t.key === activeTab.value))
+    ) {
+      activeTab.value = first.key;
+    }
+  },
+  { immediate: true }
+);
 </script>
-
-<style scoped>
-.specialty-section {
-  margin-bottom: 16px;
-  padding-left: 8px;
-  border-left: 2px solid var(--q-separator-color);
-}
-
-.specialty-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-</style>

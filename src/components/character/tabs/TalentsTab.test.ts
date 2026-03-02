@@ -43,8 +43,8 @@ vi.mock('src/stores/classifiers', () => ({
         id: 2,
         name: 'Parry',
         description: 'Block attack',
-        path: { id: 1, code: 'warrior', name: 'Warrior' },
-        specialties: [],
+        path: null,
+        specialties: [{ id: 10, code: 'bladework', name: 'Bladework' }],
         ancestry: null,
         radiantOrder: null,
         surge: null,
@@ -53,10 +53,10 @@ vi.mock('src/stores/classifiers', () => ({
       },
       {
         id: 3,
-        name: 'Precision',
-        description: 'Aimed attack',
-        path: { id: 1, code: 'warrior', name: 'Warrior' },
-        specialties: [{ id: 1, code: 'duelist', name: 'Duelist' }],
+        name: 'Shield Bash',
+        description: 'Bash with shield',
+        path: null,
+        specialties: [{ id: 11, code: 'guardian', name: 'Guardian' }],
         ancestry: null,
         radiantOrder: null,
         surge: null,
@@ -113,7 +113,7 @@ vi.mock('src/stores/classifiers', () => ({
       },
       {
         id: 8,
-        name: 'Scholar',
+        name: 'Scholar Key',
         description: 'Knowledge',
         path: { id: 2, code: 'scholar', name: 'Scholar' },
         specialties: [],
@@ -126,9 +126,9 @@ vi.mock('src/stores/classifiers', () => ({
       {
         id: 9,
         name: 'Research',
-        description: 'Study',
-        path: { id: 2, code: 'scholar', name: 'Scholar' },
-        specialties: [],
+        description: 'Study topic',
+        path: null,
+        specialties: [{ id: 20, code: 'academics', name: 'Academics' }],
         ancestry: null,
         radiantOrder: null,
         surge: null,
@@ -136,29 +136,29 @@ vi.mock('src/stores/classifiers', () => ({
         special: [],
       },
     ],
-    paths: [
-      { id: 1, code: 'warrior', name: 'Warrior' },
-      { id: 2, code: 'scholar', name: 'Scholar' },
-    ],
     specialties: [
       {
-        id: 1,
-        code: 'duelist',
-        name: 'Duelist',
+        id: 10,
+        code: 'bladework',
+        name: 'Bladework',
         path: { id: 1, code: 'warrior', name: 'Warrior' },
       },
       {
-        id: 2,
+        id: 11,
         code: 'guardian',
         name: 'Guardian',
         path: { id: 1, code: 'warrior', name: 'Warrior' },
       },
       {
-        id: 3,
-        code: 'historian',
-        name: 'Historian',
+        id: 20,
+        code: 'academics',
+        name: 'Academics',
         path: { id: 2, code: 'scholar', name: 'Scholar' },
       },
+    ],
+    paths: [
+      { id: 1, code: 'warrior', name: 'Warrior' },
+      { id: 2, code: 'scholar', name: 'Scholar' },
     ],
     radiantOrders: [
       {
@@ -168,22 +168,10 @@ vi.mock('src/stores/classifiers', () => ({
         surge1: { id: 1, code: 'adhesion', name: 'Adhesion' },
         surge2: { id: 2, code: 'gravitation', name: 'Gravitation' },
       },
-      {
-        id: 2,
-        code: 'skybreaker',
-        name: 'Skybreaker',
-        surge1: { id: 2, code: 'gravitation', name: 'Gravitation' },
-        surge2: { id: 3, code: 'division', name: 'Division' },
-      },
     ],
     surges: [
       { id: 1, code: 'adhesion', name: 'Adhesion' },
       { id: 2, code: 'gravitation', name: 'Gravitation' },
-      { id: 3, code: 'division', name: 'Division' },
-    ],
-    ancestries: [
-      { id: 1, code: 'human', name: 'Human' },
-      { id: 2, code: 'singer', name: 'Singer' },
     ],
   }),
 }));
@@ -195,10 +183,10 @@ function setRadiantHero(radiantIdeal = 2) {
   mockHero.value = { radiantOrder: WINDRUNNER_ORDER, radiantIdeal };
 }
 
-let nextHeroTalentId = 1;
+let nextId = 1;
 function createHeroTalent(overrides: Partial<HeroTalent> = {}): HeroTalent {
   return {
-    id: nextHeroTalentId++,
+    id: nextId++,
     heroId: 1,
     talent: { id: 1, code: 'talent1', name: 'Talent 1' },
     special: [],
@@ -211,25 +199,23 @@ describe('TalentsTab', () => {
     shallowMount(TalentsTab, {
       global: {
         stubs: {
-          QExpansionItem: {
-            template: `<div class="q-expansion-item" :aria-label="$attrs['aria-label']">
-              <div class="header"><slot name="header" /></div>
-              <slot />
-            </div>`,
-            props: ['label', 'defaultOpened'],
+          QTabs: {
+            template: '<div class="q-tabs"><slot /></div>',
+            props: ['modelValue'],
           },
-          QCard: {
-            template: '<div class="q-card"><slot /></div>',
+          QTab: {
+            template: '<div class="q-tab" :data-name="name">{{ label }}</div>',
+            props: ['name', 'label'],
           },
-          QCardSection: {
-            template: '<div class="q-card-section"><slot /></div>',
+          QTabPanels: {
+            template: '<div class="q-tab-panels" :data-active="modelValue"><slot /></div>',
+            props: ['modelValue'],
           },
-          QItemSection: {
-            template: '<div class="q-item-section"><slot /></div>',
+          QTabPanel: {
+            template: '<div class="q-tab-panel" :data-name="name"><slot /></div>',
+            props: ['name'],
           },
-          QItemLabel: {
-            template: '<div class="q-item-label"><slot /></div>',
-          },
+          QList: { template: '<div class="q-list"><slot /></div>' },
           TalentItem: {
             template: '<div class="talent-item">{{ talent.name }}</div>',
             props: ['talent'],
@@ -240,13 +226,10 @@ describe('TalentsTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    nextHeroTalentId = 1;
+    nextId = 1;
     mockHeroTalents.value = [];
     mockIsRadiant.value = false;
-    mockHero.value = {
-      radiantOrder: null,
-      radiantIdeal: 0,
-    };
+    mockHero.value = { radiantOrder: null, radiantIdeal: 0 };
   });
 
   // ========================================
@@ -254,198 +237,127 @@ describe('TalentsTab', () => {
   // ========================================
   describe('empty state', () => {
     it('shows empty message when no talents', () => {
-      mockHeroTalents.value = [];
       const wrapper = createWrapper();
-
       expect(wrapper.text()).toContain('No talents acquired');
+    });
+
+    it('does not render tabs when no talents', () => {
+      const wrapper = createWrapper();
+      expect(wrapper.findAll('.q-tab').length).toBe(0);
     });
   });
 
   // ========================================
-  // Path Talents
+  // Tab Generation
   // ========================================
-  describe('path talents', () => {
-    it('renders path section for path with talents', () => {
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 'test', name: 'Test' } })];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Warrior');
-      expect(wrapper.text()).toContain('Path');
-    });
-
-    it('renders key talent in Key Talent section', () => {
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 'test', name: 'Test' } })];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Key Talent');
-      expect(wrapper.text()).toContain('Quick Strike');
-    });
-
-    it('renders general path talents in Path Talents section', () => {
-      mockHeroTalents.value = [
-        createHeroTalent({ talent: { id: 1, code: 't1', name: 'T1' } }),
-        createHeroTalent({ talent: { id: 2, code: 't2', name: 'T2' } }),
-      ];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Path Talents');
-      expect(wrapper.text()).toContain('Parry');
-    });
-
-    it('renders specialty talents under specialty name', () => {
-      mockHeroTalents.value = [
-        createHeroTalent({ talent: { id: 1, code: 't1', name: 'T1' } }),
-        createHeroTalent({ talent: { id: 3, code: 't3', name: 'T3' } }),
-      ];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Duelist');
-      expect(wrapper.text()).toContain('Precision');
-    });
-
-    it('renders multiple paths when hero has talents from multiple', () => {
+  describe('tab generation', () => {
+    it('creates tab for each path with talents', () => {
       mockHeroTalents.value = [
         createHeroTalent({ talent: { id: 1, code: 't1', name: 'T1' } }),
         createHeroTalent({ talent: { id: 8, code: 't8', name: 'T8' } }),
       ];
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Warrior');
-      expect(wrapper.text()).toContain('Scholar');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Warrior'))).toBe(true);
+      expect(tabs.some((t) => t.text().includes('Scholar'))).toBe(true);
     });
-  });
 
-  // ========================================
-  // Radiant Order Talents
-  // ========================================
-  describe('radiant order talents', () => {
-    it('renders radiant order section for radiants', () => {
-      setRadiantHero(2);
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
+    it('does not create path tab for specialty-only talents without key talent', () => {
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 2, code: 't2', name: 'T2' } })];
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Windrunner');
-      expect(wrapper.text()).toContain('Radiant Order');
+      expect(wrapper.text()).toContain('No talents acquired');
     });
 
-    it('shows radiant ideal in section', () => {
-      setRadiantHero(3);
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
+    it('creates bond tab for radiant order', () => {
+      setRadiantHero();
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 't6', name: 'T6' } })];
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Ideal 3');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Windrunner'))).toBe(true);
     });
 
-    it('renders spren bond talents', () => {
-      setRadiantHero(2);
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Windrunner Bond');
-      expect(wrapper.text()).toContain('Spren Bond');
-    });
-
-    it('shows empty message when no bond talents', () => {
-      setRadiantHero(2);
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 4, code: 'test', name: 'Test' } })]; // Only surge talent
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('No bond talents acquired');
-    });
-
-    it('renders surge sections for radiant order', () => {
-      setRadiantHero(2);
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Adhesion');
-      expect(wrapper.text()).toContain('Gravitation');
-    });
-
-    it('renders surge talents under correct surge', () => {
-      setRadiantHero(2);
+    it('creates separate tabs for each surge with talents', () => {
+      setRadiantHero();
       mockHeroTalents.value = [
-        createHeroTalent({ talent: { id: 6, code: 't6', name: 'T6' } }),
         createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } }),
+        createHeroTalent({ talent: { id: 5, code: 't5', name: 'T5' } }),
       ];
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Lashing');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Adhesion'))).toBe(true);
+      expect(tabs.some((t) => t.text().includes('Gravitation'))).toBe(true);
     });
 
-    it('shows empty message for surge with no talents', () => {
-      setRadiantHero(2);
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
+    it('does not create surge tab when no talents for that surge', () => {
+      setRadiantHero();
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } })];
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('No Adhesion talents acquired');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Adhesion'))).toBe(true);
+      expect(tabs.some((t) => t.text().includes('Gravitation'))).toBe(false);
     });
 
-    it('does not render radiant section for non-radiants', () => {
-      mockIsRadiant.value = false;
-      mockHero.value = { radiantOrder: null, radiantIdeal: 0 };
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 'test', name: 'Test' } })];
+    it('creates tab for singer ancestry when hero has ancestry talents', () => {
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 7, code: 't7', name: 'T7' } })];
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).not.toContain('Windrunner');
-      expect(wrapper.text()).not.toContain('Radiant Order');
-    });
-  });
-
-  // ========================================
-  // Ancestry Talents
-  // ========================================
-  describe('ancestry talents', () => {
-    it('renders ancestry talents section when present', () => {
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 7, code: 'test', name: 'Test' } })];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Singer');
-      expect(wrapper.text()).toContain('Ancestry Talents');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Singer'))).toBe(true);
     });
 
-    it('renders ancestry talent items', () => {
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 7, code: 'test', name: 'Test' } })];
+    it('does not create radiant or surge tabs for non-radiant hero', () => {
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 't1', name: 'T1' } })];
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Warform');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Windrunner'))).toBe(false);
+      expect(tabs.some((t) => t.text().includes('Adhesion'))).toBe(false);
     });
 
-    it('does not render ancestry section when no ancestry talents', () => {
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 'test', name: 'Test' } })];
+    it('does not create ancestry tab when no ancestry talents', () => {
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 't1', name: 'T1' } })];
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).not.toContain('Ancestry Talents');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Singer'))).toBe(false);
     });
   });
 
   // ========================================
-  // Accessibility
+  // Talent Rendering
   // ========================================
-  describe('accessibility', () => {
-    it('path expansion has aria-label', () => {
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 'test', name: 'Test' } })];
+  describe('talent rendering', () => {
+    it('renders key and specialty talents together in path tab', () => {
+      mockHeroTalents.value = [
+        createHeroTalent({ talent: { id: 1, code: 't1', name: 'T1' } }),
+        createHeroTalent({ talent: { id: 2, code: 't2', name: 'T2' } }),
+        createHeroTalent({ talent: { id: 3, code: 't3', name: 'T3' } }),
+      ];
       const wrapper = createWrapper();
-
-      const expansion = wrapper.find('[aria-label="Warrior path talents"]');
-      expect(expansion.exists()).toBe(true);
+      const panel = wrapper.find('.q-tab-panel[data-name="path-1"]');
+      expect(panel.text()).toContain('Quick Strike');
+      expect(panel.text()).toContain('Parry');
+      expect(panel.text()).toContain('Shield Bash');
     });
 
-    it('radiant order expansion has aria-label', () => {
-      setRadiantHero(2);
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
+    it('renders radiant bond talents', () => {
+      setRadiantHero();
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 't6', name: 'T6' } })];
       const wrapper = createWrapper();
-
-      const expansion = wrapper.find('[aria-label="Windrunner radiant order talents"]');
-      expect(expansion.exists()).toBe(true);
+      const panel = wrapper.find('.q-tab-panel[data-name="order-1"]');
+      expect(panel.text()).toContain('Spren Bond');
     });
 
-    it('ancestry expansion has aria-label', () => {
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 7, code: 'test', name: 'Test' } })];
+    it('renders surge talents', () => {
+      setRadiantHero();
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } })];
       const wrapper = createWrapper();
+      const panel = wrapper.find('.q-tab-panel[data-name="surge-1"]');
+      expect(panel.text()).toContain('Lashing');
+    });
 
-      const expansion = wrapper.find('[aria-label="Singer ancestry talents"]');
-      expect(expansion.exists()).toBe(true);
+    it('renders ancestry talents', () => {
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 7, code: 't7', name: 'T7' } })];
+      const wrapper = createWrapper();
+      const panel = wrapper.find('.q-tab-panel[data-name="ancestry-2"]');
+      expect(panel.text()).toContain('Warform');
     });
   });
 
@@ -453,116 +365,50 @@ describe('TalentsTab', () => {
   // Edge Cases
   // ========================================
   describe('edge cases', () => {
-    it('handles talent with non-existent path gracefully', () => {
+    it('handles talent with non-existent classifier gracefully', () => {
       mockHeroTalents.value = [
-        createHeroTalent({ talent: { id: 999, code: 'test', name: 'Test' } }),
+        createHeroTalent({ talent: { id: 999, code: 'missing', name: 'Missing' } }),
       ];
       const wrapper = createWrapper();
-
-      // Should not crash, shows empty state
       expect(wrapper.text()).toContain('No talents acquired');
     });
 
-    it('handles null hero gracefully for radiant ideal', () => {
-      mockIsRadiant.value = true;
+    it('handles null hero gracefully', () => {
       mockHero.value = null;
-      mockHeroTalents.value = [];
       const wrapper = createWrapper();
-
-      // Should not crash
       expect(wrapper.exists()).toBe(true);
     });
 
-    it('handles multiple talents in same specialty', () => {
-      // Add another talent with same specialty
+    it('sets first tab as active by default', () => {
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 't1', name: 'T1' } })];
+      const wrapper = createWrapper();
+      expect(wrapper.find('.q-tab-panels').attributes('data-active')).toBe('path-1');
+    });
+
+    it('renders all talent categories together', () => {
+      setRadiantHero();
       mockHeroTalents.value = [
         createHeroTalent({ talent: { id: 1, code: 't1', name: 'T1' } }),
-        createHeroTalent({ talent: { id: 3, code: 't3', name: 'T3' } }),
-      ];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Precision');
-    });
-
-    it('handles path with no key talent', () => {
-      // Only general path talent, no key talent
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 2, code: 'test', name: 'Test' } })]; // Parry is not isKey
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Path Talents');
-      expect(wrapper.text()).toContain('Parry');
-    });
-
-    it('handles path with only key talent (no general talents)', () => {
-      // Only key talent, no general path talents
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 'test', name: 'Test' } })];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Key Talent');
-      expect(wrapper.text()).toContain('Quick Strike');
-    });
-
-    it('handles radiant order with surge talents', () => {
-      setRadiantHero(2);
-      // Include both bond talent and surge talent
-      mockHeroTalents.value = [
-        createHeroTalent({ talent: { id: 6, code: 't6', name: 'T6' } }), // Spren Bond (no surge)
-        createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } }), // Lashing (surge 1)
-        createHeroTalent({ talent: { id: 5, code: 't5', name: 'T5' } }), // Gravitation (surge 2)
-      ];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Spren Bond');
-      expect(wrapper.text()).toContain('Lashing');
-      expect(wrapper.text()).toContain('Gravitation');
-    });
-
-    it('handles radiant with both surge sections populated', () => {
-      setRadiantHero(2);
-      mockHeroTalents.value = [
+        createHeroTalent({ talent: { id: 2, code: 't2', name: 'T2' } }),
         createHeroTalent({ talent: { id: 6, code: 't6', name: 'T6' } }),
-        createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } }), // Adhesion surge
+        createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } }),
+        createHeroTalent({ talent: { id: 7, code: 't7', name: 'T7' } }),
       ];
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Adhesion');
-      expect(wrapper.text()).toContain('Lashing');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Warrior'))).toBe(true);
+      expect(tabs.some((t) => t.text().includes('Windrunner'))).toBe(true);
+      expect(tabs.some((t) => t.text().includes('Adhesion'))).toBe(true);
+      expect(tabs.some((t) => t.text().includes('Singer'))).toBe(true);
     });
 
-    it('handles non-radiant with no radiant order', () => {
-      mockIsRadiant.value = false;
-      mockHero.value = { radiantOrder: null, radiantIdeal: 0 };
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 'test', name: 'Test' } })];
+    it('does not create bond tab when no bond talents exist', () => {
+      setRadiantHero();
+      mockHeroTalents.value = [createHeroTalent({ talent: { id: 4, code: 't4', name: 'T4' } })];
       const wrapper = createWrapper();
-
-      // orderSurges should return empty array
-      expect(wrapper.text()).not.toContain('Radiant Order');
-    });
-
-    it('shows correct radiant ideal from hero', () => {
-      setRadiantHero(5);
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 6, code: 'test', name: 'Test' } })];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Ideal 5');
-    });
-
-    it('handles specialty with no talents (not shown)', () => {
-      // Has path talent but not specialty talent
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 'test', name: 'Test' } })];
-      const wrapper = createWrapper();
-
-      // Key Talent section should show for key talent
-      expect(wrapper.text()).toContain('Key Talent');
-    });
-
-    it('handles case where generalTalentsByPath returns empty array', () => {
-      // Only key talent for path, no general talents
-      mockHeroTalents.value = [createHeroTalent({ talent: { id: 1, code: 'test', name: 'Test' } })];
-      const wrapper = createWrapper();
-
-      // Path Talents section should not appear when empty
-      expect(wrapper.text()).not.toContain('Path Talents');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Windrunner'))).toBe(false);
+      expect(tabs.some((t) => t.text().includes('Adhesion'))).toBe(true);
     });
   });
 });

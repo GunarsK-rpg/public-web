@@ -12,21 +12,45 @@ vi.mock('src/utils/logger', () => ({
 }));
 
 describe('TalentItem', () => {
-  const createWrapper = (talent: Partial<Talent>) =>
+  const baseTalent: Talent = {
+    id: 1,
+    code: 'swift_strike',
+    name: 'Swift Strike',
+    description: 'A quick attack that deals damage',
+    descriptionShort: 'Quick attack',
+    path: null,
+    specialties: [],
+    ancestry: null,
+    radiantOrder: null,
+    surge: null,
+    isKey: false,
+    special: [],
+  };
+
+  const createWrapper = (talent: Partial<Talent> = {}) =>
     shallowMount(TalentItem, {
-      props: {
-        talent: talent as Talent,
-      },
+      props: { talent: { ...baseTalent, ...talent } as Talent },
       global: {
         stubs: {
-          QItem: {
-            template: '<div class="q-item"><slot /></div>',
+          QExpansionItem: {
+            template: `<div class="q-expansion-item">
+              <div class="header"><slot name="header" /></div>
+              <div class="content"><slot /></div>
+            </div>`,
+            props: ['dense', 'switchToggleSide'],
           },
-          QItemSection: {
-            template: '<div class="q-item-section"><slot /></div>',
+          QItemSection: { template: '<div class="q-item-section"><slot /></div>' },
+          QItemLabel: { template: '<div class="q-item-label"><slot /></div>' },
+          QCard: { template: '<div class="q-card"><slot /></div>' },
+          QCardSection: { template: '<div class="q-card-section"><slot /></div>' },
+          QBadge: {
+            template: '<span class="q-badge"><slot /></span>',
+            props: ['color', 'outline'],
           },
-          QItemLabel: {
-            template: '<div class="q-item-label"><slot /></div>',
+          PrerequisiteList: {
+            template:
+              '<div class="prerequisite-list" :data-prerequisites="JSON.stringify(prerequisites)" />',
+            props: ['prerequisites'],
           },
         },
       },
@@ -37,87 +61,53 @@ describe('TalentItem', () => {
   });
 
   // ========================================
-  // Basic Rendering
+  // Collapsed State (Header)
   // ========================================
-  describe('basic rendering', () => {
+  describe('collapsed state (header)', () => {
     it('renders talent name', () => {
-      const wrapper = createWrapper({
-        id: 1,
-        name: 'Swift Strike',
-        description: 'A quick attack',
-      });
-
-      expect(wrapper.text()).toContain('Swift Strike');
+      const wrapper = createWrapper();
+      expect(wrapper.find('.header').text()).toContain('Swift Strike');
     });
 
-    it('renders talent description', () => {
-      const wrapper = createWrapper({
-        id: 1,
-        name: 'Swift Strike',
-        description: 'A quick attack that deals damage',
-      });
-
-      expect(wrapper.text()).toContain('A quick attack that deals damage');
+    it('renders short description', () => {
+      const wrapper = createWrapper();
+      expect(wrapper.find('.header').text()).toContain('Quick attack');
     });
 
-    it('renders short description when available', () => {
-      const wrapper = createWrapper({
-        id: 1,
-        name: 'Swift Strike',
-        descriptionShort: 'Quick attack',
-        description: 'A quick attack that deals damage',
-      });
-
-      expect(wrapper.text()).toContain('Quick attack');
+    it('falls back to full description when short is missing', () => {
+      const wrapper = createWrapper({ descriptionShort: null });
+      expect(wrapper.find('.header').text()).toContain('A quick attack that deals damage');
     });
 
-    it('prefers short description over full description', () => {
-      const wrapper = createWrapper({
-        id: 1,
-        name: 'Swift Strike',
-        descriptionShort: 'Quick attack',
-        description: 'A quick attack that deals massive damage to enemies',
-      });
+    it('shows key talent badge when isKey is true', () => {
+      const wrapper = createWrapper({ isKey: true });
+      expect(wrapper.find('.header').text()).toContain('Key');
+    });
 
-      expect(wrapper.text()).toContain('Quick attack');
-      // Full description should not be shown when short is available
+    it('does not show key badge when isKey is false', () => {
+      const wrapper = createWrapper({ isKey: false });
+      const badges = wrapper.findAll('.q-badge');
+      const keyBadge = badges.filter((b) => b.text() === 'Key');
+      expect(keyBadge.length).toBe(0);
     });
   });
 
   // ========================================
-  // Fallback Values
+  // Expanded State (Content)
   // ========================================
-  describe('fallback values', () => {
-    it('shows "Unknown Talent" when name is missing', () => {
-      const wrapper = createWrapper({
-        id: 1,
-        name: '',
-        description: 'Some description',
-      });
-
-      expect(wrapper.text()).toContain('Unknown Talent');
+  describe('expanded state (content)', () => {
+    it('renders full description in expanded content', () => {
+      const wrapper = createWrapper();
+      const content = wrapper.find('.content');
+      expect(content.text()).toContain('A quick attack that deals damage');
     });
 
-    it('shows "No description available" when both descriptions missing', () => {
-      const wrapper = createWrapper({
-        id: 1,
-        name: 'Swift Strike',
-        descriptionShort: '',
-        description: '',
-      });
-
-      expect(wrapper.text()).toContain('No description available');
-    });
-
-    it('falls back to description when short description is empty', () => {
-      const wrapper = createWrapper({
-        id: 1,
-        name: 'Swift Strike',
-        descriptionShort: '',
-        description: 'Full description here',
-      });
-
-      expect(wrapper.text()).toContain('Full description here');
+    it('renders PrerequisiteList with correct prerequisites', () => {
+      const prerequisites = [{ type: 'level', value: 3 }];
+      const wrapper = createWrapper({ prerequisites });
+      const prereqs = wrapper.find('.prerequisite-list');
+      expect(prereqs.exists()).toBe(true);
+      expect(JSON.parse(prereqs.attributes('data-prerequisites')!)).toEqual(prerequisites);
     });
   });
 
@@ -126,35 +116,21 @@ describe('TalentItem', () => {
   // ========================================
   describe('logging', () => {
     it('logs warning when talent has no name', () => {
-      createWrapper({
-        id: 1,
-        name: '',
-        description: 'Description',
-      });
-
+      createWrapper({ name: '' });
       expect(mockLoggerWarn).toHaveBeenCalledWith('TalentItem received talent without name', {
         talentId: 1,
       });
     });
 
     it('logs warning when talent name is undefined', () => {
-      createWrapper({
-        id: 2,
-        description: 'Description',
-      } as Partial<Talent>);
-
+      createWrapper({ name: undefined } as unknown as Partial<Talent>);
       expect(mockLoggerWarn).toHaveBeenCalledWith('TalentItem received talent without name', {
-        talentId: 2,
+        talentId: 1,
       });
     });
 
     it('does not log warning when talent has name', () => {
-      createWrapper({
-        id: 1,
-        name: 'Swift Strike',
-        description: 'Description',
-      });
-
+      createWrapper();
       expect(mockLoggerWarn).not.toHaveBeenCalled();
     });
   });
@@ -163,34 +139,27 @@ describe('TalentItem', () => {
   // Edge Cases
   // ========================================
   describe('edge cases', () => {
-    it('handles null-ish description values', () => {
-      const wrapper = createWrapper({
-        id: 1,
-        name: 'Swift Strike',
-        descriptionShort: undefined,
-        description: undefined,
-      } as unknown as Talent);
+    it('shows fallback for missing name', () => {
+      const wrapper = createWrapper({ name: '' });
+      expect(wrapper.text()).toContain('Unknown Talent');
+    });
 
+    it('shows fallback for missing descriptions', () => {
+      const wrapper = createWrapper({ descriptionShort: '', description: '' });
       expect(wrapper.text()).toContain('No description available');
     });
 
-    it('renders with minimal talent data', () => {
-      const wrapper = createWrapper({
-        id: 1,
-        name: 'Basic Talent',
-      });
-
-      expect(wrapper.text()).toContain('Basic Talent');
+    it('handles null prerequisites', () => {
+      const wrapper = createWrapper({ prerequisites: null });
+      expect(wrapper.exists()).toBe(true);
     });
 
-    it('has talent-item class', () => {
+    it('handles null-ish description values', () => {
       const wrapper = createWrapper({
-        id: 1,
-        name: 'Swift Strike',
-        description: 'Description',
-      });
-
-      expect(wrapper.find('.q-item').exists()).toBe(true);
+        descriptionShort: undefined,
+        description: undefined,
+      } as unknown as Talent);
+      expect(wrapper.text()).toContain('No description available');
     });
   });
 });
