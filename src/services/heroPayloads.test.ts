@@ -279,6 +279,7 @@ describe('buildEquipmentPayload', () => {
       id: 60,
       heroId: 1,
       equipment: { id: 13, code: 'longsword', name: 'Longsword' },
+      equipType: { id: 1, code: 'weapon', name: 'Weapon' },
       amount: 1,
       isEquipped: true,
       notes: null,
@@ -286,6 +287,7 @@ describe('buildEquipmentPayload', () => {
       special: [],
       charges: null,
       maxCharges: null,
+      modifications: [],
     };
     const payload = buildEquipmentPayload(1, equip);
 
@@ -299,11 +301,13 @@ describe('buildEquipmentPayload', () => {
       id: -1,
       heroId: 1,
       equipment: { id: 13, code: 'longsword', name: 'Longsword' },
+      equipType: { id: 1, code: 'weapon', name: 'Weapon' },
       amount: 1,
       isEquipped: false,
       special: [],
       charges: null,
       maxCharges: null,
+      modifications: [],
     };
     const payload = buildEquipmentPayload(1, equip);
 

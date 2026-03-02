@@ -36,8 +36,34 @@ const mockClassifiers = {
   damageTypes: [],
   equipmentAttributes: [],
   equipment: [
-    { id: 1, code: 'sword', name: 'Sword' },
-    { id: 2, code: 'shield', name: 'Shield' },
+    {
+      id: 1,
+      code: 'sword',
+      name: 'Sword',
+      equipType: { id: 5, code: 'gear', name: 'Gear' },
+      damageType: null,
+      unit: null,
+      special: [],
+      maxCharges: null,
+      weight: 1,
+      cost: null,
+      isCustom: false,
+      attributes: [],
+    },
+    {
+      id: 2,
+      code: 'shield',
+      name: 'Shield',
+      equipType: { id: 5, code: 'gear', name: 'Gear' },
+      damageType: null,
+      unit: null,
+      special: [],
+      maxCharges: null,
+      weight: 1,
+      cost: null,
+      isCustom: false,
+      attributes: [],
+    },
   ],
   conditions: [],
   injuries: [],
@@ -178,7 +204,7 @@ describe('useHeroEquipmentStore', () => {
       store.addEquipment(1);
 
       expect(heroStore.hero!.equipment.length).toBe(1);
-      expect(heroStore.hero!.equipment[0]!.equipment.id).toBe(1);
+      expect(heroStore.hero!.equipment[0]!.equipment!.id).toBe(1);
       expect(heroStore.hero!.equipment[0]!.amount).toBe(1);
     });
 
@@ -423,8 +449,8 @@ describe('useHeroEquipmentStore', () => {
 
       // Warrior kit has sword and shield
       expect(heroStore.hero!.equipment.length).toBe(2);
-      expect(heroStore.hero!.equipment.find((e) => e.equipment.id === 1)).toBeTruthy();
-      expect(heroStore.hero!.equipment.find((e) => e.equipment.id === 2)).toBeTruthy();
+      expect(heroStore.hero!.equipment.find((e) => e.equipment?.id === 1)).toBeTruthy();
+      expect(heroStore.hero!.equipment.find((e) => e.equipment?.id === 2)).toBeTruthy();
     });
 
     it('clears previous equipment when applying kit', () => {
@@ -437,7 +463,7 @@ describe('useHeroEquipmentStore', () => {
       store.setStartingKit(1);
 
       // Should only have kit equipment, not stacked with previous
-      const sword = heroStore.hero!.equipment.find((e) => e.equipment.id === 1);
+      const sword = heroStore.hero!.equipment.find((e) => e.equipment?.id === 1);
       expect(sword?.amount).toBe(1);
     });
 

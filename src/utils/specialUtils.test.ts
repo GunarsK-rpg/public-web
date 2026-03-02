@@ -21,6 +21,7 @@ function createHeroEquipment(special: SpecialEntry[], isEquipped = true): HeroEq
     id: 1,
     heroId: 0,
     equipment: { id: 1, code: 'test_eq', name: 'Test Equipment' },
+    equipType: { id: 1, code: 'weapon', name: 'Weapon' },
     special,
     charges: null,
     maxCharges: null,
@@ -28,6 +29,7 @@ function createHeroEquipment(special: SpecialEntry[], isEquipped = true): HeroEq
     isEquipped,
     customName: null,
     notes: null,
+    modifications: [],
   };
 }
 

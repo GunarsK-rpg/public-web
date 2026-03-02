@@ -47,6 +47,7 @@
             v-for="heroEquip in equipmentByType[eqType.id]"
             :key="heroEquip.id"
             :hero-equipment="heroEquip"
+            @edit="openEditDialog(heroEquip)"
           />
         </q-list>
         <div v-else class="text-center text-muted q-pa-lg">
@@ -66,7 +67,11 @@
       </q-tab-panel>
     </q-tab-panels>
 
-    <EquipmentAddDialog v-model="showAddDialog" :equipment-type-id="addDialogTypeId" />
+    <EquipmentAddDialog
+      v-model="showAddDialog"
+      :equipment-type-id="addDialogTypeId"
+      :edit-item="editDialogItem"
+    />
   </div>
 </template>
 
@@ -101,26 +106,35 @@ watch(
   { immediate: true }
 );
 
-// Add dialog state
+// Dialog state (shared for add and edit)
 const showAddDialog = ref(false);
 const addDialogTypeId = ref(0);
+const editDialogItem = ref<HeroEquipment | null>(null);
 
 function openAddDialog(equipmentTypeId: number): void {
+  editDialogItem.value = null;
   addDialogTypeId.value = equipmentTypeId;
+  showAddDialog.value = true;
+}
+
+function openEditDialog(item: HeroEquipment): void {
+  editDialogItem.value = item;
+  addDialogTypeId.value = 0;
   showAddDialog.value = true;
 }
 
 // Currency value in diamond marks
 const totalCurrencyValue = computed(() => heroStore.hero?.currency ?? 0);
 
-// Hero equipment grouped by type (via heroEquip.equipment.id -> equipment.equipType.id)
+// Hero equipment grouped by type (via equipType or classifier lookup)
 const equipmentByType = computed((): Record<number, HeroEquipment[]> => {
   if (!heroStore.hero?.equipment) return {};
   const result: Record<number, HeroEquipment[]> = {};
   for (const heroEquip of heroStore.hero.equipment) {
-    const eq = findById(classifiers.equipment, heroEquip.equipment.id);
-    if (!eq) continue;
-    const typeId = eq.equipType.id;
+    const typeId =
+      heroEquip.equipType?.id ??
+      findById(classifiers.equipment, heroEquip.equipment?.id ?? 0)?.equipType.id;
+    if (!typeId) continue;
     if (!result[typeId]) result[typeId] = [];
     result[typeId].push(heroEquip);
   }

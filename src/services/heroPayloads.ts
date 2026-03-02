@@ -92,7 +92,7 @@ export function buildEquipmentPayload(heroId: number, equip: HeroEquipment): Her
   return {
     ...realIdSpread(equip.id),
     heroId,
-    equipment: toClassifierInput(equip.equipment),
+    equipment: equip.equipment ? toClassifierInput(equip.equipment) : null,
     amount: equip.amount,
     isEquipped: equip.isEquipped,
     notes: equip.notes ?? null,

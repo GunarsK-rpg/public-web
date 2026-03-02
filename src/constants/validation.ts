@@ -18,6 +18,7 @@ export const MAX_SKILL_MODIFIER = 10;
 
 // Equipment bounds
 export const MAX_EQUIPMENT_STACK = 999;
+export const INDIVIDUAL_EQUIPMENT_TYPES = ['weapon', 'armor', 'fabrial'];
 
 // Campaign bounds (match database constraints)
 export const MAX_CAMPAIGN_NAME_LENGTH = 100;

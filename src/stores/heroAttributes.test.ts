@@ -857,6 +857,7 @@ describe('useHeroAttributesStore', () => {
             id: 1,
             heroId: 0,
             equipment: { id: 1, code: 'chain', name: 'Chain Armor' },
+            equipType: { id: 2, code: 'armor', name: 'Armor' },
             special: [{ type: 'deflect', value: 3 }],
             charges: null,
             maxCharges: null,
@@ -864,6 +865,7 @@ describe('useHeroAttributesStore', () => {
             isEquipped: true,
             customName: null,
             notes: null,
+            modifications: [],
           },
         ];
       }
@@ -890,6 +892,7 @@ describe('useHeroAttributesStore', () => {
             id: 1,
             heroId: 0,
             equipment: { id: 1, code: 'chain', name: 'Chain Armor' },
+            equipType: { id: 2, code: 'armor', name: 'Armor' },
             special: [{ type: 'cumbersome', value: 3 }],
             charges: null,
             maxCharges: null,
@@ -897,6 +900,7 @@ describe('useHeroAttributesStore', () => {
             isEquipped: true,
             customName: null,
             notes: null,
+            modifications: [],
           },
         ];
       }
@@ -916,6 +920,7 @@ describe('useHeroAttributesStore', () => {
             id: 1,
             heroId: 0,
             equipment: { id: 1, code: 'shield', name: 'Shield' },
+            equipType: { id: 2, code: 'armor', name: 'Armor' },
             special: [{ type: 'defense_physical', value: 1 }],
             charges: null,
             maxCharges: null,
@@ -923,6 +928,7 @@ describe('useHeroAttributesStore', () => {
             isEquipped: true,
             customName: null,
             notes: null,
+            modifications: [],
           },
         ];
       }
@@ -977,6 +983,7 @@ describe('useHeroAttributesStore', () => {
             id: 1,
             heroId: 0,
             equipment: { id: 1, code: 'chain', name: 'Chain Armor' },
+            equipType: { id: 2, code: 'armor', name: 'Armor' },
             special: [{ type: 'deflect', value: 3 }],
             charges: null,
             maxCharges: null,
@@ -984,6 +991,7 @@ describe('useHeroAttributesStore', () => {
             isEquipped: false,
             customName: null,
             notes: null,
+            modifications: [],
           },
         ];
       }
@@ -1010,6 +1018,7 @@ describe('useHeroAttributesStore', () => {
             id: 1,
             heroId: 0,
             equipment: { id: 1, code: 'chain', name: 'Chain Armor' },
+            equipType: { id: 2, code: 'armor', name: 'Armor' },
             special: [{ type: 'deflect', value: 3 }],
             charges: null,
             maxCharges: null,
@@ -1017,6 +1026,7 @@ describe('useHeroAttributesStore', () => {
             isEquipped: true,
             customName: null,
             notes: null,
+            modifications: [],
           },
         ];
       }

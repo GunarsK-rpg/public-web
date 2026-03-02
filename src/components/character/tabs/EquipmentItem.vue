@@ -10,7 +10,17 @@
     </q-item-section>
     <q-item-section>
       <q-item-label>
-        {{ heroEquipment.customName || equipment?.name }}
+        {{ displayName }}
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          icon="edit"
+          :disable="saving"
+          aria-label="Edit equipment"
+          @click="$emit('edit')"
+        />
         <q-badge
           v-if="heroEquipment.isEquipped"
           color="primary"
@@ -23,34 +33,73 @@
       <q-item-label v-if="detailsLine" caption>
         {{ detailsLine }}
       </q-item-label>
+      <!-- Charge controls -->
+      <q-item-label v-if="heroEquipment.maxCharges != null" caption>
+        <div class="row no-wrap items-center">
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            icon="remove"
+            :disable="saving || (heroEquipment.charges ?? 0) <= 0"
+            aria-label="Decrease charges"
+            @click="changeCharges(-1)"
+          />
+          <span class="q-mx-xs"
+            >{{ heroEquipment.charges ?? 0 }}/{{ heroEquipment.maxCharges }} charges</span
+          >
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            icon="add"
+            :disable="saving || (heroEquipment.charges ?? 0) >= heroEquipment.maxCharges"
+            aria-label="Increase charges"
+            @click="changeCharges(1)"
+          />
+        </div>
+      </q-item-label>
+      <!-- Modifications (read-only display; editing in dialog) -->
+      <q-item-label
+        v-for="(mod, idx) in heroEquipment.modifications"
+        :key="idx"
+        caption
+        :class="mod.type === 'upgrade' ? 'text-positive' : 'text-negative'"
+      >
+        {{ mod.type === 'upgrade' ? '+' : '-' }} {{ mod.display_value }}
+      </q-item-label>
       <q-item-label v-if="heroEquipment.notes" caption class="text-italic">
         {{ heroEquipment.notes }}
       </q-item-label>
     </q-item-section>
     <q-item-section side>
       <div class="row no-wrap items-center">
-        <!-- Amount controls -->
-        <q-btn
-          flat
-          dense
-          round
-          size="xs"
-          icon="remove"
-          :disable="saving || heroEquipment.amount <= 1"
-          aria-label="Decrease amount"
-          @click="changeAmount(-1)"
-        />
-        <span class="text-body2 q-mx-xs">{{ heroEquipment.amount }}</span>
-        <q-btn
-          flat
-          dense
-          round
-          size="xs"
-          icon="add"
-          :disable="saving || heroEquipment.amount >= MAX_EQUIPMENT_STACK"
-          aria-label="Increase amount"
-          @click="changeAmount(1)"
-        />
+        <!-- Amount controls (stackable items only) -->
+        <template v-if="!isIndividualItem">
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            icon="remove"
+            :disable="saving || heroEquipment.amount <= 1"
+            aria-label="Decrease amount"
+            @click="changeAmount(-1)"
+          />
+          <span class="text-body2 q-mx-xs">{{ heroEquipment.amount }}</span>
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            icon="add"
+            :disable="saving || heroEquipment.amount >= MAX_EQUIPMENT_STACK"
+            aria-label="Increase amount"
+            @click="changeAmount(1)"
+          />
+        </template>
 
         <!-- Equip toggle -->
         <q-btn
@@ -89,38 +138,47 @@ import { computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
-import { useChainedEntityIcon } from 'src/composables/useEntityIcon';
-import type { HeroEquipment, Equipment } from 'src/types';
-import { MAX_EQUIPMENT_STACK } from 'src/constants';
+import { useEntityIcon } from 'src/composables/useEntityIcon';
+import { findById } from 'src/utils/arrayUtils';
+import type { HeroEquipment } from 'src/types';
+import { MAX_EQUIPMENT_STACK, INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';
 import { getSpecialByType, SPECIAL } from 'src/utils/specialUtils';
 
 const props = defineProps<{
   heroEquipment: HeroEquipment;
 }>();
 
+defineEmits<{
+  edit: [];
+}>();
+
 const $q = useQuasar();
 const classifiers = useClassifierStore();
 const heroStore = useHeroStore();
 const saving = computed(() => heroStore.saving);
+const isIndividualItem = computed(() =>
+  INDIVIDUAL_EQUIPMENT_TYPES.includes(props.heroEquipment.equipType?.code ?? '')
+);
 
-// Use chained lookup: heroEquipment.equipment.id → equipment → equipmentType (for icon)
-const {
-  primaryEntity: equipment,
-  relatedEntity: equipmentType,
-  iconUrl,
-} = useChainedEntityIcon(
-  computed(() => props.heroEquipment.equipment.id),
-  computed(() => classifiers.equipment),
-  (eq: Equipment) => eq.equipType.id,
+const equipment = computed(() =>
+  findById(classifiers.equipment, props.heroEquipment.equipment?.id)
+);
+
+const { entity: equipmentType, iconUrl } = useEntityIcon(
+  computed(() => props.heroEquipment.equipType?.id),
   computed(() => classifiers.equipmentTypes),
   'equipment'
+);
+
+const displayName = computed(
+  () => props.heroEquipment.customName || equipment.value?.name || 'Custom Item'
 );
 
 // Build details line from special properties
 const detailsLine = computed(() => {
   const eq = equipment.value;
   const special = eq?.special ?? [];
-  if (!special.length && props.heroEquipment.charges === null) return '';
+  if (!special.length) return '';
 
   const parts: string[] = [];
 
@@ -140,13 +198,16 @@ const detailsLine = computed(() => {
     parts.push(`Deflect ${deflect.value}`);
   }
 
-  const heq = props.heroEquipment;
-  if (heq.charges != null && heq.maxCharges != null) {
-    parts.push(`${heq.charges}/${heq.maxCharges} charges`);
-  }
-
   return parts.join(' · ');
 });
+
+function changeCharges(delta: number): void {
+  const current = props.heroEquipment.charges ?? 0;
+  const max = props.heroEquipment.maxCharges ?? 0;
+  const newCharges = Math.max(0, Math.min(current + delta, max));
+  if (newCharges === current) return;
+  void heroStore.updateEquipment(props.heroEquipment.id, { charges: newCharges });
+}
 
 function changeAmount(delta: number): void {
   const newAmount = props.heroEquipment.amount + delta;

@@ -52,8 +52,10 @@
       <q-list v-if="equipmentByType[eqType.id]?.length" bordered separator>
         <q-item v-for="item in equipmentByType[eqType.id]" :key="item.id">
           <q-item-section>
-            <q-item-label>{{ getEquipmentName(item.equipment.id) }}</q-item-label>
-            <q-item-label caption>Qty: {{ item.amount }}</q-item-label>
+            <q-item-label>{{ getEquipmentName(item.equipment?.id ?? 0) }}</q-item-label>
+            <q-item-label v-if="!isIndividualItem(item.equipment?.id ?? 0)" caption>
+              Qty: {{ item.amount }}
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn
@@ -62,8 +64,8 @@
               icon="sym_o_delete"
               color="negative"
               size="sm"
-              :aria-label="`Remove ${getEquipmentName(item.equipment.id)}`"
-              @click="removeItem(item.equipment.id)"
+              :aria-label="`Remove ${getEquipmentName(item.equipment?.id ?? 0)}`"
+              @click="removeItem(item.equipment?.id ?? 0)"
             />
           </q-item-section>
         </q-item>
@@ -104,6 +106,7 @@ import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
+import { INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import InfoBanner from '../shared/InfoBanner.vue';
 import type { ClassifierRef } from 'src/types';
@@ -158,6 +161,11 @@ function getEquipmentName(equipmentId: number): string {
   return equipmentMaps.value.nameMap.get(equipmentId) ?? 'Unknown';
 }
 
+function isIndividualItem(equipmentId: number): boolean {
+  const eq = findById(classifiers.equipment, equipmentId);
+  return eq ? INDIVIDUAL_EQUIPMENT_TYPES.includes(eq.equipType.code) : false;
+}
+
 // Pre-computed equipment grouped by type using O(n) single pass
 const equipmentByType = computed(() => {
   const result: Record<number, typeof heroEquipment.value> = {};
@@ -167,7 +175,7 @@ const equipmentByType = computed(() => {
   }
   // Single pass through hero equipment - O(n)
   for (const item of heroEquipment.value) {
-    const typeId = equipmentMaps.value.typeMap.get(item.equipment.id);
+    const typeId = equipmentMaps.value.typeMap.get(item.equipment?.id ?? 0);
     if (typeId !== undefined && result[typeId]) {
       result[typeId].push(item);
     }
@@ -199,7 +207,7 @@ function addItemOfType(typeId: number) {
 
 function removeItem(equipmentId: number) {
   // Track equipment deletion before removing from local state
-  const heroEquip = heroStore.hero?.equipment.find((e) => e.equipment.id === equipmentId);
+  const heroEquip = heroStore.hero?.equipment.find((e) => e.equipment?.id === equipmentId);
   if (heroEquip) {
     deletionTracker?.trackDeletion('equipment', heroEquip.id);
   }

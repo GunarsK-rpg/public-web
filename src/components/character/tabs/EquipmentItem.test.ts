@@ -4,9 +4,6 @@ import { computed, ref } from 'vue';
 import EquipmentItem from './EquipmentItem.vue';
 import type { Equipment, HeroEquipment } from 'src/types';
 
-// Mock equipment ID for reactive mock
-const mockEquipmentId = ref(1);
-
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
     equipment: [
@@ -154,19 +151,14 @@ const equipmentTypeMap: Record<number, { id: number; code: string; name: string;
 };
 
 vi.mock('src/composables/useEntityIcon', () => ({
-  useChainedEntityIcon: (equipmentIdRef: { value: number }) => {
-    // Update mock ref when composable is called
-    mockEquipmentId.value = equipmentIdRef.value;
-    const primaryEntity = computed(() => equipmentMap[mockEquipmentId.value]);
-    const relatedEntity = computed(() => {
-      const eq = primaryEntity.value;
-      if (!eq) return undefined;
-      return equipmentTypeMap[eq.equipType.id];
-    });
-    const iconUrl = computed(() =>
-      relatedEntity.value?.icon ? `/icons/equipment/${relatedEntity.value.icon}` : ''
+  useEntityIcon: (entityIdRef: { value: number | undefined }) => {
+    const entity = computed(() =>
+      entityIdRef.value ? equipmentTypeMap[entityIdRef.value] : undefined
     );
-    return { primaryEntity, relatedEntity, iconUrl };
+    const iconUrl = computed(() =>
+      entity.value?.icon ? `/icons/equipment/${entity.value.icon}` : ''
+    );
+    return { entity, iconUrl };
   },
 }));
 
@@ -212,6 +204,7 @@ describe('EquipmentItem', () => {
         heroEquipment: {
           id: 1,
           equipment: eqRef(1),
+          equipType: { id: 1, code: 'weapon', name: 'Weapon' },
           special: [],
           charges: null,
           maxCharges: null,
@@ -219,6 +212,7 @@ describe('EquipmentItem', () => {
           isEquipped: false,
           customName: undefined,
           notes: undefined,
+          modifications: [],
           ...heroEquipment,
         } as HeroEquipment,
       },
@@ -306,34 +300,50 @@ describe('EquipmentItem', () => {
   });
 
   // ========================================
-  // Quantity Badge
+  // Amount Controls (stackable items only)
   // ========================================
   describe('amount display', () => {
-    it('shows amount in controls', () => {
+    it('shows amount controls for stackable items', () => {
       const wrapper = createWrapper({
-        equipment: eqRef(1),
+        equipment: eqRef(5),
+        equipType: { id: 4, code: 'gear', name: 'Gear' },
         amount: 3,
       });
 
       expect(wrapper.text()).toContain('3');
+      expect(wrapper.find('button[aria-label="Increase amount"]').exists()).toBe(true);
+      expect(wrapper.find('button[aria-label="Decrease amount"]').exists()).toBe(true);
     });
 
-    it('shows amount of 1', () => {
+    it('hides amount controls for weapons', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
-        amount: 1,
+        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
       });
 
-      expect(wrapper.text()).toContain('1');
+      expect(wrapper.find('button[aria-label="Increase amount"]').exists()).toBe(false);
+      expect(wrapper.find('button[aria-label="Decrease amount"]').exists()).toBe(false);
     });
 
-    it('shows amount of 5', () => {
+    it('hides amount controls for armor', () => {
       const wrapper = createWrapper({
-        equipment: eqRef(1),
+        equipment: eqRef(3),
+        equipType: { id: 2, code: 'armor', name: 'Armor' },
+      });
+
+      expect(wrapper.find('button[aria-label="Increase amount"]').exists()).toBe(false);
+      expect(wrapper.find('button[aria-label="Decrease amount"]').exists()).toBe(false);
+    });
+
+    it('shows amount controls for consumables', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(4),
+        equipType: { id: 3, code: 'consumable', name: 'Consumable' },
         amount: 5,
       });
 
       expect(wrapper.text()).toContain('5');
+      expect(wrapper.find('button[aria-label="Increase amount"]').exists()).toBe(true);
     });
   });
 
@@ -417,7 +427,11 @@ describe('EquipmentItem', () => {
   // ========================================
   describe('interactions', () => {
     it('calls updateEquipment with increased amount on + click', async () => {
-      const wrapper = createWrapper({ equipment: eqRef(1), amount: 3 });
+      const wrapper = createWrapper({
+        equipment: eqRef(5),
+        equipType: { id: 4, code: 'gear', name: 'Gear' },
+        amount: 3,
+      });
       const increaseBtn = wrapper.find('button[aria-label="Increase amount"]');
       await increaseBtn.trigger('click');
 
@@ -425,7 +439,11 @@ describe('EquipmentItem', () => {
     });
 
     it('calls updateEquipment with decreased amount on - click', async () => {
-      const wrapper = createWrapper({ equipment: eqRef(1), amount: 3 });
+      const wrapper = createWrapper({
+        equipment: eqRef(5),
+        equipType: { id: 4, code: 'gear', name: 'Gear' },
+        amount: 3,
+      });
       const decreaseBtn = wrapper.find('button[aria-label="Decrease amount"]');
       await decreaseBtn.trigger('click');
 
@@ -433,7 +451,11 @@ describe('EquipmentItem', () => {
     });
 
     it('does not decrease amount below 1', async () => {
-      const wrapper = createWrapper({ equipment: eqRef(1), amount: 1 });
+      const wrapper = createWrapper({
+        equipment: eqRef(5),
+        equipType: { id: 4, code: 'gear', name: 'Gear' },
+        amount: 1,
+      });
       const decreaseBtn = wrapper.find('button[aria-label="Decrease amount"]');
       await decreaseBtn.trigger('click');
 
@@ -486,7 +508,11 @@ describe('EquipmentItem', () => {
 
     it('disables all action buttons when saving', () => {
       mockSaving.value = true;
-      const wrapper = createWrapper({ equipment: eqRef(1), amount: 3 });
+      const wrapper = createWrapper({
+        equipment: eqRef(5),
+        equipType: { id: 4, code: 'gear', name: 'Gear' },
+        amount: 3,
+      });
 
       const decreaseBtn = wrapper.find('button[aria-label="Decrease amount"]');
       const increaseBtn = wrapper.find('button[aria-label="Increase amount"]');
@@ -501,6 +527,180 @@ describe('EquipmentItem', () => {
   });
 
   // ========================================
+  // Charge Controls
+  // ========================================
+  describe('charge controls', () => {
+    it('renders charge +/- buttons when item has maxCharges', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(4),
+        equipType: { id: 3, code: 'consumable', name: 'Consumable' },
+        charges: 2,
+        maxCharges: 3,
+      });
+
+      expect(wrapper.find('button[aria-label="Increase charges"]').exists()).toBe(true);
+      expect(wrapper.find('button[aria-label="Decrease charges"]').exists()).toBe(true);
+      expect(wrapper.text()).toContain('2/3 charges');
+    });
+
+    it('hides charge buttons when maxCharges is null', () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+
+      expect(wrapper.find('button[aria-label="Increase charges"]').exists()).toBe(false);
+      expect(wrapper.find('button[aria-label="Decrease charges"]').exists()).toBe(false);
+    });
+
+    it('increments charges on + click', async () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(4),
+        equipType: { id: 3, code: 'consumable', name: 'Consumable' },
+        charges: 1,
+        maxCharges: 3,
+      });
+      await wrapper.find('button[aria-label="Increase charges"]').trigger('click');
+
+      expect(mockUpdateEquipment).toHaveBeenCalledWith(1, { charges: 2 });
+    });
+
+    it('decrements charges on - click', async () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(4),
+        equipType: { id: 3, code: 'consumable', name: 'Consumable' },
+        charges: 2,
+        maxCharges: 3,
+      });
+      await wrapper.find('button[aria-label="Decrease charges"]').trigger('click');
+
+      expect(mockUpdateEquipment).toHaveBeenCalledWith(1, { charges: 1 });
+    });
+
+    it('disables + at maxCharges', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(4),
+        equipType: { id: 3, code: 'consumable', name: 'Consumable' },
+        charges: 3,
+        maxCharges: 3,
+      });
+
+      expect(
+        wrapper.find('button[aria-label="Increase charges"]').attributes('disabled')
+      ).toBeDefined();
+    });
+
+    it('disables - at 0', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(4),
+        equipType: { id: 3, code: 'consumable', name: 'Consumable' },
+        charges: 0,
+        maxCharges: 3,
+      });
+
+      expect(
+        wrapper.find('button[aria-label="Decrease charges"]').attributes('disabled')
+      ).toBeDefined();
+    });
+  });
+
+  // ========================================
+  // Modifications Display & Edit
+  // ========================================
+  describe('modifications', () => {
+    it('renders upgrade modifications with positive prefix', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        modifications: [{ type: 'upgrade', display_value: 'Keen Edge' }],
+      });
+
+      expect(wrapper.text()).toContain('+ Keen Edge');
+    });
+
+    it('renders drawback modifications with negative prefix', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        modifications: [{ type: 'drawback', display_value: 'Heavy' }],
+      });
+
+      expect(wrapper.text()).toContain('- Heavy');
+    });
+
+    it('renders multiple modifications', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        modifications: [
+          { type: 'upgrade', display_value: 'Keen Edge' },
+          { type: 'drawback', display_value: 'Heavy' },
+        ],
+      });
+
+      expect(wrapper.text()).toContain('+ Keen Edge');
+      expect(wrapper.text()).toContain('- Heavy');
+    });
+
+    it('renders nothing when modifications is empty', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        modifications: [],
+      });
+
+      expect(wrapper.text()).not.toContain('+ ');
+      expect(wrapper.text()).not.toContain('- ');
+    });
+
+    it('does not show modification editing controls (moved to dialog)', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        modifications: [{ type: 'upgrade', display_value: 'Keen Edge' }],
+      });
+
+      expect(wrapper.find('button[aria-label="Remove modification"]').exists()).toBe(false);
+      expect(wrapper.find('button[aria-label="Add modification"]').exists()).toBe(false);
+    });
+  });
+
+  // ========================================
+  // Edit Button & Display Name
+  // ========================================
+  describe('edit button', () => {
+    it('shows edit button next to equipment name', () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+
+      expect(wrapper.find('button[aria-label="Edit equipment"]').exists()).toBe(true);
+    });
+
+    it('emits edit event when edit button clicked', async () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+
+      await wrapper.find('button[aria-label="Edit equipment"]').trigger('click');
+
+      expect(wrapper.emitted('edit')).toHaveLength(1);
+    });
+
+    it('displays customName when set', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        customName: 'Stormbreaker',
+      });
+
+      expect(wrapper.text()).toContain('Stormbreaker');
+    });
+
+    it('displays equipment name when customName is not set', () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+
+      expect(wrapper.text()).toContain('Longsword');
+    });
+
+    it('displays Custom Item when no equipment and no customName', () => {
+      const wrapper = createWrapper({
+        equipment: null,
+        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+      });
+
+      expect(wrapper.text()).toContain('Custom Item');
+    });
+  });
+
+  // ========================================
   // Edge Cases
   // ========================================
   describe('edge cases', () => {
@@ -508,7 +708,8 @@ describe('EquipmentItem', () => {
       const wrapper = createWrapper({ equipment: eqRef(999) });
 
       expect(wrapper.exists()).toBe(true);
-      expect(wrapper.find('img').exists()).toBe(false);
+      // Icon still renders via equipType (resolved independently of equipment)
+      expect(wrapper.find('img').exists()).toBe(true);
     });
 
     it('handles zero amount', () => {

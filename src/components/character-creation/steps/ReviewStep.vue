@@ -284,13 +284,13 @@ const talentDisplay = computed(() =>
 // Equipment
 const equipmentDisplay = computed(() =>
   heroStore.equipment.map((e) => {
-    const eq = findById(classifiers.equipment, e.equipment.id);
+    const eq = e.equipment ? findById(classifiers.equipment, e.equipment.id) : null;
     return {
       id: e.id,
-      equipmentId: e.equipment.id,
-      name: eq?.name || 'Unknown',
+      equipmentId: e.equipment?.id ?? 0,
+      name: eq?.name || e.customName || 'Custom Item',
       amount: e.amount,
-      equipTypeId: eq?.equipType.id,
+      equipTypeId: eq?.equipType.id ?? e.equipType?.id,
     };
   })
 );
