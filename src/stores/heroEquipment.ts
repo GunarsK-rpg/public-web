@@ -37,43 +37,46 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
       }
     }
 
-    heroStore.hero.equipment.push({
-      id: heroStore.nextTempId(),
-      heroId: heroStore.hero.id,
-      equipment: { id: equip.id, code: equip.code, name: equip.name },
-      equipType: { id: equip.equipType.id, code: equip.equipType.code, name: equip.equipType.name },
-      special: equip.special ?? [],
-      charges: equip.maxCharges ?? null,
-      maxCharges: equip.maxCharges ?? null,
-      amount: isIndividual ? 1 : Math.min(validAmount, MAX_EQUIPMENT_STACK),
-      isEquipped: false,
-      modifications: [],
-    });
+    const count = isIndividual ? validAmount : 1;
+    for (let i = 0; i < count; i++) {
+      heroStore.hero.equipment.push({
+        id: heroStore.nextTempId(),
+        heroId: heroStore.hero.id,
+        equipment: { id: equip.id, code: equip.code, name: equip.name },
+        equipType: {
+          id: equip.equipType.id,
+          code: equip.equipType.code,
+          name: equip.equipType.name,
+        },
+        special: equip.special ?? [],
+        charges: equip.maxCharges ?? null,
+        maxCharges: equip.maxCharges ?? null,
+        amount: isIndividual ? 1 : Math.min(validAmount, MAX_EQUIPMENT_STACK),
+        isEquipped: false,
+        modifications: [],
+      });
+    }
   }
 
-  function removeEquipment(equipmentId: number, amount?: number) {
+  function removeEquipment(rowId: number, amount?: number) {
     if (!heroStore.hero) return;
     // If amount specified, decrement stack; otherwise remove entirely
     if (amount !== undefined) {
-      const existing = heroStore.hero.equipment.find((e) => e.equipment?.id === equipmentId);
+      const existing = heroStore.hero.equipment.find((e) => e.id === rowId);
       if (existing) {
         existing.amount -= Math.max(1, Math.floor(amount));
         if (existing.amount <= 0) {
-          heroStore.hero.equipment = heroStore.hero.equipment.filter(
-            (e) => e.equipment?.id !== equipmentId
-          );
+          heroStore.hero.equipment = heroStore.hero.equipment.filter((e) => e.id !== rowId);
         }
         return;
       }
     }
-    heroStore.hero.equipment = heroStore.hero.equipment.filter(
-      (e) => e.equipment?.id !== equipmentId
-    );
+    heroStore.hero.equipment = heroStore.hero.equipment.filter((e) => e.id !== rowId);
   }
 
-  function setEquipmentEquipped(equipmentId: number, isEquipped: boolean) {
+  function setEquipmentEquipped(rowId: number, isEquipped: boolean) {
     if (!heroStore.hero) return;
-    const item = heroStore.hero.equipment.find((e) => e.equipment?.id === equipmentId);
+    const item = heroStore.hero.equipment.find((e) => e.id === rowId);
     if (item) {
       item.isEquipped = isEquipped;
     }

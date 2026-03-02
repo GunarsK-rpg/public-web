@@ -295,7 +295,8 @@ describe('useHeroEquipmentStore', () => {
       const heroStore = useHeroStore();
 
       store.addEquipment(1, 5);
-      store.removeEquipment(1);
+      const rowId = heroStore.hero!.equipment[0]!.id;
+      store.removeEquipment(rowId);
 
       expect(heroStore.hero!.equipment.length).toBe(0);
     });
@@ -305,7 +306,8 @@ describe('useHeroEquipmentStore', () => {
       const heroStore = useHeroStore();
 
       store.addEquipment(1, 5);
-      store.removeEquipment(1, 2);
+      const rowId = heroStore.hero!.equipment[0]!.id;
+      store.removeEquipment(rowId, 2);
 
       expect(heroStore.hero!.equipment[0]!.amount).toBe(3);
     });
@@ -315,7 +317,8 @@ describe('useHeroEquipmentStore', () => {
       const heroStore = useHeroStore();
 
       store.addEquipment(1, 3);
-      store.removeEquipment(1, 3);
+      const rowId = heroStore.hero!.equipment[0]!.id;
+      store.removeEquipment(rowId, 3);
 
       expect(heroStore.hero!.equipment.length).toBe(0);
     });
@@ -325,7 +328,8 @@ describe('useHeroEquipmentStore', () => {
       const heroStore = useHeroStore();
 
       store.addEquipment(1, 3);
-      store.removeEquipment(1, 10);
+      const rowId = heroStore.hero!.equipment[0]!.id;
+      store.removeEquipment(rowId, 10);
 
       expect(heroStore.hero!.equipment.length).toBe(0);
     });
@@ -355,7 +359,7 @@ describe('useHeroEquipmentStore', () => {
       const heroStore = useHeroStore();
 
       store.addEquipment(1, 5);
-      store.removeEquipment(999, 2); // Non-existent equipment with amount
+      store.removeEquipment(999, 2); // Non-existent row id with amount
 
       expect(heroStore.hero!.equipment.length).toBe(1);
       expect(heroStore.hero!.equipment[0]!.amount).toBe(5);
@@ -366,7 +370,8 @@ describe('useHeroEquipmentStore', () => {
       const heroStore = useHeroStore();
 
       store.addEquipment(1, 5);
-      store.removeEquipment(1, 2.7);
+      const rowId = heroStore.hero!.equipment[0]!.id;
+      store.removeEquipment(rowId, 2.7);
 
       expect(heroStore.hero!.equipment[0]!.amount).toBe(3);
     });
@@ -376,7 +381,8 @@ describe('useHeroEquipmentStore', () => {
       const heroStore = useHeroStore();
 
       store.addEquipment(1, 5);
-      store.removeEquipment(1, -3);
+      const rowId = heroStore.hero!.equipment[0]!.id;
+      store.removeEquipment(rowId, -3);
 
       expect(heroStore.hero!.equipment[0]!.amount).toBe(4);
     });
@@ -391,7 +397,8 @@ describe('useHeroEquipmentStore', () => {
       const heroStore = useHeroStore();
 
       store.addEquipment(1);
-      store.setEquipmentEquipped(1, true);
+      const rowId = heroStore.hero!.equipment[0]!.id;
+      store.setEquipmentEquipped(rowId, true);
 
       expect(heroStore.hero!.equipment[0]!.isEquipped).toBe(true);
     });
@@ -401,8 +408,9 @@ describe('useHeroEquipmentStore', () => {
       const heroStore = useHeroStore();
 
       store.addEquipment(1);
-      store.setEquipmentEquipped(1, true);
-      store.setEquipmentEquipped(1, false);
+      const rowId = heroStore.hero!.equipment[0]!.id;
+      store.setEquipmentEquipped(rowId, true);
+      store.setEquipmentEquipped(rowId, false);
 
       expect(heroStore.hero!.equipment[0]!.isEquipped).toBe(false);
     });

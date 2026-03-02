@@ -65,7 +65,7 @@
               color="negative"
               size="sm"
               :aria-label="`Remove ${getEquipmentName(item.equipment?.id ?? 0)}`"
-              @click="removeItem(item.equipment?.id ?? 0)"
+              @click="removeItem(item.id)"
             />
           </q-item-section>
         </q-item>
@@ -205,13 +205,9 @@ function addItemOfType(typeId: number) {
   }
 }
 
-function removeItem(equipmentId: number) {
-  // Track equipment deletion before removing from local state
-  const heroEquip = heroStore.hero?.equipment.find((e) => e.equipment?.id === equipmentId);
-  if (heroEquip) {
-    deletionTracker?.trackDeletion('equipment', heroEquip.id);
-  }
-  equipStore.removeEquipment(equipmentId);
+function removeItem(rowId: number) {
+  deletionTracker?.trackDeletion('equipment', rowId);
+  equipStore.removeEquipment(rowId);
 }
 </script>
 

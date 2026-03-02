@@ -223,7 +223,7 @@ watch([() => props.modelValue, () => props.editItem], () => {
     customName.value = props.editItem.customName || props.editItem.equipment?.name || '';
     customNotes.value = props.editItem.notes || '';
     customMaxCharges.value = props.editItem.maxCharges;
-    editModifications.value = [...props.editItem.modifications];
+    editModifications.value = [...(props.editItem.modifications || [])];
     newModType.value = 'upgrade';
     newModValue.value = '';
     // Not used in edit mode but reset for cleanliness
@@ -303,7 +303,10 @@ const filteredOptions = computed(() => {
 
 const canSave = computed(() => {
   if (isEditing.value) {
-    // Always saveable -- empty name means "use base name"
+    // Custom equipment (no classifier) requires a name
+    if (!props.editItem?.equipment) {
+      return customName.value.trim().length > 0;
+    }
     return true;
   }
   if (mode.value === 'classifier') {

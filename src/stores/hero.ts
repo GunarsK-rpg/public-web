@@ -380,8 +380,9 @@ export const useHeroStore = defineStore('hero', () => {
       }
       // Always send charges/maxCharges as a pair (ck_equipment_charges_pairing constraint)
       if (changes.charges !== undefined || changes.maxCharges !== undefined) {
-        payload.charges = changes.charges ?? existing.charges;
-        payload.maxCharges = changes.maxCharges ?? existing.maxCharges;
+        payload.charges = changes.charges !== undefined ? changes.charges : existing.charges;
+        payload.maxCharges =
+          changes.maxCharges !== undefined ? changes.maxCharges : existing.maxCharges;
       }
       if (changes.modifications !== undefined) payload.modifications = changes.modifications;
       const response = await heroService.upsertSubResource<HeroEquipment>(
