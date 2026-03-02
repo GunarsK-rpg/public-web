@@ -23,7 +23,7 @@ ARG VITE_AUTH_URL
 RUN npm run build
 
 # Production stage
-FROM nginx:1.29-alpine
+FROM nginx:1.29.5-alpine
 
 # Security update - ensure package index is refreshed
 RUN apk update && apk upgrade --no-cache
