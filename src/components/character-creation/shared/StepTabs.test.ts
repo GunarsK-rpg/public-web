@@ -248,14 +248,25 @@ describe('StepTabs', () => {
       expect(mockGoToStep).toHaveBeenCalledWith(1);
     });
 
-    it('marks current step completed when navigating away', () => {
+    it('marks current step completed when navigating forward', () => {
+      mockCurrentStep.value = 1;
+      mockIsStepCompleted.mockReturnValue(true);
+      const wrapper = createWrapper();
+
+      const qTabs = wrapper.findComponent(QTabsStub);
+      qTabs.vm.$emit('update:modelValue', 3);
+
+      expect(mockMarkStepCompleted).toHaveBeenCalledWith(1);
+    });
+
+    it('does not mark step completed when navigating backward', () => {
       mockCurrentStep.value = 3;
       const wrapper = createWrapper();
 
       const qTabs = wrapper.findComponent(QTabsStub);
       qTabs.vm.$emit('update:modelValue', 1);
 
-      expect(mockMarkStepCompleted).toHaveBeenCalledWith(3);
+      expect(mockMarkStepCompleted).not.toHaveBeenCalled();
     });
 
     it('does not mark step completed when selecting current step', () => {

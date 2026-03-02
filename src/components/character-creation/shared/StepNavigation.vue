@@ -1,6 +1,14 @@
 <template>
   <div class="creation-footer q-pa-sm row items-center no-wrap">
-    <q-btn v-if="currentStep > 1" flat dense round icon="arrow_back" @click="previousStep" />
+    <q-btn
+      v-if="currentStep > 1"
+      flat
+      dense
+      round
+      icon="arrow_back"
+      aria-label="Previous step"
+      @click="previousStep"
+    />
     <q-space />
     <div
       v-if="displayError"
@@ -35,6 +43,7 @@
       dense
       round
       icon="arrow_forward"
+      aria-label="Next step"
       :loading="saving"
       @click="$emit('next')"
     />

@@ -64,8 +64,8 @@ function canNavigateTo(step: number): boolean {
 
 function goToStep(step: number) {
   if (!canNavigateTo(step)) return;
-  // Only mark as completed if navigating forward/away
-  if (step !== wizardStore.currentStep) {
+  // Only mark as completed if navigating forward
+  if (step > wizardStore.currentStep) {
     wizardStore.markStepCompleted(wizardStore.currentStep);
   }
   wizardStore.goToStep(step);
