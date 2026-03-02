@@ -27,8 +27,8 @@
                 size="sm"
                 icon="remove"
                 :aria-label="`Decrease ${skill.name} rank`"
-                :disable="getSkillRank(skill.id) <= 0"
-                @click="decrementSkill(skill.id)"
+                :disable="getSkillRank(skill.id) <= (skill.minRank ?? 0)"
+                @click="decrementSkill(skill.id, skill.minRank)"
               />
               <div
                 class="text-body1 q-mx-sm value-display"
@@ -72,8 +72,9 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useStepValidation } from 'src/composables/useStepValidation';
-import { groupByKey, buildIdCodeMap } from 'src/utils/arrayUtils';
+import { groupByKey, buildIdCodeMap, findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import { MIN_SKILL_MODIFIER, MAX_SKILL_MODIFIER } from 'src/constants';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
@@ -81,6 +82,7 @@ import BudgetDisplay from '../shared/BudgetDisplay.vue';
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
+const talentStore = useHeroTalentsStore();
 const { budget } = useStepValidation();
 
 const skillsBudget = computed(() => budget('skills'));
@@ -88,14 +90,22 @@ const pointsRemaining = computed(() => skillsBudget.value.remaining);
 const pointsBudget = computed(() => skillsBudget.value.budget);
 const maxSkillRank = computed(() => skillsBudget.value.maxRank);
 
-// Group skills by attribute type using chained FK lookup (skill -> attribute -> attributeType)
+// Base skills + hero's active surge skills
+const visibleSkills = computed(() => {
+  const order = findById(classifiers.radiantOrders, talentStore.radiantOrderId ?? 0);
+  const surgeIds = order ? new Set([order.surge1.id, order.surge2.id]) : null;
+  return classifiers.skills.filter(
+    (s) => !s.surge || (surgeIds && s.surge && surgeIds.has(s.surge.id)),
+  );
+});
+
+// Group by attribute type using chained FK lookup (skill -> attribute -> attributeType)
 const skillsByAttrType = computed(() => {
-  // Build lookup: attribute.id -> attribute.attrType.id
   const attrToTypeMap: Record<number, number> = {};
   for (const attr of classifiers.attributes) {
     attrToTypeMap[attr.id] = attr.attrType.id;
   }
-  return groupByKey(classifiers.skills, (skill) => attrToTypeMap[skill.attr.id] ?? 0);
+  return groupByKey(visibleSkills.value, (skill) => attrToTypeMap[skill.attr.id] ?? 0);
 });
 
 // Pre-computed attribute code map for O(1) lookups
@@ -107,6 +117,7 @@ const skillGroups = computed(() => {
     const skills = (skillsByAttrType.value[attrType.id] ?? []).map((skill) => ({
       ...skill,
       attrAbbr: (attributeCodeMap.value.get(skill.attr.id) ?? '').toUpperCase(),
+      minRank: skill.surge ? 1 : 0,
     }));
 
     return {
@@ -139,9 +150,9 @@ function incrementSkill(skillId: number) {
   }
 }
 
-function decrementSkill(skillId: number) {
+function decrementSkill(skillId: number, minRank = 0) {
   const current = getSkillRank(skillId);
-  if (current > 0) {
+  if (current > minRank) {
     attrStore.setSkillRank(skillId, current - 1);
   }
 }

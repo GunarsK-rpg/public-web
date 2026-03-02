@@ -195,6 +195,21 @@ describe('useStepValidation', () => {
       expect('maxRank' in result).toBe(true);
     });
 
+    it('includes surge bonus in skills budget when radiant', () => {
+      const heroStore = setupHero();
+      const { budget } = useStepValidation();
+
+      const baseResult = budget(STEP_CODES.SKILLS);
+      const baseBudget = baseResult.budget;
+
+      // Set radiant order
+      heroStore.hero!.radiantOrder = { id: 1, code: 'windrunner', name: 'Windrunner' };
+
+      const radiantResult = budget(STEP_CODES.SKILLS);
+
+      expect(radiantResult.budget).toBe(baseBudget + 2);
+    });
+
     it('calculates expertises budget', () => {
       setupHero();
       const { budget } = useStepValidation();

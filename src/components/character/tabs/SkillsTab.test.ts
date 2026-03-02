@@ -1,9 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
+import { ref } from 'vue';
 import SkillsTab from './SkillsTab.vue';
 
 const mockGetSkillModifier = vi.fn();
 const mockGetSkillRank = vi.fn();
+const mockHero = ref<{ radiantOrder: { id: number; code: string; name: string } | null }>({
+  radiantOrder: null,
+});
+
+vi.mock('src/stores/hero', () => ({
+  useHeroStore: () => ({
+    hero: mockHero.value,
+  }),
+}));
 
 vi.mock('src/stores/heroAttributes', () => ({
   useHeroAttributesStore: () => ({
@@ -110,6 +120,29 @@ vi.mock('src/stores/classifiers', () => ({
         name: 'Persuasion',
         attr: { id: 6, code: 'pre', name: 'Presence' },
       },
+      {
+        id: 101,
+        code: 'gravitation',
+        name: 'Gravitation',
+        attr: { id: 5, code: 'awa', name: 'Awareness' },
+        surge: { id: 1, code: 'gravitation', name: 'Gravitation' },
+      },
+      {
+        id: 102,
+        code: 'adhesion',
+        name: 'Adhesion',
+        attr: { id: 6, code: 'pre', name: 'Presence' },
+        surge: { id: 2, code: 'adhesion', name: 'Adhesion' },
+      },
+    ],
+    radiantOrders: [
+      {
+        id: 1,
+        code: 'windrunner',
+        name: 'Windrunner',
+        surge1: { id: 1, code: 'gravitation', name: 'Gravitation' },
+        surge2: { id: 2, code: 'adhesion', name: 'Adhesion' },
+      },
     ],
   }),
 }));
@@ -147,6 +180,7 @@ describe('SkillsTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockHero.value = { radiantOrder: null };
     mockGetSkillModifier.mockImplementation((code: string) => {
       const values: Record<string, number> = {
         athletics: 5,
@@ -387,6 +421,29 @@ describe('SkillsTab', () => {
 
       // Should render without throwing
       expect(wrapper.exists()).toBe(true);
+    });
+  });
+
+  // ========================================
+  // Surge Skills
+  // ========================================
+  describe('surge skills', () => {
+    it('does not show surge skills when not radiant', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).not.toContain('Gravitation');
+      expect(wrapper.text()).not.toContain('Adhesion');
+    });
+
+    it('shows surge skills under their attribute types when radiant', () => {
+      mockHero.value = {
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+      };
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Gravitation');
+      expect(wrapper.text()).toContain('Adhesion');
+      expect(wrapper.text()).not.toContain('Surge Skills');
     });
   });
 });

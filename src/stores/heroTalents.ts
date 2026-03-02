@@ -153,12 +153,22 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   // ===================
   // RADIANT
   // ===================
+  function getSurgeSkillIds(orderId: number): number[] {
+    const order = findById(classifierStore.radiantOrders, orderId);
+    if (!order) return [];
+    const surgeIds = new Set([order.surge1.id, order.surge2.id]);
+    return classifierStore.skills
+      .filter((s) => s.surge && surgeIds.has(s.surge.id))
+      .map((s) => s.id);
+  }
+
   function setRadiantOrder(orderId: number | null) {
     if (!heroStore.hero) return;
 
-    // Remove all radiant talents from previous order
+    // Remove all radiant talents and surge skills from previous order
     if (heroStore.hero.radiantOrder) {
-      const prevOrder = findById(classifierStore.radiantOrders, heroStore.hero.radiantOrder.id);
+      const prevOrderId = heroStore.hero.radiantOrder.id;
+      const prevOrder = findById(classifierStore.radiantOrders, prevOrderId);
       if (prevOrder) {
         // Collect all talent IDs for this order in single pass
         const allRadiantTalentIds = new Set<number>();
@@ -173,6 +183,12 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
         }
         heroStore.hero.talents = heroStore.hero.talents.filter(
           (t) => !allRadiantTalentIds.has(t.talent.id)
+        );
+
+        // Remove previous surge skills
+        const prevSurgeSkillIds = new Set(getSurgeSkillIds(prevOrderId));
+        heroStore.hero.skills = heroStore.hero.skills.filter(
+          (s) => !prevSurgeSkillIds.has(s.skill.id)
         );
       }
     }
@@ -199,6 +215,11 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
           talent: toClassifierRef(keyTalent),
           special: keyTalent.special ?? [],
         });
+      }
+
+      // Grant rank 1 in each surge skill
+      for (const skillId of getSurgeSkillIds(orderId)) {
+        attrStore.setSkillRank(skillId, 1);
       }
     }
   }

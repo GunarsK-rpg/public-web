@@ -4,6 +4,7 @@ import type { ClassifierRef, ClassifierInput } from './shared';
 /** Skill classifier (cl_skills) */
 export interface Skill extends Classifier {
   attr: ClassifierRef;
+  surge?: ClassifierRef | null;
 }
 
 /** Hero skill - upsert payload */

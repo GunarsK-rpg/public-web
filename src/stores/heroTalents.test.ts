@@ -10,7 +10,30 @@ const mockClassifiers = {
   attributes: [],
   derivedStats: [],
   derivedStatValues: [],
-  skills: [],
+  skills: [
+    { id: 1, code: 'athletics', name: 'Athletics', attr: { id: 1, code: 'str', name: 'Strength' } },
+    {
+      id: 101,
+      code: 'gravitation',
+      name: 'Gravitation',
+      attr: { id: 5, code: 'awa', name: 'Awareness' },
+      surge: { id: 1, code: 'gravitation', name: 'Gravitation' },
+    },
+    {
+      id: 102,
+      code: 'adhesion',
+      name: 'Adhesion',
+      attr: { id: 6, code: 'pre', name: 'Presence' },
+      surge: { id: 2, code: 'adhesion', name: 'Adhesion' },
+    },
+    {
+      id: 103,
+      code: 'division',
+      name: 'Division',
+      attr: { id: 3, code: 'int', name: 'Intellect' },
+      surge: { id: 3, code: 'division', name: 'Division' },
+    },
+  ],
   expertiseTypes: [],
   expertises: [
     {
@@ -582,6 +605,68 @@ describe('useHeroTalentsStore', () => {
       // Should remove surge talents
       expect(heroStore.hero!.talents.some((t) => t.talent.id === 5)).toBe(false);
       expect(heroStore.hero!.talents.some((t) => t.talent.id === 6)).toBe(false);
+    });
+
+    it('grants rank 1 in surge skills when setting order', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+
+      store.setRadiantOrder(1); // windrunner: gravitation (101) + adhesion (102)
+
+      const gravitationSkill = heroStore.hero!.skills.find((s) => s.skill.id === 101);
+      const adhesionSkill = heroStore.hero!.skills.find((s) => s.skill.id === 102);
+      expect(gravitationSkill?.rank).toBe(1);
+      expect(adhesionSkill?.rank).toBe(1);
+    });
+
+    it('removes surge skills when clearing order', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+
+      store.setRadiantOrder(1);
+      expect(heroStore.hero!.skills.some((s) => s.skill.id === 101)).toBe(true);
+
+      store.setRadiantOrder(null);
+
+      expect(heroStore.hero!.skills.some((s) => s.skill.id === 101)).toBe(false);
+      expect(heroStore.hero!.skills.some((s) => s.skill.id === 102)).toBe(false);
+    });
+
+    it('swaps surge skills when changing order', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+
+      store.setRadiantOrder(1); // windrunner: gravitation (101) + adhesion (102)
+      expect(heroStore.hero!.skills.some((s) => s.skill.id === 101)).toBe(true);
+      expect(heroStore.hero!.skills.some((s) => s.skill.id === 102)).toBe(true);
+
+      store.setRadiantOrder(2); // dustbringer: division (103) + gravitation (101)
+
+      // Division and gravitation should be present
+      expect(heroStore.hero!.skills.some((s) => s.skill.id === 103)).toBe(true);
+      expect(heroStore.hero!.skills.some((s) => s.skill.id === 101)).toBe(true);
+      // Adhesion should be removed
+      expect(heroStore.hero!.skills.some((s) => s.skill.id === 102)).toBe(false);
+    });
+
+    it('does not remove base skills when clearing order', () => {
+      const store = useHeroTalentsStore();
+      const heroStore = useHeroStore();
+
+      // Add a base skill manually
+      heroStore.hero!.skills.push({
+        id: -1,
+        heroId: heroStore.hero!.id,
+        skill: { id: 1, code: 'athletics', name: 'Athletics' },
+        rank: 2,
+        modifier: 0,
+      });
+
+      store.setRadiantOrder(1);
+      store.setRadiantOrder(null);
+
+      // Base skill should remain
+      expect(heroStore.hero!.skills.some((s) => s.skill.id === 1)).toBe(true);
     });
   });
 
