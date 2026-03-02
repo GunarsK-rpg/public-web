@@ -28,22 +28,34 @@ export interface Equipment extends Classifier {
   attributes: EquipmentAttributeRef[];
 }
 
+/** Equipment modification (upgrade or drawback) */
+export interface Modification {
+  type: 'upgrade' | 'drawback';
+  display_value: string;
+}
+
 /** Hero equipment - upsert payload */
 export interface HeroEquipmentBase {
   id?: number;
   heroId: number;
-  equipment: ClassifierInput;
+  equipment?: ClassifierInput | null;
+  equipType?: ClassifierInput | null;
   amount: number;
   isEquipped: boolean;
   notes?: string | null;
   customName?: string | null;
+  charges?: number | null;
+  maxCharges?: number | null;
+  modifications?: Modification[];
 }
 
 /** Hero equipment - API response */
 export interface HeroEquipment extends HeroEquipmentBase {
   id: number;
-  equipment: ClassifierRef;
+  equipment: ClassifierRef | null;
+  equipType: ClassifierRef | null;
   special: SpecialEntry[];
   charges: number | null;
   maxCharges: number | null;
+  modifications: Modification[];
 }

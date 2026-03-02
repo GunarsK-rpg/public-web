@@ -279,6 +279,7 @@ describe('buildEquipmentPayload', () => {
       id: 60,
       heroId: 1,
       equipment: { id: 13, code: 'longsword', name: 'Longsword' },
+      equipType: { id: 1, code: 'weapon', name: 'Weapon' },
       amount: 1,
       isEquipped: true,
       notes: null,
@@ -286,6 +287,7 @@ describe('buildEquipmentPayload', () => {
       special: [],
       charges: null,
       maxCharges: null,
+      modifications: [],
     };
     const payload = buildEquipmentPayload(1, equip);
 
@@ -299,15 +301,40 @@ describe('buildEquipmentPayload', () => {
       id: -1,
       heroId: 1,
       equipment: { id: 13, code: 'longsword', name: 'Longsword' },
+      equipType: { id: 1, code: 'weapon', name: 'Weapon' },
       amount: 1,
       isEquipped: false,
       special: [],
       charges: null,
       maxCharges: null,
+      modifications: [],
     };
     const payload = buildEquipmentPayload(1, equip);
 
     expect(payload.id).toBeUndefined();
+  });
+
+  it('handles custom equipment with null equipment ref', () => {
+    const equip: HeroEquipment = {
+      id: 70,
+      heroId: 1,
+      equipment: null,
+      equipType: { id: 2, code: 'gear', name: 'Gear' },
+      amount: 1,
+      isEquipped: false,
+      notes: 'Hand-crafted',
+      customName: 'Mystery Gadget',
+      special: [],
+      charges: null,
+      maxCharges: null,
+      modifications: [],
+    };
+    const payload = buildEquipmentPayload(1, equip);
+
+    expect(payload.id).toBe(70);
+    expect(payload.equipment).toBeNull();
+    expect(payload.customName).toBe('Mystery Gadget');
+    expect(payload.notes).toBe('Hand-crafted');
   });
 });
 

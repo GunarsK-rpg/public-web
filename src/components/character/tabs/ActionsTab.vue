@@ -98,7 +98,9 @@ function getActionTypeByCode(code: string) {
 // Configuration map for extracting hero object IDs by action type
 const heroObjectExtractors: Record<string, () => number[]> = {
   equipment: () =>
-    (heroStore.hero?.equipment || []).filter((e) => e.isEquipped).map((e) => e.equipment.id),
+    (heroStore.hero?.equipment || []).flatMap((e) =>
+      e.isEquipped && e.equipment ? [e.equipment.id] : []
+    ),
   talent: () => (heroStore.hero?.talents || []).map((t) => t.talent.id),
   surge: () => {
     const order = heroStore.hero?.radiantOrder;

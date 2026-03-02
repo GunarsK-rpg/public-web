@@ -36,6 +36,12 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
+        name: 'my-characters',
+        component: () => import('pages/MyCharactersPage.vue'),
+        meta: { title: 'My Characters' },
+      },
+      {
+        path: 'campaigns',
         name: 'campaigns',
         component: () => import('pages/CampaignsPage.vue'),
         meta: { title: 'My Campaigns' },
@@ -66,12 +72,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/JoinCampaignPage.vue'),
         props: true,
         meta: { title: 'Join Campaign' },
-      },
-      {
-        path: 'characters',
-        name: 'my-characters',
-        component: () => import('pages/MyCharactersPage.vue'),
-        meta: { title: 'My Characters' },
       },
       {
         path: 'characters/new',

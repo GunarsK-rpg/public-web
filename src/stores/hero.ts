@@ -257,17 +257,25 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   // EQUIPMENT (sheet)
   // ===================
-  async function addEquipment(equipmentCode: string, amount: number = 1): Promise<boolean> {
+  async function addEquipment(
+    equipmentCode: string,
+    amount: number = 1,
+    maxCharges?: number | null
+  ): Promise<boolean> {
     if (!hero.value) return false;
     savingCount.value++;
     try {
-      const existing = hero.value.equipment.find((e) => e.equipment.code === equipmentCode);
-      const payload = {
+      const existing = hero.value.equipment.find((e) => e.equipment?.code === equipmentCode);
+      const payload: Record<string, unknown> = {
         heroId: hero.value.id,
         equipment: { code: equipmentCode },
         amount: clamp(Math.floor(amount), 1, MAX_EQUIPMENT_STACK),
         isEquipped: existing?.isEquipped ?? false,
       };
+      if (maxCharges != null) {
+        payload.charges = maxCharges;
+        payload.maxCharges = maxCharges;
+      }
       const response = await heroService.upsertSubResource<HeroEquipment>(
         hero.value.id,
         'equipment',
@@ -303,24 +311,87 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
+  async function addCustomEquipment(
+    equipTypeCode: string,
+    customName: string,
+    options?: { notes?: string; maxCharges?: number }
+  ): Promise<boolean> {
+    if (!hero.value) return false;
+    savingCount.value++;
+    try {
+      const payload: Record<string, unknown> = {
+        heroId: hero.value.id,
+        equipType: { code: equipTypeCode },
+        customName,
+        amount: 1,
+        isEquipped: false,
+      };
+      if (options?.notes) payload.notes = options.notes;
+      if (options?.maxCharges != null) {
+        payload.maxCharges = options.maxCharges;
+        payload.charges = options.maxCharges;
+      }
+      const response = await heroService.upsertSubResource<HeroEquipment>(
+        hero.value.id,
+        'equipment',
+        payload
+      );
+      if (!hero.value) return false;
+      hero.value.equipment.push(response.data);
+      return true;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to add custom equipment' });
+      return false;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
   async function updateEquipment(
     heroEquipmentId: number,
-    changes: Partial<Pick<HeroEquipment, 'amount' | 'isEquipped' | 'notes' | 'customName'>>
+    changes: Partial<
+      Pick<
+        HeroEquipment,
+        | 'amount'
+        | 'isEquipped'
+        | 'notes'
+        | 'customName'
+        | 'charges'
+        | 'maxCharges'
+        | 'modifications'
+      >
+    >
   ): Promise<void> {
     if (!hero.value) return;
     const existing = hero.value.equipment.find((e) => e.id === heroEquipmentId);
     if (!existing) return;
     savingCount.value++;
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         id: heroEquipmentId,
         heroId: hero.value.id,
-        equipment: { code: existing.equipment.code },
         amount: clamp(Math.floor(changes.amount ?? existing.amount), 1, MAX_EQUIPMENT_STACK),
         isEquipped: changes.isEquipped ?? existing.isEquipped,
         notes: changes.notes !== undefined ? changes.notes : existing.notes,
         customName: changes.customName !== undefined ? changes.customName : existing.customName,
       };
+      if (existing.equipment) {
+        payload.equipment = { code: existing.equipment.code };
+      }
+      // Always send charges/maxCharges as a pair (ck_equipment_charges_pairing constraint)
+      if (changes.charges !== undefined || changes.maxCharges !== undefined) {
+        const newMaxCharges =
+          changes.maxCharges !== undefined ? changes.maxCharges : existing.maxCharges;
+        payload.maxCharges = newMaxCharges;
+        // If maxCharges is cleared, charges must also be cleared to preserve pairing
+        payload.charges =
+          changes.charges !== undefined
+            ? changes.charges
+            : newMaxCharges === null
+              ? null
+              : existing.charges;
+      }
+      if (changes.modifications !== undefined) payload.modifications = changes.modifications;
       const response = await heroService.upsertSubResource<HeroEquipment>(
         hero.value.id,
         'equipment',
@@ -381,6 +452,7 @@ export const useHeroStore = defineStore('hero', () => {
 
     // Equipment (sheet)
     addEquipment,
+    addCustomEquipment,
     removeEquipment,
     updateEquipment,
   };

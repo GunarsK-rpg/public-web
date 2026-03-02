@@ -54,16 +54,16 @@
         class="bottom-nav"
       >
         <q-tab
-          name="campaigns"
-          icon="sym_o_swords"
-          label="Campaigns"
-          @click="navigateTo('campaigns')"
-        />
-        <q-tab
           name="my-characters"
           icon="sym_o_person"
           label="Characters"
           @click="navigateTo('my-characters')"
+        />
+        <q-tab
+          name="campaigns"
+          icon="sym_o_swords"
+          label="Campaigns"
+          @click="navigateTo('campaigns')"
         />
       </q-tabs>
     </q-footer>
@@ -90,15 +90,16 @@ const pageTitle = computed(() => {
   return (route.meta?.title as string) || 'Cosmere RPG';
 });
 
-const characterRoutes = new Set([
-  'my-characters',
-  'character-sheet',
-  'character-create',
-  'character-edit',
+const campaignRoutes = new Set([
+  'campaigns',
+  'campaign-detail',
+  'campaign-create',
+  'campaign-edit',
+  'join-campaign',
 ]);
 
 const activeNavTab = computed(() => {
-  return characterRoutes.has(route.name as string) ? 'my-characters' : 'campaigns';
+  return campaignRoutes.has(route.name as string) ? 'campaigns' : 'my-characters';
 });
 
 function toggleDarkMode(): void {
