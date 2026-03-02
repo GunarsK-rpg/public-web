@@ -277,5 +277,17 @@ describe('StepTabs', () => {
 
       expect(mockMarkStepCompleted).not.toHaveBeenCalled();
     });
+
+    it('blocks forward jump to uncompleted step in create mode', () => {
+      mockCurrentStep.value = 1;
+      mockIsStepCompleted.mockReturnValue(false);
+      const wrapper = createWrapper();
+
+      const qTabs = wrapper.findComponent(QTabsStub);
+      qTabs.vm.$emit('update:modelValue', 3);
+
+      expect(mockGoToStep).not.toHaveBeenCalled();
+      expect(mockMarkStepCompleted).not.toHaveBeenCalled();
+    });
   });
 });

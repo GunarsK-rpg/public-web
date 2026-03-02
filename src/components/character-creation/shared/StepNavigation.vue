@@ -116,5 +116,7 @@ function previousStep() {
   min-width: 0;
   flex-shrink: 1;
   text-align: right;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 </style>
