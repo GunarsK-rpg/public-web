@@ -64,6 +64,48 @@ const mockClassifiers = {
       isCustom: false,
       attributes: [],
     },
+    {
+      id: 3,
+      code: 'longsword',
+      name: 'Longsword',
+      equipType: { id: 6, code: 'weapon', name: 'Weapon' },
+      damageType: null,
+      unit: null,
+      special: [],
+      maxCharges: null,
+      weight: 2,
+      cost: null,
+      isCustom: false,
+      attributes: [],
+    },
+    {
+      id: 4,
+      code: 'plate-armor',
+      name: 'Plate Armor',
+      equipType: { id: 7, code: 'armor', name: 'Armor' },
+      damageType: null,
+      unit: null,
+      special: [],
+      maxCharges: null,
+      weight: 5,
+      cost: null,
+      isCustom: false,
+      attributes: [],
+    },
+    {
+      id: 5,
+      code: 'pain-fabrial',
+      name: 'Pain Fabrial',
+      equipType: { id: 8, code: 'fabrial', name: 'Fabrial' },
+      damageType: null,
+      unit: null,
+      special: [],
+      maxCharges: 3,
+      weight: 1,
+      cost: null,
+      isCustom: false,
+      attributes: [],
+    },
   ],
   conditions: [],
   injuries: [],
@@ -572,6 +614,98 @@ describe('useHeroEquipmentStore', () => {
       store.addEquipment(1);
 
       expect(heroStore.hero).toBeNull();
+    });
+  });
+
+  // ========================================
+  // Individual Equipment (weapon/armor/fabrial)
+  // ========================================
+  describe('individual equipment types', () => {
+    it('creates separate rows for weapons when quantity > 1', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(3, 3); // longsword (weapon), qty 3
+
+      expect(heroStore.hero!.equipment.length).toBe(3);
+      heroStore.hero!.equipment.forEach((e) => {
+        expect(e.equipment!.code).toBe('longsword');
+        expect(e.amount).toBe(1);
+      });
+    });
+
+    it('creates separate rows for armor when quantity > 1', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(4, 2); // plate-armor (armor), qty 2
+
+      expect(heroStore.hero!.equipment.length).toBe(2);
+      heroStore.hero!.equipment.forEach((e) => {
+        expect(e.equipment!.code).toBe('plate-armor');
+        expect(e.amount).toBe(1);
+      });
+    });
+
+    it('creates separate rows for fabrials with charges', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(5, 2); // pain-fabrial (fabrial), qty 2
+
+      expect(heroStore.hero!.equipment.length).toBe(2);
+      heroStore.hero!.equipment.forEach((e) => {
+        expect(e.maxCharges).toBe(3);
+        expect(e.charges).toBe(3);
+        expect(e.amount).toBe(1);
+      });
+    });
+
+    it('assigns unique temp IDs to each individual row', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(3, 3);
+
+      const ids = heroStore.hero!.equipment.map((e) => e.id);
+      expect(new Set(ids).size).toBe(3);
+    });
+
+    it('does not stack individual items on repeated add', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(3, 1);
+      store.addEquipment(3, 1);
+
+      expect(heroStore.hero!.equipment.length).toBe(2);
+    });
+
+    it('removes only targeted row by row ID', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(3, 3);
+      expect(heroStore.hero!.equipment.length).toBe(3);
+
+      const secondRowId = heroStore.hero!.equipment[1]!.id;
+      store.removeEquipment(secondRowId);
+
+      expect(heroStore.hero!.equipment.length).toBe(2);
+      expect(heroStore.hero!.equipment.find((e) => e.id === secondRowId)).toBeUndefined();
+    });
+
+    it('toggles equipped on only targeted row', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      store.addEquipment(3, 2);
+
+      const firstRowId = heroStore.hero!.equipment[0]!.id;
+      store.setEquipmentEquipped(firstRowId, true);
+
+      expect(heroStore.hero!.equipment[0]!.isEquipped).toBe(true);
+      expect(heroStore.hero!.equipment[1]!.isEquipped).toBe(false);
     });
   });
 });
