@@ -39,23 +39,35 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { groupByKey } from 'src/utils/arrayUtils';
+import { groupByKey, findById } from 'src/utils/arrayUtils';
 import { COLORS } from 'src/constants/theme';
 import type { Skill } from 'src/types';
 
+const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 
-// Skills grouped by attribute type (via skill.attr.id -> attribute.attrType.id)
+// Base skills + hero's active surge skills, grouped by attribute type
 const skillsByAttrType = computed((): Record<number, Skill[]> => {
   const attrTypeMap = new Map<number, number>();
   for (const attr of classifiers.attributes) {
     attrTypeMap.set(attr.id, attr.attrType.id);
   }
-  // Falls back to 0 (unmapped bucket, filtered out by template) when attr.id has no matching attribute type
-  return groupByKey(classifiers.skills, (skill) => attrTypeMap.get(skill.attr?.id ?? 0) ?? 0);
+
+  const orderId = heroStore.hero?.radiantOrder?.id;
+  let activeSurgeIds: Set<number> | null = null;
+  if (orderId) {
+    const order = findById(classifiers.radiantOrders, orderId);
+    if (order) activeSurgeIds = new Set([order.surge1.id, order.surge2.id]);
+  }
+
+  const visible = classifiers.skills.filter(
+    (s) => !s.surge || (activeSurgeIds && s.surge && activeSurgeIds.has(s.surge.id))
+  );
+  return groupByKey(visible, (skill) => attrTypeMap.get(skill.attr?.id ?? 0) ?? 0);
 });
 
 function getAttributeCode(skill: Skill): string {

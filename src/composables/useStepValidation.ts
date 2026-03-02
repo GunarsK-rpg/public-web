@@ -31,7 +31,7 @@ export function useStepValidation() {
       levelData: attrStore.levelData,
       intellectValue: attrStore.getAttributeValue('int'),
       talentsModifier: campaign?.talentsModifier ?? 0,
-      skillsModifier: campaign?.skillsModifier ?? 0,
+      skillsModifier: (campaign?.skillsModifier ?? 0) + (heroStore.hero.radiantOrder ? 2 : 0),
       expertisesModifier: campaign?.expertisesModifier ?? 0,
     };
   });

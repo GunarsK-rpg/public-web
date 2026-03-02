@@ -122,12 +122,19 @@ vi.mock('src/stores/classifiers', () => ({
     get attributeTypes() {
       return mockClassifierData.value.attributeTypes;
     },
+    radiantOrders: [],
   }),
 }));
 
 vi.mock('src/composables/useStepValidation', () => ({
   useStepValidation: () => ({
     budget: () => mockBudgetData.value,
+  }),
+}));
+
+vi.mock('src/stores/heroTalents', () => ({
+  useHeroTalentsStore: () => ({
+    radiantOrderId: null,
   }),
 }));
 
@@ -142,6 +149,7 @@ vi.mock('src/utils/arrayUtils', () => ({
     return result;
   },
   buildIdCodeMap: () => mockAttributeCodeMap.value,
+  findById: () => undefined,
 }));
 
 vi.mock('src/composables/useModifierInput', () => ({
