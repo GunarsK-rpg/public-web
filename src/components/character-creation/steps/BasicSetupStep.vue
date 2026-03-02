@@ -208,11 +208,13 @@ function leaveCampaign(): void {
     persistent: false,
   }).onOk(() => {
     if (!heroStore.hero || heroStore.hero.id <= 0) return;
+    const prevCampaign = heroStore.hero.campaign;
     heroStore.setCampaign(null);
     const payload = buildHeroCorePayload(heroStore.hero);
     void heroService.update(heroStore.hero.id, payload).then(
       (response) => heroStore.updateFromResponse(response.data),
       (err) => {
+        heroStore.setCampaign(prevCampaign);
         logger.error('Failed to leave campaign', { error: err });
         $q.notify({ message: 'Failed to leave campaign', type: 'negative', timeout: 2000 });
       }

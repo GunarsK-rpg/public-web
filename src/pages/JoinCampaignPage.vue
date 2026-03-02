@@ -105,19 +105,24 @@ const error = ref<string | null>(null);
 
 onMounted(async () => {
   try {
-    const [campaignRes, heroesRes] = await Promise.all([
-      campaignService.getByCode(props.code),
-      heroService.getAll(),
-    ]);
+    const campaignRes = await campaignService.getByCode(props.code);
     campaign.value = campaignRes.data;
-    unassignedHeroes.value = heroesRes.data.data.filter((h) => !h.campaign);
   } catch (err: unknown) {
     if (axios.isAxiosError(err) && err.response?.status === 404) {
       campaign.value = null;
     } else {
       error.value = 'Failed to load campaign details';
-      logger.error('Failed to load campaign preview', toError(err));
+      logger.error('Failed to load campaign', toError(err));
     }
+    loading.value = false;
+    return;
+  }
+
+  try {
+    const heroesRes = await heroService.getAll();
+    unassignedHeroes.value = heroesRes.data.data.filter((h) => !h.campaign);
+  } catch (err: unknown) {
+    logger.error('Failed to load heroes', toError(err));
   } finally {
     loading.value = false;
   }
