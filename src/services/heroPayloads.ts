@@ -8,6 +8,7 @@ import type { HeroCulture, HeroCultureBase } from 'src/types/culture';
 import type { HeroEquipment, HeroEquipmentBase } from 'src/types/equipments';
 import type { HeroGoal, HeroGoalBase, HeroConnection, HeroConnectionBase } from 'src/types/goals';
 import type { HeroCompanion, HeroCompanionBase } from 'src/types/companions';
+import type { HeroDerivedStatSheet, HeroDerivedStatBase } from 'src/types/derivedStats';
 
 function toClassifierInput(ref: ClassifierRef): ClassifierInput {
   return { code: ref.code };
@@ -138,5 +139,16 @@ export function buildCompanionPayload(heroId: number, comp: HeroCompanion): Hero
     companionType: toClassifierInput(comp.companionType),
     description: comp.description ?? null,
     notes: comp.notes ?? null,
+  };
+}
+
+export function buildDerivedStatPayload(
+  heroId: number,
+  stat: HeroDerivedStatSheet
+): HeroDerivedStatBase {
+  return {
+    heroId,
+    derivedStat: toClassifierInput(stat.derivedStat),
+    modifier: stat.modifier,
   };
 }
