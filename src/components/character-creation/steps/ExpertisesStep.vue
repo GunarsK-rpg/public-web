@@ -88,7 +88,7 @@
             dense
             icon="close"
             size="sm"
-            aria-label="Remove custom expertise"
+            :aria-label="`Remove custom expertise: ${ce.customName || 'custom'}`"
             @click="removeCustom(ce.id)"
           />
         </q-item-section>
@@ -303,7 +303,9 @@ function addCustom() {
 }
 
 function removeCustom(id: number) {
-  deletionTracker?.trackDeletion('expertises', id);
+  if (id > 0) {
+    deletionTracker?.trackDeletion('expertises', id);
+  }
   attrStore.removeCustomExpertise(id);
 }
 </script>

@@ -650,7 +650,7 @@ describe('ExpertisesStep', () => {
       ];
       const wrapper = createWrapper();
 
-      const removeBtn = wrapper.find('[aria-label="Remove custom expertise"]');
+      const removeBtn = wrapper.find('[aria-label="Remove custom expertise: Glassblowing"]');
       expect(removeBtn.exists()).toBe(true);
     });
 
@@ -666,7 +666,7 @@ describe('ExpertisesStep', () => {
       ];
       const wrapper = createWrapper();
 
-      await wrapper.find('[aria-label="Remove custom expertise"]').trigger('click');
+      await wrapper.find('[aria-label="Remove custom expertise: Glassblowing"]').trigger('click');
 
       expect(mockRemoveCustomExpertise).toHaveBeenCalledWith(100);
     });
@@ -715,6 +715,19 @@ describe('ExpertisesStep', () => {
       expect(dialog.exists()).toBe(true);
       expect(dialog.find('.q-select').exists()).toBe(true);
       expect(dialog.find('.q-input').exists()).toBe(true);
+    });
+
+    it('submits custom expertise via dialog', async () => {
+      const wrapper = createWrapper();
+
+      const dialog = wrapper.find('.q-dialog');
+      await dialog.find('.q-select').setValue(1);
+      await dialog.find('.q-input').setValue('Custom Skill');
+
+      const addBtn = dialog.findAll('.q-btn').find((b) => b.text() === 'Add');
+      await addBtn!.trigger('click');
+
+      expect(mockAddCustomExpertise).toHaveBeenCalledWith(1, 'Custom Skill', expect.any(Object));
     });
   });
 });
