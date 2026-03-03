@@ -123,6 +123,7 @@ describe('SingerFormSelectionDialog', () => {
     expect(selectBtn).toBeDefined();
     await selectBtn!.trigger('click');
     expect(wrapper.emitted('select')).toEqual([[1]]);
+    expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
 
   it('emits select and closes when row clicked', async () => {

@@ -96,7 +96,7 @@
         @select="selectForm"
       />
 
-      <q-card v-if="selectedForm" flat bordered class="q-mt-md">
+      <q-card v-if="selectedForm" flat bordered class="q-mt-md" data-testid="singer-detail-card">
         <q-card-section>
           <div class="text-subtitle1">{{ selectedForm.name }}</div>
           <div v-if="selectedForm.sprenType" class="text-caption q-mb-sm">

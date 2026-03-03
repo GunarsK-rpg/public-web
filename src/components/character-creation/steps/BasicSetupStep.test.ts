@@ -175,6 +175,7 @@ describe('BasicSetupStep', () => {
           },
           SingerFormSelectionDialog: {
             template: `<div class="singer-form-dialog" v-if="modelValue">
+              <span v-for="f in availableForms" :key="f.id" class="dialog-form">{{ f.name }}</span>
               <button class="dialog-select" @click="$emit('select', availableForms[0]?.id)">Select</button>
             </div>`,
             props: ['modelValue', 'selectedFormId', 'availableForms'],
@@ -617,33 +618,38 @@ describe('BasicSetupStep', () => {
       expect(wrapper.text()).not.toContain('Select Initial Form');
     });
 
-    it('passes available forms to dialog including talent-unlocked forms', () => {
+    it('passes available forms to dialog including talent-unlocked forms', async () => {
       mockIsSinger.value = true;
       mockHeroTalents.value = [
         { talent: { id: 100, code: 'warform-talent', name: 'Warform Talent' } },
       ];
       const wrapper = createWrapper();
 
-      // Open dialog by clicking the button
       const btn = wrapper.findAll('.q-btn').find((b) => b.text().includes('Form'));
       expect(btn).toBeDefined();
+      await btn!.trigger('click');
 
-      // With warform talent, both dullform and warform should be available
-      // The dialog stub renders when modelValue is true; verify via the stub content
-      // Since dialog is closed by default, we check that the stub element exists
-      // (stub renders regardless of v-if in real component since we stub the whole thing)
-      expect(wrapper.find('.singer-form-dialog').exists() || wrapper.html()).toBeTruthy();
+      const dialog = wrapper.find('.singer-form-dialog');
+      expect(dialog.exists()).toBe(true);
+      const formNames = dialog.findAll('.dialog-form').map((el) => el.text());
+      expect(formNames).toContain('Dullform');
+      expect(formNames).toContain('Warform');
     });
 
-    it('filters forms requiring talents hero does not have', () => {
+    it('filters forms requiring talents hero does not have', async () => {
       mockIsSinger.value = true;
       mockHeroTalents.value = [];
       const wrapper = createWrapper();
 
-      // Without warform talent, only dullform should pass the filter
-      // We verify via the computed: the component text should not contain Warform
-      // since availableForms filters it out and passes to dialog
-      expect(wrapper.text()).toContain('Choose Form');
+      const btn = wrapper.findAll('.q-btn').find((b) => b.text().includes('Form'));
+      expect(btn).toBeDefined();
+      await btn!.trigger('click');
+
+      const dialog = wrapper.find('.singer-form-dialog');
+      expect(dialog.exists()).toBe(true);
+      const formNames = dialog.findAll('.dialog-form').map((el) => el.text());
+      expect(formNames).toContain('Dullform');
+      expect(formNames).not.toContain('Warform');
     });
 
     it('calls setSingerForm when dialog emits select', async () => {
@@ -667,7 +673,7 @@ describe('BasicSetupStep', () => {
       mockActiveSingerForm.value = { id: 1, code: 'dullform', name: 'Dullform' };
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.q-card').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="singer-detail-card"]').exists()).toBe(true);
       expect(wrapper.text()).toContain('Dullform');
     });
 
@@ -676,8 +682,7 @@ describe('BasicSetupStep', () => {
       mockActiveSingerForm.value = null;
       const wrapper = createWrapper();
 
-      // Only the dialog stub should exist, not a detail card
-      expect(wrapper.find('.q-card').exists()).toBe(false);
+      expect(wrapper.find('[data-testid="singer-detail-card"]').exists()).toBe(false);
     });
   });
 
