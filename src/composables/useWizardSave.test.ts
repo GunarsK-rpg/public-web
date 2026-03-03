@@ -6,7 +6,6 @@ import { useDeletionTracker } from './useDeletionTracker';
 
 // Mock stores
 const mockHero = ref<Record<string, unknown> | null>(null);
-const mockNextStep = vi.fn();
 const mockUpdateFromResponse = vi.fn();
 const mockCurrentStepCode = ref('basic-setup');
 
@@ -23,7 +22,6 @@ vi.mock('src/stores/hero', () => ({
 
 vi.mock('src/stores/wizard', () => ({
   useWizardStore: () => ({
-    nextStep: mockNextStep,
     currentStep: 1,
     currentStepConfig: { code: 'basic-setup' },
   }),
@@ -122,21 +120,20 @@ describe('useWizardSave', () => {
   describe('validation', () => {
     it('returns false and sets error when validation fails', async () => {
       mockValidation.value = { isValid: false, errors: ['Name is required'], warnings: [] };
-      const { saveAndAdvance, saveError } = useWizardSave(tracker);
+      const { saveCurrentStep, saveError } = useWizardSave(tracker);
 
-      const result = await saveAndAdvance();
+      const result = await saveCurrentStep();
 
       expect(result).toBe(false);
       expect(saveError.value).toBe('Name is required');
       expect(mockCreate).not.toHaveBeenCalled();
-      expect(mockNextStep).not.toHaveBeenCalled();
     });
 
     it('does not save when no hero loaded', async () => {
       mockHero.value = null;
-      const { saveAndAdvance, saveError } = useWizardSave(tracker);
+      const { saveCurrentStep, saveError } = useWizardSave(tracker);
 
-      const result = await saveAndAdvance();
+      const result = await saveCurrentStep();
 
       expect(result).toBe(false);
       expect(saveError.value).toBe('No hero loaded');
@@ -149,14 +146,13 @@ describe('useWizardSave', () => {
   describe('review step', () => {
     it('skips save and returns true for review step', async () => {
       mockCurrentStepCode.value = 'review';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      const result = await saveAndAdvance();
+      const result = await saveCurrentStep();
 
       expect(result).toBe(true);
       expect(mockCreate).not.toHaveBeenCalled();
       expect(mockUpdate).not.toHaveBeenCalled();
-      expect(mockNextStep).not.toHaveBeenCalled();
     });
   });
 
@@ -167,26 +163,24 @@ describe('useWizardSave', () => {
     it('creates hero when id is 0', async () => {
       mockHero.value = makeHero({ id: 0 });
       mockCurrentStepCode.value = 'basic-setup';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockCreate).toHaveBeenCalledTimes(1);
       expect(mockUpdate).not.toHaveBeenCalled();
       expect(mockUpdateFromResponse).toHaveBeenCalled();
-      expect(mockNextStep).toHaveBeenCalled();
     });
 
     it('updates hero when id > 0', async () => {
       mockHero.value = makeHero({ id: 42 });
       mockCurrentStepCode.value = 'basic-setup';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockUpdate).toHaveBeenCalledTimes(1);
       expect(mockCreate).not.toHaveBeenCalled();
-      expect(mockNextStep).toHaveBeenCalled();
     });
   });
 
@@ -201,13 +195,12 @@ describe('useWizardSave', () => {
         expertises: [{ id: -1, heroId: 42, expertise: { id: 1, code: 'lore', name: 'Lore' } }],
       });
       mockCurrentStepCode.value = 'culture';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'cultures', expect.any(Object));
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'expertises', expect.any(Object));
-      expect(mockNextStep).toHaveBeenCalled();
     });
 
     it('upserts attributes on attributes step', async () => {
@@ -218,9 +211,9 @@ describe('useWizardSave', () => {
         ],
       });
       mockCurrentStepCode.value = 'attributes';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'attributes', expect.any(Object));
     });
@@ -246,9 +239,9 @@ describe('useWizardSave', () => {
         ],
       });
       mockCurrentStepCode.value = 'skills';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       // Only athletics should be upserted (rank > 0)
       expect(mockUpsertSubResource).toHaveBeenCalledTimes(1);
@@ -273,9 +266,9 @@ describe('useWizardSave', () => {
         ],
       });
       mockCurrentStepCode.value = 'skills';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       // Zeroed skill with real DB ID should be deleted, not upserted
       expect(mockDeleteSubResource).toHaveBeenCalledWith(42, 'skills', 55);
@@ -296,9 +289,9 @@ describe('useWizardSave', () => {
         ],
       });
       mockCurrentStepCode.value = 'skills';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       // Temp ID skills should not trigger deletion or upsert
       expect(mockDeleteSubResource).not.toHaveBeenCalled();
@@ -319,9 +312,9 @@ describe('useWizardSave', () => {
         ],
       });
       mockCurrentStepCode.value = 'skills';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockUpsertSubResource).toHaveBeenCalledTimes(1);
     });
@@ -336,9 +329,9 @@ describe('useWizardSave', () => {
       mockCurrentStepCode.value = 'culture';
       tracker.trackDeletion('cultures', 5);
       tracker.trackDeletion('cultures', 10);
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockDeleteSubResource).toHaveBeenCalledWith(42, 'cultures', 5);
       expect(mockDeleteSubResource).toHaveBeenCalledWith(42, 'cultures', 10);
@@ -348,9 +341,9 @@ describe('useWizardSave', () => {
       mockHero.value = makeHero({ id: 42 });
       mockCurrentStepCode.value = 'culture';
       tracker.trackDeletion('cultures', 5);
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(tracker.getDeletions('cultures')).toEqual([]);
     });
@@ -363,9 +356,9 @@ describe('useWizardSave', () => {
       mockDeleteSubResource
         .mockRejectedValueOnce(new Error('Network error'))
         .mockResolvedValueOnce({ data: null });
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       // Failed ID should be re-tracked for retry; successful one cleared
       const remaining = tracker.getDeletions('cultures');
@@ -387,9 +380,9 @@ describe('useWizardSave', () => {
       mockHero.value = makeHero({ id: 42, cultures: [culture] });
       mockCurrentStepCode.value = 'culture';
       mockUpsertSubResource.mockResolvedValue({ data: { id: 77 } });
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(culture.id).toBe(77);
     });
@@ -403,9 +396,9 @@ describe('useWizardSave', () => {
       mockHero.value = makeHero({ id: 42, cultures: [culture] });
       mockCurrentStepCode.value = 'culture';
       mockUpsertSubResource.mockResolvedValue({ data: { id: 50 } });
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(culture.id).toBe(50);
     });
@@ -417,20 +410,19 @@ describe('useWizardSave', () => {
   describe('error handling', () => {
     it('returns false and sets error on API failure', async () => {
       mockCreate.mockRejectedValue(new Error('Network error'));
-      const { saveAndAdvance, saveError } = useWizardSave(tracker);
+      const { saveCurrentStep, saveError } = useWizardSave(tracker);
 
-      const result = await saveAndAdvance();
+      const result = await saveCurrentStep();
 
       expect(result).toBe(false);
       expect(saveError.value).toBe('Network error');
-      expect(mockNextStep).not.toHaveBeenCalled();
     });
 
     it('handles non-Error thrown values', async () => {
       mockCreate.mockRejectedValue('string error');
-      const { saveAndAdvance, saveError } = useWizardSave(tracker);
+      const { saveCurrentStep, saveError } = useWizardSave(tracker);
 
-      const result = await saveAndAdvance();
+      const result = await saveCurrentStep();
 
       expect(result).toBe(false);
       expect(saveError.value).toBe('Save failed');
@@ -447,23 +439,23 @@ describe('useWizardSave', () => {
         savingDuringCall = saving.value;
         return Promise.resolve({ data: { id: 42 } });
       });
-      const { saveAndAdvance, saving } = useWizardSave(tracker);
+      const { saveCurrentStep, saving } = useWizardSave(tracker);
 
       expect(saving.value).toBe(false);
-      await saveAndAdvance();
+      await saveCurrentStep();
       expect(savingDuringCall).toBe(true);
       expect(saving.value).toBe(false);
     });
 
     it('clears saveError on new save attempt', async () => {
       mockCreate.mockRejectedValueOnce(new Error('First failure'));
-      const { saveAndAdvance, saveError } = useWizardSave(tracker);
+      const { saveCurrentStep, saveError } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
       expect(saveError.value).toBe('First failure');
 
       mockCreate.mockResolvedValueOnce({ data: { id: 42 } });
-      await saveAndAdvance();
+      await saveCurrentStep();
       expect(saveError.value).toBeNull();
     });
   });
@@ -480,13 +472,12 @@ describe('useWizardSave', () => {
         ],
       });
       mockCurrentStepCode.value = 'paths';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockUpdate).toHaveBeenCalledTimes(1);
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'talents', expect.any(Object));
-      expect(mockNextStep).toHaveBeenCalled();
     });
 
     it('saves hero core AND equipment on equipment step', async () => {
@@ -503,9 +494,9 @@ describe('useWizardSave', () => {
         ],
       });
       mockCurrentStepCode.value = 'equipment';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockUpdate).toHaveBeenCalledTimes(1);
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'equipment', expect.any(Object));
@@ -526,14 +517,13 @@ describe('useWizardSave', () => {
         expertises: [{ id: -1, heroId: 42, expertise: { id: 1, code: 'lore', name: 'Lore' } }],
       });
       mockCurrentStepCode.value = 'starting-kit';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockUpdate).toHaveBeenCalledTimes(1);
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'equipment', expect.any(Object));
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'expertises', expect.any(Object));
-      expect(mockNextStep).toHaveBeenCalled();
     });
 
     it('saves core + goals + connections + companions on personal-details step', async () => {
@@ -558,9 +548,9 @@ describe('useWizardSave', () => {
         companions: [],
       });
       mockCurrentStepCode.value = 'personal-details';
-      const { saveAndAdvance } = useWizardSave(tracker);
+      const { saveCurrentStep } = useWizardSave(tracker);
 
-      await saveAndAdvance();
+      await saveCurrentStep();
 
       expect(mockUpdate).toHaveBeenCalledTimes(1);
       expect(mockUpsertSubResource).toHaveBeenCalledWith(42, 'goals', expect.any(Object));

@@ -9,6 +9,9 @@ const mockNotify = vi.fn();
 const mockReset = vi.fn();
 const mockStartCreate = vi.fn();
 const mockClearHero = vi.fn();
+const mockGoToStep = vi.fn();
+const mockMarkStepCompleted = vi.fn();
+const mockSaveCurrentStep = vi.fn().mockResolvedValue(true);
 
 // Use refs for reactive mock values
 const mockCurrentStep = ref(1);
@@ -41,8 +44,8 @@ vi.mock('stores/wizard', () => ({
     isActive: mockIsActive.value,
     reset: mockReset,
     startCreate: mockStartCreate,
-    markStepCompleted: vi.fn(),
-    goToStep: vi.fn(),
+    markStepCompleted: mockMarkStepCompleted,
+    goToStep: mockGoToStep,
   }),
 }));
 
@@ -85,7 +88,7 @@ vi.mock('src/composables/useWizardSave', () => ({
   useWizardSave: () => ({
     saving: ref(false),
     saveError: ref(null),
-    saveAndAdvance: vi.fn().mockResolvedValue(true),
+    saveCurrentStep: mockSaveCurrentStep,
   }),
 }));
 
@@ -145,12 +148,15 @@ describe('CharacterCreationPage', () => {
             template: '<div class="q-card-actions"><slot /></div>',
           },
           StepTabs: {
+            name: 'StepTabs',
             template: '<div class="step-tabs" />',
+            emits: ['navigate'],
           },
           StepNavigation: {
+            name: 'StepNavigation',
             template: '<div class="step-navigation" />',
             props: ['saving', 'saveError'],
-            emits: ['next', 'finish', 'save-close'],
+            emits: ['previous', 'next', 'finish', 'save-close'],
           },
           BasicSetupStep: { template: '<div class="basic-setup-step" />' },
           CultureStep: { template: '<div class="culture-step" />' },
@@ -173,6 +179,7 @@ describe('CharacterCreationPage', () => {
     mockInitialized.value = true;
     mockMode.value = 'create';
     mockRouteQuery = {};
+    mockSaveCurrentStep.mockResolvedValue(true);
   });
 
   // ========================================
@@ -214,8 +221,76 @@ describe('CharacterCreationPage', () => {
   });
 
   // ========================================
-  // Navigation
+  // Navigation (auto-save on every step change)
   // ========================================
+  describe('navigation', () => {
+    it('saves and navigates forward on tab click', async () => {
+      mockCurrentStep.value = 1;
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      wrapper.findComponent({ name: 'StepTabs' }).vm.$emit('navigate', 3);
+      await flushPromises();
+
+      expect(mockSaveCurrentStep).toHaveBeenCalled();
+      expect(mockMarkStepCompleted).toHaveBeenCalledWith(1);
+      expect(mockGoToStep).toHaveBeenCalledWith(3);
+    });
+
+    it('saves and navigates backward on tab click', async () => {
+      mockCurrentStep.value = 3;
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      wrapper.findComponent({ name: 'StepTabs' }).vm.$emit('navigate', 1);
+      await flushPromises();
+
+      expect(mockSaveCurrentStep).toHaveBeenCalled();
+      expect(mockMarkStepCompleted).not.toHaveBeenCalled();
+      expect(mockGoToStep).toHaveBeenCalledWith(1);
+    });
+
+    it('saves on next arrow click', async () => {
+      mockCurrentStep.value = 1;
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      wrapper.findComponent({ name: 'StepNavigation' }).vm.$emit('next');
+      await flushPromises();
+
+      expect(mockSaveCurrentStep).toHaveBeenCalled();
+      expect(mockMarkStepCompleted).toHaveBeenCalledWith(1);
+      expect(mockGoToStep).toHaveBeenCalledWith(2);
+    });
+
+    it('saves on previous arrow click', async () => {
+      mockCurrentStep.value = 3;
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      wrapper.findComponent({ name: 'StepNavigation' }).vm.$emit('previous');
+      await flushPromises();
+
+      expect(mockSaveCurrentStep).toHaveBeenCalled();
+      expect(mockMarkStepCompleted).not.toHaveBeenCalled();
+      expect(mockGoToStep).toHaveBeenCalledWith(2);
+    });
+
+    it('stays on current step when save fails', async () => {
+      mockCurrentStep.value = 1;
+      mockSaveCurrentStep.mockResolvedValueOnce(false);
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      wrapper.findComponent({ name: 'StepTabs' }).vm.$emit('navigate', 3);
+      await flushPromises();
+
+      expect(mockSaveCurrentStep).toHaveBeenCalled();
+      expect(mockMarkStepCompleted).not.toHaveBeenCalled();
+      expect(mockGoToStep).not.toHaveBeenCalled();
+    });
+  });
+
   // ========================================
   // Reset
   // ========================================

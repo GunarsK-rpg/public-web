@@ -7,7 +7,7 @@
       narrow-indicator
       mobile-arrows
       outside-arrows
-      @update:model-value="goToStep"
+      @update:model-value="handleTabClick"
     >
       <q-tab
         v-for="step in steps"
@@ -28,6 +28,10 @@ import { computed } from 'vue';
 import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { WIZARD_STEPS } from 'src/types';
+
+const emit = defineEmits<{
+  navigate: [step: number];
+}>();
 
 const wizardStore = useWizardStore();
 const { validate } = useStepValidation();
@@ -62,12 +66,8 @@ function canNavigateTo(step: number): boolean {
   return true;
 }
 
-function goToStep(step: number) {
-  if (!canNavigateTo(step)) return;
-  // Only mark as completed if navigating forward
-  if (step > wizardStore.currentStep) {
-    wizardStore.markStepCompleted(wizardStore.currentStep);
-  }
-  wizardStore.goToStep(step);
+function handleTabClick(step: number) {
+  if (!canNavigateTo(step) || step === wizardStore.currentStep) return;
+  emit('navigate', step);
 }
 </script>

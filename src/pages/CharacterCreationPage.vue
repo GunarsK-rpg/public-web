@@ -3,7 +3,7 @@
     <!-- Sticky Header with Step Navigation -->
     <div class="creation-header">
       <div class="row items-center no-wrap">
-        <StepTabs class="col q-my-md" />
+        <StepTabs class="col q-my-md" @navigate="navigateWithSave" />
         <q-btn
           v-if="wizardStore.mode === 'create'"
           flat
@@ -41,7 +41,8 @@
     <StepNavigation
       :saving="saving"
       :save-error="saveError"
-      @next="handleNext"
+      @previous="navigateWithSave(currentStep - 1)"
+      @next="navigateWithSave(currentStep + 1)"
       @finish="finishWizard"
       @save-close="handleSaveAndClose"
     />
@@ -115,7 +116,7 @@ const deletionTracker = useDeletionTracker();
 provide('deletionTracker', deletionTracker);
 
 // Save composable
-const { saving, saveError, saveAndAdvance } = useWizardSave(deletionTracker);
+const { saving, saveError, saveCurrentStep } = useWizardSave(deletionTracker);
 
 // State
 const showResetDialog = ref(false);
@@ -126,7 +127,7 @@ const stepContentRef = ref<HTMLElement | null>(null);
 useSwipeNavigation(stepContentRef, {
   onSwipeRight: () => {
     if (currentStep.value > 1) {
-      wizardStore.goToStep(currentStep.value - 1);
+      void navigateWithSave(currentStep.value - 1);
     }
   },
 });
@@ -158,9 +159,14 @@ const currentStepComponent = computed(() => {
   return component;
 });
 
-// Navigation
-async function handleNext(): Promise<void> {
-  await saveAndAdvance();
+// Navigation — single save-before-navigate for all step changes
+async function navigateWithSave(targetStep: number): Promise<void> {
+  const saved = await saveCurrentStep();
+  if (!saved) return;
+  if (targetStep > currentStep.value) {
+    wizardStore.markStepCompleted(currentStep.value);
+  }
+  wizardStore.goToStep(targetStep);
 }
 
 function closeWizardAndNavigate(): void {
@@ -176,7 +182,7 @@ function closeWizardAndNavigate(): void {
 }
 
 async function handleSaveAndClose(): Promise<void> {
-  const saved = await saveAndAdvance();
+  const saved = await saveCurrentStep();
   if (saved) {
     closeWizardAndNavigate();
   }

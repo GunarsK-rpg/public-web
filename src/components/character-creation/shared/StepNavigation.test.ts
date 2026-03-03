@@ -146,7 +146,7 @@ describe('StepNavigation', () => {
   // Navigation Actions
   // ========================================
   describe('navigation actions', () => {
-    it('calls previousStep when Back clicked', async () => {
+    it('emits previous event when Back clicked', async () => {
       mockCurrentStep.value = 2;
 
       const wrapper = createWrapper();
@@ -154,7 +154,7 @@ describe('StepNavigation', () => {
 
       await backButton.trigger('click');
 
-      expect(mockPreviousStep).toHaveBeenCalled();
+      expect(wrapper.emitted('previous')).toBeTruthy();
     });
 
     it('emits next event when Next clicked', async () => {

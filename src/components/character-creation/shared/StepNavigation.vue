@@ -7,7 +7,7 @@
       round
       icon="arrow_back"
       aria-label="Previous step"
-      @click="previousStep"
+      @click="emit('previous')"
     />
     <q-space />
     <div
@@ -70,7 +70,8 @@ const props = defineProps<{
   saveError?: string | null;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
+  previous: [];
   next: [];
   finish: [];
   'save-close': [];
@@ -94,10 +95,6 @@ const displayWarning = computed(() => {
   const warnings = currentValidation.value.warnings;
   return warnings.length > 0 ? warnings[0] : null;
 });
-
-function previousStep() {
-  wizardStore.previousStep();
-}
 </script>
 
 <style scoped lang="scss">
