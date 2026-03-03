@@ -14,6 +14,7 @@ const mockClearHero = vi.fn();
 const mockCurrentStep = ref(1);
 const mockIsActive = ref(true);
 const mockInitialized = ref(true);
+const mockMode = ref('create');
 let mockRouteQuery: Record<string, string> = {};
 
 vi.mock('vue-router', () => ({
@@ -36,6 +37,7 @@ vi.mock('quasar', () => ({
 vi.mock('stores/wizard', () => ({
   useWizardStore: () => ({
     currentStep: mockCurrentStep.value,
+    mode: mockMode.value,
     isActive: mockIsActive.value,
     reset: mockReset,
     startCreate: mockStartCreate,
@@ -169,6 +171,7 @@ describe('CharacterCreationPage', () => {
     mockCurrentStep.value = 1;
     mockIsActive.value = true;
     mockInitialized.value = true;
+    mockMode.value = 'create';
     mockRouteQuery = {};
   });
 
@@ -217,6 +220,27 @@ describe('CharacterCreationPage', () => {
   // Reset
   // ========================================
   describe('reset', () => {
+    it('shows reset button in create mode', () => {
+      mockMode.value = 'create';
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('.q-btn[aria-label="Reset character creation"]').exists()).toBe(true);
+    });
+
+    it('hides reset button in edit mode', () => {
+      mockMode.value = 'edit';
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('.q-btn[aria-label="Reset character creation"]').exists()).toBe(false);
+    });
+
+    it('hides reset button in levelup mode', () => {
+      mockMode.value = 'levelup';
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('.q-btn[aria-label="Reset character creation"]').exists()).toBe(false);
+    });
+
     it('shows reset dialog when reset button clicked', async () => {
       const wrapper = createWrapper();
 

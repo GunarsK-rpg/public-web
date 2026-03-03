@@ -5,6 +5,7 @@
       <div class="row items-center no-wrap">
         <StepTabs class="col q-my-md" />
         <q-btn
+          v-if="wizardStore.mode === 'create'"
           flat
           round
           dense
@@ -204,13 +205,6 @@ function resetWizard() {
     return;
   }
   wizardStore.startCreate(campId);
-  // If we were on an edit route, switch URL back to create
-  if (props.characterId) {
-    const createRoute = campId
-      ? { name: 'character-create', query: { campaignId: String(campId) } }
-      : { name: 'character-create' };
-    void router.replace(createRoute);
-  }
   $q.notify({
     type: 'info',
     message: 'Character creation reset',
