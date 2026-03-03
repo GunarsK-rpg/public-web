@@ -283,20 +283,20 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-$bottom-nav-height: 48px; // matches q-tabs dense height in MainLayout footer
+$app-header-height: 50px;
+$bottom-nav-height: 56px;
 
 .character-creation-page {
   display: flex;
   flex-direction: column;
-  // Fill available viewport height (minus app header + bottom nav)
-  height: calc(100vh - #{$toolbar-min-height} - #{$bottom-nav-height});
+  height: calc(100vh - #{$app-header-height} - #{$bottom-nav-height});
   padding: 0 !important;
 }
 
 .step-content {
   flex: 1;
   overflow-y: auto;
-  min-height: 0; // allow flex child to shrink and scroll
+  min-height: 0;
 }
 
 .creation-header {

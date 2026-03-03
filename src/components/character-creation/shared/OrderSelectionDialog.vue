@@ -73,8 +73,7 @@ function getOrderSubtitle(order: RadiantOrder): string {
   const surge1 = order.surge1?.id ? findById(classifiers.surges, order.surge1.id)?.name : null;
   const surge2 = order.surge2?.id ? findById(classifiers.surges, order.surge2.id)?.name : null;
   if (surge1 && surge2) return `${surge1} \u00b7 ${surge2}`;
-  if (surge1) return surge1;
-  return '';
+  return surge1 || surge2 || '';
 }
 
 function selectOrder(orderId: number) {

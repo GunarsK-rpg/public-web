@@ -150,6 +150,20 @@ describe('OrderSelectionDialog', () => {
     expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
 
+  it('emits select when row clicked', async () => {
+    const wrapper = createWrapper({ modelValue: true, selectedOrderId: null });
+    const items = wrapper.findAll('.q-item');
+    await items[0]!.trigger('click');
+    expect(wrapper.emitted('select')).toEqual([[10]]);
+  });
+
+  it('does not emit when already-selected row clicked', async () => {
+    const wrapper = createWrapper({ modelValue: true, selectedOrderId: 10 });
+    const items = wrapper.findAll('.q-item');
+    await items[0]!.trigger('click');
+    expect(wrapper.emitted('select')).toBeUndefined();
+  });
+
   it('emits update:modelValue false when close button clicked', async () => {
     const wrapper = createWrapper({ modelValue: true, selectedOrderId: null });
     const closeBtn = wrapper.find('[aria-label="Close dialog"]');

@@ -163,7 +163,7 @@ describe('StartingKitStep', () => {
               class="q-input"
               type="number"
               :value="modelValue"
-              @input="$emit('update:modelValue', Number($event.target.value))"
+              @input="$emit('update:modelValue', $event.target.value)"
             />`,
             props: ['modelValue', 'type', 'label', 'hint', 'outlined', 'dense', 'min', 'max'],
             emits: ['update:modelValue'],
