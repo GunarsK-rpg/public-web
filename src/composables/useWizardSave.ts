@@ -20,6 +20,7 @@ import {
   buildGoalPayload,
   buildConnectionPayload,
   buildCompanionPayload,
+  buildDerivedStatPayload,
 } from 'src/services/heroPayloads';
 import { logger } from 'src/utils/logger';
 
@@ -96,6 +97,7 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
           buildAttributePayload,
           'attributes'
         );
+        await saveDerivedStatModifiers(hero.id, hero);
         await saveHeroCore(hero);
         break;
       case STEP_CODES.SKILLS:
@@ -202,6 +204,24 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
         name: 'character-edit',
         params: { characterId: String(heroId) },
       });
+    }
+  }
+
+  async function saveDerivedStatModifiers(heroId: number, hero: HeroSheet): Promise<void> {
+    const statsWithModifiers = hero.derivedStats.filter((s) => s.modifier !== 0);
+    if (statsWithModifiers.length === 0) return;
+
+    const results = await Promise.allSettled(
+      statsWithModifiers.map((stat) => {
+        const payload = buildDerivedStatPayload(heroId, stat);
+        return heroService.upsertSubResource(heroId, 'derived-stats', payload);
+      })
+    );
+
+    const failures = results.filter((r) => r.status === 'rejected');
+    if (failures.length > 0) {
+      logger.error(`${failures.length} derived stat modifier(s) failed to save`);
+      throw new Error('Failed to save some derived-stats');
     }
   }
 
