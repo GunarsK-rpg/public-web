@@ -303,10 +303,6 @@ $bottom-nav-height: 56px;
 
 .creation-header {
   flex-shrink: 0;
-  border-bottom: 1px solid $color-border-dark;
-
-  .body--light & {
-    border-bottom-color: $color-border-light;
-  }
+  border-bottom: 1px solid var(--app-border);
 }
 </style>
