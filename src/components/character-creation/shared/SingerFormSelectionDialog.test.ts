@@ -105,7 +105,7 @@ describe('SingerFormSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedFormId: 1 });
     const items = wrapper.findAll('.q-item');
     const dullformItem = items[0]!;
-    expect(dullformItem.text()).toContain('check');
+    expect(dullformItem.find('svg').exists()).toBe(true);
     expect(dullformItem.text()).not.toContain('Select');
   });
 

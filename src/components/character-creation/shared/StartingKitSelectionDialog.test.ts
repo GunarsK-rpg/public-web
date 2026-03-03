@@ -124,7 +124,7 @@ describe('StartingKitSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedKitId: 1 });
     const items = wrapper.findAll('.q-item');
     const artisanItem = items[0]!;
-    expect(artisanItem.text()).toContain('check');
+    expect(artisanItem.find('svg').exists()).toBe(true);
     expect(artisanItem.text()).not.toContain('Select');
   });
 

@@ -7,7 +7,7 @@
   >
     <template v-slot:header>
       <q-item-section avatar>
-        <q-icon name="sym_o_auto_awesome" color="white" aria-hidden="true" />
+        <Network class="text-white" aria-hidden="true" />
       </q-item-section>
       <q-item-section>
         <q-item-label class="text-white text-weight-medium">
@@ -22,12 +22,12 @@
           flat
           dense
           round
-          icon="close"
           color="white"
           size="sm"
           aria-label="Remove Radiant path"
           @click.stop="$emit('remove')"
         >
+          <X :size="20" />
           <q-tooltip>Remove Radiant path</q-tooltip>
         </q-btn>
       </q-item-section>
@@ -50,7 +50,7 @@
 
         <!-- Radiant Key Talent -->
         <div v-if="keyTalent" class="q-mb-md">
-          <KeyTalentBanner :talent="keyTalent" label="Order Talent" />
+          <KeyTalentBanner :talent="keyTalent" label="Key Talent" />
         </div>
 
         <!-- Surge/Order Tab Selection -->
@@ -75,6 +75,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { Network, X } from 'lucide-vue-next';
 import {
   useTalentPrerequisites,
   type TalentWithStatus,

@@ -4,32 +4,20 @@
       <q-toolbar>
         <q-toolbar-title>{{ pageTitle }}</q-toolbar-title>
 
-        <q-btn
-          flat
-          dense
-          round
-          icon="brightness_6"
-          aria-label="Toggle dark mode"
-          @click="toggleDarkMode"
-        >
+        <q-btn flat dense round aria-label="Toggle dark mode" @click="toggleDarkMode">
+          <SunMoon :size="20" />
           <q-tooltip>Toggle dark mode</q-tooltip>
         </q-btn>
 
-        <q-btn
-          flat
-          dense
-          round
-          icon="account_circle"
-          aria-label="Account menu"
-          v-if="isAuthenticated"
-        >
+        <q-btn flat dense round aria-label="Account menu" v-if="isAuthenticated">
+          <CircleUserRound :size="20" />
           <q-menu>
             <q-list class="account-menu">
               <q-item-label header>{{ username }}</q-item-label>
               <q-separator />
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
-                  <q-icon name="logout" aria-hidden="true" />
+                  <LogOut :size="24" aria-hidden="true" />
                 </q-item-section>
                 <q-item-section>Logout</q-item-section>
               </q-item>
@@ -53,18 +41,14 @@
         indicator-color="primary"
         class="bottom-nav"
       >
-        <q-tab
-          name="my-characters"
-          icon="sym_o_person"
-          label="Characters"
-          @click="navigateTo('my-characters')"
-        />
-        <q-tab
-          name="campaigns"
-          icon="sym_o_swords"
-          label="Campaigns"
-          @click="navigateTo('campaigns')"
-        />
+        <q-tab name="my-characters" @click="navigateTo('my-characters')">
+          <User :size="20" class="q-tab__icon" />
+          <div class="q-tab__label">Characters</div>
+        </q-tab>
+        <q-tab name="campaigns" @click="navigateTo('campaigns')">
+          <Swords :size="20" class="q-tab__icon" />
+          <div class="q-tab__label">Campaigns</div>
+        </q-tab>
       </q-tabs>
     </q-footer>
   </q-layout>
@@ -72,6 +56,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { SunMoon, CircleUserRound, LogOut, User, Swords } from 'lucide-vue-next';
 import { useRouter, useRoute, isNavigationFailure, NavigationFailureType } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useAuthStore } from 'stores/auth';

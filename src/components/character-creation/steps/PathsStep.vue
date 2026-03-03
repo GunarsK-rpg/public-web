@@ -19,14 +19,9 @@
 
     <!-- Heroic Paths Tab -->
     <div v-if="activeTab === 'heroic'">
-      <q-btn
-        outline
-        color="primary"
-        icon="add"
-        label="Add Path"
-        class="q-mb-md"
-        @click="pathDialogOpen = true"
-      />
+      <q-btn outline color="primary" class="q-mb-md" @click="pathDialogOpen = true"
+        ><Plus :size="20" class="on-left" />Add Path</q-btn
+      >
       <q-list v-if="selectedPaths.length > 0" bordered class="rounded-borders">
         <HeroicPathPanel
           v-for="selection in selectedPaths"
@@ -52,14 +47,13 @@
         />
       </div>
       <template v-if="wantsRadiant">
-        <q-btn
-          outline
-          color="primary"
-          :icon="radiantOrderId ? 'swap_horiz' : 'add'"
-          :label="radiantOrderId ? 'Change Order' : 'Select Order'"
-          class="q-mb-md"
-          @click="orderDialogOpen = true"
-        />
+        <q-btn outline color="primary" class="q-mb-md" @click="orderDialogOpen = true"
+          ><ArrowLeftRight v-if="radiantOrderId" :size="20" class="on-left" /><Plus
+            v-else
+            :size="20"
+            class="on-left"
+          />{{ radiantOrderId ? 'Change Order' : 'Select Order' }}</q-btn
+        >
         <q-list v-if="radiantOrderId" bordered class="rounded-borders">
           <RadiantPathPanel
             :key="radiantOrderId"
@@ -106,6 +100,7 @@ import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useTalentPrerequisites } from 'src/composables/useTalentPrerequisites';
 import { findById } from 'src/utils/arrayUtils';
+import { Plus, ArrowLeftRight } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import HeroicPathPanel from '../shared/HeroicPathPanel.vue';
 import SingerAncestryPanel from '../shared/SingerAncestryPanel.vue';

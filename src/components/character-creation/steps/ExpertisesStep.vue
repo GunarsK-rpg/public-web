@@ -10,7 +10,7 @@
     <!-- Cultural Expertises Banner -->
     <InfoBanner
       v-if="culturalExpertises.length > 0"
-      icon="sym_o_language"
+      :icon="Crown"
       title="Cultural Expertises"
       :content="culturalExpertises.map((e) => e.name).join(', ')"
       caption="Auto-applied from your selected cultures"
@@ -19,7 +19,7 @@
     <!-- Starting Kit Expertises Banner -->
     <InfoBanner
       v-if="startingKitExpertises.length > 0"
-      icon="sym_o_backpack"
+      :icon="Backpack"
       title="Starting Kit Expertises"
       :content="startingKitExpertises.map((e) => e.name).join(', ')"
       caption="Granted by your starting kit"
@@ -86,11 +86,11 @@
           <q-btn
             flat
             dense
-            icon="close"
             size="sm"
             :aria-label="`Remove custom expertise: ${ce.customName || 'custom'}`"
             @click="removeCustom(ce.id)"
-          />
+            ><X :size="20"
+          /></q-btn>
         </q-item-section>
       </q-item>
     </q-list>
@@ -100,14 +100,13 @@
       <q-btn
         flat
         dense
-        icon="add"
-        label="Add Custom"
         color="primary"
         size="sm"
         :disable="slotsRemaining <= 0"
         aria-label="Add custom expertise"
         @click="openCustomDialog"
-      />
+        ><Plus :size="20" class="on-left" />Add Custom</q-btn
+      >
     </div>
 
     <!-- Add Custom Expertise Dialog -->
@@ -120,7 +119,7 @@
         <q-card-section class="row items-center">
           <div id="custom-exp-dialog-title" class="text-h6">Add Custom Expertise</div>
           <q-space />
-          <q-btn icon="close" flat round dense aria-label="Close dialog" v-close-popup />
+          <q-btn flat round dense aria-label="Close dialog" v-close-popup><X :size="20" /></q-btn>
         </q-card-section>
         <q-separator />
         <q-card-section>
@@ -158,6 +157,7 @@ import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { findById, findByCode } from 'src/utils/arrayUtils';
+import { Crown, Backpack, X, Plus } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 import InfoBanner from '../shared/InfoBanner.vue';

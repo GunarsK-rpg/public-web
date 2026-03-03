@@ -3,13 +3,7 @@
     <!-- Currency Summary -->
     <q-card flat bordered class="q-mb-md">
       <q-card-section class="row items-center">
-        <q-icon
-          name="sym_o_paid"
-          size="md"
-          :color="RPG_COLORS.currency"
-          class="q-mr-md"
-          aria-hidden="true"
-        />
+        <Banknote :size="24" :class="`text-${RPG_COLORS.currency} q-mr-md`" aria-hidden="true" />
         <div>
           <div class="text-h6">{{ totalCurrencyValue }} marks</div>
           <div class="text-caption text-muted">Total currency value</div>
@@ -54,15 +48,9 @@
           No {{ eqType.name.toLowerCase() }} in inventory.
         </div>
         <div class="q-pa-sm q-mt-xs">
-          <q-btn
-            flat
-            dense
-            icon="add"
-            :label="`Add ${eqType.name}`"
-            color="primary"
-            size="sm"
-            @click="openAddDialog(eqType.id)"
-          />
+          <q-btn flat dense color="primary" size="sm" @click="openAddDialog(eqType.id)"
+            ><Plus :size="20" class="on-left" />Add {{ eqType.name }}</q-btn
+          >
         </div>
       </q-tab-panel>
     </q-tab-panels>
@@ -81,6 +69,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
+import { Banknote, Plus } from 'lucide-vue-next';
 import EquipmentItem from './EquipmentItem.vue';
 import EquipmentAddDialog from './EquipmentAddDialog.vue';
 import type { HeroEquipment } from 'src/types';

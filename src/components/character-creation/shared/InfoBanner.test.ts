@@ -1,11 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { defineComponent, h, type Component } from 'vue';
 import InfoBanner from './InfoBanner.vue';
+
+const StubIcon = defineComponent({ render: () => h('span', { class: 'stub-icon' }) });
 
 describe('InfoBanner', () => {
   const createWrapper = (
     props: {
-      icon: string;
+      icon: Component;
       title?: string;
       content: string;
       caption?: string;
@@ -20,7 +23,6 @@ describe('InfoBanner', () => {
           QBanner: {
             template: '<div class="q-banner"><slot name="avatar" /><slot /></div>',
           },
-          QIcon: { template: '<span class="q-icon" />' },
         },
       },
     });
@@ -31,7 +33,7 @@ describe('InfoBanner', () => {
   describe('basic rendering', () => {
     it('renders content text', () => {
       const wrapper = createWrapper({
-        icon: 'info',
+        icon: StubIcon,
         content: 'This is banner content',
       });
 
@@ -40,7 +42,7 @@ describe('InfoBanner', () => {
 
     it('renders title when provided', () => {
       const wrapper = createWrapper({
-        icon: 'info',
+        icon: StubIcon,
         title: 'Important',
         content: 'Banner content',
       });
@@ -50,7 +52,7 @@ describe('InfoBanner', () => {
 
     it('does not render title when not provided', () => {
       const wrapper = createWrapper({
-        icon: 'info',
+        icon: StubIcon,
         content: 'Banner content',
       });
 
@@ -59,7 +61,7 @@ describe('InfoBanner', () => {
 
     it('renders caption when provided', () => {
       const wrapper = createWrapper({
-        icon: 'info',
+        icon: StubIcon,
         content: 'Banner content',
         caption: 'Additional info',
       });
@@ -69,7 +71,7 @@ describe('InfoBanner', () => {
 
     it('does not render caption element when not provided', () => {
       const wrapper = createWrapper({
-        icon: 'info',
+        icon: StubIcon,
         content: 'Banner content',
       });
 
@@ -83,7 +85,7 @@ describe('InfoBanner', () => {
   describe('slots', () => {
     it('renders default slot content', () => {
       const wrapper = createWrapper(
-        { icon: 'info', content: 'Main content' },
+        { icon: StubIcon, content: 'Main content' },
         { default: '<span class="slot-content">Extra content</span>' }
       );
 
@@ -98,11 +100,11 @@ describe('InfoBanner', () => {
   describe('icon', () => {
     it('renders icon element', () => {
       const wrapper = createWrapper({
-        icon: 'sym_o_backpack',
+        icon: StubIcon,
         content: 'Content',
       });
 
-      expect(wrapper.find('.q-icon').exists()).toBe(true);
+      expect(wrapper.find('.stub-icon').exists()).toBe(true);
     });
   });
 });

@@ -11,16 +11,6 @@
     <q-item-section>
       <q-item-label>
         {{ displayName }}
-        <q-btn
-          flat
-          dense
-          round
-          size="sm"
-          icon="edit"
-          :disable="saving"
-          aria-label="Edit equipment"
-          @click="$emit('edit')"
-        />
         <q-badge
           v-if="heroEquipment.isEquipped"
           color="primary"
@@ -41,11 +31,11 @@
             dense
             round
             size="sm"
-            icon="remove"
             :disable="saving || (heroEquipment.charges ?? 0) <= 0"
             aria-label="Decrease charges"
             @click="changeCharges(-1)"
-          />
+            ><Minus :size="20"
+          /></q-btn>
           <span class="q-mx-xs"
             >{{ heroEquipment.charges ?? 0 }}/{{ heroEquipment.maxCharges }} charges</span
           >
@@ -54,11 +44,11 @@
             dense
             round
             size="sm"
-            icon="add"
             :disable="saving || (heroEquipment.charges ?? 0) >= heroEquipment.maxCharges"
             aria-label="Increase charges"
             @click="changeCharges(1)"
-          />
+            ><Plus :size="20"
+          /></q-btn>
         </div>
       </q-item-label>
       <!-- Modifications (read-only display; editing in dialog) -->
@@ -83,23 +73,35 @@
             dense
             round
             size="sm"
-            icon="remove"
             :disable="saving || heroEquipment.amount <= 1"
             aria-label="Decrease amount"
             @click="changeAmount(-1)"
-          />
+            ><Minus :size="20"
+          /></q-btn>
           <span class="text-body2 q-mx-xs">{{ heroEquipment.amount }}</span>
           <q-btn
             flat
             dense
             round
             size="sm"
-            icon="add"
             :disable="saving || heroEquipment.amount >= MAX_EQUIPMENT_STACK"
             aria-label="Increase amount"
             @click="changeAmount(1)"
-          />
+            ><Plus :size="20"
+          /></q-btn>
         </template>
+
+        <!-- Edit -->
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          :disable="saving"
+          aria-label="Edit equipment"
+          @click="$emit('edit')"
+          ><Pencil :size="20"
+        /></q-btn>
 
         <!-- Equip toggle -->
         <q-btn
@@ -107,12 +109,13 @@
           dense
           round
           size="sm"
-          :icon="heroEquipment.isEquipped ? 'sym_o_shield' : 'sym_o_shield_question'"
           :color="heroEquipment.isEquipped ? 'primary' : 'grey'"
           :disable="saving"
           :aria-label="heroEquipment.isEquipped ? 'Unequip' : 'Equip'"
           @click="toggleEquipped"
         >
+          <Shield v-if="heroEquipment.isEquipped" :size="20" />
+          <ShieldQuestion v-else :size="20" />
           <q-tooltip>{{ heroEquipment.isEquipped ? 'Unequip' : 'Equip' }}</q-tooltip>
         </q-btn>
 
@@ -122,12 +125,12 @@
           dense
           round
           size="sm"
-          icon="delete"
           color="negative"
           :disable="saving"
           aria-label="Remove equipment"
           @click="confirmRemove"
-        />
+          ><Trash2 :size="20"
+        /></q-btn>
       </div>
     </q-item-section>
   </q-item>
@@ -139,6 +142,7 @@ import { useQuasar } from 'quasar';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
+import { Pencil, Minus, Plus, Shield, ShieldQuestion, Trash2 } from 'lucide-vue-next';
 import { findById } from 'src/utils/arrayUtils';
 import type { HeroEquipment } from 'src/types';
 import { MAX_EQUIPMENT_STACK, INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';

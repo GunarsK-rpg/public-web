@@ -25,11 +25,11 @@
                 dense
                 flat
                 size="sm"
-                icon="remove"
                 :aria-label="`Decrease ${skill.name} rank`"
                 :disable="getSkillRank(skill.id) <= (skill.minRank ?? 0)"
                 @click="decrementSkill(skill.id, skill.minRank)"
-              />
+                ><Minus :size="20"
+              /></q-btn>
               <div
                 class="text-body1 q-mx-sm value-display"
                 role="status"
@@ -42,11 +42,11 @@
                 dense
                 flat
                 size="sm"
-                icon="add"
                 :aria-label="`Increase ${skill.name} rank`"
                 :disable="getSkillRank(skill.id) >= maxSkillRank || pointsRemaining <= 0"
                 @click="incrementSkill(skill.id)"
-              />
+                ><Plus :size="20"
+              /></q-btn>
               <q-input
                 :model-value="getSkillModifier(skill.id)"
                 :aria-label="`${skill.name} modifier`"
@@ -77,6 +77,7 @@ import { useStepValidation } from 'src/composables/useStepValidation';
 import { groupByKey, buildIdCodeMap, findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import { MIN_SKILL_MODIFIER, MAX_SKILL_MODIFIER } from 'src/constants';
+import { Minus, Plus } from 'lucide-vue-next';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
 const heroStore = useHeroStore();

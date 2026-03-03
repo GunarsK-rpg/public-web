@@ -29,13 +29,10 @@
         mobile-arrows
         outside-arrows
       >
-        <q-tab
-          v-for="tab in tabs"
-          :key="tab.id"
-          :name="tab.id"
-          :icon="tab.icon"
-          :label="tab.label"
-        />
+        <q-tab v-for="tab in tabs" :key="tab.id" :name="tab.id">
+          <component :is="tab.icon" :size="20" class="q-tab__icon" />
+          <div class="q-tab__label">{{ tab.label }}</div>
+        </q-tab>
       </q-tabs>
 
       <q-separator />
@@ -57,6 +54,15 @@ import { useHeroStore } from 'stores/hero';
 import { useClassifierStore } from 'stores/classifiers';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
+import {
+  ChartBarBig,
+  Wrench,
+  Zap,
+  Shield,
+  Sparkles,
+  GraduationCap,
+  Ellipsis,
+} from 'lucide-vue-next';
 import CharacterHeader from 'components/character/CharacterHeader.vue';
 import StatsTab from 'components/character/tabs/StatsTab.vue';
 import SkillsTab from 'components/character/tabs/SkillsTab.vue';
@@ -67,15 +73,15 @@ import ExpertisesTab from 'components/character/tabs/ExpertisesTab.vue';
 import OthersTab from 'components/character/tabs/OthersTab.vue';
 
 // Static tab configuration - hoisted outside reactive scope for performance
-const tabs = [
-  { id: 'stats', label: 'Stats', icon: 'bar_chart' },
-  { id: 'skills', label: 'Skills', icon: 'psychology' },
-  { id: 'actions', label: 'Actions', icon: 'bolt' },
-  { id: 'equipment', label: 'Equipment', icon: 'shield' },
-  { id: 'talents', label: 'Talents', icon: 'auto_awesome' },
-  { id: 'expertises', label: 'Expertises', icon: 'school' },
-  { id: 'others', label: 'Others', icon: 'more_horiz' },
-] as const;
+const tabs: { id: string; label: string; icon: Component }[] = [
+  { id: 'stats', label: 'Stats', icon: ChartBarBig },
+  { id: 'skills', label: 'Skills', icon: Wrench },
+  { id: 'actions', label: 'Actions', icon: Zap },
+  { id: 'equipment', label: 'Equipment', icon: Shield },
+  { id: 'talents', label: 'Talents', icon: Sparkles },
+  { id: 'expertises', label: 'Expertises', icon: GraduationCap },
+  { id: 'others', label: 'Others', icon: Ellipsis },
+];
 
 // Map tab IDs to their components for dynamic rendering
 const tabComponents: Record<string, Component> = {

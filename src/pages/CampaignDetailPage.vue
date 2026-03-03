@@ -11,7 +11,7 @@
       </q-banner>
 
       <div v-else-if="!campaign" class="text-center q-pa-xl">
-        <q-icon name="sym_o_folder_off" size="64px" color="grey-5" aria-hidden="true" />
+        <FolderX :size="64" class="text-grey-5" aria-hidden="true" />
         <div class="text-h6 text-grey-7 q-mt-md">Campaign not found</div>
         <div class="text-body2 text-grey-6 q-mb-md">
           This campaign doesn't exist or you don't have access to it.
@@ -27,24 +27,24 @@
               flat
               dense
               round
-              icon="sym_o_edit"
               size="sm"
               class="q-ml-sm"
               :disable="saving"
               aria-label="Edit campaign"
               @click="editCampaign"
-            />
+              ><Pencil :size="20"
+            /></q-btn>
             <q-btn
               flat
               dense
               round
-              icon="sym_o_delete"
               size="sm"
               color="negative"
               :disable="saving"
               aria-label="Delete campaign"
               @click="confirmDeleteCampaign"
-            />
+              ><Trash2 :size="20"
+            /></q-btn>
           </template>
         </div>
         <div v-if="campaign.description" class="text-body2 text-grey q-mb-sm">
@@ -67,11 +67,11 @@
                 flat
                 dense
                 round
-                icon="sym_o_content_copy"
                 size="xs"
                 aria-label="Copy invite link"
                 @click="copyInviteLink"
               >
+                <Copy :size="20" />
                 <q-tooltip>Copy invite link</q-tooltip>
               </q-btn>
             </template>
@@ -81,16 +81,13 @@
         <div class="row items-center q-mb-md">
           <div class="text-h6">Characters</div>
           <q-space />
-          <q-btn
-            color="primary"
-            icon="sym_o_person_add"
-            label="Add Character"
-            @click="goToJoinPage"
-          />
+          <q-btn color="primary" @click="goToJoinPage"
+            ><UserPlus :size="20" class="on-left" />Add Character</q-btn
+          >
         </div>
 
         <div v-if="campaign.heroes.length === 0" class="text-center q-pa-xl">
-          <q-icon name="person_off" size="64px" color="grey-5" aria-hidden="true" />
+          <UserX :size="64" class="text-grey-5" aria-hidden="true" />
           <div class="text-h6 text-grey-7 q-mt-md">No characters</div>
           <div class="text-body2 text-grey-6">No characters in this campaign yet.</div>
         </div>
@@ -127,6 +124,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { FolderX, Pencil, Trash2, Copy, UserPlus, UserX } from 'lucide-vue-next';
 import { useQuasar, copyToClipboard } from 'quasar';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'src/stores/campaigns';

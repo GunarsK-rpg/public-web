@@ -9,14 +9,9 @@
       <q-card-section class="row items-center">
         <div id="singer-form-selection-dialog-title" class="text-h6">Select Singer Form</div>
         <q-space />
-        <q-btn
-          icon="close"
-          flat
-          round
-          dense
-          aria-label="Close dialog"
-          @click="$emit('update:modelValue', false)"
-        />
+        <q-btn flat round dense aria-label="Close dialog" @click="$emit('update:modelValue', false)"
+          ><X :size="20"
+        /></q-btn>
       </q-card-section>
       <q-separator />
       <q-card-section>
@@ -34,7 +29,7 @@
               <q-item-label v-if="form.sprenType" caption>{{ form.sprenType }}</q-item-label>
             </q-item-section>
             <q-item-section side>
-              <q-icon v-if="selectedFormId === form.id" name="check" color="positive" size="sm" />
+              <Check v-if="selectedFormId === form.id" :size="18" class="text-positive" />
               <q-btn
                 v-else
                 flat
@@ -53,6 +48,7 @@
 </template>
 
 <script setup lang="ts">
+import { Check, X } from 'lucide-vue-next';
 import type { SingerForm } from 'src/types';
 
 defineProps<{

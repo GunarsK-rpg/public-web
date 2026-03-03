@@ -349,9 +349,8 @@ $touch-target-min: 44px;
 // Icon Utilities
 // =============================================================================
 
-// Theme-aware icons - inverts dark icons in dark mode
-// NOTE: Use only for monochrome/grayscale icons. Colored icons will have
-// their colors inverted which produces unexpected results.
+// Theme-aware icons - inverts monochrome icons in dark mode.
+// Used for custom game icons (actions/equipment) rendered as <img> tags.
 .icon-theme-aware {
   .body--dark & {
     filter: invert(1);

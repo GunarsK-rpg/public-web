@@ -1,13 +1,15 @@
 <template>
   <div class="others-tab">
     <!-- Ancestry & Culture Section -->
-    <q-expansion-item
-      icon="public"
-      label="Ancestry & Culture"
-      aria-label="Ancestry and Culture section"
-      default-opened
-      class="q-mb-sm"
-    >
+    <q-expansion-item aria-label="Ancestry and Culture section" default-opened class="q-mb-sm">
+      <template #header>
+        <q-item-section avatar>
+          <Globe />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>Ancestry & Culture</q-item-label>
+        </q-item-section>
+      </template>
       <q-card>
         <q-card-section>
           <!-- Ancestry -->
@@ -47,7 +49,15 @@
     </q-expansion-item>
 
     <!-- Goals Section -->
-    <q-expansion-item icon="flag" label="Goals" aria-label="Goals section" class="q-mb-sm">
+    <q-expansion-item aria-label="Goals section" class="q-mb-sm">
+      <template #header>
+        <q-item-section avatar>
+          <Flag />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>Goals</q-item-label>
+        </q-item-section>
+      </template>
       <q-card>
         <q-card-section>
           <div v-if="heroStore.goals.length === 0" class="text-empty">No goals set</div>
@@ -69,12 +79,15 @@
     </q-expansion-item>
 
     <!-- Connections Section -->
-    <q-expansion-item
-      icon="people"
-      label="Connections"
-      aria-label="Connections section"
-      class="q-mb-sm"
-    >
+    <q-expansion-item aria-label="Connections section" class="q-mb-sm">
+      <template #header>
+        <q-item-section avatar>
+          <Users />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>Connections</q-item-label>
+        </q-item-section>
+      </template>
       <q-card>
         <q-card-section>
           <div v-if="heroStore.connections.length === 0" class="text-empty">No connections</div>
@@ -96,12 +109,15 @@
     </q-expansion-item>
 
     <!-- Companions Section -->
-    <q-expansion-item
-      icon="pets"
-      label="Companions"
-      aria-label="Companions section"
-      class="q-mb-sm"
-    >
+    <q-expansion-item aria-label="Companions section" class="q-mb-sm">
+      <template #header>
+        <q-item-section avatar>
+          <PawPrint />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>Companions</q-item-label>
+        </q-item-section>
+      </template>
       <q-card>
         <q-card-section>
           <div v-if="heroStore.companions.length === 0" class="text-empty">No companions</div>
@@ -123,12 +139,15 @@
     </q-expansion-item>
 
     <!-- Biography Section -->
-    <q-expansion-item
-      icon="person"
-      label="Biography"
-      aria-label="Biography section"
-      class="q-mb-sm"
-    >
+    <q-expansion-item aria-label="Biography section" class="q-mb-sm">
+      <template #header>
+        <q-item-section avatar>
+          <User />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>Biography</q-item-label>
+        </q-item-section>
+      </template>
       <q-card>
         <q-card-section>
           <div class="text-subtitle2 q-mb-sm">Appearance</div>
@@ -150,12 +169,15 @@
     </q-expansion-item>
 
     <!-- Conditions Section -->
-    <q-expansion-item
-      icon="warning"
-      label="Conditions & Injuries"
-      aria-label="Conditions and Injuries section"
-      class="q-mb-sm"
-    >
+    <q-expansion-item aria-label="Conditions and Injuries section" class="q-mb-sm">
+      <template #header>
+        <q-item-section avatar>
+          <TriangleAlert />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>Conditions & Injuries</q-item-label>
+        </q-item-section>
+      </template>
       <q-card>
         <q-card-section>
           <div class="text-subtitle2 q-mb-sm">Active Conditions</div>
@@ -191,6 +213,7 @@ import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
+import { Globe, Flag, Users, PawPrint, User, TriangleAlert } from 'lucide-vue-next';
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();

@@ -147,8 +147,8 @@ describe('PersonalDetailsStep', () => {
               :disabled="disable"
               :aria-label="ariaLabel"
               @click="$emit('click')"
-            >{{ label }}</button>`,
-            props: ['flat', 'round', 'icon', 'color', 'size', 'ariaLabel', 'disable', 'label'],
+            ><slot /></button>`,
+            props: ['flat', 'round', 'color', 'size', 'ariaLabel', 'disable'],
             emits: ['click'],
           },
           QBadge: {

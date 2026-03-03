@@ -24,8 +24,8 @@ describe('ErrorServer', () => {
             template: '<span class="q-icon" />',
           },
           QBtn: {
-            template: '<button class="q-btn" @click="$emit(\'click\')">{{ label }}</button>',
-            props: ['color', 'unelevated', 'outline', 'to', 'icon', 'label', 'noCaps'],
+            template: '<button class="q-btn" @click="$emit(\'click\')"><slot /></button>',
+            props: ['color', 'unelevated', 'outline', 'to', 'noCaps'],
             emits: ['click'],
           },
         },

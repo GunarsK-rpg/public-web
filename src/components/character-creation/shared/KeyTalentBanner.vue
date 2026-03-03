@@ -1,7 +1,7 @@
 <template>
   <q-banner class="banner-key-talent" dense rounded>
     <template v-slot:avatar>
-      <q-icon name="sym_o_stars" aria-hidden="true" />
+      <Sparkles aria-hidden="true" />
     </template>
     <strong>{{ label }}:</strong> {{ talent?.name }}
     <div class="text-caption">
@@ -11,6 +11,7 @@
 </template>
 
 <script setup lang="ts">
+import { Sparkles } from 'lucide-vue-next';
 import type { Talent } from 'src/types';
 
 withDefaults(

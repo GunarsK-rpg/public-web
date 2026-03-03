@@ -10,7 +10,7 @@
     <q-item-section>
       <q-item-label :class="{ [`text-${COLORS.muted}`]: !available }">
         {{ talent.name }}
-        <q-icon v-if="!available" name="lock" size="xs" class="q-ml-xs" aria-hidden="true" />
+        <Lock v-if="!available" :size="14" class="q-ml-xs" aria-hidden="true" />
       </q-item-label>
       <q-item-label caption>{{ talent.descriptionShort || talent.description }}</q-item-label>
       <q-item-label v-if="unmetPrereqs.length > 0" caption :class="`text-${COLORS.error}`">
@@ -19,13 +19,8 @@
       </q-item-label>
     </q-item-section>
     <q-item-section side>
-      <q-btn
-        flat
-        dense
-        icon="info"
-        aria-label="View talent details"
-        @click.stop="$emit('showDetails', talent)"
-      >
+      <q-btn flat dense aria-label="View talent details" @click.stop="$emit('showDetails', talent)">
+        <Info :size="20" />
         <q-tooltip>View details</q-tooltip>
       </q-btn>
     </q-item-section>
@@ -35,6 +30,7 @@
 <script setup lang="ts">
 import { COLORS } from 'src/constants/theme';
 import { formatPrerequisite } from 'src/utils/talentUtils';
+import { Info, Lock } from 'lucide-vue-next';
 import type { Talent, TalentPrerequisite } from 'src/types';
 
 defineProps<{

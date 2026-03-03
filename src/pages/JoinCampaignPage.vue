@@ -11,7 +11,7 @@
       </q-banner>
 
       <div v-else-if="!campaign" class="text-center q-pa-xl">
-        <q-icon name="sym_o_folder_off" size="64px" color="grey-5" aria-hidden="true" />
+        <FolderX :size="64" class="text-grey-5" aria-hidden="true" />
         <div class="text-h6 text-grey-7 q-mt-md">Campaign not found</div>
         <div class="text-body2 text-grey-6 q-mb-md">
           This invite link is invalid or the campaign no longer exists.
@@ -35,12 +35,9 @@
           </q-card-section>
 
           <q-card-actions>
-            <q-btn
-              color="primary"
-              icon="sym_o_add"
-              label="Create Character"
-              @click="createCharacter"
-            />
+            <q-btn color="primary" @click="createCharacter"
+              ><Plus :size="20" class="on-left" />Create Character</q-btn
+            >
           </q-card-actions>
         </q-card>
 
@@ -81,6 +78,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { FolderX, Plus } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import axios from 'axios';

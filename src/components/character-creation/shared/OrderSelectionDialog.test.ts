@@ -123,7 +123,7 @@ describe('OrderSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedOrderId: 10 });
     const items = wrapper.findAll('.q-item');
     const windrunnerItem = items[0]!;
-    expect(windrunnerItem.text()).toContain('check');
+    expect(windrunnerItem.find('svg').exists()).toBe(true);
     expect(windrunnerItem.text()).not.toContain('Select');
   });
 

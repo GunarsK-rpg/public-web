@@ -5,7 +5,7 @@
     <!-- Validation Summary -->
     <q-banner v-if="!isValid" class="banner-error q-mb-md" role="alert" aria-live="polite">
       <template v-slot:avatar>
-        <q-icon name="sym_o_error" aria-hidden="true" />
+        <CircleAlert :size="24" aria-hidden="true" />
       </template>
       <div class="text-subtitle2">Validation Errors</div>
       <ul class="q-pl-md q-my-xs">
@@ -15,7 +15,7 @@
 
     <q-banner v-else class="banner-success q-mb-md" role="status" aria-live="polite">
       <template v-slot:avatar>
-        <q-icon name="sym_o_check_circle" aria-hidden="true" />
+        <CircleCheck :size="24" aria-hidden="true" />
       </template>
       Character is ready to create!
     </q-banner>
@@ -27,7 +27,7 @@
       aria-live="polite"
     >
       <template v-slot:avatar>
-        <q-icon name="sym_o_warning" aria-hidden="true" />
+        <TriangleAlert :size="24" aria-hidden="true" />
       </template>
       <div class="text-subtitle2">Warnings</div>
       <ul class="q-pl-md q-my-xs">
@@ -196,6 +196,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { findById } from 'src/utils/arrayUtils';
+import { CircleAlert, CircleCheck, TriangleAlert } from 'lucide-vue-next';
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();

@@ -9,14 +9,9 @@
       <q-card-section class="row items-center">
         <div id="path-selection-dialog-title" class="text-h6">Add Heroic Path</div>
         <q-space />
-        <q-btn
-          icon="close"
-          flat
-          round
-          dense
-          aria-label="Close dialog"
-          @click="$emit('update:modelValue', false)"
-        />
+        <q-btn flat round dense aria-label="Close dialog" @click="$emit('update:modelValue', false)"
+          ><X :size="20"
+        /></q-btn>
       </q-card-section>
       <q-separator />
       <q-card-section>
@@ -34,7 +29,7 @@
               <q-item-label caption>{{ path.description }}</q-item-label>
             </q-item-section>
             <q-item-section side>
-              <q-icon v-if="isSelected(path.id)" name="check" color="positive" size="sm" />
+              <Check v-if="isSelected(path.id)" :size="18" class="text-positive" />
               <q-btn
                 v-else
                 flat
@@ -54,6 +49,7 @@
 
 <script setup lang="ts">
 import { useClassifierStore } from 'src/stores/classifiers';
+import { Check, X } from 'lucide-vue-next';
 
 const props = defineProps<{
   modelValue: boolean;
