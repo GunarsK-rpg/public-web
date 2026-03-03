@@ -65,9 +65,18 @@ export function buildSkillPayload(heroId: number, skill: HeroSkill): HeroSkillBa
 }
 
 export function buildExpertisePayload(heroId: number, exp: HeroExpertise): HeroExpertiseBase {
+  if (exp.expertise) {
+    return {
+      heroId,
+      expertise: toClassifierInput(exp.expertise),
+      notes: exp.notes ?? null,
+      source: exp.source ?? null,
+    };
+  }
   return {
     heroId,
-    expertise: toClassifierInput(exp.expertise),
+    expertiseType: toClassifierInput(exp.expertiseType),
+    customName: exp.customName ?? null,
     notes: exp.notes ?? null,
     source: exp.source ?? null,
   };

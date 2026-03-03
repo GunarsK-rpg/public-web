@@ -268,8 +268,10 @@ const skillDisplay = computed(() =>
 // Expertises
 const expertiseDisplay = computed(() =>
   heroStore.expertises.map((e) => ({
-    id: e.expertise.id,
-    name: findById(classifiers.expertises, e.expertise.id)?.name || 'Unknown',
+    id: e.expertise?.id ?? e.id,
+    name: e.expertise
+      ? findById(classifiers.expertises, e.expertise.id)?.name || 'Unknown'
+      : e.customName || 'Custom',
   }))
 );
 

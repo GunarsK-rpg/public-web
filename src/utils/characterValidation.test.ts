@@ -52,6 +52,7 @@ const createExpertise = (overrides: Partial<HeroExpertise> = {}): HeroExpertise 
   id: 1,
   heroId: 1,
   expertise: { id: 1, code: 'test', name: 'Test' },
+  expertiseType: { id: 1, code: 'general', name: 'General' },
   ...overrides,
 });
 

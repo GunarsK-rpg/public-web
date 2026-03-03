@@ -72,7 +72,82 @@
           <q-badge v-if="isSpecialist(expertise.id)" color="warning">Restricted</q-badge>
         </q-item-section>
       </q-item>
+
+      <!-- Custom expertises matching current tab -->
+      <q-item v-for="ce in filteredCustomExpertises" :key="`custom-${ce.id}`" class="item-selected">
+        <q-item-section avatar>
+          <q-checkbox :model-value="true" disable :aria-label="`${ce.customName} (custom)`" />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>{{ ce.customName }} *</q-item-label>
+          <q-item-label caption>Custom</q-item-label>
+        </q-item-section>
+        <q-item-section side>
+          <q-btn
+            flat
+            dense
+            icon="close"
+            size="sm"
+            aria-label="Remove custom expertise"
+            @click="removeCustom(ce.id)"
+          />
+        </q-item-section>
+      </q-item>
     </q-list>
+
+    <!-- Add Custom button -->
+    <div class="q-pa-sm q-mt-xs">
+      <q-btn
+        flat
+        dense
+        icon="add"
+        label="Add Custom"
+        color="primary"
+        size="sm"
+        :disable="slotsRemaining <= 0"
+        aria-label="Add custom expertise"
+        @click="openCustomDialog"
+      />
+    </div>
+
+    <!-- Add Custom Expertise Dialog -->
+    <q-dialog
+      v-model="showCustomDialog"
+      aria-modal="true"
+      aria-labelledby="custom-exp-dialog-title"
+    >
+      <q-card class="custom-expertise-card" role="dialog">
+        <q-card-section class="row items-center">
+          <div id="custom-exp-dialog-title" class="text-h6">Add Custom Expertise</div>
+          <q-space />
+          <q-btn icon="close" flat round dense aria-label="Close dialog" v-close-popup />
+        </q-card-section>
+        <q-separator />
+        <q-card-section>
+          <q-select
+            v-model="customTypeId"
+            :options="expertiseTypeOptions"
+            label="Type"
+            emit-value
+            map-options
+            behavior="menu"
+            aria-label="Expertise type"
+          />
+          <q-input
+            v-model="customNameInput"
+            label="Name"
+            :maxlength="100"
+            class="q-mt-md"
+            aria-label="Custom name"
+          />
+        </q-card-section>
+        <q-separator />
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" v-close-popup />
+          <q-btn flat label="Add" color="primary" :disable="!canAddCustom" @click="addCustom" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -94,6 +169,9 @@ const { budget } = useStepValidation();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
 const selectedCategory = ref('all');
+const showCustomDialog = ref(false);
+const customTypeId = ref<number | null>(null);
+const customNameInput = ref('');
 
 const intellectScore = computed(() => attrStore.getAttributeValue('int'));
 const expertisesBudget = computed(() => budget('expertises'));
@@ -150,6 +228,28 @@ const filteredExpertises = computed(() => {
   return classifiers.expertises.filter((e) => e.expertiseType?.id === typeId);
 });
 
+// Custom expertises filtered by current tab
+const filteredCustomExpertises = computed(() => {
+  const customs = heroExpertises.value.filter((e) => !e.expertise);
+  if (selectedCategory.value === 'all') return customs;
+  const typeId = getExpertiseTypeId(selectedCategory.value);
+  if (!typeId) return [];
+  return customs.filter((e) => e.expertiseType?.id === typeId);
+});
+
+const expertiseTypeOptions = computed(() =>
+  classifiers.expertiseTypes.map((t) => ({ label: t.name, value: t.id }))
+);
+
+const canAddCustom = computed(() => {
+  if (!customTypeId.value || !customNameInput.value.trim()) return false;
+  if (slotsRemaining.value <= 0) return false;
+  const name = customNameInput.value.trim();
+  return !heroExpertises.value.some(
+    (e) => !e.expertise && e.expertiseType?.id === customTypeId.value && e.customName === name
+  );
+});
+
 function isSelected(expertiseId: number): boolean {
   return selectedSet.value.has(expertiseId);
 }
@@ -172,7 +272,7 @@ function toggleExpertise(expertiseId: number, checked: boolean) {
     }
   } else if (!isReadOnly(expertiseId)) {
     // Track deletion before removing from local state
-    const heroExp = heroStore.hero?.expertises.find((e) => e.expertise.id === expertiseId);
+    const heroExp = heroStore.hero?.expertises.find((e) => e.expertise?.id === expertiseId);
     if (heroExp) {
       deletionTracker?.trackDeletion('expertises', heroExp.id);
     }
@@ -186,4 +286,31 @@ function isSpecialist(expertiseId: number): boolean {
   const expertise = findById(classifiers.expertises, expertiseId);
   return expertise?.expertiseType?.id === specialistTypeId.value;
 }
+
+function openCustomDialog() {
+  customTypeId.value = getExpertiseTypeId(selectedCategory.value) ?? null;
+  customNameInput.value = '';
+  showCustomDialog.value = true;
+}
+
+function addCustom() {
+  if (!canAddCustom.value || !customTypeId.value) return;
+  attrStore.addCustomExpertise(customTypeId.value, customNameInput.value.trim(), {
+    sourceType: 'intellect',
+  });
+  customNameInput.value = '';
+  showCustomDialog.value = false;
+}
+
+function removeCustom(id: number) {
+  deletionTracker?.trackDeletion('expertises', id);
+  attrStore.removeCustomExpertise(id);
+}
 </script>
+
+<style scoped>
+.custom-expertise-card {
+  min-width: min(350px, 90vw);
+  max-width: 450px;
+}
+</style>

@@ -244,13 +244,14 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
 
   function addExpertise(expertiseId: number, source?: ExpertiseSourceData) {
     if (!heroStore.hero) return;
-    if (!heroStore.hero.expertises.find((e) => e.expertise.id === expertiseId)) {
+    if (!heroStore.hero.expertises.find((e) => e.expertise?.id === expertiseId)) {
       const exp = findById(classifierStore.expertises, expertiseId);
       if (!exp) return;
       heroStore.hero.expertises.push({
         id: heroStore.nextTempId(),
         heroId: heroStore.hero.id,
         expertise: toClassifierRef(exp),
+        expertiseType: toClassifierRef(exp.expertiseType),
         ...(source && { source }),
       });
     }
@@ -259,8 +260,35 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   function removeExpertise(expertiseId: number) {
     if (!heroStore.hero) return;
     heroStore.hero.expertises = heroStore.hero.expertises.filter(
-      (e) => e.expertise.id !== expertiseId
+      (e) => e.expertise?.id !== expertiseId
     );
+  }
+
+  function addCustomExpertise(
+    expertiseTypeId: number,
+    customName: string,
+    source?: ExpertiseSourceData
+  ) {
+    if (!heroStore.hero) return;
+    const isDuplicate = heroStore.hero.expertises.some(
+      (e) => !e.expertise && e.expertiseType?.id === expertiseTypeId && e.customName === customName
+    );
+    if (isDuplicate) return;
+    const expType = findById(classifierStore.expertiseTypes, expertiseTypeId);
+    if (!expType) return;
+    heroStore.hero.expertises.push({
+      id: heroStore.nextTempId(),
+      heroId: heroStore.hero.id,
+      expertise: null,
+      expertiseType: toClassifierRef(expType),
+      customName,
+      ...(source && { source }),
+    });
+  }
+
+  function removeCustomExpertise(id: number) {
+    if (!heroStore.hero) return;
+    heroStore.hero.expertises = heroStore.hero.expertises.filter((e) => e.id !== id);
   }
 
   function removeExpertiseBySource(sourceType: string, sourceId: number) {
@@ -298,5 +326,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     addExpertise,
     removeExpertise,
     removeExpertiseBySource,
+    addCustomExpertise,
+    removeCustomExpertise,
   };
 });

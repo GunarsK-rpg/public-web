@@ -6,21 +6,17 @@ import ExpertisesStep from './ExpertisesStep.vue';
 // Mock stores
 const mockAddExpertise = vi.fn();
 const mockRemoveExpertise = vi.fn();
+const mockAddCustomExpertise = vi.fn();
+const mockRemoveCustomExpertise = vi.fn();
 const mockGetAttributeValue = vi.fn().mockReturnValue(3);
 
 // Reactive mock data
 const mockExpertises = {
-  value: [
-    {
-      expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' },
-      source: { sourceType: 'intellect' },
-    },
-    {
-      expertise: { id: 2, code: 'vorin', name: 'Vorin Customs' },
-      source: { sourceType: 'culture' },
-    },
-  ] as Array<{
-    expertise: { id: number; code: string; name: string };
+  value: [] as Array<{
+    id?: number;
+    expertise: { id: number; code: string; name: string } | null;
+    expertiseType?: { id: number; code: string; name: string };
+    customName?: string | null;
     source: { sourceType: string } | null;
   }>,
 };
@@ -43,6 +39,8 @@ vi.mock('src/stores/heroAttributes', () => ({
     getAttributeValue: mockGetAttributeValue,
     addExpertise: mockAddExpertise,
     removeExpertise: mockRemoveExpertise,
+    addCustomExpertise: mockAddCustomExpertise,
+    removeCustomExpertise: mockRemoveCustomExpertise,
   }),
 }));
 
@@ -149,6 +147,48 @@ describe('ExpertisesStep', () => {
             template: '<span class="q-badge"><slot /></span>',
             props: ['color'],
           },
+          QSeparator: { template: '<hr class="q-separator" />' },
+          QDialog: { template: '<div class="q-dialog"><slot /></div>', props: ['modelValue'] },
+          QCard: { template: '<div class="q-card"><slot /></div>' },
+          QCardSection: { template: '<div class="q-card-section"><slot /></div>' },
+          QCardActions: { template: '<div class="q-card-actions"><slot /></div>' },
+          QSpace: { template: '<span />' },
+          QSelect: {
+            template:
+              '<select class="q-select" @change="$emit(\'update:modelValue\', Number($event.target.value))"><option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option></select>',
+            props: [
+              'modelValue',
+              'options',
+              'label',
+              'outlined',
+              'dense',
+              'emitValue',
+              'mapOptions',
+            ],
+            emits: ['update:modelValue'],
+          },
+          QInput: {
+            template:
+              '<input class="q-input" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+            props: ['modelValue', 'label', 'outlined', 'dense', 'maxlength'],
+            emits: ['update:modelValue'],
+          },
+          QBtn: {
+            template:
+              '<button class="q-btn" :disabled="disable" @click="$emit(\'click\')"><slot />{{ label }}</button>',
+            props: [
+              'label',
+              'color',
+              'outline',
+              'dense',
+              'disable',
+              'flat',
+              'icon',
+              'size',
+              'round',
+            ],
+            emits: ['click'],
+          },
         },
         provide: {
           deletionTracker: {
@@ -167,10 +207,12 @@ describe('ExpertisesStep', () => {
     mockExpertises.value = [
       {
         expertise: { id: 1, code: 'lockpicking', name: 'Lockpicking' },
+        expertiseType: { id: 1, code: 'general', name: 'General' },
         source: { sourceType: 'intellect' },
       },
       {
         expertise: { id: 2, code: 'vorin', name: 'Vorin Customs' },
+        expertiseType: { id: 2, code: 'cultural', name: 'Cultural' },
         source: { sourceType: 'culture' },
       },
     ];
@@ -567,6 +609,112 @@ describe('ExpertisesStep', () => {
 
       // Just verify the component renders without crashing
       expect(wrapper.exists()).toBe(true);
+    });
+  });
+
+  // ========================================
+  // Custom Expertises
+  // ========================================
+  describe('custom expertises', () => {
+    it('renders add custom button below the list', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Add Custom');
+    });
+
+    it('renders custom expertises inline with asterisk', () => {
+      mockExpertises.value = [
+        {
+          id: 100,
+          expertise: null,
+          expertiseType: { id: 1, code: 'general', name: 'General' },
+          customName: 'Glassblowing',
+          source: { sourceType: 'intellect' },
+        },
+      ];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Glassblowing *');
+      expect(wrapper.text()).toContain('Custom');
+    });
+
+    it('renders remove button for custom expertises', () => {
+      mockExpertises.value = [
+        {
+          id: 100,
+          expertise: null,
+          expertiseType: { id: 1, code: 'general', name: 'General' },
+          customName: 'Glassblowing',
+          source: { sourceType: 'intellect' },
+        },
+      ];
+      const wrapper = createWrapper();
+
+      const removeBtn = wrapper.find('[aria-label="Remove custom expertise"]');
+      expect(removeBtn.exists()).toBe(true);
+    });
+
+    it('calls removeCustomExpertise when remove button clicked', async () => {
+      mockExpertises.value = [
+        {
+          id: 100,
+          expertise: null,
+          expertiseType: { id: 1, code: 'general', name: 'General' },
+          customName: 'Glassblowing',
+          source: { sourceType: 'intellect' },
+        },
+      ];
+      const wrapper = createWrapper();
+
+      await wrapper.find('[aria-label="Remove custom expertise"]').trigger('click');
+
+      expect(mockRemoveCustomExpertise).toHaveBeenCalledWith(100);
+    });
+
+    it('renders add custom button', () => {
+      const wrapper = createWrapper();
+
+      const addBtn = wrapper.find('[aria-label="Add custom expertise"]');
+      expect(addBtn.exists()).toBe(true);
+      expect(addBtn.text()).toContain('Add Custom');
+    });
+
+    it('disables add custom button when no slots remaining', () => {
+      mockSlotsRemaining.value = 0;
+      const wrapper = createWrapper();
+
+      const addBtn = wrapper.find('[aria-label="Add custom expertise"]');
+      expect(addBtn.attributes('disabled')).toBeDefined();
+    });
+
+    it('custom expertises count against budget (included in expertises array)', () => {
+      // Custom expertises are in heroStore.expertises, so they count against the budget
+      mockExpertises.value = [
+        {
+          id: 100,
+          expertise: null,
+          expertiseType: { id: 1, code: 'general', name: 'General' },
+          customName: 'Glassblowing',
+          source: { sourceType: 'intellect' },
+        },
+      ];
+      const wrapper = createWrapper();
+
+      // Custom expertise renders inline as selected
+      expect(wrapper.text()).toContain('Glassblowing *');
+      // No classifier expertises are selected — only the custom one shows as selected
+      const items = wrapper.findAll('.q-item');
+      const selectedItems = items.filter((item) => item.classes().includes('item-selected'));
+      expect(selectedItems.length).toBe(1);
+    });
+
+    it('renders dialog with type select and name input on All tab', () => {
+      const wrapper = createWrapper();
+
+      const dialog = wrapper.find('.q-dialog');
+      expect(dialog.exists()).toBe(true);
+      expect(dialog.find('.q-select').exists()).toBe(true);
+      expect(dialog.find('.q-input').exists()).toBe(true);
     });
   });
 });

@@ -19,13 +19,19 @@ export interface Expertise extends Classifier {
 export interface HeroExpertiseBase {
   id?: number;
   heroId: number;
-  expertise: ClassifierInput;
+  expertise?: ClassifierInput | null;
+  expertiseType?: ClassifierInput | null;
+  customName?: string | null;
   notes?: string | null;
   source?: ExpertiseSourceData | null;
 }
 
 /** Hero expertise - API response */
-export interface HeroExpertise extends HeroExpertiseBase {
+export interface HeroExpertise extends Omit<
+  HeroExpertiseBase,
+  'id' | 'expertise' | 'expertiseType'
+> {
   id: number;
-  expertise: ClassifierRef;
+  expertise: ClassifierRef | null;
+  expertiseType: ClassifierRef;
 }
