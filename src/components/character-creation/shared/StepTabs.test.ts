@@ -5,8 +5,6 @@ import { defineComponent, ref } from 'vue';
 import StepTabs from './StepTabs.vue';
 
 // Mock the wizard store
-const mockGoToStep = vi.fn();
-const mockMarkStepCompleted = vi.fn();
 const mockIsStepCompleted = vi.fn();
 const mockCurrentStep = ref(1);
 const mockMode = ref('create');
@@ -19,8 +17,6 @@ vi.mock('src/stores/wizard', () => ({
     get mode() {
       return mockMode.value;
     },
-    goToStep: mockGoToStep,
-    markStepCompleted: mockMarkStepCompleted,
     isStepCompleted: mockIsStepCompleted,
   }),
 }));
@@ -237,18 +233,17 @@ describe('StepTabs', () => {
   // Click Navigation
   // ========================================
   describe('click navigation', () => {
-    it('navigates to clicked step via q-tabs update event', () => {
-      // Navigate backward from step 3 to step 1 (always allowed in create mode)
+    it('emits navigate when clicking a backward step', () => {
       mockCurrentStep.value = 3;
       const wrapper = createWrapper();
 
       const qTabs = wrapper.findComponent(QTabsStub);
       qTabs.vm.$emit('update:modelValue', 1);
 
-      expect(mockGoToStep).toHaveBeenCalledWith(1);
+      expect(wrapper.emitted('navigate')).toEqual([[1]]);
     });
 
-    it('marks current step completed when navigating forward', () => {
+    it('emits navigate when clicking a forward completed step', () => {
       mockCurrentStep.value = 1;
       mockIsStepCompleted.mockReturnValue(true);
       const wrapper = createWrapper();
@@ -256,29 +251,19 @@ describe('StepTabs', () => {
       const qTabs = wrapper.findComponent(QTabsStub);
       qTabs.vm.$emit('update:modelValue', 3);
 
-      expect(mockMarkStepCompleted).toHaveBeenCalledWith(1);
+      expect(wrapper.emitted('navigate')).toEqual([[3]]);
     });
 
-    it('does not mark step completed when navigating backward', () => {
-      mockCurrentStep.value = 3;
+    it('does not emit navigate when clicking current step', () => {
       const wrapper = createWrapper();
 
       const qTabs = wrapper.findComponent(QTabsStub);
       qTabs.vm.$emit('update:modelValue', 1);
 
-      expect(mockMarkStepCompleted).not.toHaveBeenCalled();
+      expect(wrapper.emitted('navigate')).toBeUndefined();
     });
 
-    it('does not mark step completed when selecting current step', () => {
-      const wrapper = createWrapper();
-
-      const qTabs = wrapper.findComponent(QTabsStub);
-      qTabs.vm.$emit('update:modelValue', 1);
-
-      expect(mockMarkStepCompleted).not.toHaveBeenCalled();
-    });
-
-    it('blocks forward jump to uncompleted step in create mode', () => {
+    it('does not emit navigate for blocked forward step in create mode', () => {
       mockCurrentStep.value = 1;
       mockIsStepCompleted.mockReturnValue(false);
       const wrapper = createWrapper();
@@ -286,8 +271,7 @@ describe('StepTabs', () => {
       const qTabs = wrapper.findComponent(QTabsStub);
       qTabs.vm.$emit('update:modelValue', 3);
 
-      expect(mockGoToStep).not.toHaveBeenCalled();
-      expect(mockMarkStepCompleted).not.toHaveBeenCalled();
+      expect(wrapper.emitted('navigate')).toBeUndefined();
     });
   });
 });

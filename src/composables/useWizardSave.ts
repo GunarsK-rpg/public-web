@@ -33,7 +33,7 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
   const saving = ref(false);
   const saveError = ref<string | null>(null);
 
-  async function saveAndAdvance(): Promise<boolean> {
+  async function saveCurrentStep(): Promise<boolean> {
     const stepCode = currentStepCode.value;
 
     // Validate current step
@@ -59,7 +59,6 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
 
     try {
       await saveStep(stepCode, hero);
-      wizardStore.nextStep();
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Save failed';
@@ -264,6 +263,6 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
   return {
     saving,
     saveError,
-    saveAndAdvance,
+    saveCurrentStep,
   };
 }
