@@ -6,89 +6,77 @@
       Select one that fits your character concept.
     </p>
 
-    <div class="row q-col-gutter-md" role="radiogroup" aria-label="Select starting kit">
-      <div v-for="kit in startingKits" :key="kit.id" class="col-12 col-sm-6 col-md-4">
-        <q-card
-          role="radio"
-          tabindex="0"
-          :aria-checked="selectedKitId === kit.id"
-          class="kit-card card-interactive cursor-pointer"
-          :class="{ 'card-selected': selectedKitId === kit.id }"
-          @click="selectKit(kit.id)"
-          @keydown.enter="selectKit(kit.id)"
-          @keydown.space.prevent="selectKit(kit.id)"
-        >
-          <q-card-section>
-            <div class="text-subtitle1 text-weight-bold q-mb-sm">{{ kit.name }}</div>
+    <q-btn
+      outline
+      color="primary"
+      :icon="selectedKitId ? 'swap_horiz' : 'add'"
+      :label="selectedKitId ? 'Change Starting Kit' : 'Choose Starting Kit'"
+      class="q-mb-md"
+      @click="kitDialogOpen = true"
+    />
 
-            <div class="text-caption text-muted q-mb-sm">
-              {{ kit.description }}
+    <StartingKitSelectionDialog
+      v-model="kitDialogOpen"
+      :selected-kit-id="selectedKitId"
+      @select="selectKit"
+    />
+
+    <template v-if="selectedKit">
+      <q-card bordered class="q-mb-md">
+        <q-card-section>
+          <div class="text-subtitle1 text-weight-bold q-mb-sm">{{ selectedKit.name }}</div>
+          <div class="text-caption text-muted q-mb-sm">{{ selectedKit.description }}</div>
+
+          <q-separator class="q-my-sm" />
+
+          <div class="text-caption">
+            <div class="row items-center q-mb-xs">
+              <q-icon name="sym_o_payments" size="xs" class="q-mr-xs" aria-hidden="true" />
+              <span>
+                <strong>{{ selectedKit.startingSpheres }}</strong> marks
+              </span>
             </div>
 
-            <q-separator class="q-my-sm" />
-
-            <div class="text-caption">
-              <div class="row items-center q-mb-xs">
-                <q-icon name="sym_o_payments" size="xs" class="q-mr-xs" aria-hidden="true" />
-                <span>
-                  <strong>{{ kit.startingSpheres }}</strong> marks
-                </span>
-              </div>
-
-              <div v-if="kit.expertises?.[0]?.id" class="row items-center q-mb-xs">
-                <q-icon
-                  name="sym_o_workspace_premium"
-                  size="xs"
-                  class="q-mr-xs"
-                  aria-hidden="true"
-                />
-                <span>
-                  <strong>+1</strong>
-                  {{ findById(classifiers.expertises, kit.expertises[0].id)?.name }}
-                </span>
-              </div>
-
-              <div class="row items-start">
-                <q-icon
-                  name="sym_o_inventory_2"
-                  size="xs"
-                  class="q-mr-xs q-mt-xs"
-                  aria-hidden="true"
-                />
-                <span>{{ getEquipmentSummary(kit) }}</span>
-              </div>
+            <div v-if="selectedKit.expertises?.[0]?.id" class="row items-center q-mb-xs">
+              <q-icon name="sym_o_workspace_premium" size="xs" class="q-mr-xs" aria-hidden="true" />
+              <span>
+                <strong>+1</strong>
+                {{ findById(classifiers.expertises, selectedKit.expertises[0].id)?.name }}
+              </span>
             </div>
-          </q-card-section>
 
-          <q-card-section v-if="selectedKitId === kit.id" class="q-pt-none">
-            <q-separator class="q-mb-sm" />
-
-            <!-- Starting currency input -->
-            <div v-if="kit.startingSpheres !== '0'" class="row items-center justify-center">
-              <q-input
-                :model-value="startingCurrency"
-                type="number"
-                label="Starting marks"
-                :hint="`Roll ${kit.startingSpheres}`"
-                outlined
-                dense
-                :min="0"
-                :max="999999"
-                class="currency-input"
-                @update:model-value="setStartingCurrency"
-                @click.stop
+            <div class="row items-start">
+              <q-icon
+                name="sym_o_inventory_2"
+                size="xs"
+                class="q-mr-xs q-mt-xs"
+                aria-hidden="true"
               />
+              <span>{{ getEquipmentSummary(selectedKit) }}</span>
             </div>
-            <div v-else class="text-center text-caption text-muted">No starting currency</div>
-          </q-card-section>
-
-          <!-- Selection indicator -->
-          <div v-if="selectedKitId === kit.id" class="selection-indicator">
-            <q-icon name="check_circle" color="primary" aria-hidden="true" />
           </div>
-        </q-card>
-      </div>
-    </div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <q-separator class="q-mb-sm" />
+          <div v-if="selectedKit.startingSpheres !== '0'" class="row items-center justify-center">
+            <q-input
+              :model-value="startingCurrency"
+              type="number"
+              label="Starting marks"
+              :hint="`Roll ${selectedKit.startingSpheres}`"
+              outlined
+              dense
+              :min="0"
+              :max="999999"
+              class="currency-input"
+              @update:model-value="setStartingCurrency"
+            />
+          </div>
+          <div v-else class="text-center text-caption text-muted">No starting currency</div>
+        </q-card-section>
+      </q-card>
+    </template>
 
     <!-- Special notes for prisoner kit -->
     <q-banner v-if="isPrisonerKit" :class="`bg-${RPG_COLORS.bannerInfo} q-mt-md`" rounded>
@@ -104,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue';
+import { computed, ref, inject } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -112,14 +100,19 @@ import { findById, findByCode } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 import { clamp } from 'src/utils/numberUtils';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import type { StartingKit } from 'src/types';
+import StartingKitSelectionDialog from '../shared/StartingKitSelectionDialog.vue';
 
 const heroStore = useHeroStore();
 const equipStore = useHeroEquipmentStore();
 const classifiers = useClassifierStore();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
-const startingKits = computed(() => classifiers.startingKits);
+const kitDialogOpen = ref(false);
 const selectedKitId = computed(() => heroStore.hero?.startingKit?.id ?? null);
+const selectedKit = computed((): StartingKit | undefined =>
+  selectedKitId.value ? findById(classifiers.startingKits, selectedKitId.value) : undefined
+);
 
 const isPrisonerKit = computed(() => {
   const prisonerKit = findByCode(classifiers.startingKits, 'prisoner');
@@ -156,7 +149,7 @@ function setStartingCurrency(val: string | number | null) {
   equipStore.setCurrency(clamp(numVal, 0, 999999));
 }
 
-function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
+function getEquipmentSummary(kit: StartingKit): string {
   if (!kit.equipment || kit.equipment.length === 0) {
     return 'No equipment';
   }
@@ -173,17 +166,6 @@ function getEquipmentSummary(kit: (typeof startingKits.value)[0]): string {
 </script>
 
 <style scoped lang="scss">
-.kit-card {
-  position: relative;
-  height: 100%;
-}
-
-.selection-indicator {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-}
-
 .currency-input {
   max-width: 150px;
 }
