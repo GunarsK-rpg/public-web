@@ -98,7 +98,7 @@ describe('HeroicPathPanel', () => {
             template: '<span class="q-icon" />',
           },
           QBtn: {
-            template: '<button class="q-btn" @click="$emit(\'click\')"><slot /></button>',
+            template: '<button class="q-btn" @click="$emit(\'click\', $event)"><slot /></button>',
             emits: ['click'],
           },
           QTooltip: {
@@ -175,10 +175,10 @@ describe('HeroicPathPanel', () => {
       expect(wrapper.text()).toContain('Berserker');
     });
 
-    it('shows No specialty when none selected', () => {
+    it('shows only talent count when no specialty talents selected', () => {
       const wrapper = createWrapper({ pathId: 1, specialtyId: undefined });
 
-      expect(wrapper.text()).toContain('No specialty');
+      expect(wrapper.text()).toContain('0 talents selected');
     });
 
     it('renders key talent banner', () => {

@@ -173,10 +173,6 @@ describe('EquipmentStep', () => {
           deletionTracker: mockDeletionTracker,
         },
         stubs: {
-          InfoBanner: {
-            template: '<div class="info-banner">{{ content }}</div>',
-            props: ['icon', 'content'],
-          },
           QBanner: {
             template: '<div class="q-banner"><slot name="avatar" /><slot /></div>',
           },
@@ -337,19 +333,6 @@ describe('EquipmentStep', () => {
   });
 
   // ========================================
-  // Starting Kit Info
-  // ========================================
-  describe('starting kit info', () => {
-    it('shows starting kit equipment in info banner', () => {
-      const wrapper = createWrapper();
-
-      const banner = wrapper.find('.info-banner');
-      expect(banner.exists()).toBe(true);
-      expect(banner.text()).toContain('Sword');
-    });
-  });
-
-  // ========================================
   // Remove Equipment
   // ========================================
   describe('remove equipment', () => {
@@ -467,7 +450,6 @@ describe('EquipmentStep', () => {
       const wrapper = shallowMount(EquipmentStep, {
         global: {
           stubs: {
-            InfoBanner: { template: '<div class="info-banner"></div>' },
             QBanner: { template: '<div class="q-banner"><slot /></div>' },
             QIcon: { template: '<span class="q-icon" />' },
             QBadge: { template: '<span class="q-badge"><slot /></span>' },
@@ -527,7 +509,6 @@ describe('EquipmentStep', () => {
       shallowMount(EquipmentStep, {
         global: {
           stubs: {
-            InfoBanner: { template: '<div class="info-banner"></div>' },
             QBanner: { template: '<div class="q-banner"><slot /></div>' },
             QIcon: { template: '<span class="q-icon" />' },
             QBadge: { template: '<span class="q-badge"><slot /></span>' },
@@ -563,37 +544,6 @@ describe('EquipmentStep', () => {
 
       // The add button won't render without selection, so we need to test the function
       expect(mockAddEquipment).not.toHaveBeenCalled();
-    });
-  });
-
-  // ========================================
-  // Starting Kit Equipment Names
-  // ========================================
-  describe('starting kit equipment names', () => {
-    it('shows quantity format for items with quantity > 1', () => {
-      mockHero.value = { startingKit: { id: 2, code: 'warrior', name: 'Warrior' }, currency: 100 }; // Warrior kit with quantity 2
-      const wrapper = createWrapper();
-
-      const banner = wrapper.find('.info-banner');
-      expect(banner.exists()).toBe(true);
-      expect(banner.text()).toContain('Sword x2');
-    });
-
-    it('filters out equipment with invalid id from starting kit', () => {
-      mockHero.value = { startingKit: { id: 2, code: 'warrior', name: 'Warrior' }, currency: 100 };
-      const wrapper = createWrapper();
-
-      const banner = wrapper.find('.info-banner');
-      // Should only show valid equipment (Sword), not the invalid one (id 999)
-      expect(banner.text()).toContain('Sword');
-    });
-
-    it('handles starting kit with null equipment', () => {
-      mockHero.value = { startingKit: { id: 3, code: 'empty', name: 'Empty' }, currency: 100 }; // Empty kit with null equipment
-      const wrapper = createWrapper();
-
-      // Should not show info banner when no equipment
-      expect(wrapper.find('.info-banner').exists()).toBe(false);
     });
   });
 

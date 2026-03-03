@@ -72,14 +72,6 @@ const mockClassifiersData = {
         surge1: { id: 2, code: 'adhesion', name: 'Adhesion' },
         surge2: { id: 3, code: 'division', name: 'Division' },
       },
-      {
-        id: 3,
-        code: 'bondsmith',
-        name: 'Bondsmith',
-        surge1: { id: 1, code: 'gravitation', name: 'Gravitation' },
-        surge2: null,
-      },
-      { id: 4, code: 'unknown', name: 'Unknown', surge1: null, surge2: null },
     ],
     surges: [
       { id: 1, code: 'gravitation', name: 'Gravitation' },
@@ -129,23 +121,36 @@ vi.mock('src/utils/arrayUtils', () => ({
     arr?.find((item) => item.id === id),
 }));
 
+const mockDeletionTracker = {
+  trackDeletion: vi.fn(),
+  getDeletions: vi.fn(() => []),
+  clearDeletions: vi.fn(),
+  clearAll: vi.fn(),
+};
+
 describe('PathsStep', () => {
   const createWrapper = () =>
     shallowMount(PathsStep, {
       global: {
         stubs: {
-          SelectableCard: {
-            template: `<div
-              class="selectable-card"
-              :class="{ selected: selected }"
-              :data-title="title"
-              @click="$emit('select')"
-            >{{ title }}</div>`,
-            props: ['title', 'subtitle', 'selected', 'ariaLabel', 'multiSelect'],
-            emits: ['select'],
+          PathSelectionDialog: {
+            template: `<div class="path-selection-dialog" v-if="modelValue">
+              <button class="emit-select-1" @click="$emit('select', 1)">Select1</button>
+              <button class="emit-select-2" @click="$emit('select', 2)">Select2</button>
+            </div>`,
+            props: ['modelValue', 'selectedPathIds'],
+            emits: ['update:modelValue', 'select'],
+          },
+          OrderSelectionDialog: {
+            template: `<div class="order-selection-dialog" v-if="modelValue">
+              <button class="emit-select-1" @click="$emit('select', 1)">Select1</button>
+              <button class="emit-select-2" @click="$emit('select', 2)">Select2</button>
+            </div>`,
+            props: ['modelValue', 'selectedOrderId'],
+            emits: ['update:modelValue', 'select'],
           },
           HeroicPathPanel: {
-            template: `<div class="heroic-path-panel">
+            template: `<div class="heroic-path-panel" :data-specialty-id="specialtyId">
               <button class="emit-remove" @click="$emit('remove')">Remove</button>
               <button class="emit-specialty" @click="$emit('update:specialtyId', 20)">Specialty</button>
               <button class="emit-toggle-talent" @click="$emit('toggleTalent', 50, true)">Toggle</button>
@@ -176,6 +181,26 @@ describe('PathsStep', () => {
             template: '<div class="talent-detail-dialog" v-if="modelValue" />',
             props: ['modelValue', 'talent'],
           },
+          QTabs: {
+            template: `<div class="q-tabs">
+              <slot />
+              <button class="switch-heroic" @click="$emit('update:modelValue', 'heroic')">Heroic</button>
+              <button class="switch-radiant" @click="$emit('update:modelValue', 'radiant')">Radiant</button>
+              <button class="switch-singer" @click="$emit('update:modelValue', 'singer')">Singer</button>
+            </div>`,
+            props: ['modelValue'],
+            emits: ['update:modelValue'],
+          },
+          QTab: {
+            template: '<div class="q-tab" :data-name="name">{{ label }}</div>',
+            props: ['name', 'label'],
+          },
+          QBtn: {
+            template:
+              '<button class="q-btn" :data-label="label" @click="$emit(\'click\')">{{ label }}</button>',
+            props: ['label', 'icon', 'color', 'outline', 'flat', 'dense', 'size'],
+            emits: ['click'],
+          },
           QList: {
             template: '<div class="q-list"><slot /></div>',
           },
@@ -192,12 +217,7 @@ describe('PathsStep', () => {
           },
         },
         provide: {
-          deletionTracker: {
-            trackDeletion: vi.fn(),
-            getDeletions: vi.fn(() => []),
-            clearDeletions: vi.fn(),
-            clearAll: vi.fn(),
-          },
+          deletionTracker: mockDeletionTracker,
         },
       },
     });
@@ -217,285 +237,127 @@ describe('PathsStep', () => {
   });
 
   // ========================================
-  // Basic Rendering
+  // Tab Rendering
   // ========================================
-  describe('basic rendering', () => {
+  describe('tab rendering', () => {
     it('renders step description', () => {
       const wrapper = createWrapper();
-
       expect(wrapper.text()).toContain('Choose your heroic paths');
     });
 
-    it('renders heroic path cards', () => {
+    it('renders heroic and radiant tabs always', () => {
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Warrior');
-      expect(wrapper.text()).toContain('Scholar');
+      const tabs = wrapper.findAll('.q-tab');
+      const names = tabs.map((t) => t.attributes('data-name'));
+      expect(names).toContain('heroic');
+      expect(names).toContain('radiant');
     });
 
-    it('renders radiant toggle', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.find('.q-toggle').exists()).toBe(true);
-      expect(wrapper.text()).toContain('Become a Radiant');
-    });
-  });
-
-  // ========================================
-  // Path Selection
-  // ========================================
-  describe('path selection', () => {
-    it('calls addKeyTalentForPath when path is selected', async () => {
-      const wrapper = createWrapper();
-
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
-
-      expect(mockAddKeyTalentForPath).toHaveBeenCalledWith(1);
-    });
-  });
-
-  // ========================================
-  // Radiant Path
-  // ========================================
-  describe('radiant path', () => {
-    it('shows radiant order selection when radiant is enabled', async () => {
-      const wrapper = createWrapper();
-
-      // Trigger change on the input inside the toggle label
-      await wrapper.find('.q-toggle input').trigger('change');
-
-      expect(mockSetRadiantOrder).toHaveBeenCalled();
-    });
-  });
-
-  // ========================================
-  // Accessibility
-  // ========================================
-  describe('accessibility', () => {
-    it('has role="group" for path selection', () => {
-      const wrapper = createWrapper();
-
-      const group = wrapper.find('[role="group"]');
-      expect(group.exists()).toBe(true);
-      expect(group.attributes('aria-label')).toBe('Select heroic paths');
-    });
-  });
-
-  // ========================================
-  // Path Toggling
-  // ========================================
-  describe('path toggling', () => {
-    it('toggles path selection on click', async () => {
-      const wrapper = createWrapper();
-
-      const scholarCard = wrapper.find('.selectable-card[data-title="Scholar"]');
-      await scholarCard.trigger('click');
-
-      expect(mockAddKeyTalentForPath).toHaveBeenCalledWith(2);
-    });
-
-    it('removes path when already selected', async () => {
-      // Start with path already selected via local state
-      const wrapper = createWrapper();
-
-      // First select the path
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
-
-      // The first click adds the path, verify that
-      expect(mockAddKeyTalentForPath).toHaveBeenCalledWith(1);
-
-      // Click again to deselect - this should try to remove
-      // Note: removeTalent is only called if getPathKeyTalent returns a talent
-      await warriorCard.trigger('click');
-
-      // Since getPathKeyTalent is mocked to return null, removeTalent won't be called
-      // This test verifies the toggle behavior works
-      expect(wrapper.exists()).toBe(true);
-    });
-  });
-
-  // ========================================
-  // Singer Ancestry Panel
-  // ========================================
-  describe('singer ancestry panel', () => {
-    it('shows singer panel when isSinger is true', () => {
+    it('renders singer tab when isSinger is true', () => {
       mockIsSinger.value = true;
       const wrapper = createWrapper();
+      const tabs = wrapper.findAll('.q-tab');
+      const names = tabs.map((t) => t.attributes('data-name'));
+      expect(names).toContain('singer');
+    });
 
+    it('hides singer tab when isSinger is false', () => {
+      mockIsSinger.value = false;
+      const wrapper = createWrapper();
+      const tabs = wrapper.findAll('.q-tab');
+      const names = tabs.map((t) => t.attributes('data-name'));
+      expect(names).not.toContain('singer');
+    });
+  });
+
+  // ========================================
+  // Tab Switching
+  // ========================================
+  describe('tab switching', () => {
+    it('shows heroic tab content by default', () => {
+      const wrapper = createWrapper();
+      expect(wrapper.find('.q-btn[data-label="Add Path"]').exists()).toBe(true);
+    });
+
+    it('switches to radiant tab', async () => {
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      expect(wrapper.find('.q-toggle').exists()).toBe(true);
+      expect(wrapper.find('.q-btn[data-label="Add Path"]').exists()).toBe(false);
+    });
+
+    it('switches to singer tab', async () => {
+      mockIsSinger.value = true;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-singer').trigger('click');
       expect(wrapper.find('.singer-ancestry-panel').exists()).toBe(true);
     });
 
-    it('hides singer panel when isSinger is false', () => {
+    it('singer tab not accessible when isSinger is false', () => {
       mockIsSinger.value = false;
       const wrapper = createWrapper();
-
-      expect(wrapper.find('.singer-ancestry-panel').exists()).toBe(false);
+      // Singer tab is not rendered
+      const tabs = wrapper.findAll('.q-tab');
+      const names = tabs.map((t) => t.attributes('data-name'));
+      expect(names).not.toContain('singer');
     });
   });
 
   // ========================================
-  // Radiant Order Selection
+  // Heroic Paths Tab
   // ========================================
-  describe('radiant order selection', () => {
-    it('shows radiant order cards when radiant is enabled', () => {
-      mockIsRadiant.value = true;
+  describe('heroic paths tab', () => {
+    it('has Add Path button', () => {
       const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Windrunner');
-      expect(wrapper.text()).toContain('Skybreaker');
+      expect(wrapper.find('.q-btn[data-label="Add Path"]').exists()).toBe(true);
     });
 
-    it('shows surge names in order subtitle', () => {
-      mockIsRadiant.value = true;
+    it('opens path selection dialog when Add Path clicked', async () => {
       const wrapper = createWrapper();
+      expect(wrapper.find('.path-selection-dialog').exists()).toBe(false);
 
-      // Verify radiant orders are shown - stub doesn't expose subtitle, verify cards exist
-      const cards = wrapper.findAll('.selectable-card');
-      const radiantCards = cards.filter(
-        (c) =>
-          c.attributes('data-title') === 'Windrunner' || c.attributes('data-title') === 'Skybreaker'
-      );
-      expect(radiantCards.length).toBe(2);
+      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      expect(wrapper.find('.path-selection-dialog').exists()).toBe(true);
     });
 
-    it('calls setRadiantOrder when order card clicked', async () => {
-      mockIsRadiant.value = true;
+    it('calls addKeyTalentForPath when path selected from dialog', async () => {
       const wrapper = createWrapper();
 
-      const windrunnerCard = wrapper.find('.selectable-card[data-title="Windrunner"]');
-      await windrunnerCard.trigger('click');
+      // Open dialog and select path 1
+      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      await wrapper.find('.path-selection-dialog .emit-select-1').trigger('click');
 
-      expect(mockSetRadiantOrder).toHaveBeenCalledWith(1);
+      expect(mockAddKeyTalentForPath).toHaveBeenCalledWith(1);
     });
 
-    it('shows radiant path panel when order selected', () => {
-      mockIsRadiant.value = true;
-      mockRadiantOrderId.value = 1;
-      const wrapper = createWrapper();
-
-      expect(wrapper.find('.radiant-path-panel').exists()).toBe(true);
-    });
-
-    it('hides radiant path panel when no order selected', () => {
-      mockIsRadiant.value = true;
-      mockRadiantOrderId.value = null;
-      const wrapper = createWrapper();
-
-      expect(wrapper.find('.radiant-path-panel').exists()).toBe(false);
-    });
-  });
-
-  // ========================================
-  // Toggle Radiant
-  // ========================================
-  describe('toggle radiant', () => {
-    it('enables radiant and sets first order when toggled on', async () => {
-      mockIsRadiant.value = false;
-      const wrapper = createWrapper();
-
-      await wrapper.find('.q-toggle input').trigger('change');
-
-      expect(mockSetRadiantOrder).toHaveBeenCalledWith(1); // First order id
-    });
-
-    it('clears radiant order when toggled off', async () => {
-      mockIsRadiant.value = true;
-      const wrapper = createWrapper();
-
-      await wrapper.find('.q-toggle input').trigger('change');
-
-      expect(mockSetRadiantOrder).toHaveBeenCalledWith(null);
-    });
-  });
-
-  // ========================================
-  // Selected Paths Display
-  // ========================================
-  describe('selected paths display', () => {
-    it('shows heroic path panel when path is selected', async () => {
-      const wrapper = createWrapper();
-
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
-
-      expect(wrapper.find('.heroic-path-panel').exists()).toBe(true);
-    });
-
-    it('hides heroic path list when no paths selected', () => {
-      const wrapper = createWrapper();
-
-      // No paths selected initially
-      expect(wrapper.find('.q-list .heroic-path-panel').exists()).toBe(false);
-    });
-  });
-
-  // ========================================
-  // Order Subtitle Generation
-  // ========================================
-  describe('order subtitle generation', () => {
-    it('handles order with only one surge', () => {
-      mockIsRadiant.value = true;
-      // This is already tested through mock setup - surges are defined
-      const wrapper = createWrapper();
-
-      expect(wrapper.exists()).toBe(true);
-    });
-  });
-
-  // ========================================
-  // Talent Detail Dialog
-  // ========================================
-  describe('talent detail dialog', () => {
-    it('renders talent detail dialog', () => {
-      const wrapper = createWrapper();
-
-      // Dialog exists but is hidden by default
-      expect(wrapper.find('.talent-detail-dialog').exists()).toBe(false);
-    });
-  });
-
-  // ========================================
-  // Path Removal with Key Talent
-  // ========================================
-  describe('path removal with key talent', () => {
-    it('removes all path talents when path is deselected', async () => {
-      // Set up a classifier talent belonging to warrior path (id: 1)
-      mockClassifiersData.value.talents = [{ id: 100, path: { id: 1 } }];
-      // Hero has this talent selected
-      mockHero.talents = [
-        { id: 1, heroId: 1, talent: { id: 100, code: 'combat-training', name: 'Combat Training' } },
-      ];
-      const wrapper = createWrapper();
-
-      // First select the path
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
-
-      // Then deselect — should remove talent id 100
-      await warriorCard.trigger('click');
-
-      expect(mockHero.talents).toEqual([]);
-    });
-  });
-
-  // ========================================
-  // Specialty Selection
-  // ========================================
-  describe('specialty selection', () => {
-    it('sets first specialty when path is selected', async () => {
+    it('sets first specialty when path is added', async () => {
       mockGetSpecialtiesByPath.mockReturnValue([
         { id: 10, name: 'Swordsmanship' },
         { id: 11, name: 'Archery' },
       ]);
       const wrapper = createWrapper();
 
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
+      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      await wrapper.find('.path-selection-dialog .emit-select-1').trigger('click');
 
-      // The specialty should be set via internal state
-      expect(mockAddKeyTalentForPath).toHaveBeenCalledWith(1);
+      // HeroicPathPanel should receive the first specialty id
+      const panel = wrapper.find('.heroic-path-panel');
+      expect(panel.exists()).toBe(true);
+      expect(panel.attributes('data-specialty-id')).toBe('10');
+    });
+
+    it('shows HeroicPathPanel after path selection', async () => {
+      const wrapper = createWrapper();
+
+      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      await wrapper.find('.path-selection-dialog .emit-select-1').trigger('click');
+
+      expect(wrapper.find('.heroic-path-panel').exists()).toBe(true);
+    });
+
+    it('hides heroic path list when no paths selected', () => {
+      const wrapper = createWrapper();
+      expect(wrapper.find('.q-list .heroic-path-panel').exists()).toBe(false);
     });
   });
 
@@ -503,97 +365,138 @@ describe('PathsStep', () => {
   // Heroic Path Panel Events
   // ========================================
   describe('heroic path panel events', () => {
-    it('renders heroic path panel after selection', async () => {
-      mockGetSpecialtiesByPath.mockReturnValue([{ id: 10, name: 'Swordsmanship' }]);
+    async function addPath(wrapper: ReturnType<typeof createWrapper>) {
+      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      await wrapper.find('.path-selection-dialog .emit-select-1').trigger('click');
+    }
+
+    it('handles update:specialty-id event', async () => {
       const wrapper = createWrapper();
-
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
-
-      expect(wrapper.find('.heroic-path-panel').exists()).toBe(true);
-    });
-
-    it('handles update:specialty-id event from HeroicPathPanel', async () => {
-      const wrapper = createWrapper();
-
-      // First select a path
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
-
-      // Trigger specialty button in stub - emits update:specialtyId event
+      await addPath(wrapper);
       await wrapper.find('.heroic-path-panel .emit-specialty').trigger('click');
-
-      // Component handles the specialty change via v-model binding
-      // The event is emitted and should be handled without error
-      expect(wrapper.exists()).toBe(true);
+      // Specialty should be updated to 20 (emitted from stub)
+      expect(wrapper.find('.heroic-path-panel').attributes('data-specialty-id')).toBe('20');
     });
 
-    it('handles toggle-talent event from HeroicPathPanel', async () => {
+    it('handles toggle-talent event', async () => {
       const wrapper = createWrapper();
-
-      // First select a path
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
-
-      // Trigger toggle button in stub
+      await addPath(wrapper);
       await wrapper.find('.heroic-path-panel .emit-toggle-talent').trigger('click');
-
       expect(mockToggleTalent).toHaveBeenCalledWith(50, true);
     });
 
-    it('handles show-details event from HeroicPathPanel', async () => {
+    it('handles show-details event', async () => {
       const wrapper = createWrapper();
-
-      // First select a path
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
-
-      // Trigger show-details button in stub
+      await addPath(wrapper);
       await wrapper.find('.heroic-path-panel .emit-show-details').trigger('click');
-
-      // Dialog should open
       expect(wrapper.find('.talent-detail-dialog').exists()).toBe(true);
     });
 
-    it('handles remove event from HeroicPathPanel', async () => {
+    it('handles remove event and clears path talents', async () => {
       const wrapper = createWrapper();
+      await addPath(wrapper);
 
-      // First select a path
-      const warriorCard = wrapper.find('.selectable-card[data-title="Warrior"]');
-      await warriorCard.trigger('click');
-
-      // Set up classifier talent after path is selected so panel is visible
-      mockClassifiersData.value.talents = [{ id: 99, path: { id: 1 } }];
+      // Set up classifier talent belonging to path 1
+      mockClassifiersData.value.talents = [{ id: 100, path: { id: 1 } }];
       mockHero.talents = [
-        { id: 1, heroId: 1, talent: { id: 99, code: 'key-talent', name: 'Key Talent' } },
+        { id: 1, heroId: 1, talent: { id: 100, code: 'combat-training', name: 'Combat Training' } },
       ];
       await wrapper.vm.$nextTick();
 
-      // Trigger remove button in stub
       await wrapper.find('.heroic-path-panel .emit-remove').trigger('click');
-
       expect(mockHero.talents).toEqual([]);
+      expect(mockDeletionTracker.trackDeletion).toHaveBeenCalledWith('talents', 1);
     });
   });
 
   // ========================================
-  // Order Subtitle Edge Cases
+  // Radiant Tab
   // ========================================
-  describe('order subtitle edge cases', () => {
-    it('handles order with only surge1', () => {
-      mockIsRadiant.value = true;
+  describe('radiant tab', () => {
+    it('shows radiant toggle', async () => {
       const wrapper = createWrapper();
-
-      // Bondsmith has surge1Id: 1, surge2Id: null
-      expect(wrapper.text()).toContain('Bondsmith');
+      await wrapper.find('.switch-radiant').trigger('click');
+      expect(wrapper.find('.q-toggle').exists()).toBe(true);
+      expect(wrapper.text()).toContain('Become a Radiant');
     });
 
-    it('handles order with no surges', () => {
+    it('opens order dialog when toggled on', async () => {
+      mockIsRadiant.value = false;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      await wrapper.find('.q-toggle input').trigger('change');
+      expect(mockSetRadiantOrder).not.toHaveBeenCalled();
+      expect(wrapper.find('.order-selection-dialog').exists()).toBe(true);
+    });
+
+    it('clears radiant order when toggled off', async () => {
       mockIsRadiant.value = true;
       const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      await wrapper.find('.q-toggle input').trigger('change');
+      expect(mockSetRadiantOrder).toHaveBeenCalledWith(null);
+    });
 
-      // Unknown order has surge1Id: null, surge2Id: null
-      expect(wrapper.text()).toContain('Unknown');
+    it('shows Select Order button when radiant enabled but no order', async () => {
+      mockIsRadiant.value = true;
+      mockRadiantOrderId.value = null;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      expect(wrapper.find('.q-btn[data-label="Select Order"]').exists()).toBe(true);
+    });
+
+    it('shows Change Order button when order already selected', async () => {
+      mockIsRadiant.value = true;
+      mockRadiantOrderId.value = 1;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      expect(wrapper.find('.q-btn[data-label="Change Order"]').exists()).toBe(true);
+    });
+
+    it('opens order dialog when Select Order clicked', async () => {
+      mockIsRadiant.value = true;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      expect(wrapper.find('.order-selection-dialog').exists()).toBe(false);
+
+      await wrapper.find('.q-btn[data-label="Select Order"]').trigger('click');
+      expect(wrapper.find('.order-selection-dialog').exists()).toBe(true);
+    });
+
+    it('calls setRadiantOrder when order selected from dialog', async () => {
+      mockIsRadiant.value = true;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      await wrapper.find('.q-btn[data-label="Select Order"]').trigger('click');
+      await wrapper.find('.order-selection-dialog .emit-select-2').trigger('click');
+      expect(mockSetRadiantOrder).toHaveBeenCalledWith(2);
+    });
+
+    it('shows radiant path panel when order selected', async () => {
+      mockIsRadiant.value = true;
+      mockRadiantOrderId.value = 1;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      expect(wrapper.find('.radiant-path-panel').exists()).toBe(true);
+    });
+
+    it('hides radiant path panel when no order selected', async () => {
+      mockIsRadiant.value = true;
+      mockRadiantOrderId.value = null;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      expect(wrapper.find('.radiant-path-panel').exists()).toBe(false);
+    });
+
+    it('handles enabling radiant when no orders exist', async () => {
+      const originalOrders = mockClassifiersData.value.radiantOrders;
+      mockClassifiersData.value.radiantOrders = [];
+      mockIsRadiant.value = false;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-radiant').trigger('click');
+      await wrapper.find('.q-toggle input').trigger('change');
+      expect(mockSetRadiantOrder).not.toHaveBeenCalledWith(expect.any(Number));
+      mockClassifiersData.value.radiantOrders = originalOrders;
     });
   });
 
@@ -601,185 +504,162 @@ describe('PathsStep', () => {
   // RadiantPathPanel Events
   // ========================================
   describe('radiant path panel events', () => {
-    it('handles remove event from RadiantPathPanel', async () => {
+    it('handles remove event', async () => {
       mockIsRadiant.value = true;
       mockRadiantOrderId.value = 1;
       const wrapper = createWrapper();
-
+      await wrapper.find('.switch-radiant').trigger('click');
       await wrapper.find('.radiant-path-panel .emit-remove').trigger('click');
-
       expect(mockSetRadiantOrder).toHaveBeenCalledWith(null);
     });
 
-    it('handles update:ideal-level event with value', async () => {
+    it('handles update:ideal-level with value', async () => {
       mockIsRadiant.value = true;
       mockRadiantOrderId.value = 1;
       const wrapper = createWrapper();
-
+      await wrapper.find('.switch-radiant').trigger('click');
       await wrapper.find('.radiant-path-panel .emit-ideal').trigger('click');
-
       expect(mockSetRadiantIdeal).toHaveBeenCalledWith(3);
     });
 
-    it('handles update:ideal-level event with null', async () => {
+    it('handles update:ideal-level with null', async () => {
       mockIsRadiant.value = true;
       mockRadiantOrderId.value = 1;
       const wrapper = createWrapper();
-
+      await wrapper.find('.switch-radiant').trigger('click');
       await wrapper.find('.radiant-path-panel .emit-ideal-null').trigger('click');
-
-      // setRadiantIdeal should NOT be called for null
       expect(mockSetRadiantIdeal).not.toHaveBeenCalled();
     });
 
-    it('handles toggle-talent event from RadiantPathPanel', async () => {
+    it('handles toggle-talent event', async () => {
       mockIsRadiant.value = true;
       mockRadiantOrderId.value = 1;
       const wrapper = createWrapper();
-
+      await wrapper.find('.switch-radiant').trigger('click');
       await wrapper.find('.radiant-path-panel .emit-toggle-talent').trigger('click');
-
       expect(mockToggleTalent).toHaveBeenCalledWith(60, false);
     });
 
-    it('handles show-details event from RadiantPathPanel', async () => {
+    it('handles show-details event', async () => {
       mockIsRadiant.value = true;
       mockRadiantOrderId.value = 1;
       const wrapper = createWrapper();
-
+      await wrapper.find('.switch-radiant').trigger('click');
       await wrapper.find('.radiant-path-panel .emit-show-details').trigger('click');
-
       expect(wrapper.find('.talent-detail-dialog').exists()).toBe(true);
     });
   });
 
   // ========================================
-  // SingerAncestryPanel Events
+  // Singer Tab
   // ========================================
-  describe('singer ancestry panel events', () => {
+  describe('singer tab', () => {
+    it('shows singer ancestry panel on singer tab', async () => {
+      mockIsSinger.value = true;
+      const wrapper = createWrapper();
+      await wrapper.find('.switch-singer').trigger('click');
+      expect(wrapper.find('.singer-ancestry-panel').exists()).toBe(true);
+    });
+
     it('handles toggle-talent event from SingerAncestryPanel', async () => {
       mockIsSinger.value = true;
       const wrapper = createWrapper();
-
+      await wrapper.find('.switch-singer').trigger('click');
       await wrapper.find('.singer-ancestry-panel .emit-toggle-talent').trigger('click');
-
       expect(mockToggleTalent).toHaveBeenCalledWith(70, true);
     });
 
     it('handles show-details event from SingerAncestryPanel', async () => {
       mockIsSinger.value = true;
       const wrapper = createWrapper();
-
+      await wrapper.find('.switch-singer').trigger('click');
       await wrapper.find('.singer-ancestry-panel .emit-show-details').trigger('click');
-
       expect(wrapper.find('.talent-detail-dialog').exists()).toBe(true);
     });
   });
 
   // ========================================
-  // Sync Local State From Hero
+  // State Sync From Hero
   // ========================================
   describe('sync local state from hero', () => {
-    it('syncs path selections from existing hero talents', () => {
-      // Set up talents with path and specialties
+    it('syncs path selections from existing hero talents', async () => {
       mockClassifiersData.value.talents = [
-        { id: 100, path: { id: 1 }, specialties: [] },
-        { id: 101, path: { id: 2 }, specialties: [{ id: 10 }] },
+        { id: 100, path: { id: 1 }, isKey: true },
+        { id: 101, path: { id: 2 }, isKey: true },
       ];
-      mockClassifiersData.value.specialties = [{ id: 10, path: { id: 2 } }];
       mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
         { id: 2, heroId: 1, talent: { id: 101, code: 'scholar-lore', name: 'Lore Mastery' } },
       ];
 
       const wrapper = createWrapper();
+      await wrapper.vm.$nextTick();
 
-      // The component should have synced the paths on mount
-      expect(wrapper.exists()).toBe(true);
+      // Both paths should be synced -- panels should render
+      expect(wrapper.findAll('.heroic-path-panel')).toHaveLength(2);
     });
 
-    it('syncs specialties from existing hero talents', () => {
-      mockClassifiersData.value.talents = [{ id: 100, path: { id: 1 }, specialties: [{ id: 20 }] }];
-      mockClassifiersData.value.specialties = [{ id: 20, path: { id: 1 } }];
+    it('syncs specialties from existing hero talents', async () => {
+      mockClassifiersData.value.talents = [{ id: 100, path: { id: 1 }, isKey: true }];
       mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
       ];
 
       const wrapper = createWrapper();
-
-      expect(wrapper.exists()).toBe(true);
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find('.heroic-path-panel').exists()).toBe(true);
     });
 
     it('handles talent without pathId', () => {
-      mockClassifiersData.value.talents = [{ id: 100 }]; // No pathId
+      mockClassifiersData.value.talents = [{ id: 100 }];
       mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 100, code: 'generic-talent', name: 'Generic Talent' } },
       ];
 
       const wrapper = createWrapper();
-
       expect(wrapper.exists()).toBe(true);
     });
 
     it('handles talent with unknown talentId', () => {
       mockHero.talents = [
         { id: 1, heroId: 1, talent: { id: 999, code: 'unknown-talent', name: 'Unknown Talent' } },
-      ]; // Unknown talent
-
-      const wrapper = createWrapper();
-
-      expect(wrapper.exists()).toBe(true);
-    });
-
-    it('handles specialty without pathId', () => {
-      mockClassifiersData.value.talents = [{ id: 100, pathId: 1, specialtyId: 30 }];
-      mockClassifiersData.value.specialties = []; // No specialty found
-      mockHero.talents = [
-        { id: 1, heroId: 1, talent: { id: 100, code: 'warrior-combat', name: 'Combat Training' } },
       ];
 
       const wrapper = createWrapper();
-
-      // Should render without error when specialty lookup fails
       expect(wrapper.exists()).toBe(true);
-      // Path should still be rendered
-      expect(wrapper.text()).toContain('Warrior');
     });
   });
 
   // ========================================
-  // Path with null description
+  // Path Removal with Deletion Tracking
   // ========================================
-  describe('path with null description', () => {
-    it('renders path with null description using empty string', () => {
+  describe('path removal with deletion tracking', () => {
+    it('removes all path talents and tracks deletions', async () => {
+      mockClassifiersData.value.talents = [{ id: 100, path: { id: 1 }, isKey: true }];
+      mockHero.talents = [
+        { id: 1, heroId: 1, talent: { id: 100, code: 'combat-training', name: 'Combat Training' } },
+      ];
       const wrapper = createWrapper();
 
-      // Path 3 has description: null, should render without error
-      expect(wrapper.text()).toContain('Pathless');
+      // Sync adds path 1 automatically
+      // Wait for sync
+      await wrapper.vm.$nextTick();
+
+      // Remove via panel
+      await wrapper.find('.heroic-path-panel .emit-remove').trigger('click');
+
+      expect(mockHero.talents).toEqual([]);
+      expect(mockDeletionTracker.trackDeletion).toHaveBeenCalledWith('talents', 1);
     });
   });
 
   // ========================================
-  // Toggle Radiant Edge Cases
+  // Talent Detail Dialog
   // ========================================
-  describe('toggle radiant edge cases', () => {
-    it('handles enabling radiant when no orders exist', async () => {
-      // Save original orders
-      const originalOrders = mockClassifiersData.value.radiantOrders;
-      mockClassifiersData.value.radiantOrders = [];
-
-      mockIsRadiant.value = false;
+  describe('talent detail dialog', () => {
+    it('dialog hidden by default', () => {
       const wrapper = createWrapper();
-
-      // Try to enable radiant when no orders exist
-      await wrapper.find('.q-toggle input').trigger('change');
-
-      // setRadiantOrder should not be called with an order id
-      // because there are no orders
-      expect(mockSetRadiantOrder).not.toHaveBeenCalledWith(expect.any(Number));
-
-      // Restore
-      mockClassifiersData.value.radiantOrders = originalOrders;
+      expect(wrapper.find('.talent-detail-dialog').exists()).toBe(false);
     });
   });
 });

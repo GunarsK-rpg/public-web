@@ -20,7 +20,7 @@
           Level {{ hero?.level }}
           {{ ancestryName }}
           <span v-if="cultureName">· {{ cultureName }}</span>
-          <span v-if="orderName">· {{ orderName }}</span>
+          <span v-if="orderName">· {{ orderName }} ({{ hero?.radiantIdeal ?? 0 }})</span>
         </div>
         <div v-if="activeSingerFormName" :class="`text-caption text-${RPG_COLORS.singerForm}`">
           {{ activeSingerFormName }}

@@ -2,6 +2,7 @@
   <q-expansion-item
     :aria-label="`${pathName} path talents and specialties`"
     :default-opened="defaultOpened"
+    group="heroic-paths"
     header-class="banner-heroic-path"
     expand-icon-class="text-white"
   >
@@ -12,7 +13,7 @@
       <q-item-section>
         <q-item-label class="text-white text-weight-medium"> {{ pathName }} Path </q-item-label>
         <q-item-label class="text-white text-secondary-emphasis" caption>
-          {{ specialtyName }} · {{ selectedTalentCount }} talents selected
+          {{ subtitleText }}
         </q-item-label>
       </q-item-section>
       <q-item-section side>
@@ -99,11 +100,6 @@ const {
 
 const pathName = computed(() => findById(classifiers.paths, props.pathId)?.name ?? 'Unknown');
 
-const specialtyName = computed(() => {
-  if (!props.specialtyId) return 'No specialty';
-  return findById(classifiers.specialties, props.specialtyId)?.name ?? 'No specialty';
-});
-
 const specialtyOptions = computed(() =>
   getSpecialtiesByPath(props.pathId).map((s) => ({
     value: s.id,
@@ -114,10 +110,28 @@ const specialtyOptions = computed(() =>
 const keyTalent = computed(() => getPathKeyTalent(props.pathId));
 
 const selectedTalentCount = computed(() => {
-  const pathTalents = getTalentsByPath(props.pathId);
-  const specialtyTalents = props.specialtyId ? getTalentsBySpecialty(props.specialtyId) : [];
-  const allTalents = [...pathTalents, ...specialtyTalents];
-  return allTalents.filter((t) => isTalentSelected(t.id)).length;
+  const selectedIds = new Set<number>();
+  for (const t of getTalentsByPath(props.pathId)) {
+    if (isTalentSelected(t.id)) selectedIds.add(t.id);
+  }
+  for (const s of getSpecialtiesByPath(props.pathId)) {
+    for (const t of getTalentsBySpecialty(s.id)) {
+      if (isTalentSelected(t.id)) selectedIds.add(t.id);
+    }
+  }
+  return selectedIds.size;
+});
+
+const activeSpecialtyNames = computed(() =>
+  getSpecialtiesByPath(props.pathId)
+    .filter((s) => getTalentsBySpecialty(s.id).some((t) => isTalentSelected(t.id)))
+    .map((s) => s.name)
+);
+
+const subtitleText = computed(() => {
+  const specs = activeSpecialtyNames.value.join(', ');
+  const count = `${selectedTalentCount.value} talents selected`;
+  return specs ? `${specs} · ${count}` : count;
 });
 
 const talentsWithStatus = computed((): TalentWithStatus[] => {

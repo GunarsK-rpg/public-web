@@ -103,13 +103,7 @@ function previousStep() {
 <style scoped lang="scss">
 .creation-footer {
   flex-shrink: 0;
-  background-color: var(--q-dark-page);
-  border-top: 1px solid $color-border-dark;
-
-  .body--light & {
-    background-color: $color-background-light;
-    border-top-color: $color-border-light;
-  }
+  border-top: 1px solid var(--app-border);
 }
 
 .status-message {

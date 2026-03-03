@@ -37,13 +37,6 @@
 
     <q-separator class="q-my-md" />
 
-    <!-- Equipment from Starting Kit -->
-    <InfoBanner
-      v-if="startingKitEquipmentNames.length > 0"
-      icon="sym_o_inventory_2"
-      :content="`Equipment from starting kit: ${startingKitEquipmentNames.join(', ')}`"
-    />
-
     <!-- Equipment by Type -->
     <div v-for="eqType in equipmentTypesList" :key="eqType.id" class="q-mb-lg">
       <div class="text-subtitle2 q-mb-sm">{{ eqType.name }}</div>
@@ -108,8 +101,6 @@ import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import { INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
-import InfoBanner from '../shared/InfoBanner.vue';
-import type { ClassifierRef } from 'src/types';
 
 const heroStore = useHeroStore();
 const equipStore = useHeroEquipmentStore();
@@ -132,19 +123,6 @@ const heroCurrency = computed(() => heroStore.hero?.currency ?? 0);
 
 // Hero equipment list
 const heroEquipment = computed(() => heroStore.equipment);
-
-// Get equipment names from starting kit
-const startingKitEquipmentNames = computed(() => {
-  const kit = selectedStartingKit.value;
-  if (!kit?.equipment) return [];
-  return kit.equipment
-    .map((e: ClassifierRef & { quantity: number }) => {
-      const name = findById(classifiers.equipment, e.id)?.name;
-      if (!name) return null;
-      return e.quantity > 1 ? `${name} x${e.quantity}` : name;
-    })
-    .filter((name): name is string => name !== null);
-});
 
 // Pre-computed equipment lookup maps for O(1) access
 const equipmentMaps = computed(() => {
