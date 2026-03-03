@@ -16,8 +16,8 @@
           action.descriptionShort || action.description || 'No description available'
         }}</q-item-label>
       </q-item-section>
-      <q-item-section side>
-        <div class="row items-center no-wrap q-gutter-xs">
+      <q-item-section v-if="hasBadges" side>
+        <div class="row items-center wrap q-gutter-xs justify-end">
           <SpecialBadges :specials="typedEntries" />
           <q-badge v-if="action.dice" :color="RPG_COLORS.badgeMuted" outline>
             {{ action.dice }}
@@ -34,20 +34,21 @@
           >
             {{ cost.value }} {{ cost.label }}
           </q-badge>
-          <q-btn
-            v-if="hasDeductibleCost"
-            class="use-action-btn"
-            size="sm"
-            flat
-            dense
-            color="primary"
-            label="Use"
-            :disable="!canUse"
-            :loading="using"
-            title="Use action"
-            @click.stop="useAction"
-          />
         </div>
+      </q-item-section>
+      <q-item-section v-if="hasDeductibleCost" side>
+        <q-btn
+          class="use-action-btn"
+          size="sm"
+          flat
+          dense
+          color="primary"
+          label="Use"
+          :disable="!canUse"
+          :loading="using"
+          title="Use action"
+          @click.stop="useAction"
+        />
       </q-item-section>
     </template>
 
@@ -114,6 +115,14 @@ const narrativeEntries = computed(() =>
   (props.action.special ?? []).filter(
     (s) => !TYPED_SPECIAL.has(s.type) && (s.display_value || s.value != null)
   )
+);
+
+const hasBadges = computed(
+  () =>
+    typedEntries.value.length > 0 ||
+    !!props.action.dice ||
+    !!props.action.damageType ||
+    actionCosts.value.length > 0
 );
 
 // Use action
@@ -188,5 +197,11 @@ const actionCosts = computed(() => {
 
 .action-expansion-item :deep(.q-expansion-item__container) {
   border-bottom: none;
+}
+
+@media (max-width: 599px) {
+  .action-expansion-item :deep(.q-item__section--side) {
+    max-width: 120px;
+  }
 }
 </style>
