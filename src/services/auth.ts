@@ -22,8 +22,8 @@ export interface TokenStatusResponse {
 }
 
 export default {
-  login(username: string, password: string) {
-    return authApi.post<LoginResponse>('/login', { username, password });
+  login(username: string, password: string, rememberMe: boolean) {
+    return authApi.post<LoginResponse>('/login', { username, password, remember_me: rememberMe });
   },
   logout() {
     return authApi.post('/logout');

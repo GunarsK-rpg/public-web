@@ -42,9 +42,11 @@ export default defineRouter(function (/* { store, ssrContext } */) {
           return;
         }
       }
-    } else if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
-      next({ name: 'my-characters' });
-      return;
+    } else if (to.name === 'login' || to.name === 'register') {
+      if (authStore.isAuthenticated || (await authStore.checkAuthStatus())) {
+        next({ name: 'my-characters' });
+        return;
+      }
     }
 
     next();

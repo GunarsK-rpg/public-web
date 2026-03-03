@@ -56,6 +56,14 @@ describe('LoginPage', () => {
             >{{ label }}</button>`,
             props: ['type', 'label', 'color', 'loading'],
           },
+          QCheckbox: {
+            template: `<label class="q-checkbox">
+              <input type="checkbox" :checked="modelValue" @change="$emit('update:modelValue', $event.target.checked)" />
+              {{ label }}
+            </label>`,
+            props: ['modelValue', 'label'],
+            emits: ['update:modelValue'],
+          },
         },
       },
     });
@@ -118,7 +126,7 @@ describe('LoginPage', () => {
       // Submit form
       await wrapper.find('.q-form').trigger('submit');
 
-      expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123');
+      expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123', false);
     });
 
     it('redirects to home on successful login', async () => {
@@ -168,6 +176,51 @@ describe('LoginPage', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.find('.q-page').exists()).toBe(true);
+    });
+  });
+
+  // ========================================
+  // Remember Me
+  // ========================================
+  describe('remember me', () => {
+    it('renders remember me checkbox', () => {
+      const wrapper = createWrapper();
+      expect(wrapper.find('.q-checkbox').exists()).toBe(true);
+      expect(wrapper.text()).toContain('Remember me');
+    });
+
+    it('defaults to unchecked', () => {
+      const wrapper = createWrapper();
+      const checkbox = wrapper.find('.q-checkbox input[type="checkbox"]');
+      expect((checkbox.element as HTMLInputElement).checked).toBe(false);
+    });
+
+    it('passes rememberMe false by default on submit', async () => {
+      mockLogin.mockResolvedValue(true);
+      const wrapper = createWrapper();
+
+      const inputs = wrapper.findAll('.q-input');
+      await inputs[0]!.setValue('testuser');
+      await inputs[1]!.setValue('password123');
+      await wrapper.find('.q-form').trigger('submit');
+
+      expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123', false);
+    });
+
+    it('passes rememberMe true when checked', async () => {
+      mockLogin.mockResolvedValue(true);
+      const wrapper = createWrapper();
+
+      const inputs = wrapper.findAll('.q-input');
+      await inputs[0]!.setValue('testuser');
+      await inputs[1]!.setValue('password123');
+
+      const checkbox = wrapper.find('.q-checkbox input[type="checkbox"]');
+      await checkbox.setValue(true);
+
+      await wrapper.find('.q-form').trigger('submit');
+
+      expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123', true);
     });
   });
 });

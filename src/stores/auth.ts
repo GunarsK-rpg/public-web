@@ -1,15 +1,20 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import type { Router } from 'vue-router';
 import authService from 'src/services/auth';
+import { broadcastLogin, broadcastLogout, type AuthMessage } from 'src/services/authChannel';
 import { scheduleProactiveRefresh, clearProactiveRefresh } from 'src/services/tokenRefresh';
 import { Level, LevelValues, type LevelKey } from 'src/constants/permissions';
 import { logger, setUserContext, clearUserContext } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
 
-export const useAuthStore = defineStore('auth', () => {
-  const router = useRouter();
+let routerInstance: Router | undefined;
 
+export function setRouterInstance(router: Router): void {
+  routerInstance = router;
+}
+
+export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false);
   const username = ref('');
   const scopes = ref<Record<string, string>>({});
@@ -56,10 +61,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function login(loginUsername: string, password: string): Promise<boolean> {
+  async function login(
+    loginUsername: string,
+    password: string,
+    rememberMe = false
+  ): Promise<boolean> {
     loading.value = true;
     try {
-      const response = await authService.login(loginUsername, password);
+      const response = await authService.login(loginUsername, password, rememberMe);
       isAuthenticated.value = true;
       username.value = response.data.username || loginUsername;
       scopes.value = response.data.scopes || {};
@@ -71,6 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       scheduleProactiveRefresh(response.data.expires_in);
+      broadcastLogin();
       return true;
     } catch (error) {
       logger.error('Login failed', toError(error));
@@ -94,7 +104,23 @@ export const useAuthStore = defineStore('auth', () => {
       username.value = '';
       scopes.value = {};
       clearUserContext();
-      void router.push({ name: 'login' });
+      broadcastLogout();
+      void routerInstance?.push({ name: 'login' });
+    }
+  }
+
+  function handleAuthBroadcast(message: AuthMessage): void {
+    if (message.type === 'logout') {
+      clearProactiveRefresh();
+      isAuthenticated.value = false;
+      username.value = '';
+      scopes.value = {};
+      clearUserContext();
+      void routerInstance?.push({ name: 'login' });
+      return;
+    }
+    if (message.type === 'login') {
+      void checkAuthStatus();
     }
   }
 
@@ -110,5 +136,6 @@ export const useAuthStore = defineStore('auth', () => {
     checkAuthStatus,
     login,
     logout,
+    handleAuthBroadcast,
   };
 });
