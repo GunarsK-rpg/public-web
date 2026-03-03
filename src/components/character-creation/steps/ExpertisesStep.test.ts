@@ -148,7 +148,10 @@ describe('ExpertisesStep', () => {
             props: ['color'],
           },
           QSeparator: { template: '<hr class="q-separator" />' },
-          QDialog: { template: '<div class="q-dialog"><slot /></div>', props: ['modelValue'] },
+          QDialog: {
+            template: '<div class="q-dialog"><template v-if="modelValue"><slot /></template></div>',
+            props: ['modelValue'],
+          },
           QCard: { template: '<div class="q-card"><slot /></div>' },
           QCardSection: { template: '<div class="q-card-section"><slot /></div>' },
           QCardActions: { template: '<div class="q-card-actions"><slot /></div>' },
@@ -708,8 +711,10 @@ describe('ExpertisesStep', () => {
       expect(selectedItems.length).toBe(1);
     });
 
-    it('renders dialog with type select and name input on All tab', () => {
+    it('renders dialog with type select and name input on All tab', async () => {
       const wrapper = createWrapper();
+
+      await wrapper.find('[aria-label="Add custom expertise"]').trigger('click');
 
       const dialog = wrapper.find('.q-dialog');
       expect(dialog.exists()).toBe(true);
@@ -719,6 +724,8 @@ describe('ExpertisesStep', () => {
 
     it('submits custom expertise via dialog', async () => {
       const wrapper = createWrapper();
+
+      await wrapper.find('[aria-label="Add custom expertise"]').trigger('click');
 
       const dialog = wrapper.find('.q-dialog');
       await dialog.find('.q-select').setValue(1);

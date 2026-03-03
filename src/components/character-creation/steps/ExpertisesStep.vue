@@ -273,7 +273,7 @@ function toggleExpertise(expertiseId: number, checked: boolean) {
   } else if (!isReadOnly(expertiseId)) {
     // Track deletion before removing from local state
     const heroExp = heroStore.hero?.expertises.find((e) => e.expertise?.id === expertiseId);
-    if (heroExp) {
+    if (heroExp && heroExp.id > 0) {
       deletionTracker?.trackDeletion('expertises', heroExp.id);
     }
     attrStore.removeExpertise(expertiseId);
