@@ -1,0 +1,80 @@
+<template>
+  <q-dialog
+    :model-value="modelValue"
+    aria-modal="true"
+    aria-labelledby="singer-form-selection-dialog-title"
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
+    <q-card class="singer-form-selection-card" role="dialog">
+      <q-card-section class="row items-center">
+        <div id="singer-form-selection-dialog-title" class="text-h6">Select Singer Form</div>
+        <q-space />
+        <q-btn
+          icon="close"
+          flat
+          round
+          dense
+          aria-label="Close dialog"
+          @click="$emit('update:modelValue', false)"
+        />
+      </q-card-section>
+      <q-separator />
+      <q-card-section>
+        <q-list bordered separator>
+          <q-item
+            v-for="form in availableForms"
+            :key="form.id"
+            :active="selectedFormId === form.id"
+            clickable
+            v-ripple
+            @click="selectedFormId !== form.id && selectForm(form.id)"
+          >
+            <q-item-section>
+              <q-item-label>{{ form.name }}</q-item-label>
+              <q-item-label v-if="form.sprenType" caption>{{ form.sprenType }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-icon v-if="selectedFormId === form.id" name="check" color="positive" size="sm" />
+              <q-btn
+                v-else
+                flat
+                dense
+                color="primary"
+                label="Select"
+                size="sm"
+                @click.stop="selectForm(form.id)"
+              />
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+</template>
+
+<script setup lang="ts">
+import type { SingerForm } from 'src/types';
+
+defineProps<{
+  modelValue: boolean;
+  selectedFormId: number | null;
+  availableForms: SingerForm[];
+}>();
+
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean];
+  select: [formId: number];
+}>();
+
+function selectForm(formId: number) {
+  emit('select', formId);
+  emit('update:modelValue', false);
+}
+</script>
+
+<style scoped>
+.singer-form-selection-card {
+  min-width: min(400px, 90vw);
+  max-width: 500px;
+}
+</style>
