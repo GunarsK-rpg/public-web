@@ -6,14 +6,12 @@ import StepNavigation from './StepNavigation.vue';
 
 // Mock values that can be changed per test
 const mockCurrentStep = ref(1);
-const mockPreviousStep = vi.fn();
 
 vi.mock('src/stores/wizard', () => ({
   useWizardStore: () => ({
     get currentStep() {
       return mockCurrentStep.value;
     },
-    previousStep: mockPreviousStep,
   }),
 }));
 
