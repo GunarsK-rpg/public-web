@@ -154,14 +154,15 @@ function getEquipmentSummary(kit: StartingKit): string {
     return 'No equipment';
   }
 
-  return kit.equipment
+  const names = kit.equipment
     .map((item) => {
       const name = findById(classifiers.equipment, item.id)?.name;
       if (!name) return null;
       return item.quantity > 1 ? `${name} x${item.quantity}` : name;
     })
-    .filter((name): name is string => name !== null)
-    .join(', ');
+    .filter((name): name is string => name !== null);
+
+  return names.length > 0 ? names.join(', ') : 'No equipment';
 }
 </script>
 

@@ -95,7 +95,7 @@ describe('RadiantPathPanel', () => {
             template: '<span class="q-icon" />',
           },
           QBtn: {
-            template: '<button class="q-btn" @click="$emit(\'click\')"><slot /></button>',
+            template: '<button class="q-btn" @click="$emit(\'click\', $event)"><slot /></button>',
             emits: ['click'],
           },
           QTooltip: {

@@ -213,6 +213,7 @@ const selectedPaths = computed((): PathSelection[] => {
 
 // Path actions
 function addPath(pathId: number) {
+  if (selectedPathIds.value.includes(pathId)) return;
   lastAddedPathId.value = pathId;
   selectedPathIds.value.push(pathId);
   talentStore.addKeyTalentForPath(pathId);
@@ -280,6 +281,7 @@ function toggleRadiant(value: boolean) {
 }
 
 function setRadiantOrder(orderId: number) {
+  if (orderId === radiantOrderId.value) return;
   trackRadiantTalentDeletions();
   talentStore.setRadiantOrder(orderId);
 }

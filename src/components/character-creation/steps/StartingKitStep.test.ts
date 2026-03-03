@@ -302,7 +302,7 @@ describe('StartingKitStep', () => {
       const wrapper = createWrapper();
       const input = wrapper.find('.q-input');
       await input.setValue(20);
-      expect(mockSetCurrency).toHaveBeenCalled();
+      expect(mockSetCurrency).toHaveBeenCalledWith(20);
     });
   });
 
@@ -376,6 +376,8 @@ describe('StartingKitStep', () => {
       mockHero.value = { startingKit: { id: 4, code: 'mystery', name: 'Mystery' }, currency: 5 };
       const wrapper = createWrapper();
       expect(wrapper.text()).toContain('Sword');
+      // Equipment id 999 doesn't exist in classifiers -- should be filtered out
+      expect(wrapper.text()).not.toContain('Unknown');
     });
   });
 

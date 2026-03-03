@@ -150,7 +150,7 @@ describe('PathsStep', () => {
             emits: ['update:modelValue', 'select'],
           },
           HeroicPathPanel: {
-            template: `<div class="heroic-path-panel">
+            template: `<div class="heroic-path-panel" :data-specialty-id="specialtyId">
               <button class="emit-remove" @click="$emit('remove')">Remove</button>
               <button class="emit-specialty" @click="$emit('update:specialtyId', 20)">Specialty</button>
               <button class="emit-toggle-talent" @click="$emit('toggleTalent', 50, true)">Toggle</button>
@@ -340,7 +340,10 @@ describe('PathsStep', () => {
       await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
       await wrapper.find('.path-selection-dialog .emit-select-1').trigger('click');
 
-      expect(mockAddKeyTalentForPath).toHaveBeenCalledWith(1);
+      // HeroicPathPanel should receive the first specialty id
+      const panel = wrapper.find('.heroic-path-panel');
+      expect(panel.exists()).toBe(true);
+      expect(panel.attributes('data-specialty-id')).toBe('10');
     });
 
     it('shows HeroicPathPanel after path selection', async () => {
@@ -371,7 +374,8 @@ describe('PathsStep', () => {
       const wrapper = createWrapper();
       await addPath(wrapper);
       await wrapper.find('.heroic-path-panel .emit-specialty').trigger('click');
-      expect(wrapper.exists()).toBe(true);
+      // Specialty should be updated to 20 (emitted from stub)
+      expect(wrapper.find('.heroic-path-panel').attributes('data-specialty-id')).toBe('20');
     });
 
     it('handles toggle-talent event', async () => {

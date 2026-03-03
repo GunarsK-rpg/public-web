@@ -25,6 +25,9 @@
             v-for="kit in classifiers.startingKits"
             :key="kit.id"
             :active="selectedKitId === kit.id"
+            clickable
+            v-ripple
+            @click="selectedKitId !== kit.id && selectKit(kit.id)"
           >
             <q-item-section>
               <q-item-label>{{ kit.name }}</q-item-label>
@@ -39,7 +42,7 @@
                 color="primary"
                 label="Select"
                 size="sm"
-                @click="selectKit(kit.id)"
+                @click.stop="selectKit(kit.id)"
               />
             </q-item-section>
           </q-item>

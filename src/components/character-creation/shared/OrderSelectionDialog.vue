@@ -25,6 +25,9 @@
             v-for="order in classifiers.radiantOrders"
             :key="order.id"
             :active="selectedOrderId === order.id"
+            clickable
+            v-ripple
+            @click="selectedOrderId !== order.id && selectOrder(order.id)"
           >
             <q-item-section>
               <q-item-label>{{ order.name }}</q-item-label>
@@ -39,7 +42,7 @@
                 color="primary"
                 label="Select"
                 size="sm"
-                @click="selectOrder(order.id)"
+                @click.stop="selectOrder(order.id)"
               />
             </q-item-section>
           </q-item>
@@ -52,6 +55,7 @@
 <script setup lang="ts">
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import type { RadiantOrder } from 'src/types';
 
 defineProps<{
   modelValue: boolean;
@@ -65,10 +69,7 @@ const emit = defineEmits<{
 
 const classifiers = useClassifierStore();
 
-function getOrderSubtitle(order: {
-  surge1?: { id: number } | null;
-  surge2?: { id: number } | null;
-}): string {
+function getOrderSubtitle(order: RadiantOrder): string {
   const surge1 = order.surge1?.id ? findById(classifiers.surges, order.surge1.id)?.name : null;
   const surge2 = order.surge2?.id ? findById(classifiers.surges, order.surge2.id)?.name : null;
   if (surge1 && surge2) return `${surge1} \u00b7 ${surge2}`;

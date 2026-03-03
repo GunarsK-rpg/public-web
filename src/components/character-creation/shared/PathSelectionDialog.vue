@@ -21,7 +21,14 @@
       <q-separator />
       <q-card-section>
         <q-list bordered separator>
-          <q-item v-for="path in classifiers.paths" :key="path.id" :active="isSelected(path.id)">
+          <q-item
+            v-for="path in classifiers.paths"
+            :key="path.id"
+            :active="isSelected(path.id)"
+            clickable
+            v-ripple
+            @click="!isSelected(path.id) && selectPath(path.id)"
+          >
             <q-item-section>
               <q-item-label>{{ path.name }}</q-item-label>
               <q-item-label caption>{{ path.description }}</q-item-label>
@@ -35,7 +42,7 @@
                 color="primary"
                 label="Select"
                 size="sm"
-                @click="selectPath(path.id)"
+                @click.stop="selectPath(path.id)"
               />
             </q-item-section>
           </q-item>

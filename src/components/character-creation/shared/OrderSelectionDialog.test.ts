@@ -62,8 +62,18 @@ function createWrapper(props: { modelValue: boolean; selectedOrderId: number | n
         QSpace: { template: '<span />' },
         QBtn: {
           template:
-            '<button :disabled="disable" @click="$emit(\'click\')"><slot />{{ label }}</button>',
-          props: ['label', 'disable', 'icon', 'flat', 'round', 'dense', 'color', 'size'],
+            '<button :disabled="disable" :aria-label="ariaLabel" @click="$emit(\'click\', $event)"><slot />{{ label }}</button>',
+          props: [
+            'label',
+            'disable',
+            'icon',
+            'flat',
+            'round',
+            'dense',
+            'color',
+            'size',
+            'ariaLabel',
+          ],
           emits: ['click'],
         },
         QList: { template: '<div class="q-list"><slot /></div>' },
@@ -142,8 +152,7 @@ describe('OrderSelectionDialog', () => {
 
   it('emits update:modelValue false when close button clicked', async () => {
     const wrapper = createWrapper({ modelValue: true, selectedOrderId: null });
-    const allButtons = wrapper.findAll('button');
-    const closeBtn = allButtons[0]!;
+    const closeBtn = wrapper.find('[aria-label="Close dialog"]');
     await closeBtn.trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
