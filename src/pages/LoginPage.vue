@@ -29,6 +29,8 @@
             :rules="[(val) => !!val || 'Password is required']"
           />
 
+          <q-checkbox v-model="rememberMe" label="Remember me" class="q-mt-sm" />
+
           <q-btn
             type="submit"
             label="Login"
@@ -62,6 +64,7 @@ const authStore = useAuthStore();
 
 const username = ref('');
 const password = ref('');
+const rememberMe = ref(false);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const registered = computed(() => route.query.registered === '1');
@@ -98,7 +101,7 @@ async function handleLogin(): Promise<void> {
   error.value = null;
 
   try {
-    const success = await authStore.login(username.value, password.value);
+    const success = await authStore.login(username.value, password.value, rememberMe.value);
 
     if (success) {
       const redirect = route.query.redirect as string;

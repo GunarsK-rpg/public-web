@@ -1,12 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useAuthStore } from './auth';
+import { useAuthStore, setRouterInstance } from './auth';
+import type { Router } from 'vue-router';
 
-// Mock vue-router
+// Mock router instance
 const mockPush = vi.fn();
-vi.mock('vue-router', () => ({
-  useRouter: () => ({ push: mockPush }),
-}));
+setRouterInstance({ push: mockPush } as unknown as Router);
 
 // Mock auth service with hoisted fns to avoid unbound-method lint errors
 const { mockLogin, mockLogout, mockTokenStatus } = vi.hoisted(() => ({
@@ -24,6 +23,19 @@ vi.mock('src/services/auth', () => ({
   },
 }));
 
+// Mock authChannel
+const { mockBroadcastLogin, mockBroadcastLogout } = vi.hoisted(() => ({
+  mockBroadcastLogin: vi.fn(),
+  mockBroadcastLogout: vi.fn(),
+}));
+
+vi.mock('src/services/authChannel', () => ({
+  broadcastLogin: mockBroadcastLogin,
+  broadcastLogout: mockBroadcastLogout,
+  initAuthChannel: vi.fn(),
+  closeAuthChannel: vi.fn(),
+}));
+
 // Mock token refresh
 const { mockScheduleProactiveRefresh, mockClearProactiveRefresh } = vi.hoisted(() => ({
   mockScheduleProactiveRefresh: vi.fn(),
@@ -36,6 +48,10 @@ vi.mock('src/services/tokenRefresh', () => ({
 }));
 
 // Mock logger
+const { mockClearUserContext } = vi.hoisted(() => ({
+  mockClearUserContext: vi.fn(),
+}));
+
 vi.mock('src/utils/logger', () => ({
   logger: {
     info: vi.fn(),
@@ -44,7 +60,7 @@ vi.mock('src/utils/logger', () => ({
     debug: vi.fn(),
   },
   setUserContext: vi.fn(),
-  clearUserContext: vi.fn(),
+  clearUserContext: mockClearUserContext,
 }));
 
 describe('useAuthStore', () => {
@@ -149,6 +165,48 @@ describe('useAuthStore', () => {
 
       expect(store.loading).toBe(false);
     });
+
+    it('broadcasts login event on success', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: {}, expires_in: 900 },
+      });
+
+      const store = useAuthStore();
+      await store.login('testuser', 'password');
+
+      expect(mockBroadcastLogin).toHaveBeenCalled();
+    });
+
+    it('does not broadcast login on failure', async () => {
+      mockLogin.mockRejectedValue(new Error('fail'));
+
+      const store = useAuthStore();
+      await store.login('testuser', 'password');
+
+      expect(mockBroadcastLogin).not.toHaveBeenCalled();
+    });
+
+    it('passes rememberMe to auth service', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: {}, expires_in: 900 },
+      });
+
+      const store = useAuthStore();
+      await store.login('testuser', 'password', true);
+
+      expect(mockLogin).toHaveBeenCalledWith('testuser', 'password', true);
+    });
+
+    it('defaults rememberMe to false', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: {}, expires_in: 900 },
+      });
+
+      const store = useAuthStore();
+      await store.login('testuser', 'password');
+
+      expect(mockLogin).toHaveBeenCalledWith('testuser', 'password', false);
+    });
   });
 
   // ========================================
@@ -186,6 +244,15 @@ describe('useAuthStore', () => {
       await store.logout();
 
       expect(mockClearProactiveRefresh).toHaveBeenCalled();
+    });
+
+    it('broadcasts logout event', async () => {
+      mockLogout.mockResolvedValue({});
+
+      const store = useAuthStore();
+      await store.logout();
+
+      expect(mockBroadcastLogout).toHaveBeenCalled();
     });
 
     it('clears state even when logout request fails', async () => {
@@ -303,6 +370,52 @@ describe('useAuthStore', () => {
 
       expect(store.canDelete('heroes')).toBe(true);
       expect(store.canDelete('campaigns')).toBe(false);
+    });
+  });
+
+  // ========================================
+  // handleAuthBroadcast
+  // ========================================
+  describe('handleAuthBroadcast', () => {
+    it('clears state and navigates on logout broadcast', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: { heroes: 'edit' }, expires_in: 900 },
+      });
+
+      const store = useAuthStore();
+      await store.login('testuser', 'password');
+      vi.clearAllMocks();
+
+      store.handleAuthBroadcast({ type: 'logout' });
+
+      expect(store.isAuthenticated).toBe(false);
+      expect(store.username).toBe('');
+      expect(store.scopes).toEqual({});
+      expect(mockClearProactiveRefresh).toHaveBeenCalled();
+      expect(mockClearUserContext).toHaveBeenCalled();
+      expect(mockPush).toHaveBeenCalledWith({ name: 'login' });
+    });
+
+    it('does not call authService.logout on logout broadcast', () => {
+      const store = useAuthStore();
+      store.handleAuthBroadcast({ type: 'logout' });
+
+      expect(mockLogout).not.toHaveBeenCalled();
+    });
+
+    it('calls checkAuthStatus on login broadcast', async () => {
+      mockTokenStatus.mockResolvedValue({
+        data: { valid: true, username: 'otheruser', scopes: { heroes: 'read' }, ttl_seconds: 800 },
+      });
+
+      const store = useAuthStore();
+      store.handleAuthBroadcast({ type: 'login' });
+
+      // Wait for async checkAuthStatus
+      await vi.waitFor(() => {
+        expect(store.isAuthenticated).toBe(true);
+      });
+      expect(store.username).toBe('otheruser');
     });
   });
 });
