@@ -81,23 +81,38 @@
         Singers begin in dullform by default. Other forms can be unlocked through talents.
       </div>
 
-      <div class="row q-col-gutter-md" role="radiogroup" aria-label="Select singer form">
-        <div v-for="form in availableForms" :key="form.id" class="col-12 col-sm-4">
-          <SelectableCard
-            :title="form.name"
-            :subtitle="form.description ?? ''"
-            :selected="selectedFormId === form.id"
-            :aria-label="`${form.name} form`"
-            @select="selectForm(form.id)"
-          />
-        </div>
-      </div>
+      <q-btn
+        :label="selectedForm ? 'Change Form' : 'Choose Form'"
+        :icon="selectedForm ? 'swap_horiz' : 'add'"
+        color="primary"
+        outline
+        @click="formDialogOpen = true"
+      />
+
+      <SingerFormSelectionDialog
+        v-model="formDialogOpen"
+        :available-forms="availableForms"
+        :selected-form-id="selectedFormId"
+        @select="selectForm"
+      />
+
+      <q-card v-if="selectedForm" flat bordered class="q-mt-md" data-testid="singer-detail-card">
+        <q-card-section>
+          <div class="text-subtitle1">{{ selectedForm.name }}</div>
+          <div v-if="selectedForm.sprenType" class="text-caption q-mb-sm">
+            {{ selectedForm.sprenType }}
+          </div>
+          <div v-if="selectedForm.description" class="text-body2">
+            {{ selectedForm.description }}
+          </div>
+        </q-card-section>
+      </q-card>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted } from 'vue';
+import { computed, inject, onMounted, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
@@ -112,6 +127,7 @@ import { clamp } from 'src/utils/numberUtils';
 import { logger } from 'src/utils/logger';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import SelectableCard from '../shared/SelectableCard.vue';
+import SingerFormSelectionDialog from '../shared/SingerFormSelectionDialog.vue';
 
 const $q = useQuasar();
 const heroStore = useHeroStore();
@@ -129,7 +145,11 @@ const campaignName = computed(() => heroStore.hero?.campaign?.name);
 const ancestries = computed(() => classifiers.ancestries);
 const selectedAncestryId = computed(() => heroStore.hero?.ancestry.id ?? 0);
 const selectedFormId = computed(() => heroStore.hero?.activeSingerForm?.id ?? null);
+const selectedForm = computed(() =>
+  selectedFormId.value ? classifiers.singerForms.find((f) => f.id === selectedFormId.value) : null
+);
 const isSinger = computed(() => talentStore.isSinger);
+const formDialogOpen = ref(false);
 
 const availableForms = computed(() =>
   classifiers.singerForms.filter((form) => {

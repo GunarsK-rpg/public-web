@@ -173,6 +173,29 @@ describe('BasicSetupStep', () => {
             props: ['title', 'subtitle', 'selected', 'ariaLabel'],
             emits: ['select'],
           },
+          SingerFormSelectionDialog: {
+            template: `<div class="singer-form-dialog" v-if="modelValue">
+              <span v-for="f in availableForms" :key="f.id" class="dialog-form">{{ f.name }}</span>
+              <button class="dialog-select" @click="$emit('select', availableForms[0]?.id)">Select</button>
+            </div>`,
+            props: ['modelValue', 'selectedFormId', 'availableForms'],
+            emits: ['update:modelValue', 'select'],
+          },
+          QCard: {
+            template: '<div class="q-card"><slot /></div>',
+          },
+          QCardSection: {
+            template: '<div class="q-card-section"><slot /></div>',
+          },
+          QSpace: {
+            template: '<span />',
+          },
+          QBtn: {
+            template:
+              '<button class="q-btn" @click="$emit(\'click\', $event)">{{ label }}</button>',
+            props: ['label', 'icon', 'color', 'outline', 'flat'],
+            emits: ['click'],
+          },
         },
       },
     });
@@ -569,7 +592,23 @@ describe('BasicSetupStep', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Select Initial Form');
-      expect(wrapper.text()).toContain('Dullform');
+      expect(wrapper.find('.q-btn').exists()).toBe(true);
+    });
+
+    it('shows Choose Form button when no form selected', () => {
+      mockIsSinger.value = true;
+      mockActiveSingerForm.value = null;
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Choose Form');
+    });
+
+    it('shows Change Form button when form is selected', () => {
+      mockIsSinger.value = true;
+      mockActiveSingerForm.value = { id: 1, code: 'dullform', name: 'Dullform' };
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Change Form');
     });
 
     it('does not show form selection for non-singer ancestry', () => {
@@ -579,35 +618,71 @@ describe('BasicSetupStep', () => {
       expect(wrapper.text()).not.toContain('Select Initial Form');
     });
 
-    it('shows available forms based on talents', () => {
+    it('passes available forms to dialog including talent-unlocked forms', async () => {
       mockIsSinger.value = true;
       mockHeroTalents.value = [
         { talent: { id: 100, code: 'warform-talent', name: 'Warform Talent' } },
       ];
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Dullform');
-      expect(wrapper.text()).toContain('Warform');
+      const btn = wrapper.findAll('.q-btn').find((b) => b.text().includes('Form'));
+      expect(btn).toBeDefined();
+      await btn!.trigger('click');
+
+      const dialog = wrapper.find('.singer-form-dialog');
+      expect(dialog.exists()).toBe(true);
+      const formNames = dialog.findAll('.dialog-form').map((el) => el.text());
+      expect(formNames).toContain('Dullform');
+      expect(formNames).toContain('Warform');
     });
 
-    it('filters forms requiring talents hero does not have', () => {
+    it('filters forms requiring talents hero does not have', async () => {
       mockIsSinger.value = true;
       mockHeroTalents.value = [];
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Dullform');
-      expect(wrapper.text()).not.toContain('Warform');
+      const btn = wrapper.findAll('.q-btn').find((b) => b.text().includes('Form'));
+      expect(btn).toBeDefined();
+      await btn!.trigger('click');
+
+      const dialog = wrapper.find('.singer-form-dialog');
+      expect(dialog.exists()).toBe(true);
+      const formNames = dialog.findAll('.dialog-form').map((el) => el.text());
+      expect(formNames).toContain('Dullform');
+      expect(formNames).not.toContain('Warform');
     });
 
-    it('calls setSingerForm when form card is clicked', async () => {
+    it('calls setSingerForm when dialog emits select', async () => {
       mockIsSinger.value = true;
       const wrapper = createWrapper();
 
-      const cards = wrapper.findAll('.selectable-card');
-      const dullformCard = cards.find((c) => c.text() === 'Dullform');
-      await dullformCard!.trigger('click');
+      // Click button to open dialog
+      const btn = wrapper.findAll('.q-btn').find((b) => b.text().includes('Form'));
+      await btn!.trigger('click');
+
+      // Click the select button in the dialog stub
+      const selectBtn = wrapper.find('.dialog-select');
+      expect(selectBtn.exists()).toBe(true);
+      await selectBtn.trigger('click');
 
       expect(mockSetSingerForm).toHaveBeenCalledWith(1);
+    });
+
+    it('shows detail card when form is selected', () => {
+      mockIsSinger.value = true;
+      mockActiveSingerForm.value = { id: 1, code: 'dullform', name: 'Dullform' };
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('[data-testid="singer-detail-card"]').exists()).toBe(true);
+      expect(wrapper.text()).toContain('Dullform');
+    });
+
+    it('does not show detail card when no form selected', () => {
+      mockIsSinger.value = true;
+      mockActiveSingerForm.value = null;
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('[data-testid="singer-detail-card"]').exists()).toBe(false);
     });
   });
 
