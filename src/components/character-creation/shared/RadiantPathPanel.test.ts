@@ -249,12 +249,12 @@ describe('RadiantPathPanel', () => {
       expect(wrapper.text()).toContain('Order of Light');
     });
 
-    it('defaults to surge1 tab', () => {
+    it('defaults to order tab', () => {
       const wrapper = createWrapper({ orderId: 1, idealLevel: 3 });
 
       const toggle = wrapper.find('.q-btn-toggle');
       const activeButton = toggle.find('button.active');
-      expect(activeButton?.text()).toContain('Fire Surge');
+      expect(activeButton?.text()).toContain('Order of Light');
     });
   });
 

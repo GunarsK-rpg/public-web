@@ -12,6 +12,7 @@ const mockHero = ref<{
   currency: number;
   ancestry: { id: number; code: string; name: string } | null;
   radiantOrder: { id: number; code: string; name: string } | null;
+  radiantIdeal: number;
   activeSingerForm: { id: number; code: string; name: string } | null;
   cultures: { culture: { id: number; code: string; name: string } }[];
 } | null>(null);
@@ -105,6 +106,7 @@ describe('CharacterHeader', () => {
       currency: 100,
       ancestry: { id: 1, code: 'human', name: 'Human' },
       radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+      radiantIdeal: 3,
       activeSingerForm: null,
       cultures: [{ culture: { id: 1, code: 'alethi', name: 'Alethi' } }],
     };
@@ -136,9 +138,9 @@ describe('CharacterHeader', () => {
       expect(wrapper.text()).toContain('· Alethi');
     });
 
-    it('renders radiant order name with separator', () => {
+    it('renders radiant order name with ideal level', () => {
       const wrapper = createWrapper();
-      expect(wrapper.text()).toContain('· Windrunner');
+      expect(wrapper.text()).toContain('· Windrunner (3)');
     });
 
     it('renders separator at bottom', () => {
@@ -223,7 +225,7 @@ describe('CharacterHeader', () => {
     it('handles missing radiant order gracefully', () => {
       mockHero.value!.radiantOrder = null;
       const wrapper = createWrapper();
-      expect(wrapper.text()).not.toContain('· Windrunner');
+      expect(wrapper.text()).not.toContain('· Windrunner (3)');
     });
 
     it('handles missing ancestry gracefully', () => {

@@ -111,7 +111,7 @@ const {
   isTalentSelected,
 } = useTalentPrerequisites();
 
-const activeTab = ref<'order' | 'surge1' | 'surge2'>('surge1');
+const activeTab = ref<'order' | 'surge1' | 'surge2'>('order');
 
 const selectedOrder = computed(() => findById(classifiers.radiantOrders, props.orderId));
 
