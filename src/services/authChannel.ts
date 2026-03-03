@@ -4,6 +4,10 @@ let channel: BroadcastChannel | null = null;
 
 export function initAuthChannel(onMessage: (msg: AuthMessage) => void): void {
   if (typeof BroadcastChannel === 'undefined') return;
+  if (channel) {
+    channel.onmessage = null;
+    channel.close();
+  }
   channel = new BroadcastChannel('auth');
   channel.onmessage = (event: MessageEvent<AuthMessage>) => {
     onMessage(event.data);

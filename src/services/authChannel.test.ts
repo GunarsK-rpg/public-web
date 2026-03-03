@@ -5,6 +5,8 @@ import type * as AuthChannelModule from './authChannel';
 let authChannel: typeof AuthChannelModule;
 
 describe('authChannel', () => {
+  const OriginalBroadcastChannel = globalThis.BroadcastChannel;
+
   let mockInstance: {
     onmessage: ((e: MessageEvent) => void) | null;
     postMessage: ReturnType<typeof vi.fn>;
@@ -28,6 +30,7 @@ describe('authChannel', () => {
 
   afterEach(() => {
     authChannel.closeAuthChannel();
+    globalThis.BroadcastChannel = OriginalBroadcastChannel;
   });
 
   describe('initAuthChannel', () => {
