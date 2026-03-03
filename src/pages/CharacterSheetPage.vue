@@ -22,7 +22,6 @@
       <q-tabs
         v-model="activeTab"
         dense
-
         active-color="primary"
         indicator-color="primary"
         align="justify"

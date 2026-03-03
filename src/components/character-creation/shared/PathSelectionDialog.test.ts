@@ -121,11 +121,12 @@ describe('PathSelectionDialog', () => {
     expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
 
-  it('emits select when row clicked', async () => {
+  it('emits select and closes when row clicked', async () => {
     const wrapper = createWrapper({ modelValue: true, selectedPathIds: [] });
     const items = wrapper.findAll('.q-item');
     await items[1]!.trigger('click');
     expect(wrapper.emitted('select')).toEqual([[2]]);
+    expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
 
   it('does not emit when already-selected row clicked', async () => {
@@ -133,6 +134,7 @@ describe('PathSelectionDialog', () => {
     const items = wrapper.findAll('.q-item');
     await items[0]!.trigger('click');
     expect(wrapper.emitted('select')).toBeUndefined();
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   });
 
   it('emits update:modelValue false when close button clicked', async () => {

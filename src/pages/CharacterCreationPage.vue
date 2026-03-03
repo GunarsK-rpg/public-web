@@ -289,7 +289,9 @@ $bottom-nav-height: 56px;
 .character-creation-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - #{$app-header-height} - #{$bottom-nav-height});
+  height: calc(
+    100dvh - #{$app-header-height} - #{$bottom-nav-height} - env(safe-area-inset-bottom, 0px)
+  );
   padding: 0 !important;
 }
 
@@ -301,5 +303,10 @@ $bottom-nav-height: 56px;
 
 .creation-header {
   flex-shrink: 0;
+  border-bottom: 1px solid $color-border-dark;
+
+  .body--light & {
+    border-bottom-color: $color-border-light;
+  }
 }
 </style>

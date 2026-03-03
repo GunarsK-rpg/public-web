@@ -46,6 +46,18 @@ a[href] {
 }
 
 // =============================================================================
+// Tooltips - Desktop Only
+// =============================================================================
+// Hide tooltips on devices without hover (mobile/tablet touch).
+// Tooltips are a hover pattern; on touch devices they stick after tap.
+
+@media (hover: none) {
+  .q-tooltip {
+    display: none !important;
+  }
+}
+
+// =============================================================================
 // Typography Variables (CSS Custom Properties for component access)
 // =============================================================================
 $font-size-sm: 0.75rem; // Small labels, captions, secondary text
