@@ -37,6 +37,27 @@
         </div>
       </q-tab-panel>
     </q-tab-panels>
+
+    <!-- Icon Legend -->
+    <div class="icon-legend q-mt-md q-pa-sm">
+      <div class="text-caption text-weight-medium q-mb-xs">Action Types</div>
+      <div class="legend-grid">
+        <div
+          v-for="at in sortedActivationTypes"
+          :key="at.id"
+          class="legend-item"
+          :title="at.description"
+        >
+          <img
+            v-if="at.icon"
+            :src="getIconUrl(at.icon, 'actions')"
+            :alt="at.name"
+            class="legend-icon icon-theme-aware"
+          />
+          <span class="text-caption">{{ at.name }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -45,6 +66,7 @@ import { ref, computed, watch } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode } from 'src/utils/arrayUtils';
+import { getIconUrl } from 'src/utils/iconUrl';
 import ActionItem from './ActionItem.vue';
 import type { Action } from 'src/types';
 
@@ -68,6 +90,30 @@ watch(
   },
   { immediate: true }
 );
+
+// Activation type display order lookup: id → displayOrder
+const activationTypeOrder = computed(() => {
+  const map = new Map<number, number>();
+  for (const at of classifiers.activationTypes) {
+    map.set(at.id, at.displayOrder ?? 0);
+  }
+  return map;
+});
+
+// Activation types sorted by display order (for legend)
+const sortedActivationTypes = computed(() =>
+  [...classifiers.activationTypes].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+);
+
+// Sort actions by activation type display order, then alphabetically by name
+function sortActions(actions: Action[]): Action[] {
+  return [...actions].sort((a, b) => {
+    const orderA = activationTypeOrder.value.get(a.activationType.id) ?? 0;
+    const orderB = activationTypeOrder.value.get(b.activationType.id) ?? 0;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.name.localeCompare(b.name);
+  });
+}
 
 // Pre-compute action links map for O(1) lookup: objectId → Set<actionId>
 const actionLinksMap = computed(() => {
@@ -131,14 +177,14 @@ function getActionsByTypeId(actionTypeId: number): Action[] {
   // Basic actions - everyone has all of them
   const basicType = getActionTypeByCode('basic');
   if (basicType && actionTypeId === basicType.id) {
-    return classifiers.actions.filter((a) => a.actionType.id === actionTypeId);
+    return sortActions(classifiers.actions.filter((a) => a.actionType.id === actionTypeId));
   }
 
   // Stormlight actions - all Radiants have them
   const stormlightType = getActionTypeByCode('stormlight');
   if (stormlightType && actionTypeId === stormlightType.id) {
     if (!heroStore.hero?.radiantOrder) return [];
-    return classifiers.actions.filter((a) => a.actionType.id === actionTypeId);
+    return sortActions(classifiers.actions.filter((a) => a.actionType.id === actionTypeId));
   }
 
   // Other action types - filter by actionLinks using pre-computed map
@@ -159,6 +205,29 @@ function getActionsByTypeId(actionTypeId: number): Action[] {
     }
   }
 
-  return classifiers.actions.filter((a) => linkedActionIds.has(a.id));
+  return sortActions(classifiers.actions.filter((a) => linkedActionIds.has(a.id)));
 }
 </script>
+
+<style scoped>
+.icon-legend {
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.legend-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-icon {
+  width: 16px;
+  height: 16px;
+}
+</style>
