@@ -422,7 +422,7 @@ describe('useHeroTalentsStore', () => {
       store.addCulture(1); // Alethi has expertiseId 1
 
       const hasExpertise = heroStore.hero!.expertises.some(
-        (e) => e.expertise.id === 1 && e.source?.sourceType === 'culture'
+        (e) => e.expertise?.id === 1 && e.source?.sourceType === 'culture'
       );
       expect(hasExpertise).toBe(true);
     });

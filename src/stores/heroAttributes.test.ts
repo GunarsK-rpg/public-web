@@ -566,7 +566,7 @@ describe('useHeroAttributesStore', () => {
       store.addExpertise(1);
 
       expect(heroStore.hero!.expertises.length).toBe(1);
-      expect(heroStore.hero!.expertises[0]!.expertise.id).toBe(1);
+      expect(heroStore.hero!.expertises[0]!.expertise?.id).toBe(1);
     });
 
     it('does not add duplicate expertise', () => {

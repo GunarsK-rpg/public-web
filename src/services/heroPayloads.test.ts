@@ -198,11 +198,12 @@ describe('buildSkillPayload', () => {
 // buildExpertisePayload
 // ========================================
 describe('buildExpertisePayload', () => {
-  it('maps expertise to ClassifierInput', () => {
+  it('maps classifier expertise to ClassifierInput', () => {
     const exp: HeroExpertise = {
       id: 30,
       heroId: 1,
       expertise: { id: 7, code: 'climbing', name: 'Climbing' },
+      expertiseType: { id: 1, code: 'utility', name: 'Utility' },
       notes: 'Expert climber',
       source: { sourceType: 'culture', sourceId: 1 },
     };
@@ -221,11 +222,32 @@ describe('buildExpertisePayload', () => {
       id: 30,
       heroId: 1,
       expertise: { id: 7, code: 'climbing', name: 'Climbing' },
+      expertiseType: { id: 1, code: 'utility', name: 'Utility' },
     };
     const payload = buildExpertisePayload(1, exp);
 
     expect(payload.notes).toBeNull();
     expect(payload.source).toBeNull();
+  });
+
+  it('maps custom expertise to expertiseType + customName', () => {
+    const exp: HeroExpertise = {
+      id: 31,
+      heroId: 1,
+      expertise: null,
+      expertiseType: { id: 3, code: 'cultural', name: 'Cultural' },
+      customName: 'Unkalaki Politics',
+      source: { sourceType: 'intellect' },
+    };
+    const payload = buildExpertisePayload(1, exp);
+
+    expect(payload).toEqual({
+      heroId: 1,
+      expertiseType: { code: 'cultural' },
+      customName: 'Unkalaki Politics',
+      notes: null,
+      source: { sourceType: 'intellect' },
+    });
   });
 });
 

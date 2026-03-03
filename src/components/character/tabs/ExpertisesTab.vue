@@ -11,9 +11,9 @@
         <q-chip
           v-for="heroExp in expertisesByTypeRecord[expType.id]"
           :key="heroExp.id"
-          :aria-label="`${getExpertiseName(heroExp.expertise.id)} expertise`"
+          :aria-label="`${getDisplayName(heroExp)} expertise`"
         >
-          {{ getExpertiseName(heroExp.expertise.id) }}
+          {{ getDisplayName(heroExp) }}
           <q-badge v-if="heroExp.source" :color="RPG_COLORS.badgeMuted" class="q-ml-xs">
             {{ heroExp.source.sourceType }}
           </q-badge>
@@ -28,7 +28,7 @@
 import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
+import { buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 import type { HeroExpertise } from 'src/types';
 
@@ -37,21 +37,27 @@ const classifiers = useClassifierStore();
 
 const heroExpertises = computed(() => heroStore.expertises);
 
-// Hero expertises grouped by type (via heroExp.expertise.id -> expertise.expertiseType.id)
+// Hero expertises grouped by type
 const expertisesByTypeRecord = computed((): Record<number, HeroExpertise[]> => {
   const result: Record<number, HeroExpertise[]> = {};
   for (const heroExp of heroExpertises.value) {
-    const expertise = findById(classifiers.expertises, heroExp.expertise.id);
-    if (!expertise) continue;
-    const typeId = expertise.expertiseType.id;
+    const typeId = heroExp.expertiseType?.id;
+    if (!typeId) continue;
     if (!result[typeId]) result[typeId] = [];
     result[typeId].push(heroExp);
   }
   return result;
 });
 
-// Name getter using factory pattern
-const getExpertiseName = makeNameGetter(computed(() => buildIdNameMap(classifiers.expertises)));
+// Name getter for classifier expertises
+const getClassifierName = makeNameGetter(computed(() => buildIdNameMap(classifiers.expertises)));
+
+function getDisplayName(heroExp: HeroExpertise): string {
+  if (heroExp.expertise) {
+    return getClassifierName(heroExp.expertise.id);
+  }
+  return heroExp.customName || 'Custom';
+}
 </script>
 
 <style scoped>

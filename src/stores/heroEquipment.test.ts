@@ -525,7 +525,7 @@ describe('useHeroEquipmentStore', () => {
 
       // Warrior kit has climbing expertise
       const hasClimbingExpertise = heroStore.hero!.expertises.some(
-        (e) => e.expertise.id === 1 && e.source?.sourceType === 'starting_kit'
+        (e) => e.expertise?.id === 1 && e.source?.sourceType === 'starting_kit'
       );
       expect(hasClimbingExpertise).toBe(true);
     });

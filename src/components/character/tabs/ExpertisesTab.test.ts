@@ -74,6 +74,7 @@ function createHeroExpertise(overrides: Partial<HeroExpertise> = {}): HeroExpert
     id: 1,
     heroId: 1,
     expertise: { id: 1, code: 'swords', name: 'Swords' },
+    expertiseType: { id: 1, code: 'weapon', name: 'Weapon' },
     source: null,
     ...overrides,
   };
@@ -107,11 +108,13 @@ describe('ExpertisesTab', () => {
       createHeroExpertise({
         id: 3,
         expertise: { id: 3, code: 'light_armor', name: 'Light Armor' },
+        expertiseType: { id: 2, code: 'armor', name: 'Armor' },
         source: { sourceType: 'talent', sourceId: 5 },
       }),
       createHeroExpertise({
         id: 4,
         expertise: { id: 6, code: 'alethi_culture', name: 'Alethi Culture' },
+        expertiseType: { id: 4, code: 'culture', name: 'Culture' },
         source: { sourceType: 'culture', sourceId: 1 },
       }),
     ];
@@ -266,11 +269,13 @@ describe('ExpertisesTab', () => {
         createHeroExpertise({
           id: 1,
           expertise: { id: 3, code: 'light_armor', name: 'Light Armor' },
-        }), // Light Armor
+          expertiseType: { id: 2, code: 'armor', name: 'Armor' },
+        }),
         createHeroExpertise({
           id: 2,
           expertise: { id: 4, code: 'heavy_armor', name: 'Heavy Armor' },
-        }), // Heavy Armor
+          expertiseType: { id: 2, code: 'armor', name: 'Armor' },
+        }),
       ];
       const wrapper = createWrapper();
 
@@ -289,8 +294,9 @@ describe('ExpertisesTab', () => {
       ];
       const wrapper = createWrapper();
 
-      // Unknown expertise is skipped by grouping logic, so no chips should render
-      expect(wrapper.findAll('.q-chip').length).toBe(0);
+      // Grouped by expertiseType (weapon), displays fallback name from classifier lookup
+      expect(wrapper.findAll('.q-chip').length).toBe(1);
+      expect(wrapper.text()).toContain('Unknown');
     });
 
     it('handles empty expertises array', () => {
@@ -308,15 +314,22 @@ describe('ExpertisesTab', () => {
         createHeroExpertise({
           id: 3,
           expertise: { id: 3, code: 'light_armor', name: 'Light Armor' },
+          expertiseType: { id: 2, code: 'armor', name: 'Armor' },
         }),
         createHeroExpertise({
           id: 4,
           expertise: { id: 4, code: 'heavy_armor', name: 'Heavy Armor' },
+          expertiseType: { id: 2, code: 'armor', name: 'Armor' },
         }),
-        createHeroExpertise({ id: 5, expertise: { id: 5, code: 'smithing', name: 'Smithing' } }),
+        createHeroExpertise({
+          id: 5,
+          expertise: { id: 5, code: 'smithing', name: 'Smithing' },
+          expertiseType: { id: 3, code: 'tool', name: 'Tool' },
+        }),
         createHeroExpertise({
           id: 6,
           expertise: { id: 6, code: 'alethi_culture', name: 'Alethi Culture' },
+          expertiseType: { id: 4, code: 'culture', name: 'Culture' },
         }),
       ];
       const wrapper = createWrapper();
@@ -324,6 +337,62 @@ describe('ExpertisesTab', () => {
       // All expertises should render
       const chips = wrapper.findAll('.q-chip');
       expect(chips.length).toBe(6);
+    });
+  });
+
+  // ========================================
+  // Custom Expertises
+  // ========================================
+  describe('custom expertises', () => {
+    it('renders custom expertise with custom name', () => {
+      mockExpertises.value = [
+        createHeroExpertise({
+          id: 10,
+          expertise: null,
+          expertiseType: { id: 3, code: 'tool', name: 'Tool' },
+          customName: 'Glassblowing',
+        }),
+      ];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Glassblowing');
+      expect(wrapper.findAll('.q-chip').length).toBe(1);
+    });
+
+    it('groups custom expertise under correct type', () => {
+      mockExpertises.value = [
+        createHeroExpertise({
+          id: 1,
+          expertise: { id: 5, code: 'smithing', name: 'Smithing' },
+          expertiseType: { id: 3, code: 'tool', name: 'Tool' },
+        }),
+        createHeroExpertise({
+          id: 10,
+          expertise: null,
+          expertiseType: { id: 3, code: 'tool', name: 'Tool' },
+          customName: 'Glassblowing',
+        }),
+      ];
+      const wrapper = createWrapper();
+
+      // Both should appear, tool section has 2 chips
+      expect(wrapper.text()).toContain('Smithing');
+      expect(wrapper.text()).toContain('Glassblowing');
+      expect(wrapper.text()).toContain('No weapon expertises');
+    });
+
+    it('shows fallback name when custom expertise has no customName', () => {
+      mockExpertises.value = [
+        createHeroExpertise({
+          id: 10,
+          expertise: null,
+          expertiseType: { id: 1, code: 'weapon', name: 'Weapon' },
+          customName: null,
+        }),
+      ];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Custom');
     });
   });
 });
