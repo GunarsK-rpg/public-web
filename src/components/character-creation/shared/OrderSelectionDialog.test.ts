@@ -171,6 +171,7 @@ describe('OrderSelectionDialog', () => {
   it('emits update:modelValue false when close button clicked', async () => {
     const wrapper = createWrapper({ modelValue: true, selectedOrderId: null });
     const closeBtn = wrapper.find('[aria-label="Close dialog"]');
+    expect(closeBtn.exists()).toBe(true);
     await closeBtn.trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
