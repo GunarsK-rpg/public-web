@@ -208,11 +208,10 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
   }
 
   async function saveDerivedStatModifiers(heroId: number, hero: HeroSheet): Promise<void> {
-    const statsWithModifiers = hero.derivedStats.filter((s) => s.modifier !== 0);
-    if (statsWithModifiers.length === 0) return;
+    if (hero.derivedStats.length === 0) return;
 
     const results = await Promise.allSettled(
-      statsWithModifiers.map((stat) => {
+      hero.derivedStats.map((stat) => {
         const payload = buildDerivedStatPayload(heroId, stat);
         return heroService.upsertSubResource(heroId, 'derived-stats', payload);
       })
