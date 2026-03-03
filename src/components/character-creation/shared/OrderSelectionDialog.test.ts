@@ -138,6 +138,7 @@ describe('OrderSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedOrderId: null });
     const items = wrapper.findAll('.q-item');
     const selectBtn = items[0]!.findAll('button').find((b) => b.text().includes('Select'));
+    expect(selectBtn).toBeDefined();
     await selectBtn!.trigger('click');
     expect(wrapper.emitted('select')).toEqual([[10]]);
   });
@@ -146,6 +147,7 @@ describe('OrderSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedOrderId: null });
     const items = wrapper.findAll('.q-item');
     const selectBtn = items[0]!.findAll('button').find((b) => b.text().includes('Select'));
+    expect(selectBtn).toBeDefined();
     await selectBtn!.trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });

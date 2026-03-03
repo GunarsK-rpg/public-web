@@ -51,7 +51,7 @@ a[href] {
 // Hide tooltips on devices without hover (mobile/tablet touch).
 // Tooltips are a hover pattern; on touch devices they stick after tap.
 
-@media (hover: none) {
+@media (any-hover: none) {
   .q-tooltip {
     display: none !important;
   }

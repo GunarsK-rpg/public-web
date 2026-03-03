@@ -117,6 +117,7 @@ describe('PathSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedPathIds: [] });
     const items = wrapper.findAll('.q-item');
     const selectBtn = items[0]!.findAll('button').find((b) => b.text().includes('Select'));
+    expect(selectBtn).toBeDefined();
     await selectBtn!.trigger('click');
     expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
