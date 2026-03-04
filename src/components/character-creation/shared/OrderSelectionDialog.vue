@@ -32,15 +32,7 @@
             </q-item-section>
             <q-item-section side>
               <Check v-if="selectedOrderId === order.id" :size="18" class="text-positive" />
-              <q-btn
-                v-else
-                flat
-                dense
-                color="primary"
-                label="Select"
-                size="sm"
-                @click.stop="selectOrder(order.id)"
-              />
+              <span v-else class="text-primary text-caption">Select</span>
             </q-item-section>
           </q-item>
         </q-list>

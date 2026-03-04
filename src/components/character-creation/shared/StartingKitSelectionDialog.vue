@@ -38,15 +38,7 @@
                 aria-hidden="true"
               />
               <span v-if="selectedKitId === kit.id" class="sr-only">Selected</span>
-              <q-btn
-                v-else
-                flat
-                dense
-                color="primary"
-                label="Select"
-                size="sm"
-                @click.stop="selectKit(kit.id)"
-              />
+              <span v-else class="text-primary text-caption">Select</span>
             </q-item-section>
           </q-item>
         </q-list>

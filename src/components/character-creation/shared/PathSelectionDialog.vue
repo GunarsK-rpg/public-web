@@ -15,7 +15,13 @@
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-list bordered separator role="listbox" aria-label="Heroic paths">
+        <q-list
+          bordered
+          separator
+          role="listbox"
+          aria-label="Heroic paths"
+          aria-multiselectable="true"
+        >
           <q-item
             v-for="path in classifiers.paths"
             :key="path.id"
@@ -38,15 +44,7 @@
                 aria-hidden="true"
               />
               <span v-if="isSelected(path.id)" class="sr-only">Selected</span>
-              <q-btn
-                v-else
-                flat
-                dense
-                color="primary"
-                label="Select"
-                size="sm"
-                @click.stop="selectPath(path.id)"
-              />
+              <span v-else class="text-primary text-caption">Select</span>
             </q-item-section>
           </q-item>
         </q-list>

@@ -88,38 +88,18 @@ describe('PathSelectionDialog', () => {
     expect(wrapper.text()).toContain('A stealthy operative');
   });
 
-  it('shows Select button for unselected paths', () => {
+  it('shows Select label for unselected paths', () => {
     const wrapper = createWrapper({ modelValue: true, selectedPathIds: [1] });
     const items = wrapper.findAll('.q-item');
-    // Path 2 and 3 are not selected - should have Select buttons
     const scholarItem = items[1]!;
     expect(scholarItem.text()).toContain('Select');
   });
 
-  it('shows check icon instead of Select button for already-selected paths', () => {
+  it('shows check icon instead of Select label for already-selected paths', () => {
     const wrapper = createWrapper({ modelValue: true, selectedPathIds: [1] });
     const items = wrapper.findAll('.q-item');
     const warriorItem = items[0]!;
     expect(warriorItem.find('.selected-indicator').exists()).toBe(true);
-    expect(warriorItem.findAll('button').filter((b) => b.text() === 'Select')).toHaveLength(0);
-  });
-
-  it('emits select with pathId when Select clicked', async () => {
-    const wrapper = createWrapper({ modelValue: true, selectedPathIds: [] });
-    const items = wrapper.findAll('.q-item');
-    const selectBtn = items[1]!.findAll('button').find((b) => b.text().includes('Select'));
-    expect(selectBtn).toBeDefined();
-    await selectBtn!.trigger('click');
-    expect(wrapper.emitted('select')).toEqual([[2]]);
-  });
-
-  it('emits update:modelValue false after selection', async () => {
-    const wrapper = createWrapper({ modelValue: true, selectedPathIds: [] });
-    const items = wrapper.findAll('.q-item');
-    const selectBtn = items[0]!.findAll('button').find((b) => b.text().includes('Select'));
-    expect(selectBtn).toBeDefined();
-    await selectBtn!.trigger('click');
-    expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
 
   it('emits select and closes when row clicked', async () => {
