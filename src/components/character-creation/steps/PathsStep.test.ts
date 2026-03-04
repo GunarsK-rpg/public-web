@@ -128,6 +128,10 @@ const mockDeletionTracker = {
   clearAll: vi.fn(),
 };
 
+function findBtnByText(wrapper: ReturnType<typeof shallowMount>, text: string) {
+  return wrapper.findAll('.q-btn').find((b) => b.text().replace(/\s+/g, ' ').trim() === text);
+}
+
 describe('PathsStep', () => {
   const createWrapper = () =>
     shallowMount(PathsStep, {
@@ -196,9 +200,8 @@ describe('PathsStep', () => {
             props: ['name', 'label'],
           },
           QBtn: {
-            template:
-              '<button class="q-btn" :data-label="label" @click="$emit(\'click\')">{{ label }}</button>',
-            props: ['label', 'icon', 'color', 'outline', 'flat', 'dense', 'size'],
+            template: '<button class="q-btn" @click="$emit(\'click\')"><slot /></button>',
+            props: ['color', 'outline', 'flat', 'dense', 'size'],
             emits: ['click'],
           },
           QList: {
@@ -276,14 +279,14 @@ describe('PathsStep', () => {
   describe('tab switching', () => {
     it('shows heroic tab content by default', () => {
       const wrapper = createWrapper();
-      expect(wrapper.find('.q-btn[data-label="Add Path"]').exists()).toBe(true);
+      expect(findBtnByText(wrapper, 'Add Path') !== undefined).toBe(true);
     });
 
     it('switches to radiant tab', async () => {
       const wrapper = createWrapper();
       await wrapper.find('.switch-radiant').trigger('click');
       expect(wrapper.find('.q-toggle').exists()).toBe(true);
-      expect(wrapper.find('.q-btn[data-label="Add Path"]').exists()).toBe(false);
+      expect(findBtnByText(wrapper, 'Add Path') !== undefined).toBe(false);
     });
 
     it('switches to singer tab', async () => {
@@ -309,14 +312,14 @@ describe('PathsStep', () => {
   describe('heroic paths tab', () => {
     it('has Add Path button', () => {
       const wrapper = createWrapper();
-      expect(wrapper.find('.q-btn[data-label="Add Path"]').exists()).toBe(true);
+      expect(findBtnByText(wrapper, 'Add Path') !== undefined).toBe(true);
     });
 
     it('opens path selection dialog when Add Path clicked', async () => {
       const wrapper = createWrapper();
       expect(wrapper.find('.path-selection-dialog').exists()).toBe(false);
 
-      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      await findBtnByText(wrapper, 'Add Path')!.trigger('click');
       expect(wrapper.find('.path-selection-dialog').exists()).toBe(true);
     });
 
@@ -324,7 +327,7 @@ describe('PathsStep', () => {
       const wrapper = createWrapper();
 
       // Open dialog and select path 1
-      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      await findBtnByText(wrapper, 'Add Path')!.trigger('click');
       await wrapper.find('.path-selection-dialog .emit-select-1').trigger('click');
 
       expect(mockAddKeyTalentForPath).toHaveBeenCalledWith(1);
@@ -337,7 +340,7 @@ describe('PathsStep', () => {
       ]);
       const wrapper = createWrapper();
 
-      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      await findBtnByText(wrapper, 'Add Path')!.trigger('click');
       await wrapper.find('.path-selection-dialog .emit-select-1').trigger('click');
 
       // HeroicPathPanel should receive the first specialty id
@@ -349,7 +352,7 @@ describe('PathsStep', () => {
     it('shows HeroicPathPanel after path selection', async () => {
       const wrapper = createWrapper();
 
-      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      await findBtnByText(wrapper, 'Add Path')!.trigger('click');
       await wrapper.find('.path-selection-dialog .emit-select-1').trigger('click');
 
       expect(wrapper.find('.heroic-path-panel').exists()).toBe(true);
@@ -366,7 +369,7 @@ describe('PathsStep', () => {
   // ========================================
   describe('heroic path panel events', () => {
     async function addPath(wrapper: ReturnType<typeof createWrapper>) {
-      await wrapper.find('.q-btn[data-label="Add Path"]').trigger('click');
+      await findBtnByText(wrapper, 'Add Path')!.trigger('click');
       await wrapper.find('.path-selection-dialog .emit-select-1').trigger('click');
     }
 
@@ -442,7 +445,7 @@ describe('PathsStep', () => {
       mockRadiantOrderId.value = null;
       const wrapper = createWrapper();
       await wrapper.find('.switch-radiant').trigger('click');
-      expect(wrapper.find('.q-btn[data-label="Select Order"]').exists()).toBe(true);
+      expect(findBtnByText(wrapper, 'Select Order') !== undefined).toBe(true);
     });
 
     it('shows Change Order button when order already selected', async () => {
@@ -450,7 +453,7 @@ describe('PathsStep', () => {
       mockRadiantOrderId.value = 1;
       const wrapper = createWrapper();
       await wrapper.find('.switch-radiant').trigger('click');
-      expect(wrapper.find('.q-btn[data-label="Change Order"]').exists()).toBe(true);
+      expect(findBtnByText(wrapper, 'Change Order') !== undefined).toBe(true);
     });
 
     it('opens order dialog when Select Order clicked', async () => {
@@ -459,7 +462,7 @@ describe('PathsStep', () => {
       await wrapper.find('.switch-radiant').trigger('click');
       expect(wrapper.find('.order-selection-dialog').exists()).toBe(false);
 
-      await wrapper.find('.q-btn[data-label="Select Order"]').trigger('click');
+      await findBtnByText(wrapper, 'Select Order')!.trigger('click');
       expect(wrapper.find('.order-selection-dialog').exists()).toBe(true);
     });
 
@@ -467,7 +470,7 @@ describe('PathsStep', () => {
       mockIsRadiant.value = true;
       const wrapper = createWrapper();
       await wrapper.find('.switch-radiant').trigger('click');
-      await wrapper.find('.q-btn[data-label="Select Order"]').trigger('click');
+      await findBtnByText(wrapper, 'Select Order')!.trigger('click');
       await wrapper.find('.order-selection-dialog .emit-select-2').trigger('click');
       expect(mockSetRadiantOrder).toHaveBeenCalledWith(2);
     });

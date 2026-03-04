@@ -9,12 +9,12 @@
             flat
             dense
             round
-            icon="edit"
             size="sm"
             class="q-ml-sm"
             aria-label="Edit character"
             @click="goToEdit"
-          />
+            ><Pencil :size="20"
+          /></q-btn>
         </div>
         <div class="text-subtitle1 text-muted">
           Level {{ hero?.level }}
@@ -83,6 +83,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { RPG_COLORS } from 'src/constants/theme';
+import { Pencil } from 'lucide-vue-next';
 import ResourceBox from './ResourceBox.vue';
 
 const props = defineProps<{

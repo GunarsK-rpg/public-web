@@ -94,7 +94,7 @@ describe('CharacterSheetPage', () => {
             ],
           },
           QTab: {
-            template: '<button class="q-tab">{{ label }}</button>',
+            template: '<button class="q-tab"><slot />{{ label }}</button>',
             props: ['name', 'icon', 'label'],
           },
           QSeparator: {

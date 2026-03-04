@@ -192,7 +192,7 @@ describe('BasicSetupStep', () => {
           },
           QBtn: {
             template:
-              '<button class="q-btn" @click="$emit(\'click\', $event)">{{ label }}</button>',
+              '<button class="q-btn" @click="$emit(\'click\', $event)"><slot />{{ label }}</button>',
             props: ['label', 'icon', 'color', 'outline', 'flat'],
             emits: ['click'],
           },
@@ -591,7 +591,7 @@ describe('BasicSetupStep', () => {
       mockIsSinger.value = true;
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Select Initial Form');
+      expect(wrapper.text()).toContain('Select Form');
       expect(wrapper.find('.q-btn').exists()).toBe(true);
     });
 
@@ -615,7 +615,7 @@ describe('BasicSetupStep', () => {
       mockIsSinger.value = false;
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).not.toContain('Select Initial Form');
+      expect(wrapper.text()).not.toContain('Select Form');
     });
 
     it('passes available forms to dialog including talent-unlocked forms', async () => {

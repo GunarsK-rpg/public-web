@@ -40,12 +40,12 @@
           <q-btn
             flat
             round
-            icon="sym_o_delete"
             color="negative"
             size="sm"
             :aria-label="`Remove goal: ${goal.name}`"
             @click="removeGoal(goal.id)"
-          />
+            ><Trash2 :size="20"
+          /></q-btn>
         </q-item-section>
       </q-item>
     </q-list>
@@ -64,13 +64,9 @@
         />
       </div>
       <div class="col-12 col-sm-2">
-        <q-btn
-          color="primary"
-          icon="sym_o_add"
-          label="Add"
-          :disable="!newGoalName"
-          @click="addGoal"
-        />
+        <q-btn color="primary" :disable="!newGoalName" @click="addGoal"
+          ><Plus :size="20" class="on-left" />Add</q-btn
+        >
       </div>
     </div>
 
@@ -93,12 +89,12 @@
           <q-btn
             flat
             round
-            icon="sym_o_delete"
             color="negative"
             size="sm"
             :aria-label="`Remove connection: ${conn.description}`"
             @click="removeConnection(conn.id)"
-          />
+            ><Trash2 :size="20"
+          /></q-btn>
         </q-item-section>
       </q-item>
     </q-list>
@@ -136,11 +132,10 @@
       <div class="col-12 col-sm-2">
         <q-btn
           color="primary"
-          icon="sym_o_add"
-          label="Add"
           :disable="!newConnectionDescription || !newConnectionType"
           @click="addConnection"
-        />
+          ><Plus :size="20" class="on-left" />Add</q-btn
+        >
       </div>
     </div>
 
@@ -166,6 +161,7 @@ import { useHeroDetailsStore } from 'src/stores/heroDetails';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { debounce } from 'src/utils/debounce';
 import { findById } from 'src/utils/arrayUtils';
+import { Trash2, Plus } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 
 const heroStore = useHeroStore();

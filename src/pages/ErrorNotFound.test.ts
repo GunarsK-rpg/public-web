@@ -14,8 +14,8 @@ describe('ErrorNotFound', () => {
             template: '<span class="q-icon" />',
           },
           QBtn: {
-            template: '<button class="q-btn">{{ label }}</button>',
-            props: ['color', 'unelevated', 'to', 'icon', 'label', 'noCaps'],
+            template: '<button class="q-btn"><slot /></button>',
+            props: ['color', 'unelevated', 'to', 'noCaps'],
           },
         },
       },
@@ -76,7 +76,7 @@ describe('ErrorNotFound', () => {
     it('hides decorative icon from screen readers', () => {
       const wrapper = createWrapper();
 
-      const icon = wrapper.find('.q-icon');
+      const icon = wrapper.find('[aria-hidden="true"]');
       expect(icon.exists()).toBe(true);
     });
   });

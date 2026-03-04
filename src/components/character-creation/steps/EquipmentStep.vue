@@ -5,7 +5,7 @@
     <!-- Starting Kit Summary -->
     <q-banner v-if="selectedStartingKit" class="banner-info q-mb-md">
       <template v-slot:avatar>
-        <q-icon name="sym_o_backpack" aria-hidden="true" />
+        <Backpack :size="24" aria-hidden="true" />
       </template>
       <div class="row items-center">
         <div class="col">
@@ -54,12 +54,12 @@
             <q-btn
               flat
               round
-              icon="sym_o_delete"
               color="negative"
               size="sm"
               :aria-label="`Remove ${getEquipmentName(item.equipment?.id ?? 0)}`"
               @click="removeItem(item.id)"
-            />
+              ><Trash2 :size="20"
+            /></q-btn>
           </q-item-section>
         </q-item>
       </q-list>
@@ -82,11 +82,11 @@
         <q-btn
           v-if="newEquipmentByType[eqType.id]"
           color="primary"
-          icon="sym_o_add"
           dense
           :aria-label="`Add ${eqType.name} item`"
           @click="addItemOfType(eqType.id)"
-        />
+          ><Plus :size="20"
+        /></q-btn>
       </div>
     </div>
   </div>
@@ -98,6 +98,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import { Backpack, Trash2, Plus } from 'lucide-vue-next';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import { INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';

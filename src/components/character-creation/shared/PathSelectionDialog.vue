@@ -9,22 +9,25 @@
       <q-card-section class="row items-center">
         <div id="path-selection-dialog-title" class="text-h6">Add Heroic Path</div>
         <q-space />
-        <q-btn
-          icon="close"
-          flat
-          round
-          dense
-          aria-label="Close dialog"
-          @click="$emit('update:modelValue', false)"
-        />
+        <q-btn flat round dense aria-label="Close dialog" @click="$emit('update:modelValue', false)"
+          ><X :size="20" aria-hidden="true"
+        /></q-btn>
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-list bordered separator>
+        <q-list
+          bordered
+          separator
+          role="listbox"
+          aria-label="Heroic paths"
+          aria-multiselectable="true"
+        >
           <q-item
             v-for="path in classifiers.paths"
             :key="path.id"
             :active="isSelected(path.id)"
+            :aria-selected="isSelected(path.id)"
+            role="option"
             clickable
             v-ripple
             @click="!isSelected(path.id) && selectPath(path.id)"
@@ -34,16 +37,14 @@
               <q-item-label caption>{{ path.description }}</q-item-label>
             </q-item-section>
             <q-item-section side>
-              <q-icon v-if="isSelected(path.id)" name="check" color="positive" size="sm" />
-              <q-btn
-                v-else
-                flat
-                dense
-                color="primary"
-                label="Select"
-                size="sm"
-                @click.stop="selectPath(path.id)"
+              <Check
+                v-if="isSelected(path.id)"
+                :size="18"
+                class="text-positive selected-indicator"
+                aria-hidden="true"
               />
+              <span v-if="isSelected(path.id)" class="sr-only">Selected</span>
+              <span v-else class="text-primary text-caption">Select</span>
             </q-item-section>
           </q-item>
         </q-list>
@@ -54,6 +55,7 @@
 
 <script setup lang="ts">
 import { useClassifierStore } from 'src/stores/classifiers';
+import { Check, X } from 'lucide-vue-next';
 
 const props = defineProps<{
   modelValue: boolean;

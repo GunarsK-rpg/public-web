@@ -4,12 +4,9 @@
       <div class="row items-center q-mb-md">
         <div class="text-h5">My Characters</div>
         <q-space />
-        <q-btn
-          color="primary"
-          icon="sym_o_person_add"
-          label="Create Character"
-          @click="createCharacter"
-        />
+        <q-btn color="primary" @click="createCharacter"
+          ><UserPlus :size="20" class="on-left" />Create Character</q-btn
+        >
       </div>
 
       <q-spinner-dots v-if="loading" size="50px" color="primary" />
@@ -19,7 +16,7 @@
       </q-banner>
 
       <div v-else-if="heroes.length === 0" class="text-center q-pa-xl">
-        <q-icon name="person_off" size="64px" color="grey-5" aria-hidden="true" />
+        <UserX :size="64" class="text-grey-5" aria-hidden="true" />
         <div class="text-h6 text-grey-7 q-mt-md">No characters yet</div>
         <div class="text-body2 text-grey-6">Create your first character to get started.</div>
       </div>
@@ -58,6 +55,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { UserPlus, UserX } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import type { Hero } from 'src/types';
 import heroService from 'src/services/heroService';

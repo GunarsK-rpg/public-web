@@ -26,7 +26,6 @@ describe('KeyTalentBanner', () => {
       global: {
         stubs: {
           QBanner: { template: '<div class="q-banner"><slot name="avatar" /><slot /></div>' },
-          QIcon: { template: '<span class="q-icon" />' },
         },
       },
     });
@@ -123,7 +122,7 @@ describe('KeyTalentBanner', () => {
       const talent = createTalent();
       const wrapper = createWrapper({ talent });
 
-      expect(wrapper.find('.q-icon').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="key-talent-icon"]').exists()).toBe(true);
     });
   });
 });

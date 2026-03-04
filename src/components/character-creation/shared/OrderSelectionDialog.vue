@@ -9,22 +9,19 @@
       <q-card-section class="row items-center">
         <div id="order-selection-dialog-title" class="text-h6">Select Radiant Order</div>
         <q-space />
-        <q-btn
-          icon="close"
-          flat
-          round
-          dense
-          aria-label="Close dialog"
-          @click="$emit('update:modelValue', false)"
-        />
+        <q-btn flat round dense aria-label="Close dialog" @click="$emit('update:modelValue', false)"
+          ><X :size="20"
+        /></q-btn>
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-list bordered separator>
+        <q-list bordered separator role="listbox" aria-label="Radiant orders">
           <q-item
             v-for="order in classifiers.radiantOrders"
             :key="order.id"
             :active="selectedOrderId === order.id"
+            :aria-selected="selectedOrderId === order.id"
+            role="option"
             clickable
             v-ripple
             @click="selectedOrderId !== order.id && selectOrder(order.id)"
@@ -34,16 +31,8 @@
               <q-item-label caption>{{ getOrderSubtitle(order) }}</q-item-label>
             </q-item-section>
             <q-item-section side>
-              <q-icon v-if="selectedOrderId === order.id" name="check" color="positive" size="sm" />
-              <q-btn
-                v-else
-                flat
-                dense
-                color="primary"
-                label="Select"
-                size="sm"
-                @click.stop="selectOrder(order.id)"
-              />
+              <Check v-if="selectedOrderId === order.id" :size="18" class="text-positive" />
+              <span v-else class="text-primary text-caption">Select</span>
             </q-item-section>
           </q-item>
         </q-list>
@@ -55,6 +44,7 @@
 <script setup lang="ts">
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import { Check, X } from 'lucide-vue-next';
 import type { RadiantOrder } from 'src/types';
 
 defineProps<{

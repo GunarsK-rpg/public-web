@@ -105,25 +105,14 @@ describe('SingerFormSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedFormId: 1 });
     const items = wrapper.findAll('.q-item');
     const dullformItem = items[0]!;
-    expect(dullformItem.text()).toContain('check');
-    expect(dullformItem.text()).not.toContain('Select');
+    expect(dullformItem.find('.selected-indicator').exists()).toBe(true);
   });
 
-  it('shows Select button for non-selected forms', () => {
+  it('shows Select label for non-selected forms', () => {
     const wrapper = createWrapper({ modelValue: true, selectedFormId: 1 });
     const items = wrapper.findAll('.q-item');
     const warformItem = items[1]!;
     expect(warformItem.text()).toContain('Select');
-  });
-
-  it('emits select with formId on click', async () => {
-    const wrapper = createWrapper({ modelValue: true, selectedFormId: null });
-    const items = wrapper.findAll('.q-item');
-    const selectBtn = items[0]!.findAll('button').find((b) => b.text().includes('Select'));
-    expect(selectBtn).toBeDefined();
-    await selectBtn!.trigger('click');
-    expect(wrapper.emitted('select')).toEqual([[1]]);
-    expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
 
   it('emits select and closes when row clicked', async () => {

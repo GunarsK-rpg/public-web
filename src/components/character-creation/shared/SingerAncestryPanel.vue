@@ -7,7 +7,7 @@
   >
     <template v-slot:header>
       <q-item-section avatar>
-        <q-icon name="sym_o_change_circle" color="white" aria-hidden="true" />
+        <Network class="text-white" aria-hidden="true" />
       </q-item-section>
       <q-item-section>
         <q-item-label class="text-white text-weight-medium"> Singer Ancestry </q-item-label>
@@ -39,6 +39,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { Network } from 'lucide-vue-next';
 import {
   useTalentPrerequisites,
   type TalentWithStatus,

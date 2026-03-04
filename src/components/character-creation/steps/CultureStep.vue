@@ -39,7 +39,7 @@
     <!-- Cultural Expertises Info Banner -->
     <InfoBanner
       v-if="culturalExpertiseNames.length > 0"
-      icon="sym_o_workspace_premium"
+      :icon="Languages"
       title="Cultural Expertises"
       :content="culturalExpertiseNames.join(', ')"
       class="q-mt-md"
@@ -53,6 +53,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import { Languages } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import InfoBanner from '../shared/InfoBanner.vue';
 

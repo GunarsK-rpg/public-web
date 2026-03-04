@@ -83,7 +83,8 @@ describe('CampaignDetailPage', () => {
             template: '<div class="q-page"><slot /></div>',
           },
           QBtn: {
-            template: '<button class="q-btn" @click="$emit(\'click\')">{{ label }}</button>',
+            template:
+              '<button class="q-btn" @click="$emit(\'click\')"><slot />{{ label }}</button>',
             props: ['color', 'icon', 'label', 'flat'],
             emits: ['click'],
           },

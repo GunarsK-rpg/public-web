@@ -24,11 +24,11 @@
                 round
                 dense
                 flat
-                icon="remove"
                 :aria-label="`Decrease ${attr.name}`"
                 :disable="getAttrValue(attr.id) <= 0"
                 @click="decrementAttr(attr.id)"
-              />
+                ><Minus :size="20"
+              /></q-btn>
               <div
                 class="text-h5 q-mx-md value-display"
                 :aria-label="`${attr.name}: ${getAttrValue(attr.id)}`"
@@ -40,11 +40,11 @@
                 round
                 dense
                 flat
-                icon="add"
                 :aria-label="`Increase ${attr.name}`"
                 :disable="getAttrValue(attr.id) >= 5 || pointsRemaining <= 0"
                 @click="incrementAttr(attr.id)"
-              />
+                ><Plus :size="20"
+              /></q-btn>
               <q-slider
                 :model-value="getAttrValue(attr.id)"
                 :aria-label="`${attr.name} slider`"
@@ -103,6 +103,7 @@ import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import { clamp } from 'src/utils/numberUtils';
+import { Minus, Plus } from 'lucide-vue-next';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
 const attrStore = useHeroAttributesStore();

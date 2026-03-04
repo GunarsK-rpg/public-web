@@ -24,6 +24,18 @@ vi.mock('src/stores/classifiers', () => ({
       { id: 3, code: 'talent', name: 'Talent' },
       { id: 4, code: 'surge', name: 'Surge' },
     ],
+    activationTypes: [
+      { id: 1, code: 'action', name: 'Action', displayOrder: 1, icon: 'action.svg' },
+      {
+        id: 2,
+        code: 'double_action',
+        name: 'Double Action',
+        displayOrder: 2,
+        icon: 'double-action.svg',
+      },
+      { id: 4, code: 'free_action', name: 'Free Action', displayOrder: 4, icon: 'free-action.svg' },
+      { id: 5, code: 'reaction', name: 'Reaction', displayOrder: 5, icon: 'reaction.svg' },
+    ],
     actions: [
       {
         id: 1,
@@ -43,6 +55,39 @@ vi.mock('src/stores/classifiers', () => ({
         description: 'Movement',
         actionType: { id: 1, code: 'basic', name: 'Basic' },
         activationType: { id: 1, code: 'action', name: 'Action' },
+        damageType: null,
+        focusCost: 0,
+        investitureCost: 0,
+      },
+      {
+        id: 7,
+        code: 'dodge',
+        name: 'Dodge',
+        description: 'Dodge an attack',
+        actionType: { id: 1, code: 'basic', name: 'Basic' },
+        activationType: { id: 5, code: 'reaction', name: 'Reaction' },
+        damageType: null,
+        focusCost: 1,
+        investitureCost: 0,
+      },
+      {
+        id: 8,
+        code: 'banter',
+        name: 'Banter',
+        description: 'Speak briefly',
+        actionType: { id: 1, code: 'basic', name: 'Basic' },
+        activationType: { id: 4, code: 'free_action', name: 'Free Action' },
+        damageType: null,
+        focusCost: 0,
+        investitureCost: 0,
+      },
+      {
+        id: 9,
+        code: 'recover',
+        name: 'Recover',
+        description: 'Recover health',
+        actionType: { id: 1, code: 'basic', name: 'Basic' },
+        activationType: { id: 2, code: 'double_action', name: 'Double Action' },
         damageType: null,
         focusCost: 0,
         investitureCost: 0,
@@ -367,6 +412,46 @@ describe('ActionsTab', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('No surge available');
+    });
+  });
+
+  // ========================================
+  // Action Sorting
+  // ========================================
+  describe('action sorting', () => {
+    it('sorts basic actions by activation type then alphabetically', () => {
+      const wrapper = createWrapper();
+
+      // Basic tab contains actions, double actions, free actions, reactions
+      // Expected order: actions (Move, Strike), double (Recover), free (Banter), reaction (Dodge)
+      const basicPanel = wrapper.findAll('.q-tab-panel')[0]!;
+      const items = basicPanel.findAll('.action-item');
+      const names = items.map((item) => item.text());
+
+      expect(names).toEqual(['Move', 'Strike', 'Recover', 'Banter', 'Dodge']);
+    });
+  });
+
+  // ========================================
+  // Icon Legend
+  // ========================================
+  describe('icon legend', () => {
+    it('renders all activation types in legend', () => {
+      const wrapper = createWrapper();
+
+      const legend = wrapper.find('.icon-legend');
+      expect(legend.exists()).toBe(true);
+      expect(legend.text()).toContain('Action');
+      expect(legend.text()).toContain('Double Action');
+      expect(legend.text()).toContain('Free Action');
+      expect(legend.text()).toContain('Reaction');
+    });
+
+    it('renders legend title', () => {
+      const wrapper = createWrapper();
+
+      const legend = wrapper.find('.icon-legend');
+      expect(legend.text()).toContain('Action Types');
     });
   });
 });

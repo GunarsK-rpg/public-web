@@ -124,38 +124,22 @@ describe('StartingKitSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedKitId: 1 });
     const items = wrapper.findAll('.q-item');
     const artisanItem = items[0]!;
-    expect(artisanItem.text()).toContain('check');
-    expect(artisanItem.text()).not.toContain('Select');
+    expect(artisanItem.find('.selected-indicator').exists()).toBe(true);
   });
 
-  it('shows Select button for non-selected kits', () => {
+  it('shows Select label for non-selected kits', () => {
     const wrapper = createWrapper({ modelValue: true, selectedKitId: 1 });
     const items = wrapper.findAll('.q-item');
     const scholarItem = items[1]!;
     expect(scholarItem.text()).toContain('Select');
   });
 
-  it('emits select with kitId on click', async () => {
-    const wrapper = createWrapper({ modelValue: true, selectedKitId: null });
-    const items = wrapper.findAll('.q-item');
-    const selectBtn = items[0]!.findAll('button').find((b) => b.text().includes('Select'));
-    await selectBtn!.trigger('click');
-    expect(wrapper.emitted('select')).toEqual([[1]]);
-  });
-
-  it('auto-closes after selection', async () => {
-    const wrapper = createWrapper({ modelValue: true, selectedKitId: null });
-    const items = wrapper.findAll('.q-item');
-    const selectBtn = items[0]!.findAll('button').find((b) => b.text().includes('Select'));
-    await selectBtn!.trigger('click');
-    expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
-  });
-
-  it('emits select when row clicked', async () => {
+  it('emits select and closes when row clicked', async () => {
     const wrapper = createWrapper({ modelValue: true, selectedKitId: null });
     const items = wrapper.findAll('.q-item');
     await items[0]!.trigger('click');
     expect(wrapper.emitted('select')).toEqual([[1]]);
+    expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
 
   it('does not emit when already-selected row clicked', async () => {

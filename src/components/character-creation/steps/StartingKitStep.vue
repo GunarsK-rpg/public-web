@@ -6,14 +6,14 @@
       Select one that fits your character concept.
     </p>
 
-    <q-btn
-      outline
-      color="primary"
-      :icon="selectedKitId ? 'swap_horiz' : 'add'"
-      :label="selectedKitId ? 'Change Starting Kit' : 'Choose Starting Kit'"
-      class="q-mb-md"
-      @click="kitDialogOpen = true"
-    />
+    <q-btn outline color="primary" class="q-mb-md" @click="kitDialogOpen = true"
+      ><ArrowLeftRight v-if="selectedKitId" :size="20" class="on-left" aria-hidden="true" /><Plus
+        v-else
+        :size="20"
+        class="on-left"
+        aria-hidden="true"
+      />{{ selectedKitId ? 'Change Starting Kit' : 'Choose Starting Kit' }}</q-btn
+    >
 
     <StartingKitSelectionDialog
       v-model="kitDialogOpen"
@@ -31,14 +31,14 @@
 
           <div class="text-caption">
             <div class="row items-center q-mb-xs">
-              <q-icon name="sym_o_payments" size="xs" class="q-mr-xs" aria-hidden="true" />
+              <Coins :size="14" class="q-mr-xs" aria-hidden="true" />
               <span>
                 <strong>{{ selectedKit.startingSpheres }}</strong> marks
               </span>
             </div>
 
             <div v-if="selectedKit.expertises?.[0]?.id" class="row items-center q-mb-xs">
-              <q-icon name="sym_o_workspace_premium" size="xs" class="q-mr-xs" aria-hidden="true" />
+              <Crown :size="14" class="q-mr-xs" aria-hidden="true" />
               <span>
                 <strong>+1</strong>
                 {{ findById(classifiers.expertises, selectedKit.expertises[0].id)?.name }}
@@ -46,12 +46,7 @@
             </div>
 
             <div class="row items-start">
-              <q-icon
-                name="sym_o_inventory_2"
-                size="xs"
-                class="q-mr-xs q-mt-xs"
-                aria-hidden="true"
-              />
+              <PackageIcon :size="14" class="q-mr-xs q-mt-xs" aria-hidden="true" />
               <span>{{ getEquipmentSummary(selectedKit) }}</span>
             </div>
           </div>
@@ -81,7 +76,7 @@
     <!-- Special notes for prisoner kit -->
     <q-banner v-if="isPrisonerKit" :class="`bg-${RPG_COLORS.bannerInfo} q-mt-md`" rounded>
       <template v-slot:avatar>
-        <q-icon name="auto_awesome" :color="RPG_COLORS.bannerInfoIcon" aria-hidden="true" />
+        <Sparkles :size="24" :class="`text-${RPG_COLORS.bannerInfoIcon}`" aria-hidden="true" />
       </template>
       <div class="text-caption">
         <strong>Prisoner Kit Special:</strong> You begin bonded to a Radiant spren at Ideal 1. You
@@ -97,6 +92,14 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode } from 'src/utils/arrayUtils';
+import {
+  ArrowLeftRight,
+  Plus,
+  Coins,
+  Crown,
+  Package as PackageIcon,
+  Sparkles,
+} from 'lucide-vue-next';
 import { RPG_COLORS } from 'src/constants/theme';
 import { clamp } from 'src/utils/numberUtils';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';

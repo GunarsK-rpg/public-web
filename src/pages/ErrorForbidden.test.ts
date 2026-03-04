@@ -14,8 +14,8 @@ describe('ErrorForbidden', () => {
             template: '<span class="q-icon" />',
           },
           QBtn: {
-            template: '<button class="q-btn">{{ label }}</button>',
-            props: ['color', 'unelevated', 'to', 'icon', 'label', 'noCaps'],
+            template: '<button class="q-btn"><slot /></button>',
+            props: ['color', 'unelevated', 'to', 'noCaps'],
           },
         },
       },

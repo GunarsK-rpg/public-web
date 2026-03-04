@@ -9,7 +9,9 @@
       <q-card-section class="row items-center">
         <div id="talent-dialog-title" class="text-h6">{{ talent?.name }}</div>
         <q-space />
-        <q-btn icon="close" flat round dense aria-label="Close dialog" v-close-popup />
+        <q-btn flat round dense aria-label="Close dialog" v-close-popup
+          ><X :size="20" aria-hidden="true"
+        /></q-btn>
       </q-card-section>
       <q-separator />
       <q-card-section v-if="talent">
@@ -29,6 +31,7 @@
 import { computed } from 'vue';
 import PrerequisiteList from 'src/components/shared/PrerequisiteList.vue';
 import SpecialBadges from 'src/components/shared/SpecialBadges.vue';
+import { X } from 'lucide-vue-next';
 import type { Talent } from 'src/types';
 
 const props = defineProps<{

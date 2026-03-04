@@ -11,7 +11,7 @@
           {{ isEditing ? 'Edit Equipment' : 'Add Equipment' }}
         </div>
         <q-space />
-        <q-btn icon="close" flat round dense aria-label="Close dialog" v-close-popup />
+        <q-btn flat round dense aria-label="Close dialog" v-close-popup><X :size="20" /></q-btn>
       </q-card-section>
       <q-separator />
       <q-card-section>
@@ -118,10 +118,10 @@
                     dense
                     round
                     size="sm"
-                    icon="close"
                     aria-label="Remove modification"
                     @click="removeModification(idx)"
-                  />
+                    ><X :size="20"
+                  /></q-btn>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -148,12 +148,12 @@
                 dense
                 round
                 size="sm"
-                icon="add"
                 color="primary"
                 :disable="!newModValue.trim()"
                 aria-label="Add modification"
                 @click="addModification"
-              />
+                ><Plus :size="20"
+              /></q-btn>
             </div>
           </template>
         </template>
@@ -177,6 +177,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { X, Plus } from 'lucide-vue-next';
 import { useHeroStore } from 'src/stores/hero';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
 import { clamp } from 'src/utils/numberUtils';

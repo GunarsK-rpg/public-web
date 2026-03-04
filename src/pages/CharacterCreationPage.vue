@@ -9,12 +9,12 @@
           flat
           round
           dense
-          icon="refresh"
           color="negative"
           class="q-mr-xs"
           aria-label="Reset character creation"
           @click="confirmReset"
         >
+          <RefreshCw :size="20" />
           <q-tooltip>Reset</q-tooltip>
         </q-btn>
       </div>
@@ -65,6 +65,7 @@
 
 <script setup lang="ts">
 import { ref, computed, provide, onMounted, onUnmounted, type Component } from 'vue';
+import { RefreshCw } from 'lucide-vue-next';
 import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useWizardStore } from 'stores/wizard';

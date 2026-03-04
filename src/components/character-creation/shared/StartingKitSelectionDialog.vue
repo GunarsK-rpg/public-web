@@ -9,22 +9,19 @@
       <q-card-section class="row items-center">
         <div id="kit-selection-dialog-title" class="text-h6">Select Starting Kit</div>
         <q-space />
-        <q-btn
-          icon="close"
-          flat
-          round
-          dense
-          aria-label="Close dialog"
-          @click="$emit('update:modelValue', false)"
-        />
+        <q-btn flat round dense aria-label="Close dialog" @click="$emit('update:modelValue', false)"
+          ><X :size="20" aria-hidden="true"
+        /></q-btn>
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-list bordered separator>
+        <q-list bordered separator role="listbox" aria-label="Starting kits">
           <q-item
             v-for="kit in classifiers.startingKits"
             :key="kit.id"
             :active="selectedKitId === kit.id"
+            :aria-selected="selectedKitId === kit.id"
+            role="option"
             clickable
             v-ripple
             @click="selectedKitId !== kit.id && selectKit(kit.id)"
@@ -34,16 +31,14 @@
               <q-item-label caption>{{ getKitSubtitle(kit) }}</q-item-label>
             </q-item-section>
             <q-item-section side>
-              <q-icon v-if="selectedKitId === kit.id" name="check" color="positive" size="sm" />
-              <q-btn
-                v-else
-                flat
-                dense
-                color="primary"
-                label="Select"
-                size="sm"
-                @click.stop="selectKit(kit.id)"
+              <Check
+                v-if="selectedKitId === kit.id"
+                :size="18"
+                class="text-positive selected-indicator"
+                aria-hidden="true"
               />
+              <span v-if="selectedKitId === kit.id" class="sr-only">Selected</span>
+              <span v-else class="text-primary text-caption">Select</span>
             </q-item-section>
           </q-item>
         </q-list>
@@ -55,6 +50,7 @@
 <script setup lang="ts">
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import { Check, X } from 'lucide-vue-next';
 import type { StartingKit } from 'src/types';
 
 defineProps<{

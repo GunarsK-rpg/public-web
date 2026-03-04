@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
+import { Lock } from 'lucide-vue-next';
 import TalentListItem from './TalentListItem.vue';
 import type { Talent, TalentPrerequisite } from 'src/types';
 
@@ -60,7 +61,6 @@ describe('TalentListItem', () => {
             props: ['modelValue', 'disable'],
             emits: ['update:modelValue'],
           },
-          QIcon: { template: '<span class="q-icon" />' },
           QBtn: {
             template: '<button class="q-btn" @click="$emit(\'click\', $event)"><slot /></button>',
             emits: ['click'],
@@ -198,7 +198,7 @@ describe('TalentListItem', () => {
         unmetPrereqs: [],
       });
 
-      expect(wrapper.find('.q-icon').exists()).toBe(true);
+      expect(wrapper.findComponent(Lock).exists()).toBe(true);
     });
   });
 

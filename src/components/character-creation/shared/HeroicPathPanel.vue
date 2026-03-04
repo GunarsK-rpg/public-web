@@ -8,7 +8,7 @@
   >
     <template v-slot:header>
       <q-item-section avatar>
-        <q-icon name="sym_o_route" color="white" aria-hidden="true" />
+        <Network class="text-white" aria-hidden="true" />
       </q-item-section>
       <q-item-section>
         <q-item-label class="text-white text-weight-medium"> {{ pathName }} Path </q-item-label>
@@ -21,12 +21,12 @@
           flat
           dense
           round
-          icon="close"
           color="white"
           size="sm"
           aria-label="Remove path"
           @click.stop="$emit('remove')"
         >
+          <X :size="20" />
           <q-tooltip>Remove path</q-tooltip>
         </q-btn>
       </q-item-section>
@@ -66,6 +66,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { Network, X } from 'lucide-vue-next';
 import {
   useTalentPrerequisites,
   type TalentWithStatus,

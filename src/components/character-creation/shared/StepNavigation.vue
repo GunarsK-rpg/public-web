@@ -16,7 +16,7 @@
       role="alert"
       aria-live="polite"
     >
-      <q-icon name="error" size="xs" class="q-mr-xs" aria-hidden="true" />
+      <CircleAlert :size="14" class="q-mr-xs" aria-hidden="true" />
       {{ displayError }}
     </div>
     <div
@@ -25,7 +25,7 @@
       role="status"
       aria-live="polite"
     >
-      <q-icon name="warning" size="xs" class="q-mr-xs" aria-hidden="true" />
+      <TriangleAlert :size="14" class="q-mr-xs" aria-hidden="true" />
       {{ displayWarning }}
     </div>
     <q-btn
@@ -64,6 +64,7 @@ import { computed } from 'vue';
 import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { STEP_CODES } from 'src/types/wizard';
+import { CircleAlert, TriangleAlert } from 'lucide-vue-next';
 
 const props = defineProps<{
   saving?: boolean;

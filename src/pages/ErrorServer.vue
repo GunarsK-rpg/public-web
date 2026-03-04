@@ -1,7 +1,7 @@
 <template>
   <q-page class="error-page flex flex-center">
     <div class="text-center">
-      <q-icon name="sym_o_cloud_off" size="120px" color="negative" aria-hidden="true" />
+      <CloudOff :size="120" class="text-negative" aria-hidden="true" />
 
       <div class="q-mt-lg" role="alert" aria-live="assertive">
         <h1 class="error-code text-negative">500</h1>
@@ -12,15 +12,12 @@
       </div>
 
       <div class="q-mt-xl q-gutter-sm">
-        <q-btn
-          color="primary"
-          unelevated
-          icon="sym_o_refresh"
-          label="Try Again"
-          no-caps
-          @click="retry"
-        />
-        <q-btn color="primary" outline to="/" icon="sym_o_home" label="Back to Home" no-caps />
+        <q-btn color="primary" unelevated no-caps @click="retry">
+          <RefreshCw :size="20" class="on-left" />Try Again
+        </q-btn>
+        <q-btn color="primary" outline to="/" no-caps>
+          <Home :size="20" class="on-left" />Back to Home
+        </q-btn>
       </div>
     </div>
   </q-page>
@@ -28,6 +25,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
+import { CloudOff, RefreshCw, Home } from 'lucide-vue-next';
 
 const router = useRouter();
 

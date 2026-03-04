@@ -4,7 +4,9 @@
       <div class="row items-center q-mb-md">
         <div class="text-h5">My Campaigns</div>
         <q-space />
-        <q-btn color="primary" icon="sym_o_add" label="Create Campaign" @click="createCampaign" />
+        <q-btn color="primary" @click="createCampaign"
+          ><Plus :size="20" class="on-left" />Create Campaign</q-btn
+        >
       </div>
 
       <q-spinner-dots v-if="loading" size="50px" color="primary" />
@@ -14,7 +16,7 @@
       </q-banner>
 
       <div v-else-if="campaigns.length === 0" class="text-center q-pa-xl">
-        <q-icon name="folder_off" size="64px" color="grey-5" aria-hidden="true" />
+        <FolderX :size="64" class="text-grey-5" aria-hidden="true" />
         <div class="text-h6 text-grey-7 q-mt-md">No campaigns found</div>
         <div class="text-body2 text-grey-6">You haven't joined any campaigns yet.</div>
       </div>
@@ -45,6 +47,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { Plus, FolderX } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'stores/campaigns';
 

@@ -147,6 +147,24 @@ $touch-target-min: 44px;
 }
 
 // =============================================================================
+// Accessibility - Screen Reader Only
+// =============================================================================
+// Visually hidden but accessible to screen readers (WCAG)
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  -webkit-clip-path: inset(50%);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+// =============================================================================
 // Text Utilities
 // =============================================================================
 
@@ -349,9 +367,8 @@ $touch-target-min: 44px;
 // Icon Utilities
 // =============================================================================
 
-// Theme-aware icons - inverts dark icons in dark mode
-// NOTE: Use only for monochrome/grayscale icons. Colored icons will have
-// their colors inverted which produces unexpected results.
+// Theme-aware icons - inverts monochrome icons in dark mode.
+// Used for custom game icons (actions/equipment) rendered as <img> tags.
 .icon-theme-aware {
   .body--dark & {
     filter: invert(1);

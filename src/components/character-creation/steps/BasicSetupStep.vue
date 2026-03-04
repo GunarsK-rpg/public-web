@@ -30,7 +30,7 @@
 
     <q-banner v-if="currentLevel > 1 && levelData" class="banner-info q-mt-md">
       <template v-slot:avatar>
-        <q-icon name="sym_o_info" aria-hidden="true" />
+        <Info aria-hidden="true" />
       </template>
       Starting at level {{ currentLevel }} gives you {{ levelData.attributePoints }} attribute
       points, {{ levelData.skillRanks }} skill ranks, and {{ levelData.talentSlots }} talent slots.
@@ -46,13 +46,9 @@
             <div class="text-body1">{{ campaignName }}</div>
           </div>
           <q-space />
-          <q-btn
-            flat
-            color="negative"
-            label="Leave Campaign"
-            icon="sym_o_logout"
-            @click="leaveCampaign"
-          />
+          <q-btn flat color="negative" @click="leaveCampaign"
+            ><LogOut :size="20" class="on-left" aria-hidden="true" />Leave Campaign</q-btn
+          >
         </q-card-section>
       </q-card>
     </template>
@@ -76,18 +72,19 @@
     <!-- Singer Form Selection -->
     <template v-if="isSinger">
       <q-separator class="q-my-md" />
-      <div class="text-subtitle1 q-mb-md">Select Initial Form</div>
+      <div class="text-subtitle1 q-mb-md">Select Form</div>
       <div class="text-caption q-mb-sm">
         Singers begin in dullform by default. Other forms can be unlocked through talents.
       </div>
 
-      <q-btn
-        :label="selectedForm ? 'Change Form' : 'Choose Form'"
-        :icon="selectedForm ? 'swap_horiz' : 'add'"
-        color="primary"
-        outline
-        @click="formDialogOpen = true"
-      />
+      <q-btn color="primary" outline @click="formDialogOpen = true"
+        ><component
+          :is="selectedForm ? ArrowLeftRight : Plus"
+          :size="20"
+          class="on-left"
+          aria-hidden="true"
+        />{{ selectedForm ? 'Change Form' : 'Choose Form' }}</q-btn
+      >
 
       <SingerFormSelectionDialog
         v-model="formDialogOpen"
@@ -123,6 +120,7 @@ import heroService from 'src/services/heroService';
 import campaignService from 'src/services/campaignService';
 import { buildHeroCorePayload } from 'src/services/heroPayloads';
 import { findByCode } from 'src/utils/arrayUtils';
+import { ArrowLeftRight, Info, LogOut, Plus } from 'lucide-vue-next';
 import { clamp } from 'src/utils/numberUtils';
 import { logger } from 'src/utils/logger';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';

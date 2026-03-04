@@ -7,10 +7,11 @@
         dense
         round
         size="xs"
-        icon="remove"
         :disable="saving || current <= 0"
+        :aria-label="`Decrease ${label}`"
         @click="$emit('update', current - 1)"
-      />
+        ><Minus :size="20" aria-hidden="true"
+      /></q-btn>
       <span
         v-if="!editing"
         class="resource-value clickable"
@@ -41,10 +42,11 @@
         dense
         round
         size="xs"
-        icon="add"
         :disable="saving || (max != null && current >= max)"
+        :aria-label="`Increase ${label}`"
         @click="$emit('update', clamp(current + 1, 0, max ?? Infinity))"
-      />
+        ><Plus :size="20" aria-hidden="true"
+      /></q-btn>
     </div>
     <q-linear-progress
       v-if="max != null"
@@ -63,6 +65,7 @@
 <script setup lang="ts">
 import { computed, ref, nextTick } from 'vue';
 import { clamp } from 'src/utils/numberUtils';
+import { Minus, Plus } from 'lucide-vue-next';
 
 const props = defineProps<{
   label: string;

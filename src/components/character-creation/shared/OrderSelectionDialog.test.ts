@@ -123,33 +123,15 @@ describe('OrderSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedOrderId: 10 });
     const items = wrapper.findAll('.q-item');
     const windrunnerItem = items[0]!;
-    expect(windrunnerItem.text()).toContain('check');
+    expect(windrunnerItem.find('svg').exists()).toBe(true);
     expect(windrunnerItem.text()).not.toContain('Select');
   });
 
-  it('shows Select button for non-selected orders', () => {
+  it('shows Select label for non-selected orders', () => {
     const wrapper = createWrapper({ modelValue: true, selectedOrderId: 10 });
     const items = wrapper.findAll('.q-item');
     const lightweaverItem = items[1]!;
     expect(lightweaverItem.text()).toContain('Select');
-  });
-
-  it('emits select with orderId on click', async () => {
-    const wrapper = createWrapper({ modelValue: true, selectedOrderId: null });
-    const items = wrapper.findAll('.q-item');
-    const selectBtn = items[0]!.findAll('button').find((b) => b.text().includes('Select'));
-    expect(selectBtn).toBeDefined();
-    await selectBtn!.trigger('click');
-    expect(wrapper.emitted('select')).toEqual([[10]]);
-  });
-
-  it('auto-closes after selection', async () => {
-    const wrapper = createWrapper({ modelValue: true, selectedOrderId: null });
-    const items = wrapper.findAll('.q-item');
-    const selectBtn = items[0]!.findAll('button').find((b) => b.text().includes('Select'));
-    expect(selectBtn).toBeDefined();
-    await selectBtn!.trigger('click');
-    expect(wrapper.emitted('update:modelValue')).toEqual([[false]]);
   });
 
   it('emits select and closes when row clicked', async () => {
