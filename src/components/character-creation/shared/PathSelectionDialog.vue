@@ -15,11 +15,13 @@
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-list bordered separator>
+        <q-list bordered separator role="listbox" aria-label="Heroic paths">
           <q-item
             v-for="path in classifiers.paths"
             :key="path.id"
             :active="isSelected(path.id)"
+            :aria-selected="isSelected(path.id)"
+            role="option"
             clickable
             v-ripple
             @click="!isSelected(path.id) && selectPath(path.id)"

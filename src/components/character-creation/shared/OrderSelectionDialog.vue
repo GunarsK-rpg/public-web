@@ -15,11 +15,13 @@
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-list bordered separator>
+        <q-list bordered separator role="listbox" aria-label="Radiant orders">
           <q-item
             v-for="order in classifiers.radiantOrders"
             :key="order.id"
             :active="selectedOrderId === order.id"
+            :aria-selected="selectedOrderId === order.id"
+            role="option"
             clickable
             v-ripple
             @click="selectedOrderId !== order.id && selectOrder(order.id)"

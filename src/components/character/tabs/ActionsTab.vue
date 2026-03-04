@@ -49,8 +49,8 @@
           :title="at.description"
         >
           <img
-            v-if="at.icon"
-            :src="getIconUrl(at.icon, 'actions')"
+            v-if="getActionIconUrl(at.icon)"
+            :src="getActionIconUrl(at.icon)"
             alt=""
             aria-hidden="true"
             class="legend-icon icon-theme-aware"
@@ -74,6 +74,10 @@ import type { Action } from 'src/types';
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
 
+function getActionIconUrl(icon: string | undefined): string {
+  return getIconUrl(icon, 'actions');
+}
+
 // Sentinel value for uninitialized tab state (action type IDs are always >= 1)
 const UNINITIALIZED_TAB = -1;
 
@@ -96,14 +100,17 @@ watch(
 const activationTypeOrder = computed(() => {
   const map = new Map<number, number>();
   for (const at of classifiers.activationTypes) {
-    map.set(at.id, at.displayOrder ?? 0);
+    map.set(at.id, at.displayOrder ?? Number.MAX_SAFE_INTEGER);
   }
   return map;
 });
 
 // Activation types sorted by display order (for legend)
 const sortedActivationTypes = computed(() =>
-  [...classifiers.activationTypes].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+  [...classifiers.activationTypes].sort(
+    (a, b) =>
+      (a.displayOrder ?? Number.MAX_SAFE_INTEGER) - (b.displayOrder ?? Number.MAX_SAFE_INTEGER)
+  )
 );
 
 // Sort actions by activation type display order, then alphabetically by name

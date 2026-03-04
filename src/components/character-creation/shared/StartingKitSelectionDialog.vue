@@ -15,11 +15,13 @@
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-list bordered separator>
+        <q-list bordered separator role="listbox" aria-label="Starting kits">
           <q-item
             v-for="kit in classifiers.startingKits"
             :key="kit.id"
             :active="selectedKitId === kit.id"
+            :aria-selected="selectedKitId === kit.id"
+            role="option"
             clickable
             v-ripple
             @click="selectedKitId !== kit.id && selectKit(kit.id)"

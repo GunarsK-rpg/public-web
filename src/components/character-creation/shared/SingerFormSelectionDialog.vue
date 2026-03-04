@@ -15,11 +15,13 @@
       </q-card-section>
       <q-separator />
       <q-card-section>
-        <q-list bordered separator>
+        <q-list bordered separator role="listbox" aria-label="Singer forms">
           <q-item
             v-for="form in availableForms"
             :key="form.id"
             :active="selectedFormId === form.id"
+            :aria-selected="selectedFormId === form.id"
+            role="option"
             clickable
             v-ripple
             @click="selectedFormId !== form.id && selectForm(form.id)"
