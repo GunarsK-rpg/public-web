@@ -20,7 +20,7 @@
     <!-- Heroic Paths Tab -->
     <div v-if="activeTab === 'heroic'">
       <q-btn outline color="primary" class="q-mb-md" @click="pathDialogOpen = true"
-        ><Plus :size="20" class="on-left" />Add Path</q-btn
+        ><Plus :size="20" class="on-left" aria-hidden="true" />Add Path</q-btn
       >
       <q-list v-if="selectedPaths.length > 0" bordered class="rounded-borders">
         <HeroicPathPanel
@@ -48,11 +48,14 @@
       </div>
       <template v-if="wantsRadiant">
         <q-btn outline color="primary" class="q-mb-md" @click="orderDialogOpen = true"
-          ><ArrowLeftRight v-if="radiantOrderId" :size="20" class="on-left" /><Plus
-            v-else
+          ><ArrowLeftRight
+            v-if="radiantOrderId"
             :size="20"
             class="on-left"
-          />{{ radiantOrderId ? 'Change Order' : 'Select Order' }}</q-btn
+            aria-hidden="true"
+          /><Plus v-else :size="20" class="on-left" aria-hidden="true" />{{
+            radiantOrderId ? 'Change Order' : 'Select Order'
+          }}</q-btn
         >
         <q-list v-if="radiantOrderId" bordered class="rounded-borders">
           <RadiantPathPanel

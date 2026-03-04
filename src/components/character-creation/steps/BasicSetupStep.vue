@@ -47,7 +47,7 @@
           </div>
           <q-space />
           <q-btn flat color="negative" @click="leaveCampaign"
-            ><LogOut :size="20" class="on-left" />Leave Campaign</q-btn
+            ><LogOut :size="20" class="on-left" aria-hidden="true" />Leave Campaign</q-btn
           >
         </q-card-section>
       </q-card>
@@ -78,9 +78,12 @@
       </div>
 
       <q-btn color="primary" outline @click="formDialogOpen = true"
-        ><component :is="selectedForm ? ArrowLeftRight : Plus" :size="20" class="on-left" />{{
-          selectedForm ? 'Change Form' : 'Choose Form'
-        }}</q-btn
+        ><component
+          :is="selectedForm ? ArrowLeftRight : Plus"
+          :size="20"
+          class="on-left"
+          aria-hidden="true"
+        />{{ selectedForm ? 'Change Form' : 'Choose Form' }}</q-btn
       >
 
       <SingerFormSelectionDialog

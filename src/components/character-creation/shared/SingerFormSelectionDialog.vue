@@ -10,7 +10,7 @@
         <div id="singer-form-selection-dialog-title" class="text-h6">Select Singer Form</div>
         <q-space />
         <q-btn flat round dense aria-label="Close dialog" @click="$emit('update:modelValue', false)"
-          ><X :size="20"
+          ><X :size="20" aria-hidden="true"
         /></q-btn>
       </q-card-section>
       <q-separator />
@@ -29,7 +29,13 @@
               <q-item-label v-if="form.sprenType" caption>{{ form.sprenType }}</q-item-label>
             </q-item-section>
             <q-item-section side>
-              <Check v-if="selectedFormId === form.id" :size="18" class="text-positive" />
+              <Check
+                v-if="selectedFormId === form.id"
+                :size="18"
+                class="text-positive selected-indicator"
+                aria-hidden="true"
+              />
+              <span v-if="selectedFormId === form.id" class="sr-only">Selected</span>
               <q-btn
                 v-else
                 flat

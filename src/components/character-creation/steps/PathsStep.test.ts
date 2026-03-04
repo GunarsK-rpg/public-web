@@ -129,7 +129,7 @@ const mockDeletionTracker = {
 };
 
 function findBtnByText(wrapper: ReturnType<typeof shallowMount>, text: string) {
-  return wrapper.findAll('.q-btn').find((b) => b.text().includes(text));
+  return wrapper.findAll('.q-btn').find((b) => b.text().replace(/\s+/g, ' ').trim() === text);
 }
 
 describe('PathsStep', () => {

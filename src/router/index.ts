@@ -43,7 +43,11 @@ export default defineRouter(function (/* { store, ssrContext } */) {
         }
       }
     } else if (to.name === 'login' || to.name === 'register') {
-      if (authStore.isAuthenticated || (await authStore.checkAuthStatus())) {
+      // If redirected here from a failed auth check, skip server re-check
+      // (we just verified — avoids duplicate 401). Otherwise check server
+      // to support "remember me" auto-redirect on direct visit.
+      const wasRedirected = !!to.query.redirect;
+      if (authStore.isAuthenticated || (!wasRedirected && (await authStore.checkAuthStatus()))) {
         next({ name: 'my-characters' });
         return;
       }

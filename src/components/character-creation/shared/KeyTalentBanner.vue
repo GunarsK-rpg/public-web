@@ -1,7 +1,7 @@
 <template>
   <q-banner class="banner-key-talent" dense rounded>
     <template v-slot:avatar>
-      <Sparkles aria-hidden="true" />
+      <Sparkles aria-hidden="true" data-testid="key-talent-icon" />
     </template>
     <strong>{{ label }}:</strong> {{ talent?.name }}
     <div class="text-caption">

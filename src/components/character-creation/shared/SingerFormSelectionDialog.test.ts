@@ -105,8 +105,8 @@ describe('SingerFormSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedFormId: 1 });
     const items = wrapper.findAll('.q-item');
     const dullformItem = items[0]!;
-    expect(dullformItem.find('svg').exists()).toBe(true);
-    expect(dullformItem.text()).not.toContain('Select');
+    expect(dullformItem.find('.selected-indicator').exists()).toBe(true);
+    expect(dullformItem.findAll('button').filter((b) => b.text() === 'Select')).toHaveLength(0);
   });
 
   it('shows Select button for non-selected forms', () => {

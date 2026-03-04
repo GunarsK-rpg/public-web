@@ -124,8 +124,8 @@ describe('StartingKitSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedKitId: 1 });
     const items = wrapper.findAll('.q-item');
     const artisanItem = items[0]!;
-    expect(artisanItem.find('svg').exists()).toBe(true);
-    expect(artisanItem.text()).not.toContain('Select');
+    expect(artisanItem.find('.selected-indicator').exists()).toBe(true);
+    expect(artisanItem.findAll('button').filter((b) => b.text() === 'Select')).toHaveLength(0);
   });
 
   it('shows Select button for non-selected kits', () => {

@@ -51,7 +51,8 @@
           <img
             v-if="at.icon"
             :src="getIconUrl(at.icon, 'actions')"
-            :alt="at.name"
+            alt=""
+            aria-hidden="true"
             class="legend-icon icon-theme-aware"
           />
           <span class="text-caption">{{ at.name }}</span>
@@ -108,8 +109,8 @@ const sortedActivationTypes = computed(() =>
 // Sort actions by activation type display order, then alphabetically by name
 function sortActions(actions: Action[]): Action[] {
   return [...actions].sort((a, b) => {
-    const orderA = activationTypeOrder.value.get(a.activationType.id) ?? 0;
-    const orderB = activationTypeOrder.value.get(b.activationType.id) ?? 0;
+    const orderA = activationTypeOrder.value.get(a.activationType.id) ?? Number.MAX_SAFE_INTEGER;
+    const orderB = activationTypeOrder.value.get(b.activationType.id) ?? Number.MAX_SAFE_INTEGER;
     if (orderA !== orderB) return orderA - orderB;
     return a.name.localeCompare(b.name);
   });

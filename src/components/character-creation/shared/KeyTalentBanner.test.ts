@@ -122,7 +122,7 @@ describe('KeyTalentBanner', () => {
       const talent = createTalent();
       const wrapper = createWrapper({ talent });
 
-      expect(wrapper.find('svg').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="key-talent-icon"]').exists()).toBe(true);
     });
   });
 });

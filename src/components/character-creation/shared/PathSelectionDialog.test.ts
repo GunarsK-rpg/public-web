@@ -100,8 +100,8 @@ describe('PathSelectionDialog', () => {
     const wrapper = createWrapper({ modelValue: true, selectedPathIds: [1] });
     const items = wrapper.findAll('.q-item');
     const warriorItem = items[0]!;
-    expect(warriorItem.find('svg').exists()).toBe(true);
-    expect(warriorItem.text()).not.toContain('Select');
+    expect(warriorItem.find('.selected-indicator').exists()).toBe(true);
+    expect(warriorItem.findAll('button').filter((b) => b.text() === 'Select')).toHaveLength(0);
   });
 
   it('emits select with pathId when Select clicked', async () => {

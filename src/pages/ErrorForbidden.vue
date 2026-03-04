@@ -10,7 +10,7 @@
       </div>
 
       <q-btn class="q-mt-xl" color="primary" unelevated to="/" no-caps>
-        <Home :size="20" class="on-left" />Back to Home
+        <Home :size="20" class="on-left" aria-hidden="true" />Back to Home
       </q-btn>
     </div>
   </q-page>

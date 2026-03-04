@@ -9,7 +9,9 @@
       <q-card-section class="row items-center">
         <div id="talent-dialog-title" class="text-h6">{{ talent?.name }}</div>
         <q-space />
-        <q-btn flat round dense aria-label="Close dialog" v-close-popup><X :size="20" /></q-btn>
+        <q-btn flat round dense aria-label="Close dialog" v-close-popup
+          ><X :size="20" aria-hidden="true"
+        /></q-btn>
       </q-card-section>
       <q-separator />
       <q-card-section v-if="talent">

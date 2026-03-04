@@ -27,7 +27,7 @@
           aria-label="Remove Radiant path"
           @click.stop="$emit('remove')"
         >
-          <X :size="20" />
+          <X :size="20" aria-hidden="true" />
           <q-tooltip>Remove Radiant path</q-tooltip>
         </q-btn>
       </q-item-section>

@@ -7,10 +7,11 @@
     </p>
 
     <q-btn outline color="primary" class="q-mb-md" @click="kitDialogOpen = true"
-      ><ArrowLeftRight v-if="selectedKitId" :size="20" class="on-left" /><Plus
+      ><ArrowLeftRight v-if="selectedKitId" :size="20" class="on-left" aria-hidden="true" /><Plus
         v-else
         :size="20"
         class="on-left"
+        aria-hidden="true"
       />{{ selectedKitId ? 'Change Starting Kit' : 'Choose Starting Kit' }}</q-btn
     >
 

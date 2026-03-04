@@ -5,12 +5,12 @@
         <q-toolbar-title>{{ pageTitle }}</q-toolbar-title>
 
         <q-btn flat dense round aria-label="Toggle dark mode" @click="toggleDarkMode">
-          <SunMoon :size="20" />
+          <SunMoon :size="20" aria-hidden="true" />
           <q-tooltip>Toggle dark mode</q-tooltip>
         </q-btn>
 
         <q-btn flat dense round aria-label="Account menu" v-if="isAuthenticated">
-          <CircleUserRound :size="20" />
+          <CircleUserRound :size="20" aria-hidden="true" />
           <q-menu>
             <q-list class="account-menu">
               <q-item-label header>{{ username }}</q-item-label>
@@ -42,11 +42,11 @@
         class="bottom-nav"
       >
         <q-tab name="my-characters" @click="navigateTo('my-characters')">
-          <User :size="20" class="q-tab__icon" />
+          <User :size="20" class="q-tab__icon" aria-hidden="true" />
           <div class="q-tab__label">Characters</div>
         </q-tab>
         <q-tab name="campaigns" @click="navigateTo('campaigns')">
-          <Swords :size="20" class="q-tab__icon" />
+          <Swords :size="20" class="q-tab__icon" aria-hidden="true" />
           <div class="q-tab__label">Campaigns</div>
         </q-tab>
       </q-tabs>

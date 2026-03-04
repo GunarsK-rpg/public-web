@@ -30,7 +30,7 @@
         outside-arrows
       >
         <q-tab v-for="tab in tabs" :key="tab.id" :name="tab.id">
-          <component :is="tab.icon" :size="20" class="q-tab__icon" />
+          <component :is="tab.icon" :size="20" class="q-tab__icon" aria-hidden="true" />
           <div class="q-tab__label">{{ tab.label }}</div>
         </q-tab>
       </q-tabs>

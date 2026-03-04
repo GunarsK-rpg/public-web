@@ -20,7 +20,7 @@
     </q-item-section>
     <q-item-section side>
       <q-btn flat dense aria-label="View talent details" @click.stop="$emit('showDetails', talent)">
-        <Info :size="20" />
+        <Info :size="20" aria-hidden="true" />
         <q-tooltip>View details</q-tooltip>
       </q-btn>
     </q-item-section>
