@@ -1,3 +1,4 @@
+import { Notify } from 'quasar';
 import { register } from 'register-service-worker';
 
 register(process.env.SERVICE_WORKER_FILE, {
@@ -18,14 +19,26 @@ register(process.env.SERVICE_WORKER_FILE, {
   },
 
   updated() {
-    // New content is available; please refresh
+    Notify.create({
+      message: 'New version available.',
+      color: 'primary',
+      timeout: 0,
+      actions: [
+        {
+          label: 'Refresh',
+          color: 'white',
+          handler: () => window.location.reload(),
+        },
+        { label: 'Dismiss', color: 'white' },
+      ],
+    });
   },
 
   offline() {
     // No internet connection found. App is running in offline mode.
   },
 
-  error(/* err */) {
-    // Error during service worker registration
+  error(err) {
+    console.error('Service worker registration failed:', err);
   },
 });

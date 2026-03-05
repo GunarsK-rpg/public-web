@@ -187,7 +187,7 @@ describe('ActionItem', () => {
       });
 
       const header = wrapper.find('.header');
-      expect(header.text()).not.toContain('No description available');
+      expect(header.find('.text-muted').exists()).toBe(false);
     });
 
     it('renders activation type icon', () => {
