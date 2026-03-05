@@ -34,14 +34,21 @@ const mockHero = {
   cultures: [],
 };
 
-const { mockGetSheet, mockPatchHealth, mockPatchFocus, mockPatchInvestiture, mockPatchCurrency } =
-  vi.hoisted(() => ({
-    mockGetSheet: vi.fn(),
-    mockPatchHealth: vi.fn(),
-    mockPatchFocus: vi.fn(),
-    mockPatchInvestiture: vi.fn(),
-    mockPatchCurrency: vi.fn(),
-  }));
+const {
+  mockGetSheet,
+  mockDeleteHero,
+  mockPatchHealth,
+  mockPatchFocus,
+  mockPatchInvestiture,
+  mockPatchCurrency,
+} = vi.hoisted(() => ({
+  mockGetSheet: vi.fn(),
+  mockDeleteHero: vi.fn(),
+  mockPatchHealth: vi.fn(),
+  mockPatchFocus: vi.fn(),
+  mockPatchInvestiture: vi.fn(),
+  mockPatchCurrency: vi.fn(),
+}));
 
 vi.mock('src/services/heroService', () => ({
   default: {
@@ -50,7 +57,7 @@ vi.mock('src/services/heroService', () => ({
     getSheet: mockGetSheet,
     create: vi.fn(),
     update: vi.fn(),
-    delete: vi.fn(),
+    delete: mockDeleteHero,
     getSubResource: vi.fn(),
     upsertSubResource: vi.fn(),
     deleteSubResource: vi.fn(),
@@ -756,6 +763,71 @@ describe('useHeroStore', () => {
       });
 
       expect(store.isNew).toBe(false);
+    });
+  });
+
+  // ========================================
+  // deleteHero
+  // ========================================
+  describe('deleteHero', () => {
+    it('calls heroService.delete with hero id', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockDeleteHero.mockResolvedValueOnce({});
+
+      await store.deleteHero();
+
+      expect(mockDeleteHero).toHaveBeenCalledWith(1);
+    });
+
+    it('clears hero state after successful deletion', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockDeleteHero.mockResolvedValueOnce({});
+
+      await store.deleteHero();
+
+      expect(store.hero).toBeNull();
+      expect(store.isLoaded).toBe(false);
+    });
+
+    it('returns true on successful deletion', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockDeleteHero.mockResolvedValueOnce({});
+
+      const result = await store.deleteHero();
+
+      expect(result).toBe(true);
+    });
+
+    it('returns false when no hero is loaded', async () => {
+      const store = useHeroStore();
+
+      const result = await store.deleteHero();
+
+      expect(result).toBe(false);
+    });
+
+    it('returns false and sets error on API failure', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockDeleteHero.mockRejectedValueOnce(axiosError(500));
+
+      const result = await store.deleteHero();
+
+      expect(result).toBe(false);
+      expect(store.error).toBeTruthy();
+    });
+
+    it('does not clear hero on API failure', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      mockDeleteHero.mockRejectedValueOnce(axiosError(500));
+
+      await store.deleteHero();
+
+      expect(store.hero).not.toBeNull();
     });
   });
 });

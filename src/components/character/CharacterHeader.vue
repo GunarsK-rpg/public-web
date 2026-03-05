@@ -16,6 +16,17 @@
             @click="goToEdit"
             ><Pencil :size="20"
           /></q-btn>
+          <q-btn
+            v-if="!readonly"
+            flat
+            dense
+            round
+            size="sm"
+            class="q-ml-xs"
+            aria-label="Delete character"
+            @click="showDeleteDialog = true"
+            ><Trash2 :size="20"
+          /></q-btn>
         </div>
         <div class="text-subtitle1 text-muted">
           Level {{ hero?.level }}
@@ -78,17 +89,25 @@
       </div>
     </div>
     <q-separator />
+
+    <DeleteHeroDialog
+      v-model="showDeleteDialog"
+      :hero-name="hero?.name ?? ''"
+      :deleting="deleting"
+      @confirm="confirmDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { RPG_COLORS } from 'src/constants/theme';
-import { Pencil } from 'lucide-vue-next';
+import { Pencil, Trash2 } from 'lucide-vue-next';
+import DeleteHeroDialog from './DeleteHeroDialog.vue';
 import ResourceBox from './ResourceBox.vue';
 
 const props = defineProps<{
@@ -112,10 +131,23 @@ const ancestryName = computed(() => hero.value?.ancestry?.name);
 const activeSingerFormName = computed(() => hero.value?.activeSingerForm?.name);
 const cultureName = computed(() => hero.value?.cultures?.[0]?.culture?.name);
 
+const showDeleteDialog = ref(false);
+const deleting = ref(false);
+
 function goToEdit(): void {
   void router.push({
     name: 'character-edit',
     params: { characterId: props.characterId },
   });
+}
+
+async function confirmDelete(): Promise<void> {
+  deleting.value = true;
+  const success = await heroStore.deleteHero();
+  deleting.value = false;
+  if (success) {
+    showDeleteDialog.value = false;
+    void router.push({ name: 'my-characters' });
+  }
 }
 </script>
