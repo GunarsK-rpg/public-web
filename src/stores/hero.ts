@@ -411,6 +411,7 @@ export const useHeroStore = defineStore('hero', () => {
     if (!hero.value || hero.value.id === 0) return false;
     try {
       await heroService.delete(hero.value.id);
+      loadRequestId++;
       clearHero();
       return true;
     } catch (err) {

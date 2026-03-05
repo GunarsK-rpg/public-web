@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import CharacterHeader from './CharacterHeader.vue';
 
 const mockHero = ref<{
+  id: number;
   name: string;
   level: number;
   currentHealth: number;
@@ -106,6 +107,7 @@ describe('CharacterHeader', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockHero.value = {
+      id: 42,
       name: 'Kaladin',
       level: 5,
       currentHealth: 25,

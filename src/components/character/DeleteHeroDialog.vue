@@ -19,6 +19,7 @@
           v-model="confirmInput"
           outlined
           dense
+          aria-label="Type delete to confirm"
           placeholder='Type "delete" to confirm'
           :disable="deleting"
         />

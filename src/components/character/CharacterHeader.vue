@@ -17,7 +17,7 @@
             ><Pencil :size="20"
           /></q-btn>
           <q-btn
-            v-if="!readonly"
+            v-if="!readonly && hero?.id"
             flat
             dense
             round
@@ -143,11 +143,14 @@ function goToEdit(): void {
 
 async function confirmDelete(): Promise<void> {
   deleting.value = true;
-  const success = await heroStore.deleteHero();
-  deleting.value = false;
-  if (success) {
-    showDeleteDialog.value = false;
-    void router.push({ name: 'my-characters' });
+  try {
+    const success = await heroStore.deleteHero();
+    if (success) {
+      showDeleteDialog.value = false;
+      void router.push({ name: 'my-characters' });
+    }
+  } finally {
+    deleting.value = false;
   }
 }
 </script>
