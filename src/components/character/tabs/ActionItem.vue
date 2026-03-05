@@ -1,24 +1,17 @@
 <template>
   <q-expansion-item switch-toggle-side dense class="action-expansion-item">
     <template #header>
-      <q-item-section avatar class="action-avatar">
-        <img
-          v-if="activationType?.icon"
-          :src="iconUrl"
-          :alt="activationType?.name ?? 'Action'"
-          :title="activationType?.name ?? 'Action'"
-          class="action-icon icon-theme-aware"
-        />
-      </q-item-section>
-      <q-item-section>
-        <q-item-label>{{ action.name }}</q-item-label>
-        <q-item-label caption>{{
-          action.descriptionShort || action.description || 'No description available'
-        }}</q-item-label>
-      </q-item-section>
-      <q-item-section v-if="hasBadges" side>
-        <div class="row items-center wrap q-gutter-xs justify-end">
-          <SpecialBadges :specials="typedEntries" />
+      <div class="action-header">
+        <div class="action-row-name">
+          <img
+            v-if="activationType?.icon"
+            :src="iconUrl"
+            :alt="activationType?.name ?? 'Action'"
+            :title="activationType?.name ?? 'Action'"
+            class="action-icon icon-theme-aware"
+          />
+          <span class="action-name">{{ action.name }}</span>
+          <SpecialBadges v-if="hasBadges" :specials="typedEntries" />
           <q-badge v-if="action.dice" :color="RPG_COLORS.badgeMuted" outline>
             {{ action.dice }}
           </q-badge>
@@ -35,9 +28,11 @@
             {{ cost.value }} {{ cost.label }}
           </q-badge>
         </div>
-      </q-item-section>
-      <q-item-section v-if="hasDeductibleCost && !readonly" side>
+        <div class="text-caption text-muted">
+          {{ action.descriptionShort || action.description || 'No description available' }}
+        </div>
         <q-btn
+          v-if="hasDeductibleCost && !readonly"
           class="use-action-btn"
           size="sm"
           flat
@@ -49,7 +44,7 @@
           title="Use action"
           @click.stop="useAction"
         />
-      </q-item-section>
+      </div>
     </template>
 
     <q-card>
@@ -186,23 +181,36 @@ const actionCosts = computed(() => {
 </script>
 
 <style scoped>
-.action-avatar {
-  min-width: 24px;
-  min-height: 24px;
+.action-header {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+}
+
+.action-row-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.action-name {
+  font-weight: 500;
 }
 
 .action-icon {
   width: 24px;
   height: 24px;
+  flex-shrink: 0;
+}
+
+.use-action-btn {
+  align-self: center;
 }
 
 .action-expansion-item :deep(.q-expansion-item__container) {
   border-bottom: none;
-}
-
-@media (max-width: 599px) {
-  .action-expansion-item :deep(.q-item__section--side) {
-    max-width: 120px;
-  }
 }
 </style>
