@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // app global css in SCSS form
 
 // =============================================================================
@@ -584,6 +586,17 @@ $touch-target-min: 44px;
     box-shadow:
       0 1px 4px var(--app-shadow),
       inset 0 0 0 1px rgba($cosmere-gold, 0.05);
+  }
+}
+
+// q-drawer sidebar -- elevated surface so it's visually distinct from page
+.q-drawer {
+  background: $cosmere-parchment-light;
+  border-right: 1px solid rgba($cosmere-gold-muted, 0.25);
+
+  .body--dark & {
+    background: color.adjust($cosmere-navy, $lightness: 5%);
+    border-right: 1px solid rgba($cosmere-gold, 0.2);
   }
 }
 
