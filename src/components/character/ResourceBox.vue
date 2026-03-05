@@ -3,6 +3,7 @@
     <div class="resource-label">{{ label }}</div>
     <div class="resource-controls">
       <q-btn
+        v-if="!readonly"
         flat
         dense
         round
@@ -14,11 +15,12 @@
       /></q-btn>
       <span
         v-if="!editing"
-        class="resource-value clickable"
-        role="button"
-        tabindex="0"
-        @click="startEdit"
-        @keyup.enter="startEdit"
+        class="resource-value"
+        :class="{ clickable: !readonly }"
+        :role="readonly ? undefined : 'button'"
+        :tabindex="readonly ? undefined : 0"
+        @click="!readonly && startEdit()"
+        @keyup.enter="!readonly && startEdit()"
       >
         {{ current }}{{ max != null ? ` / ${max}` : '' }}{{ suffix ? ` ${suffix}` : '' }}
       </span>
@@ -38,6 +40,7 @@
         <span v-if="suffix" class="resource-max"> {{ suffix }}</span>
       </span>
       <q-btn
+        v-if="!readonly"
         flat
         dense
         round
@@ -74,6 +77,7 @@ const props = defineProps<{
   color?: string;
   suffix?: string;
   saving: boolean;
+  readonly?: boolean;
 }>();
 
 const emit = defineEmits<{

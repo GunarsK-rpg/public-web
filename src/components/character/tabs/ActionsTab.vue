@@ -30,6 +30,7 @@
             v-for="action in actionsByType[actionType.id]"
             :key="action.id"
             :action="action"
+            :readonly="readonly"
           />
         </q-list>
         <div v-else class="text-center text-muted q-pa-lg">
@@ -70,6 +71,10 @@ import { findById, findByCode } from 'src/utils/arrayUtils';
 import { getIconUrl } from 'src/utils/iconUrl';
 import ActionItem from './ActionItem.vue';
 import type { Action } from 'src/types';
+
+defineProps<{
+  readonly?: boolean;
+}>();
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();

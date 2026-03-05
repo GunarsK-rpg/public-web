@@ -41,13 +41,14 @@
             v-for="heroEquip in equipmentByType[eqType.id]"
             :key="heroEquip.id"
             :hero-equipment="heroEquip"
+            :readonly="readonly"
             @edit="openEditDialog(heroEquip)"
           />
         </q-list>
         <div v-else class="text-center text-muted q-pa-lg">
           No {{ eqType.name.toLowerCase() }} in inventory.
         </div>
-        <div class="q-pa-sm q-mt-xs">
+        <div v-if="!readonly" class="q-pa-sm q-mt-xs">
           <q-btn flat dense color="primary" size="sm" @click="openAddDialog(eqType.id)"
             ><Plus :size="20" class="on-left" />Add {{ eqType.name }}</q-btn
           >
@@ -73,6 +74,10 @@ import { Banknote, Plus } from 'lucide-vue-next';
 import EquipmentItem from './EquipmentItem.vue';
 import EquipmentAddDialog from './EquipmentAddDialog.vue';
 import type { HeroEquipment } from 'src/types';
+
+defineProps<{
+  readonly?: boolean;
+}>();
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();

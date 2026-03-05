@@ -51,6 +51,12 @@ vi.mock('stores/classifiers', () => ({
   }),
 }));
 
+vi.mock('stores/auth', () => ({
+  useAuthStore: () => ({
+    username: 'testuser',
+  }),
+}));
+
 vi.mock('src/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn() },
 }));
