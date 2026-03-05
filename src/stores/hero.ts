@@ -407,6 +407,19 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
+  async function deleteHero(): Promise<boolean> {
+    if (!hero.value || hero.value.id === 0) return false;
+    try {
+      await heroService.delete(hero.value.id);
+      loadRequestId++;
+      clearHero();
+      return true;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to delete character' });
+      return false;
+    }
+  }
+
   return {
     // State
     hero,
@@ -449,6 +462,9 @@ export const useHeroStore = defineStore('hero', () => {
     patchFocus,
     patchInvestiture,
     patchCurrency,
+
+    // Hero deletion
+    deleteHero,
 
     // Equipment (sheet)
     addEquipment,
