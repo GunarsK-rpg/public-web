@@ -28,8 +28,8 @@
             {{ cost.value }} {{ cost.label }}
           </q-badge>
         </div>
-        <div class="text-caption text-muted">
-          {{ action.descriptionShort || action.description || 'No description available' }}
+        <div v-if="action.descriptionShort || action.description" class="text-caption text-muted">
+          {{ action.descriptionShort || action.description }}
         </div>
         <q-btn
           v-if="hasDeductibleCost && !readonly"
