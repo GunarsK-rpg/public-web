@@ -367,8 +367,9 @@ describe('useHeroAttributesStore', () => {
     it('includes skill modifier in total', () => {
       setupHeroWithAttributes();
       const heroStore = useHeroStore();
-      if (heroStore.hero?.skills?.[0]) {
-        heroStore.hero.skills[0].modifier = 1;
+      const athletics = heroStore.hero?.skills?.find((s) => s.skill.code === 'athletics');
+      if (athletics) {
+        athletics.modifier = 1;
       }
       const store = useHeroAttributesStore();
 

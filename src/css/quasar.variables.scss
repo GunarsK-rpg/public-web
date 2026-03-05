@@ -106,7 +106,9 @@ $color-text-on-color: #ffffff;
 $color-text-on-warning: $cosmere-text-dark;
 
 // Focus states (accessibility)
-$color-focus-ring: $cosmere-gold;
+// Light: muted gold for 3:1+ contrast on parchment; Dark: bright gold for contrast on navy
+$color-focus-ring-light: $cosmere-gold-muted;
+$color-focus-ring-dark: $cosmere-gold-bright;
 $focus-ring-width: 3px;
 $focus-ring-offset: 2px;
 
@@ -142,7 +144,7 @@ $color-background-dark: $cosmere-navy-deep;
   --cosmere-spiritual: #{$cosmere-spiritual};
 
   // Focus ring (accessibility)
-  --app-focus-ring-color: #{$color-focus-ring};
+  --app-focus-ring-color: #{$color-focus-ring-light};
   --app-focus-ring-width: #{$focus-ring-width};
   --app-focus-ring-offset: #{$focus-ring-offset};
 
@@ -184,6 +186,9 @@ $color-background-dark: $cosmere-navy-deep;
 
 // Dark mode overrides
 .body--dark {
+  // Dark mode: focus ring
+  --app-focus-ring-color: #{$color-focus-ring-dark};
+
   // Dark mode: disabled/selected states
   --app-disabled-bg: #{$color-disabled-bg-dark};
   --app-selected-bg: #{$color-selected-bg-dark};
