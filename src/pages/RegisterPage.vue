@@ -7,7 +7,7 @@
       </q-card-section>
 
       <q-card-section>
-        <q-form @submit="handleRegister" class="q-gutter-md">
+        <q-form @submit="handleRegister" class="q-gutter-y-md">
           <q-input
             v-model="username"
             label="Username"
@@ -62,7 +62,7 @@
             type="submit"
             label="Register"
             color="primary"
-            class="full-width"
+            class="full-width q-mt-md"
             :loading="loading"
           />
         </q-form>
