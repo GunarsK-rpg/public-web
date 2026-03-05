@@ -3,7 +3,11 @@ import { ref } from 'vue';
 import type { Router } from 'vue-router';
 import authService from 'src/services/auth';
 import { broadcastLogin, broadcastLogout, type AuthMessage } from 'src/services/authChannel';
-import { scheduleProactiveRefresh, clearProactiveRefresh } from 'src/services/tokenRefresh';
+import {
+  scheduleProactiveRefresh,
+  clearProactiveRefresh,
+  refreshToken,
+} from 'src/services/tokenRefresh';
 import { Level, LevelValues, type LevelKey } from 'src/constants/permissions';
 import { logger, setUserContext, clearUserContext } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
@@ -37,20 +41,36 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function checkAuthStatus(): Promise<boolean> {
     try {
-      const response = await authService.tokenStatus();
-      const isValid = response.data.valid;
-      isAuthenticated.value = isValid;
-      if (isValid) {
-        username.value = response.data.username ?? '';
-        scopes.value = response.data.scopes ?? {};
-        scheduleProactiveRefresh(response.data.ttl_seconds);
-      } else {
+      let response = await authService.tokenStatus();
+
+      // Access token expired — attempt refresh before giving up
+      if (!response.data.valid) {
+        const refreshed = await refreshToken();
+        if (!refreshed) {
+          clearProactiveRefresh();
+          isAuthenticated.value = false;
+          username.value = '';
+          scopes.value = {};
+          clearUserContext();
+          return false;
+        }
+        response = await authService.tokenStatus();
+      }
+
+      if (!response.data.valid) {
         clearProactiveRefresh();
+        isAuthenticated.value = false;
         username.value = '';
         scopes.value = {};
         clearUserContext();
+        return false;
       }
-      return isValid;
+
+      isAuthenticated.value = true;
+      username.value = response.data.username ?? '';
+      scopes.value = response.data.scopes ?? {};
+      scheduleProactiveRefresh(response.data.ttl_seconds);
+      return true;
     } catch (error) {
       clearProactiveRefresh();
       isAuthenticated.value = false;

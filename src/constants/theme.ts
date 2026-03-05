@@ -88,36 +88,36 @@ export const RPG_COLORS = {
   talentAvailable: 'positive',
   talentLocked: 'grey',
   talentSelected: 'primary',
-  talentKey: 'amber-8', // Key/signature talents - subdued gold
+  talentKey: 'primary', // Gold via primary
 
   // Path types
   heroicPath: 'blue-grey-8',
-  radiantPath: 'amber-9',
+  radiantPath: 'primary', // Gold via primary
   ancestryPath: 'teal-8',
 
   // Attribute types (for grouping)
-  physical: 'positive',
-  cognitive: 'info',
-  spiritual: 'accent',
+  physical: 'primary', // Gold via primary
+  cognitive: 'secondary', // Blue via secondary
+  spiritual: 'accent', // Purple-grey via accent
 
   // Resource indicators
   health: 'negative',
   focus: 'teal',
-  investiture: 'amber',
+  investiture: 'primary', // Gold via primary
 
   // Resource cost badges (for action costs)
   focusCost: 'teal',
-  investitureCost: 'amber',
+  investitureCost: 'primary', // Gold via primary
 
   // Banner backgrounds
   bannerInfo: 'amber-2',
-  bannerInfoIcon: 'amber-8',
+  bannerInfoIcon: 'primary', // Gold via primary
 
   // Currency/spheres
-  currency: 'amber',
+  currency: 'primary', // Gold via primary
 
   // Equipment states
-  equipmentPrimary: 'amber',
+  equipmentPrimary: 'primary', // Gold via primary
 
   // Singer-specific
   singerForm: 'purple',

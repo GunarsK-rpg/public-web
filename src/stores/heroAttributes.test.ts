@@ -356,12 +356,24 @@ describe('useHeroAttributesStore', () => {
   });
 
   describe('getSkillModifier', () => {
-    it('returns attribute + rank', () => {
+    it('returns attribute + rank + modifier', () => {
       setupHeroWithAttributes();
       const store = useHeroAttributesStore();
 
-      // athletics: strength (3) + rank (2) = 5
+      // athletics: strength (3) + rank (2) + modifier (0) = 5
       expect(store.getSkillModifier('athletics')).toBe(5);
+    });
+
+    it('includes skill modifier in total', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      if (heroStore.hero?.skills?.[0]) {
+        heroStore.hero.skills[0].modifier = 1;
+      }
+      const store = useHeroAttributesStore();
+
+      // athletics: strength (3) + rank (2) + modifier (1) = 6
+      expect(store.getSkillModifier('athletics')).toBe(6);
     });
 
     it('returns 0 for unknown skill', () => {

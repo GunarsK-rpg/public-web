@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <div class="cosmere-showcase">
     <div class="q-pa-md row items-center q-col-gutter-md">
       <!-- Name and Level -->
       <div class="col-12 col-sm-6">
         <div class="row items-center no-wrap">
-          <div class="text-h5">{{ hero?.name }}</div>
+          <div class="text-h5 text-heading">{{ hero?.name }}</div>
           <q-btn
             v-if="!readonly"
             flat

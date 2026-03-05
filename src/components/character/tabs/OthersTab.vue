@@ -243,3 +243,20 @@ const getCompanionTypeName = makeNameGetter(
 const getConditionName = makeNameGetter(computed(() => buildIdNameMap(classifiers.conditions)));
 const getInjuryName = makeNameGetter(computed(() => buildIdNameMap(classifiers.injuries)));
 </script>
+
+<style scoped>
+.others-tab :deep(.q-expansion-item .q-item__label) {
+  font-family: 'Roboto', sans-serif;
+  font-variant: small-caps;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.others-tab :deep(.q-expansion-item .q-item-section--avatar) {
+  color: var(--cosmere-gold-muted);
+}
+
+.body--dark .others-tab :deep(.q-expansion-item .q-item-section--avatar) {
+  color: var(--cosmere-gold);
+}
+</style>

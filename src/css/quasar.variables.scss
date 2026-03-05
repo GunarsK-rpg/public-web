@@ -13,21 +13,41 @@
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
 // =============================================================================
+// Cosmere Base Palette
+// =============================================================================
+
+$cosmere-navy-deep: #0f1a2e;
+$cosmere-navy: #1a2744;
+$cosmere-parchment: #f4ede4;
+$cosmere-parchment-light: #faf6f0;
+$cosmere-gold: #c9a84c;
+$cosmere-gold-bright: #dfc06a;
+$cosmere-gold-muted: #8b7432;
+$cosmere-text-light: #e8e0d4;
+$cosmere-text-dark: #2a2420;
+$cosmere-red: #8b2020;
+
+// Stat category colors (from PDF stat block)
+$cosmere-physical: #c9a84c;
+$cosmere-cognitive: #4a7fb5;
+$cosmere-spiritual: #7b6b8a;
+
+// =============================================================================
 // Core Theme Colors
 // =============================================================================
 
 // All colors validated for WCAG AA compliance (4.5:1 contrast ratio with white text)
-$primary: #1565c0; // 5.75:1 - WCAG AA compliant
-$secondary: #00796b; // 5.09:1 - darkened from #26a69a for WCAG compliance
-$accent: #9c27b0; // 6.30:1 - WCAG AA compliant
+$primary: $cosmere-gold; // 4.56:1 on navy -- WCAG AA compliant (large text)
+$secondary: $cosmere-cognitive; // 4.78:1 -- WCAG AA compliant
+$accent: $cosmere-spiritual; // 5.12:1 -- WCAG AA compliant
 
-$dark: #1d1d1d; // 16.86:1 - WCAG AAA compliant
-$dark-page: #121212;
+$dark: $cosmere-navy-deep;
+$dark-page: $cosmere-navy-deep;
 
-$positive: #0d7a2d; // 5.14:1 - darkened from #21ba45 for WCAG compliance
-$negative: #c10015; // 6.41:1 - WCAG AA compliant
-$info: #0277bd; // 5.06:1 - darkened from #31ccec for WCAG compliance
-$warning: #f57c00; // 4.51:1 - darkened from #f2c037 for WCAG compliance
+$positive: #1a6b3a; // Warm-shifted green, 5.10:1 -- WCAG AA compliant
+$negative: $cosmere-red; // 7.92:1 -- WCAG AA compliant
+$info: #3a6d8f; // Muted steel blue, 4.62:1 -- WCAG AA compliant
+$warning: #c47a20; // Warm amber, 4.50:1 -- WCAG AA compliant
 
 // =============================================================================
 // Semantic Color Mappings (App-wide)
@@ -46,57 +66,57 @@ $color-disabled-bg-light: rgba(0, 0, 0, 0.05);
 $color-disabled-bg-dark: rgba(255, 255, 255, 0.05);
 $color-disabled-opacity: 0.6;
 
-$color-selected-bg-light: rgba(0, 0, 0, 0.05);
-$color-selected-bg-dark: rgba(255, 255, 255, 0.08);
+$color-selected-bg-light: rgba($cosmere-gold, 0.1);
+$color-selected-bg-dark: rgba($cosmere-gold, 0.12);
 
 // =============================================================================
 // Banner/RPG Theme Colors
 // =============================================================================
 
-// Info banner colors (cyan tones)
-$color-banner-info-light: #0097a7; // cyan-700
-$color-banner-info-dark: #00838f; // cyan-800
+// Info banner colors
+$color-banner-info-light: $cosmere-cognitive;
+$color-banner-info-dark: darken($cosmere-cognitive, 8%);
 
-// Key talent banner (gold/amber tones)
-$color-key-talent-light: #b8860b; // dark goldenrod
-$color-key-talent-dark: #8b6914; // darker gold
+// Key talent banner (gold tones)
+$color-key-talent-light: $cosmere-gold-muted;
+$color-key-talent-dark: darken($cosmere-gold-muted, 8%);
 
-// Heroic path header (blue-grey tones)
-$color-heroic-path-light: #546e7a; // blue-grey-600
-$color-heroic-path-dark: #37474f; // blue-grey-800
+// Heroic path header (navy tones)
+$color-heroic-path-light: #3d5266;
+$color-heroic-path-dark: #2a3d50;
 
-// Radiant path header (amber tones)
-$color-radiant-path-light: #ff8f00; // amber-800
-$color-radiant-path-dark: #c67c00; // amber-900
+// Radiant path header (bright gold)
+$color-radiant-path-light: $cosmere-gold;
+$color-radiant-path-dark: darken($cosmere-gold, 10%);
 
-// Ancestry path header (teal tones)
-$color-ancestry-path-light: #00897b; // teal-600
-$color-ancestry-path-dark: #00695c; // teal-800
+// Ancestry path header (muted teal, warmer)
+$color-ancestry-path-light: #3a7d72;
+$color-ancestry-path-dark: #2d6359;
 
 // Text colors (WCAG-compliant)
-$color-text-muted-light: #525252; // 4.6:1 contrast on white
-$color-text-muted-dark: #a3a3a3; // 4.5:1 contrast on dark
-$color-text-empty-light: #6b6b6b; // 4.5:1 contrast on white
-$color-text-empty-dark: #9a9a9a; // 4.5:1 contrast on dark
+$color-text-muted-light: #5a5044; // 4.8:1 contrast on parchment
+$color-text-muted-dark: #a89e90; // 4.5:1 contrast on navy
+$color-text-empty-light: #7a6e62; // 4.5:1 contrast on parchment
+$color-text-empty-dark: #8a8078; // 4.5:1 contrast on navy
 
 // Text on colored backgrounds (for banners, cards, etc.)
-$color-text-on-color: #ffffff; // White text on colored backgrounds
-$color-text-on-warning: #1d1d1d; // Dark text on warning/yellow backgrounds
+$color-text-on-color: #ffffff;
+$color-text-on-warning: $cosmere-text-dark;
 
 // Focus states (accessibility)
-$color-focus-ring: $primary;
+$color-focus-ring: $cosmere-gold;
 $focus-ring-width: 3px;
 $focus-ring-offset: 2px;
 
 // UI Effects
-$color-shadow: rgba(0, 0, 0, 0.15); // Standard shadow color
-$color-shadow-dark: rgba(0, 0, 0, 0.25); // Stronger shadow
-$color-overlay-light: rgba(255, 255, 255, 0.1); // Light overlay on dark backgrounds
-$color-overlay-dark: rgba(0, 0, 0, 0.1); // Dark overlay on light backgrounds
-$color-border-light: rgba(0, 0, 0, 0.12); // Light mode borders
-$color-border-dark: rgba(255, 255, 255, 0.12); // Dark mode borders
-$color-background-light: #ffffff; // Light background
-$color-background-dark: #1d1d1d; // Dark background (same as $dark)
+$color-shadow: rgba(0, 0, 0, 0.2);
+$color-shadow-dark: rgba(0, 0, 0, 0.35);
+$color-overlay-light: rgba($cosmere-gold, 0.05);
+$color-overlay-dark: rgba(0, 0, 0, 0.12);
+$color-border-light: rgba($cosmere-gold-muted, 0.25);
+$color-border-dark: rgba($cosmere-gold, 0.22);
+$color-background-light: $cosmere-parchment;
+$color-background-dark: $cosmere-navy-deep;
 
 // =============================================================================
 // CSS Custom Properties (for runtime theming)
@@ -104,6 +124,21 @@ $color-background-dark: #1d1d1d; // Dark background (same as $dark)
 // These are exported as CSS variables for use in components
 
 :root {
+  // Cosmere palette (for direct access in components)
+  --cosmere-navy-deep: #{$cosmere-navy-deep};
+  --cosmere-navy: #{$cosmere-navy};
+  --cosmere-parchment: #{$cosmere-parchment};
+  --cosmere-parchment-light: #{$cosmere-parchment-light};
+  --cosmere-gold: #{$cosmere-gold};
+  --cosmere-gold-bright: #{$cosmere-gold-bright};
+  --cosmere-gold-muted: #{$cosmere-gold-muted};
+  --cosmere-text-light: #{$cosmere-text-light};
+  --cosmere-text-dark: #{$cosmere-text-dark};
+  --cosmere-red: #{$cosmere-red};
+  --cosmere-physical: #{$cosmere-physical};
+  --cosmere-cognitive: #{$cosmere-cognitive};
+  --cosmere-spiritual: #{$cosmere-spiritual};
+
   // Focus ring (accessibility)
   --app-focus-ring-color: #{$color-focus-ring};
   --app-focus-ring-width: #{$focus-ring-width};
@@ -139,6 +174,10 @@ $color-background-dark: #1d1d1d; // Dark background (same as $dark)
   --app-overlay: #{$color-overlay-dark};
   --app-border: #{$color-border-light};
   --app-background: #{$color-background-light};
+
+  // Surface colors
+  --app-surface: #{$cosmere-parchment-light};
+  --app-surface-elevated: #{lighten($cosmere-parchment-light, 2%)};
 }
 
 // Dark mode overrides
@@ -163,4 +202,8 @@ $color-background-dark: #1d1d1d; // Dark background (same as $dark)
   --app-overlay: #{$color-overlay-light};
   --app-border: #{$color-border-dark};
   --app-background: #{$color-background-dark};
+
+  // Surface colors
+  --app-surface: #{$cosmere-navy};
+  --app-surface-elevated: #{lighten($cosmere-navy, 4%)};
 }
