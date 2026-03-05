@@ -117,7 +117,7 @@
           @click="toggleEquipped"
         >
           <Shield v-if="heroEquipment.isEquipped" :size="20" />
-          <ShieldQuestion v-else :size="20" />
+          <ShieldOff v-else :size="20" />
           <q-tooltip>{{ heroEquipment.isEquipped ? 'Unequip' : 'Equip' }}</q-tooltip>
         </q-btn>
 
@@ -144,7 +144,7 @@ import { useQuasar } from 'quasar';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
-import { Pencil, Minus, Plus, Shield, ShieldQuestion, Trash2 } from 'lucide-vue-next';
+import { Pencil, Minus, Plus, Shield, ShieldOff, Trash2 } from 'lucide-vue-next';
 import { findById } from 'src/utils/arrayUtils';
 import type { HeroEquipment } from 'src/types';
 import { MAX_EQUIPMENT_STACK, INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';

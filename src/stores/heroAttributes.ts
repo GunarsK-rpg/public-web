@@ -73,18 +73,18 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   // ===================
   // SKILL LOOKUPS
   // ===================
-  function getSkillRank(skillId: number): number {
+  function getSkillRank(skillId: number, includeModifier = false): number {
     if (!heroStore.hero?.skills) return 0;
     const skill = heroStore.hero.skills.find((s) => s.skill.id === skillId);
-    return skill?.rank ?? 0;
+    if (!skill) return 0;
+    return includeModifier ? skill.rank + (skill.modifier ?? 0) : skill.rank;
   }
 
   function getSkillModifier(skillCode: string): number {
     const skillData = findByCode(classifierStore.skills, skillCode);
     if (!skillData || !heroStore.hero) return 0;
     const attrValue = getAttributeValueById(skillData.attr.id);
-    const rank = getSkillRank(skillData.id);
-    return attrValue + rank;
+    return attrValue + getSkillRank(skillData.id, true);
   }
 
   // ===================

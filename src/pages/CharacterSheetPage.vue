@@ -35,7 +35,7 @@
         </q-tab>
       </q-tabs>
 
-      <q-separator />
+      <hr class="cosmere-divider" />
 
       <!-- Tab Panels -->
       <q-tab-panels v-model="activeTab" animated>

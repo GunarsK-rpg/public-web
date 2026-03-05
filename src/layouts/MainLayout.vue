@@ -1,8 +1,8 @@
 <template>
   <q-layout view="hHh lpR fFf">
-    <q-header elevated class="bg-primary text-white">
+    <q-header elevated class="app-header">
       <q-toolbar>
-        <q-toolbar-title>{{ pageTitle }}</q-toolbar-title>
+        <q-toolbar-title class="text-heading">{{ pageTitle }}</q-toolbar-title>
 
         <q-btn flat dense round aria-label="Toggle dark mode" @click="toggleDarkMode">
           <SunMoon :size="20" aria-hidden="true" />
@@ -114,12 +114,31 @@ async function logout(): Promise<void> {
 </script>
 
 <style scoped>
+.app-header {
+  background: var(--cosmere-navy-deep);
+  color: var(--cosmere-text-light);
+  border-bottom: 1px solid var(--cosmere-gold-muted);
+}
+
+body:not(.body--dark) .app-header {
+  background: var(--cosmere-gold-muted);
+  color: white;
+  border-bottom: none;
+}
+
 .account-menu {
   min-width: 150px;
 }
 
 .bottom-nav-footer {
-  background: var(--app-background);
-  color: var(--app-text-muted);
+  background: var(--cosmere-navy-deep);
+  color: var(--cosmere-text-light);
+  border-top: 1px solid var(--cosmere-gold-muted);
+}
+
+body:not(.body--dark) .bottom-nav-footer {
+  background: var(--cosmere-parchment-light);
+  color: var(--cosmere-text-dark);
+  border-top: 1px solid var(--app-border);
 }
 </style>

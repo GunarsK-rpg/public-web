@@ -37,14 +37,18 @@ vi.mock('src/services/authChannel', () => ({
 }));
 
 // Mock token refresh
-const { mockScheduleProactiveRefresh, mockClearProactiveRefresh } = vi.hoisted(() => ({
-  mockScheduleProactiveRefresh: vi.fn(),
-  mockClearProactiveRefresh: vi.fn(),
-}));
+const { mockScheduleProactiveRefresh, mockClearProactiveRefresh, mockRefreshToken } = vi.hoisted(
+  () => ({
+    mockScheduleProactiveRefresh: vi.fn(),
+    mockClearProactiveRefresh: vi.fn(),
+    mockRefreshToken: vi.fn(),
+  })
+);
 
 vi.mock('src/services/tokenRefresh', () => ({
   scheduleProactiveRefresh: mockScheduleProactiveRefresh,
   clearProactiveRefresh: mockClearProactiveRefresh,
+  refreshToken: mockRefreshToken,
 }));
 
 // Mock logger
@@ -300,17 +304,53 @@ describe('useAuthStore', () => {
       expect(mockScheduleProactiveRefresh).toHaveBeenCalledWith(600);
     });
 
-    it('returns false and clears refresh when token is invalid', async () => {
-      mockTokenStatus.mockResolvedValue({
-        data: { valid: false },
+    it('attempts refresh when access token is expired', async () => {
+      mockTokenStatus.mockResolvedValue({ data: { valid: false } });
+      mockRefreshToken.mockResolvedValue(false);
+
+      const store = useAuthStore();
+      await store.checkAuthStatus();
+
+      expect(mockRefreshToken).toHaveBeenCalled();
+    });
+
+    it('recovers via refresh when access token is expired', async () => {
+      mockTokenStatus.mockResolvedValueOnce({ data: { valid: false } }).mockResolvedValueOnce({
+        data: { valid: true, username: 'testuser', scopes: { heroes: 'read' }, ttl_seconds: 800 },
       });
+      mockRefreshToken.mockResolvedValue(true);
+
+      const store = useAuthStore();
+      const result = await store.checkAuthStatus();
+
+      expect(result).toBe(true);
+      expect(store.isAuthenticated).toBe(true);
+      expect(store.username).toBe('testuser');
+      expect(store.scopes).toEqual({ heroes: 'read' });
+      expect(mockScheduleProactiveRefresh).toHaveBeenCalledWith(800);
+    });
+
+    it('returns false when refresh fails', async () => {
+      mockTokenStatus.mockResolvedValue({ data: { valid: false } });
+      mockRefreshToken.mockResolvedValue(false);
 
       const store = useAuthStore();
       const result = await store.checkAuthStatus();
 
       expect(result).toBe(false);
       expect(store.isAuthenticated).toBe(false);
-      expect(mockScheduleProactiveRefresh).not.toHaveBeenCalled();
+      expect(mockClearProactiveRefresh).toHaveBeenCalled();
+    });
+
+    it('returns false when refresh succeeds but token still invalid', async () => {
+      mockTokenStatus.mockResolvedValue({ data: { valid: false } });
+      mockRefreshToken.mockResolvedValue(true);
+
+      const store = useAuthStore();
+      const result = await store.checkAuthStatus();
+
+      expect(result).toBe(false);
+      expect(store.isAuthenticated).toBe(false);
       expect(mockClearProactiveRefresh).toHaveBeenCalled();
     });
 

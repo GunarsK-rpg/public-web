@@ -101,7 +101,11 @@ const displayWarning = computed(() => {
 <style scoped lang="scss">
 .creation-footer {
   flex-shrink: 0;
-  border-top: 1px solid var(--app-border);
+  border-top: 1px solid var(--cosmere-gold-muted);
+
+  .body--dark & {
+    border-top-color: rgba($cosmere-gold, 0.3);
+  }
 }
 
 .status-message {

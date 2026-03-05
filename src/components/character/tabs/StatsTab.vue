@@ -94,6 +94,7 @@ const derivedStatsList = computed(() => {
 .attribute-value {
   font-size: 1.5rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .attribute-name {
@@ -108,6 +109,7 @@ const derivedStatsList = computed(() => {
 .defense-value {
   font-size: 1.75rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .defense-name {

@@ -304,6 +304,10 @@ $bottom-nav-height: 56px;
 
 .creation-header {
   flex-shrink: 0;
-  border-bottom: 1px solid var(--app-border);
+  border-bottom: 1px solid var(--cosmere-gold-muted);
+
+  .body--dark & {
+    border-bottom-color: rgba($cosmere-gold, 0.3);
+  }
 }
 </style>
