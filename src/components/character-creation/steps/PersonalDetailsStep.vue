@@ -118,6 +118,7 @@
           dense
           emit-value
           map-options
+          behavior="menu"
         />
       </div>
       <div class="col-12 col-sm-3">

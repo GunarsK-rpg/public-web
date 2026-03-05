@@ -2,6 +2,20 @@
   <q-layout view="hHh lpR fFf">
     <q-header elevated class="app-header">
       <q-toolbar>
+        <q-btn
+          v-if="isAuthenticated && isDesktop"
+          flat
+          dense
+          round
+          aria-label="Toggle sidebar"
+          :aria-expanded="!drawerMini"
+          aria-controls="side-nav"
+          @click="drawerMini = !drawerMini"
+        >
+          <PanelLeftClose v-if="!drawerMini" :size="20" aria-hidden="true" />
+          <PanelLeftOpen v-else :size="20" aria-hidden="true" />
+          <q-tooltip>{{ drawerMini ? 'Expand sidebar' : 'Collapse sidebar' }}</q-tooltip>
+        </q-btn>
         <q-toolbar-title class="text-heading">{{ pageTitle }}</q-toolbar-title>
 
         <q-btn flat dense round aria-label="Toggle dark mode" @click="toggleDarkMode">
@@ -27,13 +41,48 @@
       </q-toolbar>
     </q-header>
 
+    <q-drawer
+      v-if="isAuthenticated"
+      id="side-nav"
+      :model-value="isDesktop"
+      side="left"
+      :behavior="isDesktop ? 'desktop' : 'mobile'"
+      :mini="drawerMini"
+      :mini-width="64"
+      :width="200"
+      class="side-nav"
+    >
+      <q-list>
+        <q-item
+          clickable
+          :class="{ 'nav-item--active': activeNavTab === 'my-characters' }"
+          @click="navigateTo('my-characters')"
+        >
+          <q-item-section avatar>
+            <User :size="20" aria-hidden="true" />
+          </q-item-section>
+          <q-item-section>Characters</q-item-section>
+        </q-item>
+        <q-item
+          clickable
+          :class="{ 'nav-item--active': activeNavTab === 'campaigns' }"
+          @click="navigateTo('campaigns')"
+        >
+          <q-item-section avatar>
+            <Swords :size="20" aria-hidden="true" />
+          </q-item-section>
+          <q-item-section>Campaigns</q-item-section>
+        </q-item>
+      </q-list>
+    </q-drawer>
+
     <q-page-container>
       <main>
         <router-view />
       </main>
     </q-page-container>
 
-    <q-footer v-if="isAuthenticated" elevated class="bottom-nav-footer">
+    <q-footer v-if="isAuthenticated && !isDesktop" elevated class="bottom-nav-footer">
       <q-tabs
         :model-value="activeNavTab"
         dense
@@ -55,8 +104,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { SunMoon, CircleUserRound, LogOut, User, Swords } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import {
+  SunMoon,
+  CircleUserRound,
+  LogOut,
+  User,
+  Swords,
+  PanelLeftOpen,
+  PanelLeftClose,
+} from 'lucide-vue-next';
 import { useRouter, useRoute, isNavigationFailure, NavigationFailureType } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useAuthStore } from 'stores/auth';
@@ -70,6 +127,8 @@ const authStore = useAuthStore();
 
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const username = computed(() => authStore.username || 'User');
+const drawerMini = ref(false);
+const isDesktop = computed(() => $q.screen.gt.sm);
 
 const pageTitle = computed(() => {
   return (route.meta?.title as string) || 'Cosmere RPG';
@@ -140,5 +199,22 @@ body:not(.body--dark) .bottom-nav-footer {
   background: var(--cosmere-parchment-light);
   color: var(--cosmere-text-dark);
   border-top: 1px solid var(--app-border);
+}
+
+.side-nav {
+  background: var(--cosmere-navy-deep);
+  color: var(--cosmere-text-light);
+  border-right: 1px solid var(--cosmere-gold-muted);
+}
+
+body:not(.body--dark) .side-nav {
+  background: var(--cosmere-parchment-light);
+  color: var(--cosmere-text-dark);
+  border-right: 1px solid var(--app-border);
+}
+
+.nav-item--active {
+  color: var(--cosmere-gold);
+  background: rgba(201, 168, 76, 0.1);
 }
 </style>

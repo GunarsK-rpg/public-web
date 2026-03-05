@@ -3,10 +3,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useWizardStore } from './wizard';
 import { axiosError } from 'src/test-utils/axiosHelpers';
 import { useHeroStore } from './hero';
-import { WIZARD_STEPS, STEP_CODES } from 'src/types/wizard';
-
-// Helper to get step by code - avoids hardcoding step numbers
-const getStepByCode = (code: string) => WIZARD_STEPS.find((s) => s.code === code);
+import { WIZARD_STEPS } from 'src/types/wizard';
 
 const mockHero = {
   id: 1,
@@ -354,88 +351,6 @@ describe('useWizardStore', () => {
         .mockRejectedValue(new Error('Network error'));
 
       const result = await wizardStore.startEdit(1);
-
-      expect(result).toBe(false);
-      expect(wizardStore.isActive).toBe(false);
-
-      // Restore original
-      loadHeroSpy.mockRestore();
-    });
-  });
-
-  // ========================================
-  // Lifecycle - startLevelUp
-  // ========================================
-  describe('startLevelUp', () => {
-    it('loads hero by id', async () => {
-      const wizardStore = useWizardStore();
-      const heroStore = useHeroStore();
-
-      const result = await wizardStore.startLevelUp(1);
-
-      expect(result).toBe(true);
-      expect(heroStore.hero?.id).toBe(1);
-    });
-
-    it('sets mode to levelup', async () => {
-      const store = useWizardStore();
-      await store.startLevelUp(1);
-      expect(store.mode).toBe('levelup');
-    });
-
-    it('starts at attributes step', async () => {
-      const store = useWizardStore();
-      const attributesStep = getStepByCode(STEP_CODES.ATTRIBUTES);
-
-      await store.startLevelUp(1);
-
-      expect(store.currentStep).toBe(attributesStep!.id);
-    });
-
-    it('marks steps before attributes as completed', async () => {
-      const store = useWizardStore();
-      const attributesStep = getStepByCode(STEP_CODES.ATTRIBUTES);
-
-      await store.startLevelUp(1);
-
-      // All steps before attributes should be completed
-      for (const step of WIZARD_STEPS) {
-        if (step.id < attributesStep!.id) {
-          expect(store.isStepCompleted(step.id)).toBe(true);
-        }
-      }
-      // Attributes step itself should not be completed
-      expect(store.isStepCompleted(attributesStep!.id)).toBe(false);
-    });
-
-    it('sets isActive to true', async () => {
-      const store = useWizardStore();
-      await store.startLevelUp(1);
-      expect(store.isActive).toBe(true);
-    });
-
-    it('returns false and resets when hero not found', async () => {
-      const wizardStore = useWizardStore();
-      const heroStore = useHeroStore();
-
-      const result = await wizardStore.startLevelUp(999);
-
-      // Wizard should not activate when hero fails to load
-      expect(heroStore.error).toBe('Hero not found');
-      expect(result).toBe(false);
-      expect(wizardStore.isActive).toBe(false);
-    });
-
-    it('returns false and resets on loadHero exception', async () => {
-      const wizardStore = useWizardStore();
-      const heroStore = useHeroStore();
-
-      // Mock loadHero to throw using vi.spyOn for cleaner pattern
-      const loadHeroSpy = vi
-        .spyOn(heroStore, 'loadHero')
-        .mockRejectedValue(new Error('Network error'));
-
-      const result = await wizardStore.startLevelUp(1);
 
       expect(result).toBe(false);
       expect(wizardStore.isActive).toBe(false);

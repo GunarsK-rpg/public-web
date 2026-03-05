@@ -25,9 +25,9 @@ export default defineConfig((ctx) => {
       // 'eva-icons',
       // 'themify',
       // 'line-awesome',
-      // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
+      'roboto-font-latin-ext', // includes latin-ext for Latvian diacritics
 
-      'roboto-font', // optional, you are not bound to it
+      // 'roboto-font', // basic latin only - use roboto-font-latin-ext instead
       'material-icons', // optional, you are not bound to it
       'material-symbols-outlined', // for sym_o_ prefixed icons
     ],
