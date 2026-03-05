@@ -107,7 +107,11 @@ const classifierStore = useClassifierStore();
 const activeTab = ref('stats');
 
 const isLoaded = computed(() => heroStore.isLoaded);
-const isReadonly = computed(() => heroStore.hero?.user?.username !== authStore.username);
+const isReadonly = computed(() => {
+  const heroUsername = heroStore.hero?.user?.username?.trim().toLowerCase();
+  const authUsername = authStore.username?.trim().toLowerCase();
+  return !heroUsername || !authUsername || heroUsername !== authUsername;
+});
 const loading = computed(() => heroStore.loading);
 const error = computed(() => heroStore.error);
 const classifierLoading = computed(() => classifierStore.loading);

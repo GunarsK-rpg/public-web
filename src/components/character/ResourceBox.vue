@@ -21,6 +21,7 @@
         :tabindex="readonly ? undefined : 0"
         @click="!readonly && startEdit()"
         @keyup.enter="!readonly && startEdit()"
+        @keydown.space.prevent="!readonly && startEdit()"
       >
         {{ current }}{{ max != null ? ` / ${max}` : '' }}{{ suffix ? ` ${suffix}` : '' }}
       </span>
