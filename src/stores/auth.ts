@@ -76,9 +76,9 @@ export const useAuthStore = defineStore('auth', () => {
       // 401 from token-status means access token expired — attempt refresh once
       if (!isRetry && axios.isAxiosError(error) && error.response?.status === 401) {
         const refreshed = await refreshToken();
-        if (refreshed) {
-          return checkAuthStatus(true);
-        }
+        if (refreshed) return checkAuthStatus(true);
+        // refreshToken failure already triggers logout via onAuthFailureCallback
+        return false;
       }
       resetAuthState();
       logger.warn('Auth status check failed', { error: toError(error).message });
