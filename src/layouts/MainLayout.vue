@@ -201,18 +201,6 @@ body:not(.body--dark) .bottom-nav-footer {
   border-top: 1px solid var(--app-border);
 }
 
-.side-nav {
-  background: var(--cosmere-navy-deep);
-  color: var(--cosmere-text-light);
-  border-right: 1px solid var(--cosmere-gold-muted);
-}
-
-body:not(.body--dark) .side-nav {
-  background: var(--cosmere-parchment-light);
-  color: var(--cosmere-text-dark);
-  border-right: 1px solid var(--app-border);
-}
-
 .nav-item--active {
   color: var(--cosmere-gold);
   background: rgba(201, 168, 76, 0.1);
