@@ -374,6 +374,8 @@ describe('useHeroAttributesStore', () => {
 
       // athletics: strength (3) + rank (2) + modifier (1) = 6
       expect(store.getSkillModifier('athletics')).toBe(6);
+      // getSkillRank with includeModifier: rank (2) + modifier (1) = 3
+      expect(store.getSkillRank(1, true)).toBe(3);
     });
 
     it('returns 0 for unknown skill', () => {

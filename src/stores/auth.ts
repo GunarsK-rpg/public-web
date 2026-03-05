@@ -39,6 +39,14 @@ export const useAuthStore = defineStore('auth', () => {
   const canEdit = (resource: string) => hasPermission(resource, Level.EDIT);
   const canDelete = (resource: string) => hasPermission(resource, Level.DELETE);
 
+  function resetAuthState(): void {
+    clearProactiveRefresh();
+    isAuthenticated.value = false;
+    username.value = '';
+    scopes.value = {};
+    clearUserContext();
+  }
+
   async function checkAuthStatus(): Promise<boolean> {
     try {
       let response = await authService.tokenStatus();
@@ -47,22 +55,14 @@ export const useAuthStore = defineStore('auth', () => {
       if (!response.data.valid) {
         const refreshed = await refreshToken();
         if (!refreshed) {
-          clearProactiveRefresh();
-          isAuthenticated.value = false;
-          username.value = '';
-          scopes.value = {};
-          clearUserContext();
+          resetAuthState();
           return false;
         }
         response = await authService.tokenStatus();
       }
 
       if (!response.data.valid) {
-        clearProactiveRefresh();
-        isAuthenticated.value = false;
-        username.value = '';
-        scopes.value = {};
-        clearUserContext();
+        resetAuthState();
         return false;
       }
 
@@ -72,10 +72,7 @@ export const useAuthStore = defineStore('auth', () => {
       scheduleProactiveRefresh(response.data.ttl_seconds);
       return true;
     } catch (error) {
-      clearProactiveRefresh();
-      isAuthenticated.value = false;
-      username.value = '';
-      scopes.value = {};
+      resetAuthState();
       logger.warn('Auth status check failed', { error: toError(error).message });
       return false;
     }
@@ -119,11 +116,7 @@ export const useAuthStore = defineStore('auth', () => {
         error: toError(error).message,
       });
     } finally {
-      clearProactiveRefresh();
-      isAuthenticated.value = false;
-      username.value = '';
-      scopes.value = {};
-      clearUserContext();
+      resetAuthState();
       broadcastLogout();
       void routerInstance?.push({ name: 'login' });
     }
@@ -131,11 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function handleAuthBroadcast(message: AuthMessage): void {
     if (message.type === 'logout') {
-      clearProactiveRefresh();
-      isAuthenticated.value = false;
-      username.value = '';
-      scopes.value = {};
-      clearUserContext();
+      resetAuthState();
       void routerInstance?.push({ name: 'login' });
       return;
     }

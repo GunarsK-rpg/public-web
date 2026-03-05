@@ -342,6 +342,18 @@ describe('useAuthStore', () => {
       expect(mockClearProactiveRefresh).toHaveBeenCalled();
     });
 
+    it('returns false when refresh succeeds but token still invalid', async () => {
+      mockTokenStatus.mockResolvedValue({ data: { valid: false } });
+      mockRefreshToken.mockResolvedValue(true);
+
+      const store = useAuthStore();
+      const result = await store.checkAuthStatus();
+
+      expect(result).toBe(false);
+      expect(store.isAuthenticated).toBe(false);
+      expect(mockClearProactiveRefresh).toHaveBeenCalled();
+    });
+
     it('returns false and clears refresh on error', async () => {
       mockTokenStatus.mockRejectedValue(new Error('Network error'));
 

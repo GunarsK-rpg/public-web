@@ -39,7 +39,6 @@
         dense
         active-color="primary"
         indicator-color="primary"
-        active-class="nav-tab-active"
         class="bottom-nav"
       >
         <q-tab name="my-characters" @click="navigateTo('my-characters')">
@@ -121,7 +120,7 @@ async function logout(): Promise<void> {
   border-bottom: 1px solid var(--cosmere-gold-muted);
 }
 
-.body--light .app-header {
+body:not(.body--dark) .app-header {
   background: var(--cosmere-gold-muted);
   color: white;
   border-bottom: none;
@@ -137,7 +136,7 @@ async function logout(): Promise<void> {
   border-top: 1px solid var(--cosmere-gold-muted);
 }
 
-.body--light .bottom-nav-footer {
+body:not(.body--dark) .bottom-nav-footer {
   background: var(--cosmere-parchment-light);
   color: var(--cosmere-text-dark);
   border-top: 1px solid var(--app-border);

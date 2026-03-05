@@ -104,7 +104,7 @@ const displayWarning = computed(() => {
   border-top: 1px solid var(--cosmere-gold-muted);
 
   .body--dark & {
-    border-top-color: rgba(201, 168, 76, 0.3);
+    border-top-color: rgba($cosmere-gold, 0.3);
   }
 }
 

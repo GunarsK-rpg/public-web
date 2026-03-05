@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Quasar SCSS (& Sass) Variables
 // --------------------------------------------------
 // To customize the look and feel of this app, you can override
@@ -75,11 +77,11 @@ $color-selected-bg-dark: rgba($cosmere-gold, 0.12);
 
 // Info banner colors
 $color-banner-info-light: $cosmere-cognitive;
-$color-banner-info-dark: darken($cosmere-cognitive, 8%);
+$color-banner-info-dark: color.adjust($cosmere-cognitive, $lightness: -8%);
 
 // Key talent banner (gold tones)
 $color-key-talent-light: $cosmere-gold-muted;
-$color-key-talent-dark: darken($cosmere-gold-muted, 8%);
+$color-key-talent-dark: color.adjust($cosmere-gold-muted, $lightness: -8%);
 
 // Heroic path header (navy tones)
 $color-heroic-path-light: #3d5266;
@@ -87,7 +89,7 @@ $color-heroic-path-dark: #2a3d50;
 
 // Radiant path header (bright gold)
 $color-radiant-path-light: $cosmere-gold;
-$color-radiant-path-dark: darken($cosmere-gold, 10%);
+$color-radiant-path-dark: color.adjust($cosmere-gold, $lightness: -10%);
 
 // Ancestry path header (muted teal, warmer)
 $color-ancestry-path-light: #3a7d72;
@@ -177,7 +179,7 @@ $color-background-dark: $cosmere-navy-deep;
 
   // Surface colors
   --app-surface: #{$cosmere-parchment-light};
-  --app-surface-elevated: #{lighten($cosmere-parchment-light, 2%)};
+  --app-surface-elevated: #{color.adjust($cosmere-parchment-light, $lightness: 2%)};
 }
 
 // Dark mode overrides
@@ -205,5 +207,5 @@ $color-background-dark: $cosmere-navy-deep;
 
   // Surface colors
   --app-surface: #{$cosmere-navy};
-  --app-surface-elevated: #{lighten($cosmere-navy, 4%)};
+  --app-surface-elevated: #{color.adjust($cosmere-navy, $lightness: 4%)};
 }

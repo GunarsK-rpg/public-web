@@ -307,7 +307,7 @@ $bottom-nav-height: 56px;
   border-bottom: 1px solid var(--cosmere-gold-muted);
 
   .body--dark & {
-    border-bottom-color: rgba(201, 168, 76, 0.3);
+    border-bottom-color: rgba($cosmere-gold, 0.3);
   }
 }
 </style>

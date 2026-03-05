@@ -73,7 +73,7 @@ body:not(.body--dark) {
   .body--dark & {
     box-shadow:
       0 2px 8px var(--app-shadow),
-      inset 0 1px 0 rgba(var(--cosmere-gold), 0.05);
+      inset 0 1px 0 rgba($cosmere-gold, 0.05);
   }
 }
 
