@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div class="text-subtitle1 q-mb-md">Review your character before creation</div>
+    <div class="text-subtitle1 q-mb-md">
+      {{ isEditMode ? 'Review your changes' : 'Review your character before creation' }}
+    </div>
 
     <!-- Validation Summary -->
     <q-banner v-if="!isValid" class="banner-error q-mb-md" role="alert" aria-live="polite">
@@ -17,7 +19,7 @@
       <template v-slot:avatar>
         <CircleCheck :size="24" aria-hidden="true" />
       </template>
-      Character is ready to create!
+      {{ isEditMode ? 'Character is ready to save!' : 'Character is ready to create!' }}
     </q-banner>
 
     <q-banner
@@ -193,6 +195,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
+import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { findById } from 'src/utils/arrayUtils';
@@ -202,7 +205,10 @@ const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
+const wizardStore = useWizardStore();
 const { allStepsValidation } = useStepValidation();
+
+const isEditMode = computed(() => wizardStore.mode === 'edit');
 
 const validationErrors = computed(() => allStepsValidation.value.errors);
 const validationWarnings = computed(() => allStepsValidation.value.warnings);
