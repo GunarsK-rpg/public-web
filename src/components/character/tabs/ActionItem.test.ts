@@ -180,14 +180,14 @@ describe('ActionItem', () => {
       expect(header.text()).toContain('A basic attack');
     });
 
-    it('shows fallback text when both descriptions are falsy', () => {
+    it('hides header description when both descriptions are falsy', () => {
       const wrapper = createWrapper({
         description: '',
         descriptionShort: null,
       });
 
       const header = wrapper.find('.header');
-      expect(header.text()).toContain('No description available');
+      expect(header.find('.text-muted').exists()).toBe(false);
     });
 
     it('renders activation type icon', () => {

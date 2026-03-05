@@ -19,7 +19,7 @@ COPY . .
 ARG VITE_API_URL
 ARG VITE_AUTH_URL
 
-# Build for production (Quasar SPA)
+# Build for production (Quasar PWA)
 RUN npm run build
 
 # Production stage
@@ -30,7 +30,7 @@ ARG CACHE_BUST
 RUN apk update && apk upgrade --no-cache
 
 # Copy built assets
-COPY --from=builder /app/dist/spa /usr/share/nginx/html
+COPY --from=builder /app/dist/pwa /usr/share/nginx/html
 
 # Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf

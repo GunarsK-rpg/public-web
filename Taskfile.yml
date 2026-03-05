@@ -15,7 +15,7 @@ tasks:
   preview:
     desc: Preview production build
     cmds:
-      - npx quasar serve dist/spa --history
+      - npx quasar serve dist/pwa --history
 
   clean:
     desc: Clean build artifacts and node_modules
