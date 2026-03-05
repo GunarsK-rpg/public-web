@@ -6,6 +6,7 @@
         <div class="row items-center no-wrap">
           <div class="text-h5">{{ hero?.name }}</div>
           <q-btn
+            v-if="!readonly"
             flat
             dense
             round
@@ -37,6 +38,7 @@
               :max="maxHealth"
               color="negative"
               :saving="saving"
+              :readonly="readonly"
               @update="heroStore.patchHealth($event)"
             />
           </div>
@@ -47,6 +49,7 @@
               :max="maxFocus"
               :color="RPG_COLORS.focus"
               :saving="saving"
+              :readonly="readonly"
               @update="heroStore.patchFocus($event)"
             />
           </div>
@@ -57,6 +60,7 @@
               :max="maxInvestiture"
               :color="RPG_COLORS.investiture"
               :saving="saving"
+              :readonly="readonly"
               @update="heroStore.patchInvestiture($event)"
             />
           </div>
@@ -66,6 +70,7 @@
               :current="hero?.currency ?? 0"
               suffix="mk"
               :saving="saving"
+              :readonly="readonly"
               @update="heroStore.patchCurrency($event)"
             />
           </div>
@@ -88,6 +93,7 @@ import ResourceBox from './ResourceBox.vue';
 
 const props = defineProps<{
   characterId: string;
+  readonly?: boolean;
 }>();
 
 const router = useRouter();

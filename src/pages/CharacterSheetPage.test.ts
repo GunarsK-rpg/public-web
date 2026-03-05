@@ -9,6 +9,9 @@ const mockPush = vi.fn();
 const mockIsLoaded = ref(true);
 const mockLoading = ref(false);
 const mockError = ref<string | null>(null);
+const mockHero = ref<{ user?: { id: number; username: string } } | null>({
+  user: { id: 1, username: 'testuser' },
+});
 const mockClassifierInitialized = ref(true);
 const mockClassifierLoading = ref(false);
 const mockClassifierError = ref<string | null>(null);
@@ -26,6 +29,9 @@ vi.mock('stores/hero', () => ({
     },
     get loading() {
       return mockLoading.value;
+    },
+    get hero() {
+      return mockHero.value;
     },
     get error() {
       return mockError.value;
@@ -48,6 +54,12 @@ vi.mock('stores/classifiers', () => ({
     get error() {
       return mockClassifierError.value;
     },
+  }),
+}));
+
+vi.mock('stores/auth', () => ({
+  useAuthStore: () => ({
+    username: 'testuser',
   }),
 }));
 
@@ -80,7 +92,8 @@ describe('CharacterSheetPage', () => {
             emits: ['click'],
           },
           CharacterHeader: {
-            template: '<div class="character-header" />',
+            template: '<div class="character-header" :data-readonly="readonly" />',
+            props: ['characterId', 'readonly'],
           },
           QTabs: {
             template: '<div class="q-tabs"><slot /></div>',
@@ -124,6 +137,7 @@ describe('CharacterSheetPage', () => {
     mockIsLoaded.value = true;
     mockLoading.value = false;
     mockError.value = null;
+    mockHero.value = { user: { id: 1, username: 'testuser' } };
     mockClassifierInitialized.value = true;
     mockClassifierLoading.value = false;
     mockClassifierError.value = null;
@@ -225,6 +239,35 @@ describe('CharacterSheetPage', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Failed to load classifiers');
+    });
+  });
+
+  // ========================================
+  // Ownership / Readonly
+  // ========================================
+  describe('ownership', () => {
+    it('passes readonly=false when hero username matches auth user', () => {
+      mockHero.value = { user: { id: 1, username: 'testuser' } };
+
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('.character-header').attributes('data-readonly')).toBe('false');
+    });
+
+    it('passes readonly=true when hero username differs from auth user', () => {
+      mockHero.value = { user: { id: 2, username: 'otherplayer' } };
+
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('.character-header').attributes('data-readonly')).toBe('true');
+    });
+
+    it('passes readonly=true when hero has no user', () => {
+      mockHero.value = {};
+
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('.character-header').attributes('data-readonly')).toBe('true');
     });
   });
 });

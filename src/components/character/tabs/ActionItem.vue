@@ -36,7 +36,7 @@
           </q-badge>
         </div>
       </q-item-section>
-      <q-item-section v-if="hasDeductibleCost" side>
+      <q-item-section v-if="hasDeductibleCost && !readonly" side>
         <q-btn
           class="use-action-btn"
           size="sm"
@@ -83,6 +83,7 @@ import type { Action } from 'src/types';
 
 const props = defineProps<{
   action: Action;
+  readonly?: boolean;
 }>();
 
 const classifiers = useClassifierStore();

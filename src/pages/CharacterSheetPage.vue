@@ -16,7 +16,7 @@
 
     <template v-else-if="isLoaded">
       <!-- Character Header -->
-      <CharacterHeader :character-id="characterId" />
+      <CharacterHeader :character-id="characterId" :readonly="isReadonly" />
 
       <!-- Tab Navigation -->
       <q-tabs
@@ -40,7 +40,7 @@
       <!-- Tab Panels -->
       <q-tab-panels v-model="activeTab" animated>
         <q-tab-panel v-for="tab in tabs" :key="tab.id" :name="tab.id">
-          <component :is="tabComponents[tab.id]" />
+          <component :is="tabComponents[tab.id]" :readonly="isReadonly" />
         </q-tab-panel>
       </q-tab-panels>
     </template>
@@ -51,6 +51,7 @@
 import { ref, computed, onMounted, onUnmounted, type Component } from 'vue';
 import { useRouter } from 'vue-router';
 import { useHeroStore } from 'stores/hero';
+import { useAuthStore } from 'stores/auth';
 import { useClassifierStore } from 'stores/classifiers';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
@@ -100,11 +101,17 @@ const props = defineProps<{
 
 const router = useRouter();
 const heroStore = useHeroStore();
+const authStore = useAuthStore();
 const classifierStore = useClassifierStore();
 
 const activeTab = ref('stats');
 
 const isLoaded = computed(() => heroStore.isLoaded);
+const isReadonly = computed(() => {
+  const heroUsername = heroStore.hero?.user?.username?.trim().toLowerCase();
+  const authUsername = authStore.username?.trim().toLowerCase();
+  return !heroUsername || !authUsername || heroUsername !== authUsername;
+});
 const loading = computed(() => heroStore.loading);
 const error = computed(() => heroStore.error);
 const classifierLoading = computed(() => classifierStore.loading);

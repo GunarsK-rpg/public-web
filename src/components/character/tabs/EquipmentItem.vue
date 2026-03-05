@@ -27,6 +27,7 @@
       <q-item-label v-if="heroEquipment.maxCharges != null" caption>
         <div class="row no-wrap items-center">
           <q-btn
+            v-if="!readonly"
             flat
             dense
             round
@@ -40,6 +41,7 @@
             >{{ heroEquipment.charges ?? 0 }}/{{ heroEquipment.maxCharges }} charges</span
           >
           <q-btn
+            v-if="!readonly"
             flat
             dense
             round
@@ -64,7 +66,7 @@
         {{ heroEquipment.notes }}
       </q-item-label>
     </q-item-section>
-    <q-item-section side>
+    <q-item-section v-if="!readonly" side>
       <div class="row no-wrap items-center">
         <!-- Amount controls (stackable items only) -->
         <template v-if="!isIndividualItem">
@@ -150,6 +152,7 @@ import { getSpecialByType, SPECIAL } from 'src/utils/specialUtils';
 
 const props = defineProps<{
   heroEquipment: HeroEquipment;
+  readonly?: boolean;
 }>();
 
 defineEmits<{
