@@ -1,20 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { WIZARD_STEPS, STEP_CODES, type StepCodeType } from 'src/types/wizard';
+import { WIZARD_STEPS } from 'src/types/wizard';
 import { useHeroStore } from './hero';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
 
-export type WizardMode = 'create' | 'edit' | 'levelup';
-
-// Helper to get step ID by code - avoids hardcoding step numbers
-function getStepIdByCode(code: StepCodeType): number {
-  const step = WIZARD_STEPS.find((s) => s.code === code);
-  if (!step) {
-    logger.warn('Step code not found, defaulting to step 1', { code });
-  }
-  return step?.id ?? 1;
-}
+export type WizardMode = 'create' | 'edit';
 
 export const useWizardStore = defineStore('wizard', () => {
   // ===================
@@ -112,33 +103,6 @@ export const useWizardStore = defineStore('wizard', () => {
     }
   }
 
-  async function startLevelUp(heroId: number): Promise<boolean> {
-    const heroStore = useHeroStore();
-    try {
-      await heroStore.loadHero(heroId);
-      // Check if hero was actually loaded
-      if (!heroStore.hero) {
-        logger.warn('Hero not found for level up', { heroId });
-        reset();
-        return false;
-      }
-      mode.value = 'levelup';
-      // Start at attributes step for level up - use step codes to avoid hardcoding numbers
-      const attributesStepId = getStepIdByCode(STEP_CODES.ATTRIBUTES);
-      currentStep.value = attributesStepId;
-      // Mark steps before attributes as completed (basic-setup, culture)
-      completedStepsSet.value = new Set(
-        WIZARD_STEPS.filter((s) => s.id < attributesStepId).map((s) => s.id)
-      );
-      isActive.value = true;
-      return true;
-    } catch (error) {
-      logger.error('Failed to load hero for level up', toError(error));
-      reset();
-      return false;
-    }
-  }
-
   function cancel() {
     const heroStore = useHeroStore();
     heroStore.clearHero();
@@ -176,7 +140,6 @@ export const useWizardStore = defineStore('wizard', () => {
     // Lifecycle
     startCreate,
     startEdit,
-    startLevelUp,
     cancel,
     reset,
   };

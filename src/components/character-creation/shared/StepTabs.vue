@@ -62,7 +62,7 @@ function canNavigateTo(step: number): boolean {
   if (wizardStore.mode === 'create') {
     return step <= currentStep.value || wizardStore.isStepCompleted(step);
   }
-  // In edit/levelup mode, all steps are accessible
+  // In edit mode, all steps are accessible
   return true;
 }
 

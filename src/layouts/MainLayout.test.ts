@@ -82,8 +82,8 @@ describe('MainLayout', () => {
             template: '<div class="q-toolbar-title"><slot /></div>',
           },
           QBtn: {
-            template: `<button class="q-btn" :aria-label="ariaLabel" @click="$emit('click')"><slot /></button>`,
-            props: ['flat', 'dense', 'round', 'ariaLabel'],
+            template: `<button class="q-btn" :aria-label="ariaLabel" :aria-expanded="ariaExpanded" :aria-controls="ariaControls" @click="$emit('click')"><slot /></button>`,
+            props: ['flat', 'dense', 'round', 'ariaLabel', 'ariaExpanded', 'ariaControls'],
             emits: ['click'],
           },
           QMenu: {
@@ -216,6 +216,19 @@ describe('MainLayout', () => {
       const campaignsItem = drawerItems.find((item) => item.text().includes('Campaigns'));
 
       expect(campaignsItem!.classes()).toContain('nav-item--active');
+    });
+
+    it('toggles mini state when sidebar toggle is clicked', async () => {
+      const wrapper = createWrapper();
+      const toggleBtn = wrapper.find('.q-btn[aria-label="Toggle sidebar"]');
+
+      expect(toggleBtn.attributes('aria-expanded')).toBe('true');
+
+      await toggleBtn.trigger('click');
+      expect(toggleBtn.attributes('aria-expanded')).toBe('false');
+
+      await toggleBtn.trigger('click');
+      expect(toggleBtn.attributes('aria-expanded')).toBe('true');
     });
   });
 

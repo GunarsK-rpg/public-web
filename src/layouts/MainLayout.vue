@@ -8,6 +8,8 @@
           dense
           round
           aria-label="Toggle sidebar"
+          :aria-expanded="!drawerMini"
+          aria-controls="side-nav"
           @click="drawerMini = !drawerMini"
         >
           <PanelLeftClose v-if="!drawerMini" :size="20" aria-hidden="true" />
@@ -41,6 +43,7 @@
 
     <q-drawer
       v-if="isAuthenticated"
+      id="side-nav"
       :model-value="isDesktop"
       side="left"
       :behavior="isDesktop ? 'desktop' : 'mobile'"

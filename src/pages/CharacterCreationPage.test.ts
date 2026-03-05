@@ -309,13 +309,6 @@ describe('CharacterCreationPage', () => {
       expect(wrapper.find('.q-btn[aria-label="Reset character creation"]').exists()).toBe(false);
     });
 
-    it('hides reset button in levelup mode', () => {
-      mockMode.value = 'levelup';
-      const wrapper = createWrapper();
-
-      expect(wrapper.find('.q-btn[aria-label="Reset character creation"]').exists()).toBe(false);
-    });
-
     it('shows reset dialog when reset button clicked', async () => {
       const wrapper = createWrapper();
 
