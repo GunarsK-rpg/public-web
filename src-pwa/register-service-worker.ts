@@ -1,4 +1,3 @@
-import { Notify } from 'quasar';
 import { register } from 'register-service-worker';
 
 register(process.env.SERVICE_WORKER_FILE, {
@@ -19,30 +18,14 @@ register(process.env.SERVICE_WORKER_FILE, {
   },
 
   updated(registration) {
-    Notify.create({
-      message: 'New version available.',
-      color: 'primary',
-      timeout: 0,
-      actions: [
-        {
-          label: 'Refresh',
-          color: 'white',
-          handler: () => {
-            if (registration?.waiting) {
-              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-              navigator.serviceWorker.addEventListener(
-                'controllerchange',
-                () => window.location.reload(),
-                { once: true }
-              );
-            } else {
-              window.location.reload();
-            }
-          },
-        },
-        { label: 'Dismiss', color: 'white' },
-      ],
-    });
+    if (registration?.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload(), {
+        once: true,
+      });
+    } else {
+      window.location.reload();
+    }
   },
 
   offline() {
