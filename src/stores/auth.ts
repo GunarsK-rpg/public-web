@@ -124,9 +124,12 @@ export const useAuthStore = defineStore('auth', () => {
         error: toError(error).message,
       });
     } finally {
+      const wasAuthenticated = isAuthenticated.value;
       resetAuthState();
       broadcastLogout();
-      void routerInstance?.push({ name: 'login' });
+      if (wasAuthenticated) {
+        void routerInstance?.push({ name: 'login' });
+      }
     }
   }
 
