@@ -126,8 +126,8 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       const wasAuthenticated = isAuthenticated.value;
       resetAuthState();
-      broadcastLogout();
       if (wasAuthenticated) {
+        broadcastLogout();
         void routerInstance?.push({ name: 'login' });
       }
     }
