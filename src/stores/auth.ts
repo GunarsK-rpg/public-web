@@ -11,6 +11,7 @@ import {
 import { Level, LevelValues, type LevelKey } from 'src/constants/permissions';
 import { logger, setUserContext, clearUserContext } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
+import axios from 'axios';
 
 let routerInstance: Router | undefined;
 
@@ -47,7 +48,7 @@ export const useAuthStore = defineStore('auth', () => {
     clearUserContext();
   }
 
-  async function checkAuthStatus(): Promise<boolean> {
+  async function checkAuthStatus(isRetry = false): Promise<boolean> {
     try {
       let response = await authService.tokenStatus();
 
@@ -72,6 +73,13 @@ export const useAuthStore = defineStore('auth', () => {
       scheduleProactiveRefresh(response.data.ttl_seconds);
       return true;
     } catch (error) {
+      // 401 from token-status means access token expired — attempt refresh once
+      if (!isRetry && axios.isAxiosError(error) && error.response?.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) return checkAuthStatus(true);
+        // refreshToken failure already triggers logout via onAuthFailureCallback
+        return false;
+      }
       resetAuthState();
       logger.warn('Auth status check failed', { error: toError(error).message });
       return false;
