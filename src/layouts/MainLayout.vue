@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { SunMoon, CircleUserRound, LogOut, User, Swords } from 'lucide-vue-next';
 import { useRouter, useRoute, isNavigationFailure, NavigationFailureType } from 'vue-router';
 import { useQuasar } from 'quasar';
@@ -111,21 +111,6 @@ async function navigateTo(routeName: string): Promise<void> {
 async function logout(): Promise<void> {
   await authStore.logout();
 }
-
-// Initialize dark mode from storage (in onMounted for SSR safety)
-onMounted(() => {
-  try {
-    const savedDarkMode = localStorage.getItem('darkMode');
-    if (savedDarkMode === 'true') {
-      $q.dark.set(true);
-    } else if (savedDarkMode === 'false') {
-      $q.dark.set(false);
-    }
-  } catch (err) {
-    // localStorage may be unavailable (private browsing, etc.)
-    logger.debug('localStorage unavailable for dark mode', { error: toError(err).message });
-  }
-});
 </script>
 
 <style scoped>

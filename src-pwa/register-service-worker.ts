@@ -18,7 +18,7 @@ register(process.env.SERVICE_WORKER_FILE, {
     // New content is downloading
   },
 
-  updated() {
+  updated(registration) {
     Notify.create({
       message: 'New version available.',
       color: 'primary',
@@ -27,7 +27,18 @@ register(process.env.SERVICE_WORKER_FILE, {
         {
           label: 'Refresh',
           color: 'white',
-          handler: () => window.location.reload(),
+          handler: () => {
+            if (registration?.waiting) {
+              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+              navigator.serviceWorker.addEventListener(
+                'controllerchange',
+                () => window.location.reload(),
+                { once: true }
+              );
+            } else {
+              window.location.reload();
+            }
+          },
         },
         { label: 'Dismiss', color: 'white' },
       ],
