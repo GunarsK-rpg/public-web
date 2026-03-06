@@ -261,7 +261,7 @@ const validationWarnings = computed(() => allStepsValidation.value.warnings);
 const isValid = computed(() => allStepsValidation.value.isValid);
 
 // Basic info lookups
-const campaignName = computed(() => heroStore.hero?.campaign?.name || null);
+const campaignName = computed(() => heroStore.hero?.campaign?.name ?? null);
 
 const ancestryName = computed(
   () => findById(classifiers.ancestries, heroStore.hero?.ancestry.id)?.name || 'Unknown'

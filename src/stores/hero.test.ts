@@ -564,12 +564,13 @@ describe('useHeroStore', () => {
       expect(store.hero?.campaignId).toBe(5);
     });
 
-    it('sets campaign id to null', () => {
+    it('sets campaign id to null and clears campaign', () => {
       const store = useHeroStore();
       store.initNewHero({ id: 10, code: 'xyz', name: 'Camp' });
       store.setCampaignId(null);
 
       expect(store.hero?.campaignId).toBeNull();
+      expect(store.hero?.campaign).toBeNull();
     });
 
     it('does nothing when no hero loaded', () => {

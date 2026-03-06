@@ -251,9 +251,13 @@ describe('useAuthStore', () => {
     });
 
     it('broadcasts logout event', async () => {
+      mockLogin.mockResolvedValue({
+        data: { username: 'testuser', scopes: {}, expires_in: 900 },
+      });
       mockLogout.mockResolvedValue({});
 
       const store = useAuthStore();
+      await store.login('testuser', 'password');
       await store.logout();
 
       expect(mockBroadcastLogout).toHaveBeenCalled();

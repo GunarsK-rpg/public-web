@@ -217,12 +217,12 @@ export function getStepValidation(stepCode: StepCode, data: HeroValidationData):
     case STEP_CODES.REVIEW: {
       const errors: string[] = [];
       const warnings: string[] = [];
-      const requiredSteps = WIZARD_STEPS.filter(
-        (s) => !s.isOptional && s.code !== STEP_CODES.REVIEW
-      );
-      for (const step of requiredSteps) {
+      const allSteps = WIZARD_STEPS.filter((s) => s.code !== STEP_CODES.REVIEW);
+      for (const step of allSteps) {
         const stepResult = getStepValidation(step.code, data);
-        errors.push(...stepResult.errors);
+        if (!step.isOptional) {
+          errors.push(...stepResult.errors);
+        }
         warnings.push(...stepResult.warnings);
       }
       return { isValid: errors.length === 0, errors, warnings };

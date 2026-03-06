@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Hero, HeroSheet, HeroEquipment } from 'src/types';
-import type { ClassifierRef } from 'src/types/shared';
+import type { CampaignRef, ClassifierRef } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
@@ -121,7 +121,7 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
-  function initNewHero(campaign?: { id: number; code: string; name: string }): void {
+  function initNewHero(campaign?: CampaignRef): void {
     hero.value = createEmptyHero();
     if (campaign) {
       hero.value.campaignId = campaign.id;

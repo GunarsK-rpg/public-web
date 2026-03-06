@@ -683,6 +683,19 @@ describe('getStepValidation', () => {
       expect(result.warnings).toContain('8 skill ranks remaining');
       expect(result.warnings).toContain('No talents selected');
     });
+
+    it('collects warnings from optional steps', () => {
+      const data = createValidationData({
+        hero: createHero({
+          cultures: [createCulture()],
+          startingKit: null,
+        }),
+      });
+      const result = getStepValidation(STEP_CODES.REVIEW, data);
+
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('No starting kit selected');
+    });
   });
 });
 

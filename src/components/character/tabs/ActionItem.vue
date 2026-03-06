@@ -70,9 +70,11 @@
 import { computed, ref } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
+import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
 import { RPG_COLORS } from 'src/constants/theme';
-import { SPECIAL } from 'src/utils/specialUtils';
+import { SPECIAL, resolveDamageScaling } from 'src/utils/specialUtils';
+import { findByCode } from 'src/utils/arrayUtils';
 import SpecialBadges from 'src/components/shared/SpecialBadges.vue';
 import type { Action } from 'src/types';
 
@@ -83,6 +85,7 @@ const props = defineProps<{
 
 const classifiers = useClassifierStore();
 const heroStore = useHeroStore();
+const attrStore = useHeroAttributesStore();
 
 // Use entity icon composable for activation type lookup
 const { entity: activationType, iconUrl } = useEntityIcon(
@@ -99,12 +102,21 @@ const TYPED_SPECIAL: Set<string> = new Set([
   SPECIAL.DURATION,
   SPECIAL.REACH,
   SPECIAL.RADIUS,
+  SPECIAL.DAMAGE_SCALING,
 ]);
 
 const typedEntries = computed(() =>
-  (props.action.special ?? []).filter(
-    (s) => TYPED_SPECIAL.has(s.type) && (s.display_value || s.value != null)
-  )
+  (props.action.special ?? [])
+    .filter((s) => TYPED_SPECIAL.has(s.type) && (s.display_value || s.value != null))
+    .map((s) => {
+      if (s.type !== SPECIAL.DAMAGE_SCALING || !s.display_value) return s;
+      const skill = s.skill ? findByCode(classifiers.skills, s.skill) : null;
+      const rank = skill ? attrStore.getSkillRank(skill.id) : 0;
+      return {
+        ...s,
+        display_value: resolveDamageScaling(s.display_value, rank, s.die_progression ?? []),
+      };
+    })
 );
 
 const narrativeEntries = computed(() =>

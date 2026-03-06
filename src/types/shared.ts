@@ -7,6 +7,8 @@ export interface SpecialEntry {
   type: string;
   value?: number;
   display_value?: string;
+  skill?: string;
+  die_progression?: number[];
 }
 
 /** Minimal classifier reference for upsert payloads */
