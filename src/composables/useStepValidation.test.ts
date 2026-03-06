@@ -122,7 +122,7 @@ describe('useStepValidation', () => {
       expect(result.isValid).toBe(true);
     });
 
-    it('returns error for missing starting kit', () => {
+    it('returns warning for missing starting kit but remains valid', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
@@ -133,7 +133,8 @@ describe('useStepValidation', () => {
       const { validate } = useStepValidation();
       const result = validate(STEP_CODES.STARTING_KIT);
 
-      expect(result.isValid).toBe(false);
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('No starting kit selected');
     });
 
     it('validates personal-details step (always valid)', () => {

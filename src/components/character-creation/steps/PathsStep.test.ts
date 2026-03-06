@@ -116,6 +116,12 @@ vi.mock('src/composables/useTalentPrerequisites', () => ({
   }),
 }));
 
+vi.mock('src/composables/useStepValidation', () => ({
+  useStepValidation: () => ({
+    budget: () => ({ budget: 0, spent: 0, remaining: 0 }),
+  }),
+}));
+
 vi.mock('src/utils/arrayUtils', () => ({
   findById: <T extends { id: number }>(arr: T[], id: number | null | undefined) =>
     arr?.find((item) => item.id === id),

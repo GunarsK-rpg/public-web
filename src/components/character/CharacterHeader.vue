@@ -31,8 +31,9 @@
         <div class="text-subtitle1 text-muted">
           Level {{ hero?.level }}
           {{ ancestryName }}
-          <span v-if="cultureName">· {{ cultureName }}</span>
-          <span v-if="orderName">· {{ orderName }} ({{ hero?.radiantIdeal ?? 0 }})</span>
+          <span v-if="cultureName"> · {{ cultureName }}</span>
+          <span v-if="orderName"> · {{ orderName }} ({{ hero?.radiantIdeal ?? 0 }})</span>
+          <span v-if="campaignName"> · {{ campaignName }}</span>
         </div>
         <div v-if="activeSingerFormName" :class="`text-caption text-${RPG_COLORS.singerForm}`">
           {{ activeSingerFormName }}
@@ -130,6 +131,7 @@ const orderName = computed(() => hero.value?.radiantOrder?.name);
 const ancestryName = computed(() => hero.value?.ancestry?.name);
 const activeSingerFormName = computed(() => hero.value?.activeSingerForm?.name);
 const cultureName = computed(() => hero.value?.cultures?.[0]?.culture?.name);
+const campaignName = computed(() => hero.value?.campaign?.name);
 
 const showDeleteDialog = ref(false);
 const deleting = ref(false);

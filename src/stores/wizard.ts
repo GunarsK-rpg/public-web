@@ -71,9 +71,9 @@ export const useWizardStore = defineStore('wizard', () => {
   // ===================
   // WIZARD LIFECYCLE
   // ===================
-  function startCreate(campaignId?: number) {
+  function startCreate(campaign?: { id: number; code: string; name: string }) {
     const heroStore = useHeroStore();
-    heroStore.initNewHero(campaignId);
+    heroStore.initNewHero(campaign);
     mode.value = 'create';
     currentStep.value = 1;
     completedStepsSet.value = new Set();

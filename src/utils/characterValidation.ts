@@ -171,14 +171,13 @@ function validatePaths(
 }
 
 function validateStartingKit(startingKitId: number | null | undefined): StepValidation {
-  const errors: string[] = [];
   const warnings: string[] = [];
 
   if (!startingKitId) {
-    errors.push('Starting kit is required');
+    warnings.push('No starting kit selected');
   }
 
-  return { isValid: errors.length === 0, errors, warnings };
+  return { isValid: true, errors: [], warnings };
 }
 
 /**

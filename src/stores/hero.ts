@@ -121,13 +121,14 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
-  function initNewHero(campaignId?: number): void {
+  function initNewHero(campaign?: { id: number; code: string; name: string }): void {
     hero.value = createEmptyHero();
-    if (campaignId !== undefined) {
-      hero.value.campaignId = campaignId;
+    if (campaign) {
+      hero.value.campaignId = campaign.id;
+      hero.value.campaign = { id: campaign.id, code: campaign.code, name: campaign.name };
     }
     tempIdCounter.value = -1;
-    logger.info('New hero initialized', { campaignId });
+    logger.info('New hero initialized', { campaignId: campaign?.id });
   }
 
   function clearHero(): void {

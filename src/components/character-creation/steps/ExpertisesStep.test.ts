@@ -345,23 +345,13 @@ describe('ExpertisesStep', () => {
       expect(mockRemoveExpertise).not.toHaveBeenCalled();
     });
 
-    it('disables checkbox when no slots remaining and not selected', () => {
+    it('allows checkbox when no slots remaining (over-allocation with warning)', () => {
       mockSlotsRemaining.value = 0;
       const wrapper = createWrapper();
 
       const checkboxes = wrapper.findAll('.q-checkbox');
-      // The third expertise (not selected) should be disabled
-      expect(checkboxes[2]?.attributes('disabled')).toBeDefined();
-    });
-
-    it('does not add expertise when slots are full', async () => {
-      mockSlotsRemaining.value = 0;
-      const wrapper = createWrapper();
-
-      const checkboxes = wrapper.findAll('.q-checkbox');
-      await checkboxes[2]?.trigger('change');
-
-      expect(mockAddExpertise).not.toHaveBeenCalled();
+      // The third expertise (not selected) should NOT be disabled
+      expect(checkboxes[2]?.attributes('disabled')).toBeUndefined();
     });
   });
 
@@ -453,15 +443,11 @@ describe('ExpertisesStep', () => {
       expect(wrapper.exists()).toBe(true);
     });
 
-    it('shows intellect score in budget suffix', () => {
-      mockGetAttributeValue.mockReturnValue(5);
+    it('shows budget display', () => {
       const wrapper = createWrapper();
 
-      // The BudgetDisplay stub shows the suffix prop with intellect score
       const budgetDisplay = wrapper.find('.budget-display');
       expect(budgetDisplay.exists()).toBe(true);
-      // Intellect score of 5 means 5 expertise slots
-      expect(mockGetAttributeValue).toHaveBeenCalled();
     });
 
     it('does not call addExpertise when expertise already selected (rapid click guard)', async () => {
@@ -682,12 +668,12 @@ describe('ExpertisesStep', () => {
       expect(addBtn.text()).toContain('Add Custom');
     });
 
-    it('disables add custom button when no slots remaining', () => {
+    it('allows add custom button when no slots remaining (over-allocation with warning)', () => {
       mockSlotsRemaining.value = 0;
       const wrapper = createWrapper();
 
       const addBtn = wrapper.find('[aria-label="Add custom expertise"]');
-      expect(addBtn.attributes('disabled')).toBeDefined();
+      expect(addBtn.attributes('disabled')).toBeUndefined();
     });
 
     it('custom expertises count against budget (included in expertises array)', () => {

@@ -141,6 +141,7 @@ vi.mock('src/composables/useStepValidation', () => ({
     get allStepsValidation() {
       return { value: mockValidationData.value };
     },
+    budget: () => ({ budget: 0, spent: 0, remaining: 0 }),
   }),
 }));
 

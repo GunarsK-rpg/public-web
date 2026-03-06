@@ -559,14 +559,14 @@ describe('getStepValidation', () => {
       expect(result.isValid).toBe(true);
     });
 
-    it('fails with no starting kit', () => {
+    it('warns with no starting kit but remains valid', () => {
       const data = createValidationData({
         hero: createHero({ startingKit: null }),
       });
       const result = getStepValidation(STEP_CODES.STARTING_KIT, data);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Starting kit is required');
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('No starting kit selected');
     });
   });
 
@@ -654,7 +654,6 @@ describe('getStepValidation', () => {
       expect(result.errors).toContain('Level must be between 1 and 20');
       expect(result.errors).toContain('Ancestry is required');
       expect(result.errors).toContain('At least one culture is required');
-      expect(result.errors).toContain('Starting kit is required');
     });
 
     it('collects warnings from all required steps', () => {

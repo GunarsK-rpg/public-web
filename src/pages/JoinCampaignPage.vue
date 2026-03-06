@@ -130,7 +130,11 @@ function createCharacter(): void {
   if (!campaign.value) return;
   void router.push({
     name: 'character-create',
-    query: { campaignId: String(campaign.value.id) },
+    query: {
+      campaignId: String(campaign.value.id),
+      campaignCode: campaign.value.code,
+      campaignName: campaign.value.name,
+    },
   });
 }
 

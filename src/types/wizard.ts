@@ -86,7 +86,7 @@ export const WIZARD_STEPS: WizardStep[] = [
     name: 'Starting Kit',
     description: 'Choose equipment bundle',
     icon: 'sym_o_backpack',
-    isOptional: false,
+    isOptional: true,
   },
   {
     id: 8,
