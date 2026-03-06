@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import CampaignDetailPage from './CampaignDetailPage.vue';
 
@@ -148,26 +148,30 @@ describe('CampaignDetailPage', () => {
   // Basic Rendering
   // ========================================
   describe('basic rendering', () => {
-    it('renders campaign name', () => {
+    it('renders campaign name', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Test Campaign');
     });
 
-    it('renders campaign description', () => {
+    it('renders campaign description', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Campaign description');
     });
 
-    it('renders characters section title', () => {
+    it('renders characters section title', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Characters');
     });
 
-    it('renders add character button', () => {
+    it('renders add character button', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Add Character');
     });
@@ -177,28 +181,32 @@ describe('CampaignDetailPage', () => {
   // Character Cards
   // ========================================
   describe('character cards', () => {
-    it('renders character cards', () => {
+    it('renders character cards', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Hero 1');
       expect(wrapper.text()).toContain('Hero 2');
     });
 
-    it('displays character level', () => {
+    it('displays character level', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Level 5');
       expect(wrapper.text()).toContain('Level 3');
     });
 
-    it('displays radiant order for radiant characters', () => {
+    it('displays radiant order for radiant characters', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Windrunner');
     });
 
-    it('shows health display', () => {
+    it('shows health display', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('HP: 20');
     });
@@ -221,10 +229,11 @@ describe('CampaignDetailPage', () => {
   // Error State
   // ========================================
   describe('error state', () => {
-    it('shows error banner when error', () => {
+    it('shows error banner when error', async () => {
       mockError.value = 'Failed to load campaign';
 
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Failed to load campaign');
     });
@@ -234,10 +243,11 @@ describe('CampaignDetailPage', () => {
   // Empty State
   // ========================================
   describe('empty state', () => {
-    it('shows empty state when no heroes', () => {
+    it('shows empty state when no heroes', async () => {
       mockCampaign.value = { ...mockCampaign.value, heroes: [] };
 
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('No characters');
     });
@@ -249,6 +259,7 @@ describe('CampaignDetailPage', () => {
   describe('navigation', () => {
     it('navigates to character sheet on card click', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       const cards = wrapper.findAll('.q-card[role="button"]');
       expect(cards.length).toBeGreaterThan(0);
@@ -262,6 +273,7 @@ describe('CampaignDetailPage', () => {
 
     it('navigates to join page on add character button click', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add Character'));
       expect(addBtns.length).toBeGreaterThan(0);

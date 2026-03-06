@@ -51,31 +51,21 @@
           {{ campaign.description }}
         </div>
 
-        <div v-if="isOwner" class="row items-center q-mb-lg">
+        <div v-if="isOwner" class="row items-center no-wrap q-mb-lg">
           <div class="text-caption text-grey-6">Invite link:</div>
-          <q-input
-            :model-value="inviteUrl"
+          <div class="text-caption q-ml-xs gt-xs">{{ inviteUrl }}</div>
+          <q-btn
+            flat
             dense
-            readonly
-            borderless
+            round
+            size="xs"
             class="q-ml-xs"
-            input-class="text-caption"
-            style="flex: 0 1 auto"
+            aria-label="Copy invite link"
+            @click="copyInviteLink"
           >
-            <template v-slot:append>
-              <q-btn
-                flat
-                dense
-                round
-                size="xs"
-                aria-label="Copy invite link"
-                @click="copyInviteLink"
-              >
-                <Copy :size="20" />
-                <q-tooltip>Copy invite link</q-tooltip>
-              </q-btn>
-            </template>
-          </q-input>
+            <Copy :size="20" />
+            <q-tooltip>Copy invite link</q-tooltip>
+          </q-btn>
         </div>
 
         <div class="row items-center q-mb-md">
@@ -126,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { FolderX, Pencil, Trash2, Copy, UserPlus, UserX } from 'lucide-vue-next';
 import { useQuasar, copyToClipboard } from 'quasar';
 import { useRouter } from 'vue-router';
@@ -146,8 +136,9 @@ const campaignStore = useCampaignStore();
 const classifiers = useClassifierStore();
 const { showWarning } = useErrorHandler();
 
+const initializing = ref(true);
 const campaign = computed(() => campaignStore.currentCampaign);
-const loading = computed(() => campaignStore.loading);
+const loading = computed(() => initializing.value || campaignStore.loading);
 const error = computed(() => campaignStore.error);
 const isOwner = computed(() => campaignStore.isOwner);
 const saving = computed(() => campaignStore.saving);
@@ -156,22 +147,27 @@ onMounted(async () => {
   const campaignId = Number(props.campaignId);
   if (isNaN(campaignId) || campaignId <= 0) {
     campaignStore.setError('Invalid campaign ID');
+    initializing.value = false;
     return;
   }
-  // Initialize classifiers before loading campaign to ensure radiant order names are available
-  if (!classifiers.initialized) {
-    try {
-      await classifiers.initialize();
-    } catch (err) {
-      logger.error('Failed to initialize classifiers', { error: toError(err).message });
-      showWarning(
-        'Some data unavailable',
-        'Character details like Radiant Order names may not display correctly.'
-      );
-      // Continue loading campaign - page still works with degraded functionality
+  try {
+    // Initialize classifiers before loading campaign to ensure radiant order names are available
+    if (!classifiers.initialized) {
+      try {
+        await classifiers.initialize();
+      } catch (err) {
+        logger.error('Failed to initialize classifiers', { error: toError(err).message });
+        showWarning(
+          'Some data unavailable',
+          'Character details like Radiant Order names may not display correctly.'
+        );
+        // Continue loading campaign - page still works with degraded functionality
+      }
     }
+    await campaignStore.selectCampaign(campaignId);
+  } finally {
+    initializing.value = false;
   }
-  await campaignStore.selectCampaign(campaignId);
 });
 
 function selectCharacter(characterId: number): void {

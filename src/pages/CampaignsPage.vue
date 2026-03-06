@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Plus, FolderX } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'stores/campaigns';
@@ -54,13 +54,17 @@ import { useCampaignStore } from 'stores/campaigns';
 const router = useRouter();
 const campaignStore = useCampaignStore();
 
+const initializing = ref(true);
 const campaigns = computed(() => campaignStore.campaigns);
-const loading = computed(() => campaignStore.loading);
+const loading = computed(() => initializing.value || campaignStore.loading);
 const error = computed(() => campaignStore.error);
 
-// Store handles errors internally and sets error state - no try/catch needed
-onMounted(() => {
-  void campaignStore.fetchCampaigns();
+onMounted(async () => {
+  try {
+    await campaignStore.fetchCampaigns();
+  } finally {
+    initializing.value = false;
+  }
 });
 
 function selectCampaign(id: number): void {
