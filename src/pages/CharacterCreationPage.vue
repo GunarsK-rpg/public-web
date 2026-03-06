@@ -101,10 +101,17 @@ const props = defineProps<{
 const router = useRouter();
 const route = useRoute();
 
-// campaignId comes from query param (e.g. /characters/new?campaignId=5)
-const queryCampaignId = computed(() => {
-  const val = route.query.campaignId;
-  return typeof val === 'string' ? val : undefined;
+// Campaign context from query params (e.g. /characters/new?campaignId=5&campaignCode=abc&campaignName=My+Campaign)
+const queryCampaign = computed(() => {
+  const id = route.query.campaignId;
+  const code = route.query.campaignCode;
+  const name = route.query.campaignName;
+  if (typeof id !== 'string' || typeof code !== 'string' || typeof name !== 'string') {
+    return undefined;
+  }
+  const numId = Number(id);
+  if (!Number.isFinite(numId) || numId <= 0) return undefined;
+  return { id: numId, code, name };
 });
 const $q = useQuasar();
 const wizardStore = useWizardStore();
@@ -202,16 +209,7 @@ function resetWizard() {
   deletionTracker.clearAll();
   wizardStore.reset();
   heroStore.clearHero();
-  const campId =
-    queryCampaignId.value !== undefined && queryCampaignId.value !== ''
-      ? Number(queryCampaignId.value)
-      : undefined;
-  if (campId !== undefined && (!Number.isFinite(campId) || campId <= 0)) {
-    $q.notify({ type: 'negative', message: 'Invalid campaign ID' });
-    void router.replace({ name: 'campaigns' });
-    return;
-  }
-  wizardStore.startCreate(campId);
+  wizardStore.startCreate(queryCampaign.value);
   $q.notify({
     type: 'info',
     message: 'Character creation reset',
@@ -251,16 +249,7 @@ onMounted(async () => {
         }
       } else {
         // Create route — start fresh
-        const campId =
-          queryCampaignId.value !== undefined && queryCampaignId.value !== ''
-            ? Number(queryCampaignId.value)
-            : undefined;
-        if (campId !== undefined && (!Number.isFinite(campId) || campId <= 0)) {
-          $q.notify({ type: 'negative', message: 'Invalid campaign ID' });
-          void router.replace({ name: 'campaigns' });
-          return;
-        }
-        wizardStore.startCreate(campId);
+        wizardStore.startCreate(queryCampaign.value);
       }
     }
   } catch (error) {

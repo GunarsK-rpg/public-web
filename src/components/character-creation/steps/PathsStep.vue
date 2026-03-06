@@ -1,6 +1,12 @@
 <template>
   <div>
-    <div class="text-subtitle1 q-mb-md">Choose your heroic paths and talents</div>
+    <div class="text-subtitle1 q-mb-sm">Choose your heroic paths and talents</div>
+    <BudgetDisplay
+      label="Talent slots remaining"
+      :remaining="talentsBudget.remaining"
+      :total="talentsBudget.budget"
+      :show-total="true"
+    />
 
     <!-- Tab Navigation -->
     <q-tabs
@@ -102,9 +108,11 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useTalentPrerequisites } from 'src/composables/useTalentPrerequisites';
+import { useStepValidation } from 'src/composables/useStepValidation';
 import { findById } from 'src/utils/arrayUtils';
 import { Plus, ArrowLeftRight } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import BudgetDisplay from '../shared/BudgetDisplay.vue';
 import HeroicPathPanel from '../shared/HeroicPathPanel.vue';
 import SingerAncestryPanel from '../shared/SingerAncestryPanel.vue';
 import RadiantPathPanel from '../shared/RadiantPathPanel.vue';
@@ -124,6 +132,9 @@ const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
 const { getSpecialtiesByPath, toggleTalent } = useTalentPrerequisites();
+const { budget } = useStepValidation();
+
+const talentsBudget = computed(() => budget('paths'));
 
 // Collect all classifier talent IDs belonging to a path (key + path-level + all specialties)
 function getAllPathTalentIds(pathId: number): Set<number> {

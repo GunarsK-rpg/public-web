@@ -65,12 +65,10 @@ import { toError } from 'src/utils/errorHandling';
 const router = useRouter();
 
 const heroes = ref<Hero[]>([]);
-const loading = ref(false);
+const loading = ref(true);
 const error = ref<string | null>(null);
 
 onMounted(async () => {
-  loading.value = true;
-  error.value = null;
   try {
     const response = await heroService.getAll();
     heroes.value = response.data.data;

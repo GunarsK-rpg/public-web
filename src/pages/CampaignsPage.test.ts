@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import CampaignsPage from './CampaignsPage.vue';
 
 const mockPush = vi.fn();
-const mockFetchCampaigns = vi.fn();
+const mockFetchCampaigns = vi.fn().mockResolvedValue(undefined);
 
 // Use refs for reactive mock values
 const mockCampaigns = ref([
@@ -105,8 +105,9 @@ describe('CampaignsPage', () => {
       expect(wrapper.text()).toContain('My Campaigns');
     });
 
-    it('renders campaign cards', () => {
+    it('renders campaign cards', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Campaign 1');
       expect(wrapper.text()).toContain('Campaign 2');
@@ -130,10 +131,11 @@ describe('CampaignsPage', () => {
   // Error State
   // ========================================
   describe('error state', () => {
-    it('shows error banner when error', () => {
+    it('shows error banner when error', async () => {
       mockError.value = 'Failed to load campaigns';
 
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Failed to load campaigns');
     });
@@ -143,10 +145,11 @@ describe('CampaignsPage', () => {
   // Empty State
   // ========================================
   describe('empty state', () => {
-    it('shows empty state when no campaigns', () => {
+    it('shows empty state when no campaigns', async () => {
       mockCampaigns.value = [];
 
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('No campaigns found');
     });
@@ -158,6 +161,7 @@ describe('CampaignsPage', () => {
   describe('navigation', () => {
     it('navigates to campaign detail on card click', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       const cards = wrapper.findAll('.q-card');
       expect(cards.length).toBeGreaterThan(0);
@@ -180,16 +184,18 @@ describe('CampaignsPage', () => {
   // Accessibility
   // ========================================
   describe('accessibility', () => {
-    it('campaign cards have button role', () => {
+    it('campaign cards have button role', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       const cards = wrapper.findAll('.q-card[role="button"]');
       // Should match number of campaigns in mock data
       expect(cards.length).toBe(mockCampaigns.value.length);
     });
 
-    it('campaign cards are keyboard accessible', () => {
+    it('campaign cards are keyboard accessible', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       const cards = wrapper.findAll('.q-card[role="button"]');
       expect(cards.length).toBeGreaterThan(0);

@@ -36,6 +36,7 @@ export const SPECIAL = {
   COST: 'cost',
   DURATION: 'duration',
   NARRATIVE: 'narrative',
+  DAMAGE_SCALING: 'damage_scaling',
 
   // Flag types (value: 1)
   SPECIALIST: 'specialist',
@@ -43,6 +44,20 @@ export const SPECIAL = {
   REWARD_ONLY: 'reward_only',
   PERMANENT: 'permanent',
 } as const;
+
+/**
+ * Resolve a damage_scaling display_value by replacing {dice_size} with the actual die
+ * based on the hero's skill rank and the entry's die_progression array.
+ */
+export function resolveDamageScaling(
+  displayValue: string,
+  skillRank: number,
+  dieProgression: number[]
+): string {
+  if (!dieProgression.length) return displayValue;
+  const index = Math.min(skillRank, dieProgression.length - 1);
+  return displayValue.replace('{dice_size}', String(dieProgression[index]));
+}
 
 /**
  * Find a special entry by type

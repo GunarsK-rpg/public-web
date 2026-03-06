@@ -132,11 +132,12 @@ describe('useHeroStore', () => {
       expect(store.hero?.level).toBe(1);
     });
 
-    it('sets campaignId when provided', () => {
+    it('sets campaign when provided', () => {
       const store = useHeroStore();
-      store.initNewHero(42);
+      store.initNewHero({ id: 42, code: 'abc', name: 'Test Campaign' });
 
       expect(store.hero?.campaignId).toBe(42);
+      expect(store.hero?.campaign).toEqual({ id: 42, code: 'abc', name: 'Test Campaign' });
     });
 
     it('sets isLoaded to true', () => {
@@ -563,12 +564,13 @@ describe('useHeroStore', () => {
       expect(store.hero?.campaignId).toBe(5);
     });
 
-    it('sets campaign id to null', () => {
+    it('sets campaign id to null and clears campaign', () => {
       const store = useHeroStore();
-      store.initNewHero(10);
+      store.initNewHero({ id: 10, code: 'xyz', name: 'Camp' });
       store.setCampaignId(null);
 
       expect(store.hero?.campaignId).toBeNull();
+      expect(store.hero?.campaign).toBeNull();
     });
 
     it('does nothing when no hero loaded', () => {

@@ -277,13 +277,14 @@ describe('useWizardStore', () => {
       expect(store.isActive).toBe(true);
     });
 
-    it('passes campaignId to hero store', () => {
+    it('passes campaign to hero store', () => {
       const wizardStore = useWizardStore();
       const heroStore = useHeroStore();
 
-      wizardStore.startCreate(42);
+      wizardStore.startCreate({ id: 42, code: 'abc', name: 'Test Campaign' });
 
       expect(heroStore.hero?.campaignId).toBe(42);
+      expect(heroStore.hero?.campaign).toEqual({ id: 42, code: 'abc', name: 'Test Campaign' });
     });
   });
 

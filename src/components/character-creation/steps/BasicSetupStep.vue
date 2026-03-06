@@ -37,7 +37,7 @@
     </q-banner>
 
     <!-- Campaign -->
-    <template v-if="campaignName && !heroStore.isNew">
+    <template v-if="campaignName">
       <q-separator class="q-my-md" />
       <div class="text-subtitle1 q-mb-md">Campaign</div>
       <q-card flat bordered>
@@ -46,7 +46,7 @@
             <div class="text-body1">{{ campaignName }}</div>
           </div>
           <q-space />
-          <q-btn flat color="negative" @click="leaveCampaign"
+          <q-btn v-if="!heroStore.isNew" flat color="negative" @click="leaveCampaign"
             ><LogOut :size="20" class="on-left" aria-hidden="true" />Leave Campaign</q-btn
           >
         </q-card-section>
@@ -109,15 +109,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
-import { useCampaignStore } from 'src/stores/campaigns';
 import { useClassifierStore } from 'src/stores/classifiers';
 import heroService from 'src/services/heroService';
-import campaignService from 'src/services/campaignService';
 import { buildHeroCorePayload } from 'src/services/heroPayloads';
 import { findByCode } from 'src/utils/arrayUtils';
 import { ArrowLeftRight, Info, LogOut, Plus } from 'lucide-vue-next';
@@ -131,7 +129,6 @@ const $q = useQuasar();
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
-const campaignStore = useCampaignStore();
 const classifiers = useClassifierStore();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
@@ -155,24 +152,6 @@ const availableForms = computed(() =>
     return heroStore.talents.some((t) => t.talent.id === form.talent?.id);
   })
 );
-
-onMounted(async () => {
-  // Resolve campaign code if campaignId was set (e.g., from invite URL) but code is missing
-  if (heroStore.hero?.campaignId && !heroStore.hero.campaign?.code) {
-    let campaign = campaignStore.campaigns.find((c) => c.id === heroStore.hero!.campaignId);
-    if (!campaign) {
-      try {
-        const { data } = await campaignService.getById(heroStore.hero.campaignId);
-        campaign = data;
-      } catch {
-        return;
-      }
-    }
-    if (campaign) {
-      heroStore.setCampaign({ id: campaign.id, code: campaign.code, name: campaign.name });
-    }
-  }
-});
 
 function setName(val: string | number | null) {
   if (val !== null) {

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { WIZARD_STEPS } from 'src/types/wizard';
+import type { CampaignRef } from 'src/types/shared';
 import { useHeroStore } from './hero';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
@@ -71,9 +72,9 @@ export const useWizardStore = defineStore('wizard', () => {
   // ===================
   // WIZARD LIFECYCLE
   // ===================
-  function startCreate(campaignId?: number) {
+  function startCreate(campaign?: CampaignRef) {
     const heroStore = useHeroStore();
-    heroStore.initNewHero(campaignId);
+    heroStore.initNewHero(campaign);
     mode.value = 'create';
     currentStep.value = 1;
     completedStepsSet.value = new Set();

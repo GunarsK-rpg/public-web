@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Hero, HeroSheet, HeroEquipment } from 'src/types';
-import type { ClassifierRef } from 'src/types/shared';
+import type { CampaignRef, ClassifierRef } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
@@ -121,13 +121,14 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
-  function initNewHero(campaignId?: number): void {
+  function initNewHero(campaign?: CampaignRef): void {
     hero.value = createEmptyHero();
-    if (campaignId !== undefined) {
-      hero.value.campaignId = campaignId;
+    if (campaign) {
+      hero.value.campaignId = campaign.id;
+      hero.value.campaign = { id: campaign.id, code: campaign.code, name: campaign.name };
     }
     tempIdCounter.value = -1;
-    logger.info('New hero initialized', { campaignId });
+    logger.info('New hero initialized', { campaignId: campaign?.id });
   }
 
   function clearHero(): void {

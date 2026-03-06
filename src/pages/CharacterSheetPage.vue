@@ -106,13 +106,14 @@ const classifierStore = useClassifierStore();
 
 const activeTab = ref('stats');
 
+const initializing = ref(true);
 const isLoaded = computed(() => heroStore.isLoaded);
 const isReadonly = computed(() => {
   const heroUsername = heroStore.hero?.user?.username?.trim().toLowerCase();
   const authUsername = authStore.username?.trim().toLowerCase();
   return !heroUsername || !authUsername || heroUsername !== authUsername;
 });
-const loading = computed(() => heroStore.loading);
+const loading = computed(() => initializing.value || heroStore.loading);
 const error = computed(() => heroStore.error);
 const classifierLoading = computed(() => classifierStore.loading);
 const classifierError = computed(() => classifierStore.error);
@@ -132,6 +133,8 @@ onMounted(async () => {
   } catch (err: unknown) {
     logger.error('Failed to load character', toError(err));
     heroStore.setError('Failed to load character');
+  } finally {
+    initializing.value = false;
   }
 });
 

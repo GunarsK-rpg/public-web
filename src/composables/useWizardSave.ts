@@ -128,6 +128,21 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
       case STEP_CODES.PATHS:
         await saveHeroCore(hero);
         await syncSubResource(hero.id, 'talents', hero.talents, buildTalentPayload, 'talents');
+        // Track previously-saved surge skills that were zeroed out for deletion
+        for (const skill of hero.skills) {
+          if (skill.id > 0 && skill.rank === 0 && skill.modifier === 0) {
+            deletionTracker.trackDeletion('skills', skill.id);
+          }
+        }
+        // Radiant order grants surge skills — save them alongside talents
+        await syncSubResource(
+          hero.id,
+          'skills',
+          hero.skills,
+          buildSkillPayload,
+          'skills',
+          (skill) => skill.rank > 0 || skill.modifier !== 0
+        );
         break;
       case STEP_CODES.STARTING_KIT:
         await saveHeroCore(hero);

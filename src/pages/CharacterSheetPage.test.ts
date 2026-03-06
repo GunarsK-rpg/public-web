@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import CharacterSheetPage from './CharacterSheetPage.vue';
 
@@ -36,7 +36,7 @@ vi.mock('stores/hero', () => ({
     get error() {
       return mockError.value;
     },
-    loadHero: vi.fn(),
+    loadHero: vi.fn().mockResolvedValue(undefined),
     clearHero: vi.fn(),
     setError: vi.fn(),
   }),
@@ -47,7 +47,7 @@ vi.mock('stores/classifiers', () => ({
     get initialized() {
       return mockClassifierInitialized.value;
     },
-    initialize: vi.fn(),
+    initialize: vi.fn().mockResolvedValue(undefined),
     get loading() {
       return mockClassifierLoading.value;
     },
@@ -147,20 +147,23 @@ describe('CharacterSheetPage', () => {
   // Basic Rendering
   // ========================================
   describe('basic rendering', () => {
-    it('renders character header when loaded', () => {
+    it('renders character header when loaded', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.find('.character-header').exists()).toBe(true);
     });
 
-    it('renders tab navigation', () => {
+    it('renders tab navigation', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.find('.q-tabs').exists()).toBe(true);
     });
 
-    it('renders all tabs', () => {
+    it('renders all tabs', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       const tabs = wrapper.findAll('.q-tab');
       expect(tabs.length).toBe(7);
@@ -171,26 +174,30 @@ describe('CharacterSheetPage', () => {
   // Tab Labels
   // ========================================
   describe('tab labels', () => {
-    it('shows stats tab', () => {
+    it('shows stats tab', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Stats');
     });
 
-    it('shows skills tab', () => {
+    it('shows skills tab', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Skills');
     });
 
-    it('shows actions tab', () => {
+    it('shows actions tab', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Actions');
     });
 
-    it('shows equipment tab', () => {
+    it('shows equipment tab', async () => {
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Equipment');
     });
@@ -223,20 +230,22 @@ describe('CharacterSheetPage', () => {
   // Error State
   // ========================================
   describe('error state', () => {
-    it('shows error banner when hero error', () => {
+    it('shows error banner when hero error', async () => {
       mockError.value = 'Failed to load character';
       mockIsLoaded.value = false;
 
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Failed to load character');
     });
 
-    it('shows error banner when classifier error', () => {
+    it('shows error banner when classifier error', async () => {
       mockClassifierError.value = 'Failed to load classifiers';
       mockIsLoaded.value = false;
 
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.text()).toContain('Failed to load classifiers');
     });
@@ -246,26 +255,29 @@ describe('CharacterSheetPage', () => {
   // Ownership / Readonly
   // ========================================
   describe('ownership', () => {
-    it('passes readonly=false when hero username matches auth user', () => {
+    it('passes readonly=false when hero username matches auth user', async () => {
       mockHero.value = { user: { id: 1, username: 'testuser' } };
 
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.find('.character-header').attributes('data-readonly')).toBe('false');
     });
 
-    it('passes readonly=true when hero username differs from auth user', () => {
+    it('passes readonly=true when hero username differs from auth user', async () => {
       mockHero.value = { user: { id: 2, username: 'otherplayer' } };
 
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.find('.character-header').attributes('data-readonly')).toBe('true');
     });
 
-    it('passes readonly=true when hero has no user', () => {
+    it('passes readonly=true when hero has no user', async () => {
       mockHero.value = {};
 
       const wrapper = createWrapper();
+      await flushPromises();
 
       expect(wrapper.find('.character-header').attributes('data-readonly')).toBe('true');
     });

@@ -2,9 +2,10 @@
   <div>
     <div class="text-subtitle1 q-mb-sm">Select your expertises</div>
     <BudgetDisplay
-      label="Free slots"
+      label="Slots remaining"
       :remaining="slotsRemaining"
-      :suffix="`${intellectScore} from Intellect`"
+      :total="expertisesBudget.budget"
+      :show-total="true"
     />
 
     <!-- Cultural Expertises Banner -->
@@ -55,9 +56,7 @@
           <q-checkbox
             :model-value="isSelected(expertise.id)"
             :aria-label="`Toggle ${expertise.name}`"
-            :disable="
-              isReadOnly(expertise.id) || (!isSelected(expertise.id) && slotsRemaining <= 0)
-            "
+            :disable="isReadOnly(expertise.id)"
             @update:model-value="(val) => toggleExpertise(expertise.id, val)"
           />
         </q-item-section>
@@ -102,7 +101,6 @@
         dense
         color="primary"
         size="sm"
-        :disable="slotsRemaining <= 0"
         aria-label="Add custom expertise"
         @click="openCustomDialog"
         ><Plus :size="20" class="on-left" />Add Custom</q-btn
@@ -173,7 +171,6 @@ const showCustomDialog = ref(false);
 const customTypeId = ref<number | null>(null);
 const customNameInput = ref('');
 
-const intellectScore = computed(() => attrStore.getAttributeValue('int'));
 const expertisesBudget = computed(() => budget('expertises'));
 const slotsRemaining = computed(() => expertisesBudget.value.remaining);
 
@@ -243,7 +240,6 @@ const expertiseTypeOptions = computed(() =>
 
 const canAddCustom = computed(() => {
   if (!customTypeId.value || !customNameInput.value.trim()) return false;
-  if (slotsRemaining.value <= 0) return false;
   const name = customNameInput.value.trim();
   return !heroExpertises.value.some(
     (e) => !e.expertise && e.expertiseType?.id === customTypeId.value && e.customName === name
@@ -266,8 +262,7 @@ function getSource(expertiseId: number): string | null {
 
 function toggleExpertise(expertiseId: number, checked: boolean) {
   if (checked) {
-    // Defensive guard: prevent adding if already selected (edge case from rapid clicks)
-    if (slotsRemaining.value > 0 && !isSelected(expertiseId)) {
+    if (!isSelected(expertiseId)) {
       attrStore.addExpertise(expertiseId, { sourceType: 'intellect' });
     }
   } else if (!isReadOnly(expertiseId)) {

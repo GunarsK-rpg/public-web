@@ -59,6 +59,10 @@
                 <div class="text-caption">Culture</div>
                 <div>{{ cultureName }}</div>
               </div>
+              <div v-if="campaignName" class="col-6">
+                <div class="text-caption">Campaign</div>
+                <div>{{ campaignName }}</div>
+              </div>
               <div class="col-6">
                 <div class="text-caption">Starting Kit</div>
                 <div>{{ startingKitName }}</div>
@@ -76,7 +80,16 @@
       <div class="col-12 col-md-6">
         <q-card flat bordered>
           <q-card-section>
-            <div class="text-subtitle2 q-mb-sm">Attributes</div>
+            <div class="row items-center q-mb-sm">
+              <div class="text-subtitle2">Attributes</div>
+              <q-space />
+              <BudgetDisplay
+                label="Remaining"
+                :remaining="attrBudget.remaining"
+                :total="attrBudget.budget"
+                :show-total="true"
+              />
+            </div>
             <div class="row">
               <div v-for="attr in attributeDisplay" :key="attr.code" class="col-2">
                 <div class="text-center">
@@ -108,7 +121,16 @@
       <div class="col-12 col-md-6">
         <q-card flat bordered>
           <q-card-section>
-            <div class="text-subtitle2 q-mb-sm">Skills</div>
+            <div class="row items-center q-mb-sm">
+              <div class="text-subtitle2">Skills</div>
+              <q-space />
+              <BudgetDisplay
+                label="Remaining"
+                :remaining="skillsBudget.remaining"
+                :total="skillsBudget.budget"
+                :show-total="true"
+              />
+            </div>
             <div class="row">
               <div v-for="skill in skillDisplay" :key="skill.id" class="col-6">
                 <span class="text-weight-medium">{{ skill.name }}:</span> {{ skill.rank }}
@@ -128,7 +150,16 @@
       <div class="col-12 col-md-6">
         <q-card flat bordered>
           <q-card-section>
-            <div class="text-subtitle2 q-mb-sm">Expertises</div>
+            <div class="row items-center q-mb-sm">
+              <div class="text-subtitle2">Expertises</div>
+              <q-space />
+              <BudgetDisplay
+                label="Remaining"
+                :remaining="expertisesBudget.remaining"
+                :total="expertisesBudget.budget"
+                :show-total="true"
+              />
+            </div>
             <div>
               <q-chip
                 v-for="exp in expertiseDisplay"
@@ -150,7 +181,16 @@
       <div class="col-12">
         <q-card flat bordered>
           <q-card-section>
-            <div class="text-subtitle2 q-mb-sm">Talents</div>
+            <div class="row items-center q-mb-sm">
+              <div class="text-subtitle2">Talents</div>
+              <q-space />
+              <BudgetDisplay
+                label="Remaining"
+                :remaining="talentsBudget.remaining"
+                :total="talentsBudget.budget"
+                :show-total="true"
+              />
+            </div>
             <div>
               <q-chip v-for="talent in talentDisplay" :key="talent.id" outline>
                 {{ talent.name }}
@@ -200,13 +240,19 @@ import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { findById } from 'src/utils/arrayUtils';
 import { CircleAlert, CircleCheck, TriangleAlert } from 'lucide-vue-next';
+import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const wizardStore = useWizardStore();
-const { allStepsValidation } = useStepValidation();
+const { allStepsValidation, budget } = useStepValidation();
+
+const attrBudget = computed(() => budget('attributes'));
+const skillsBudget = computed(() => budget('skills'));
+const expertisesBudget = computed(() => budget('expertises'));
+const talentsBudget = computed(() => budget('paths'));
 
 const isEditMode = computed(() => wizardStore.mode === 'edit');
 
@@ -215,6 +261,8 @@ const validationWarnings = computed(() => allStepsValidation.value.warnings);
 const isValid = computed(() => allStepsValidation.value.isValid);
 
 // Basic info lookups
+const campaignName = computed(() => heroStore.hero?.campaign?.name ?? null);
+
 const ancestryName = computed(
   () => findById(classifiers.ancestries, heroStore.hero?.ancestry.id)?.name || 'Unknown'
 );

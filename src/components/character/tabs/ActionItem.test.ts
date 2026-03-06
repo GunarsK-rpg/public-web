@@ -37,6 +37,14 @@ const mockEntityIconData = {
   },
 };
 
+const mockGetSkillRank = vi.fn().mockReturnValue(0);
+
+vi.mock('src/stores/heroAttributes', () => ({
+  useHeroAttributesStore: () => ({
+    getSkillRank: mockGetSkillRank,
+  }),
+}));
+
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
     activationTypes: [
@@ -44,6 +52,10 @@ vi.mock('src/stores/classifiers', () => ({
       { id: 2, code: 'reaction', name: 'Reaction', icon: 'reaction.svg' },
       { id: 3, code: 'free', name: 'Free Action', icon: 'free.svg' },
       { id: 4, code: 'no-icon', name: 'No Icon', icon: null },
+    ],
+    skills: [
+      { id: 10, code: 'division', name: 'Division' },
+      { id: 11, code: 'cohesion', name: 'Cohesion' },
     ],
   }),
 }));
@@ -264,6 +276,79 @@ describe('ActionItem', () => {
       const header = wrapper.find('.header');
       expect(header.findAll('.q-badge').length).toBe(0);
       expect(wrapper.find('.content .text-italic').exists()).toBe(false);
+    });
+  });
+
+  // ========================================
+  // Damage Scaling
+  // ========================================
+  describe('damage scaling', () => {
+    it('resolves damage_scaling display_value with hero skill rank', () => {
+      mockGetSkillRank.mockReturnValue(3);
+      const wrapper = createWrapper({
+        special: [
+          {
+            type: 'damage_scaling',
+            display_value: '3d{dice_size} spirit',
+            skill: 'division',
+            die_progression: [4, 4, 6, 8, 10, 12, 20],
+          },
+        ],
+      });
+
+      const header = wrapper.find('.header');
+      expect(header.text()).toContain('3d8 spirit');
+    });
+
+    it('uses first die when skill rank is 0', () => {
+      mockGetSkillRank.mockReturnValue(0);
+      const wrapper = createWrapper({
+        special: [
+          {
+            type: 'damage_scaling',
+            display_value: '2d{dice_size} impact',
+            skill: 'cohesion',
+            die_progression: [4, 4, 6, 8, 10, 12, 20],
+          },
+        ],
+      });
+
+      const header = wrapper.find('.header');
+      expect(header.text()).toContain('2d4 impact');
+    });
+
+    it('clamps to last die when rank exceeds progression length', () => {
+      mockGetSkillRank.mockReturnValue(10);
+      const wrapper = createWrapper({
+        special: [
+          {
+            type: 'damage_scaling',
+            display_value: '1d{dice_size} healing',
+            skill: 'division',
+            die_progression: [4, 4, 6, 8, 10, 12, 20],
+          },
+        ],
+      });
+
+      const header = wrapper.find('.header');
+      expect(header.text()).toContain('1d20 healing');
+    });
+
+    it('does not show damage_scaling in narrative entries', () => {
+      mockGetSkillRank.mockReturnValue(2);
+      const wrapper = createWrapper({
+        special: [
+          {
+            type: 'damage_scaling',
+            display_value: '3d{dice_size} spirit',
+            skill: 'division',
+            die_progression: [4, 4, 6, 8, 10, 12, 20],
+          },
+        ],
+      });
+
+      const content = wrapper.find('.content');
+      expect(content.find('.text-italic').exists()).toBe(false);
     });
   });
 
