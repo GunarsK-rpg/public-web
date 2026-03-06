@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import CampaignsPage from './CampaignsPage.vue';
 
 const mockPush = vi.fn();
-const mockFetchCampaigns = vi.fn();
+const mockFetchCampaigns = vi.fn().mockResolvedValue(undefined);
 
 // Use refs for reactive mock values
 const mockCampaigns = ref([

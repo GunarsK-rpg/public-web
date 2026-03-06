@@ -36,7 +36,7 @@ vi.mock('stores/hero', () => ({
     get error() {
       return mockError.value;
     },
-    loadHero: vi.fn(),
+    loadHero: vi.fn().mockResolvedValue(undefined),
     clearHero: vi.fn(),
     setError: vi.fn(),
   }),
@@ -47,7 +47,7 @@ vi.mock('stores/classifiers', () => ({
     get initialized() {
       return mockClassifierInitialized.value;
     },
-    initialize: vi.fn(),
+    initialize: vi.fn().mockResolvedValue(undefined),
     get loading() {
       return mockClassifierLoading.value;
     },

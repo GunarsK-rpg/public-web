@@ -53,7 +53,12 @@
 
         <div v-if="isOwner" class="row items-center no-wrap q-mb-lg">
           <div class="text-caption text-grey-6">Invite link:</div>
-          <div class="text-caption q-ml-xs gt-xs">{{ inviteUrl }}</div>
+          <div
+            class="text-caption q-ml-xs gt-xs"
+            style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap"
+          >
+            {{ inviteUrl }}
+          </div>
           <q-btn
             flat
             dense

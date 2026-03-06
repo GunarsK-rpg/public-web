@@ -43,7 +43,7 @@ vi.mock('src/stores/campaigns', () => ({
     get error() {
       return mockError.value;
     },
-    selectCampaign: vi.fn(),
+    selectCampaign: vi.fn().mockResolvedValue(undefined),
     setError: vi.fn(),
   }),
 }));
@@ -51,7 +51,7 @@ vi.mock('src/stores/campaigns', () => ({
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
     initialized: true,
-    initialize: vi.fn(),
+    initialize: vi.fn().mockResolvedValue(undefined),
     radiantOrders: [{ id: 1, code: 'windrunner', name: 'Windrunner' }],
   }),
 }));
