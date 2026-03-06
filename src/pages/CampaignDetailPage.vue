@@ -129,7 +129,6 @@ import { useCampaignStore } from 'src/stores/campaigns';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { logger } from 'src/utils/logger';
-import { toError } from 'src/utils/errorHandling';
 
 const props = defineProps<{
   campaignId: string;
@@ -158,15 +157,13 @@ onMounted(async () => {
   try {
     // Initialize classifiers before loading campaign to ensure radiant order names are available
     if (!classifiers.initialized) {
-      try {
-        await classifiers.initialize();
-      } catch (err) {
-        logger.error('Failed to initialize classifiers', { error: toError(err).message });
+      await classifiers.initialize();
+      if (!classifiers.initialized) {
+        logger.error('Failed to initialize classifiers');
         showWarning(
           'Some data unavailable',
           'Character details like Radiant Order names may not display correctly.'
         );
-        // Continue loading campaign - page still works with degraded functionality
       }
     }
     await campaignStore.selectCampaign(campaignId);
