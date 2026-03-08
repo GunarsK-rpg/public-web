@@ -38,10 +38,12 @@ const mockEntityIconData = {
 };
 
 const mockGetSkillRank = vi.fn().mockReturnValue(0);
+const mockGetSkillModifier = vi.fn().mockReturnValue(0);
 
 vi.mock('src/stores/heroAttributes', () => ({
   useHeroAttributesStore: () => ({
     getSkillRank: mockGetSkillRank,
+    getSkillModifier: mockGetSkillModifier,
   }),
 }));
 
@@ -56,6 +58,9 @@ vi.mock('src/stores/classifiers', () => ({
     skills: [
       { id: 10, code: 'division', name: 'Division' },
       { id: 11, code: 'cohesion', name: 'Cohesion' },
+      { id: 12, code: 'light_weaponry', name: 'Light Weaponry' },
+      { id: 13, code: 'heavy_weaponry', name: 'Heavy Weaponry' },
+      { id: 14, code: 'athletics', name: 'Athletics' },
     ],
   }),
 }));
@@ -349,6 +354,60 @@ describe('ActionItem', () => {
 
       const content = wrapper.find('.content');
       expect(content.find('.text-italic').exists()).toBe(false);
+    });
+  });
+
+  // ========================================
+  // Skill Modifier Display
+  // ========================================
+  describe('skill modifier display', () => {
+    it('prepends skill modifier to skill badge when skill code is present', () => {
+      mockGetSkillModifier.mockReturnValue(4);
+      const wrapper = createWrapper({
+        special: [{ type: 'skill', display_value: 'Light Weaponry', skill: 'light_weaponry' }],
+      });
+
+      const header = wrapper.find('.header');
+      expect(header.text()).toContain('+4 Light Weaponry');
+    });
+
+    it('shows +0 modifier when skill modifier is zero', () => {
+      mockGetSkillModifier.mockReturnValue(0);
+      const wrapper = createWrapper({
+        special: [{ type: 'skill', display_value: 'Heavy Weaponry', skill: 'heavy_weaponry' }],
+      });
+
+      const header = wrapper.find('.header');
+      expect(header.text()).toContain('+0 Heavy Weaponry');
+    });
+
+    it('shows negative modifier without double sign', () => {
+      mockGetSkillModifier.mockReturnValue(-1);
+      const wrapper = createWrapper({
+        special: [{ type: 'skill', display_value: 'Athletics', skill: 'athletics' }],
+      });
+
+      const header = wrapper.find('.header');
+      expect(header.text()).toContain('-1 Athletics');
+    });
+
+    it('does not prepend modifier when skill code is absent', () => {
+      const wrapper = createWrapper({
+        special: [{ type: 'skill', display_value: 'Athletics' }],
+      });
+
+      const header = wrapper.find('.header');
+      expect(header.text()).toContain('Athletics');
+      expect(header.text()).not.toContain('+');
+    });
+
+    it('calls getSkillModifier with the correct skill code', () => {
+      mockGetSkillModifier.mockReturnValue(3);
+      createWrapper({
+        special: [{ type: 'skill', display_value: 'Light Weaponry', skill: 'light_weaponry' }],
+      });
+
+      expect(mockGetSkillModifier).toHaveBeenCalledWith('light_weaponry');
     });
   });
 

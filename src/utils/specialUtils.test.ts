@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSpecialByType, getHeroBonus, SPECIAL } from './specialUtils';
+import { getSpecialByType, getHeroBonus, resolveSkillModifier, SPECIAL } from './specialUtils';
 import type { SpecialEntry, HeroTalent, HeroEquipment } from 'src/types';
 import type { SingerForm } from 'src/types/singerForms';
 
@@ -82,6 +82,24 @@ describe('SPECIAL constants', () => {
     expect(SPECIAL.PAIRED).toBe('paired');
     expect(SPECIAL.REWARD_ONLY).toBe('reward_only');
     expect(SPECIAL.PERMANENT).toBe('permanent');
+  });
+});
+
+// =============================================================================
+// resolveSkillModifier
+// =============================================================================
+
+describe('resolveSkillModifier', () => {
+  it('prepends positive modifier to display value', () => {
+    expect(resolveSkillModifier('Light Weaponry', 4)).toBe('+4 Light Weaponry');
+  });
+
+  it('prepends zero modifier', () => {
+    expect(resolveSkillModifier('Heavy Weaponry', 0)).toBe('+0 Heavy Weaponry');
+  });
+
+  it('prepends negative modifier', () => {
+    expect(resolveSkillModifier('Athletics', -1)).toBe('-1 Athletics');
   });
 });
 
