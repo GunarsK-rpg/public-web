@@ -60,6 +60,14 @@ export function resolveDamageScaling(
 }
 
 /**
+ * Prepend the hero's skill modifier to a skill display value (e.g. "Light Weaponry" -> "+4 Light Weaponry").
+ */
+export function resolveSkillModifier(displayValue: string, skillModifier: number): string {
+  const sign = skillModifier >= 0 ? '+' : '';
+  return `${sign}${skillModifier} ${displayValue}`;
+}
+
+/**
  * Find a special entry by type
  */
 export function getSpecialByType(special: SpecialEntry[], type: string): SpecialEntry | undefined {
