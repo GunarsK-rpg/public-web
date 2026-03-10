@@ -32,6 +32,10 @@
             outline
             color="grey-7"
             class="trait-badge"
+            :class="{ 'trait-badge--clickable': trait.description }"
+            :tabindex="trait.description ? 0 : undefined"
+            :role="trait.description ? 'button' : undefined"
+            :aria-haspopup="trait.description ? 'dialog' : undefined"
           >
             {{ trait.label }}
             <q-popup-proxy v-if="trait.description" :breakpoint="0" :offset="[0, 8]">
@@ -276,7 +280,10 @@ function confirmRemove(): void {
 }
 
 .trait-badge {
-  cursor: default;
   font-size: 0.7rem;
+}
+
+.trait-badge--clickable {
+  cursor: pointer;
 }
 </style>

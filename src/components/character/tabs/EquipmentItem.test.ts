@@ -281,7 +281,8 @@ describe('EquipmentItem', () => {
             template: '<div class="q-item-label"><slot /></div>',
           },
           QBadge: {
-            template: '<span class="q-badge" :aria-label="$attrs[\'aria-label\']"><slot /></span>',
+            template:
+              '<span class="q-badge" :aria-label="$attrs[\'aria-label\']" :tabindex="$attrs.tabindex" :role="$attrs.role" :aria-haspopup="$attrs[\'aria-haspopup\']"><slot /></span>',
             props: ['color'],
           },
           QBtn: {
@@ -293,6 +294,7 @@ describe('EquipmentItem', () => {
           },
           QPopupProxy: {
             template: '<div class="q-popup-proxy-stub"><slot /></div>',
+            props: ['breakpoint', 'offset'],
           },
           QBanner: {
             template: '<div class="q-banner-stub"><slot /></div>',
@@ -805,6 +807,39 @@ describe('EquipmentItem', () => {
 
       expect(wrapper.text()).not.toContain('Two-Handed');
       expect(wrapper.text()).not.toContain('Deadly');
+    });
+
+    it('renders popup with breakpoint=0 and offset for traits with descriptions', () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+
+      const popups = wrapper.findAll('.q-popup-proxy-stub');
+      expect(popups.length).toBeGreaterThan(0);
+
+      // Verify popup contains description text
+      expect(popups[0]!.text()).toContain('Requires both hands to wield');
+    });
+
+    it('renders popup description for traits with descriptions', () => {
+      const wrapper = createWrapper({ equipment: eqRef(3) }); // chain-mail with cumbersome
+
+      const popups = wrapper.findAll('.q-popup-proxy-stub');
+      const banners = wrapper.findAll('.q-banner-stub');
+
+      // Cumbersome has a description in equipmentAttributes store, so popup should render
+      expect(popups).toHaveLength(1);
+      expect(banners).toHaveLength(1);
+      expect(banners[0]!.text()).toContain('Requires STR >= value or Slowed');
+    });
+
+    it('adds keyboard accessibility attributes to traits with descriptions', () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+
+      const badges = wrapper.findAll('.q-badge');
+      const traitBadge = badges.find((b) => b.text().includes('Two-Handed'));
+      expect(traitBadge).toBeDefined();
+      expect(traitBadge!.attributes('tabindex')).toBe('0');
+      expect(traitBadge!.attributes('role')).toBe('button');
+      expect(traitBadge!.attributes('aria-haspopup')).toBe('dialog');
     });
   });
 
