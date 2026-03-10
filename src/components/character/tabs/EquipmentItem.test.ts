@@ -18,7 +18,10 @@ vi.mock('src/stores/classifiers', () => ({
         weight: 3,
         cost: 15,
         isCustom: false,
-        attributes: [],
+        attributes: [
+          { id: 1, code: 'two_handed', name: 'Two-Handed', value: null, isExpert: false },
+          { id: 2, code: 'deadly', name: 'Deadly', value: null, isExpert: false },
+        ],
         unit: null,
       },
       {
@@ -49,7 +52,7 @@ vi.mock('src/stores/classifiers', () => ({
         weight: 40,
         cost: 75,
         isCustom: false,
-        attributes: [],
+        attributes: [{ id: 3, code: 'cumbersome', name: 'Cumbersome', value: 5, isExpert: false }],
         unit: null,
       },
       {
@@ -80,12 +83,54 @@ vi.mock('src/stores/classifiers', () => ({
         attributes: [],
         unit: null,
       },
+      {
+        id: 6,
+        code: 'expert-weapon',
+        name: 'Expert Weapon',
+        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+        damageType: null,
+        special: [],
+        maxCharges: null,
+        weight: 3,
+        cost: 20,
+        isCustom: false,
+        attributes: [
+          { id: 4, code: 'specialist', name: 'Specialist', value: null, isExpert: true },
+        ],
+        unit: null,
+      },
     ],
     equipmentTypes: [
       { id: 1, code: 'weapon', name: 'Weapon', icon: 'weapon.svg' },
       { id: 2, code: 'armor', name: 'Armor', icon: 'armor.svg' },
       { id: 3, code: 'consumable', name: 'Consumable', icon: 'consumable.svg' },
       { id: 4, code: 'gear', name: 'Gear', icon: 'gear.svg' },
+    ],
+    equipmentAttributes: [
+      {
+        id: 1,
+        code: 'two_handed',
+        name: 'Two-Handed',
+        description: 'Requires both hands to wield',
+      },
+      {
+        id: 2,
+        code: 'deadly',
+        name: 'Deadly',
+        description: 'Spend Opportunity to cause an injury on a hit',
+      },
+      {
+        id: 3,
+        code: 'cumbersome',
+        name: 'Cumbersome',
+        description: 'Requires STR >= value or Slowed',
+      },
+      {
+        id: 4,
+        code: 'specialist',
+        name: 'Specialist',
+        description: 'Requires expertise to use effectively',
+      },
     ],
     damageTypes: [
       { id: 1, code: 'slashing', name: 'Slashing' },
@@ -138,6 +183,14 @@ const equipmentMap: Record<
     code: 'backpack',
     name: 'Backpack',
     equipType: { id: 4, code: 'gear', name: 'Gear' },
+    damageType: null,
+    special: [],
+  },
+  6: {
+    id: 6,
+    code: 'expert-weapon',
+    name: 'Expert Weapon',
+    equipType: { id: 1, code: 'weapon', name: 'Weapon' },
     damageType: null,
     special: [],
   },
@@ -228,7 +281,8 @@ describe('EquipmentItem', () => {
             template: '<div class="q-item-label"><slot /></div>',
           },
           QBadge: {
-            template: '<span class="q-badge" :aria-label="$attrs[\'aria-label\']"><slot /></span>',
+            template:
+              '<span class="q-badge" :aria-label="$attrs[\'aria-label\']" :tabindex="$attrs.tabindex" :role="$attrs.role" :aria-haspopup="$attrs[\'aria-haspopup\']"><slot /></span>',
             props: ['color'],
           },
           QBtn: {
@@ -237,6 +291,13 @@ describe('EquipmentItem', () => {
           },
           QTooltip: {
             template: '<span class="q-tooltip-stub" />',
+          },
+          QPopupProxy: {
+            template: '<div class="q-popup-proxy-stub"><slot /></div>',
+            props: ['breakpoint', 'offset'],
+          },
+          QBanner: {
+            template: '<div class="q-banner-stub"><slot /></div>',
           },
         },
       },
@@ -697,6 +758,88 @@ describe('EquipmentItem', () => {
       });
 
       expect(wrapper.text()).toContain('Custom Item');
+    });
+  });
+
+  // ========================================
+  // Trait Badges
+  // ========================================
+  describe('trait badges', () => {
+    it('renders trait badges for equipment with attributes', () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+
+      expect(wrapper.text()).toContain('Two-Handed');
+      expect(wrapper.text()).toContain('Deadly');
+    });
+
+    it('shows value in brackets for parameterized traits', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(3),
+        equipType: { id: 2, code: 'armor', name: 'Armor' },
+      });
+
+      expect(wrapper.text()).toContain('Cumbersome [5]');
+    });
+
+    it('shows Expert indicator for isExpert traits', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(6),
+        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+      });
+
+      expect(wrapper.text()).toContain('Specialist (Expert)');
+    });
+
+    it('does not render trait badges when attributes is empty', () => {
+      const wrapper = createWrapper({ equipment: eqRef(2) });
+
+      // Longbow has no attributes
+      expect(wrapper.text()).not.toContain('Two-Handed');
+      expect(wrapper.text()).not.toContain('Deadly');
+      expect(wrapper.text()).not.toContain('Cumbersome');
+    });
+
+    it('does not render trait badges for custom items', () => {
+      const wrapper = createWrapper({
+        equipment: null,
+        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+      });
+
+      expect(wrapper.text()).not.toContain('Two-Handed');
+      expect(wrapper.text()).not.toContain('Deadly');
+    });
+
+    it('renders popup with breakpoint=0 and offset for traits with descriptions', () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+
+      const popups = wrapper.findAll('.q-popup-proxy-stub');
+      expect(popups.length).toBeGreaterThan(0);
+
+      // Verify popup contains description text
+      expect(popups[0]!.text()).toContain('Requires both hands to wield');
+    });
+
+    it('renders popup description for traits with descriptions', () => {
+      const wrapper = createWrapper({ equipment: eqRef(3) }); // chain-mail with cumbersome
+
+      const popups = wrapper.findAll('.q-popup-proxy-stub');
+      const banners = wrapper.findAll('.q-banner-stub');
+
+      // Cumbersome has a description in equipmentAttributes store, so popup should render
+      expect(popups).toHaveLength(1);
+      expect(banners).toHaveLength(1);
+      expect(banners[0]!.text()).toContain('Requires STR >= value or Slowed');
+    });
+
+    it('adds keyboard accessibility attributes to traits with descriptions', () => {
+      const wrapper = createWrapper({ equipment: eqRef(1) });
+
+      const badges = wrapper.findAll('.q-badge');
+      const traitBadge = badges.find((b) => b.text().includes('Two-Handed'));
+      expect(traitBadge).toBeDefined();
+      expect(traitBadge!.attributes('tabindex')).toBe('0');
+      expect(traitBadge!.attributes('role')).toBe('button');
+      expect(traitBadge!.attributes('aria-haspopup')).toBe('dialog');
     });
   });
 
