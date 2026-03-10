@@ -4,6 +4,7 @@ import { Info } from 'lucide-vue-next';
 import StatsTab from './StatsTab.vue';
 
 const mockGetDefenseValue = vi.fn();
+const mockPopupToggle = vi.fn();
 const mockAttributeValues: Record<string, number> = {
   str: 3,
   spd: 4,
@@ -108,7 +109,7 @@ describe('StatsTab', () => {
           QPopupProxy: {
             template: '<div class="q-popup-proxy-stub"><slot /></div>',
             props: ['breakpoint', 'offset', 'noParentEvent'],
-            methods: { toggle() {} },
+            methods: { toggle: mockPopupToggle },
           },
           QBanner: {
             template: '<div class="q-banner-stub"><slot /></div>',
@@ -253,15 +254,17 @@ describe('StatsTab', () => {
       expect(deflectCard!.attributes('aria-haspopup')).toBe('dialog');
     });
 
-    it('activates popup on Enter and Space key', async () => {
+    it('calls popup toggle on Enter and Space key', async () => {
       const wrapper = createWrapper();
 
       const deflectCard = wrapper.findAll('.q-card').find((c) => c.text().includes('Deflect'));
       expect(deflectCard).toBeDefined();
 
       await deflectCard!.trigger('keydown.enter');
+      expect(mockPopupToggle).toHaveBeenCalledTimes(1);
+
       await deflectCard!.trigger('keydown.space');
-      // No error thrown — keyboard activation is wired up
+      expect(mockPopupToggle).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -275,9 +278,9 @@ describe('StatsTab', () => {
       expect(wrapper.text()).toContain('Max Health');
       expect(wrapper.text()).toContain('Movement');
       // Deflect should not appear in Other Stats section (it's in Defenses)
-      const otherStatsSection = wrapper.findAll('.q-card[flat]');
-      const otherStatsText = otherStatsSection.map((c) => c.text()).join(' ');
-      expect(otherStatsText).not.toContain('Deflect');
+      const rows = wrapper.findAll('.row');
+      const otherStatsRow = rows[rows.length - 1]!;
+      expect(otherStatsRow.text()).not.toContain('Deflect');
     });
 
     it('renders total display values', () => {
