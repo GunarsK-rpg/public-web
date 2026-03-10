@@ -17,17 +17,31 @@
         </q-card>
       </div>
       <div class="col-3">
-        <q-card class="defense-card deflect-card" tabindex="0" role="button" aria-haspopup="dialog">
+        <q-card
+          class="defense-card deflect-card"
+          tabindex="0"
+          role="button"
+          aria-haspopup="dialog"
+          @click="deflectPopupRef?.toggle()"
+          @keydown.enter.prevent="deflectPopupRef?.toggle()"
+          @keydown.space.prevent="deflectPopupRef?.toggle()"
+        >
           <q-card-section class="text-center q-pa-sm">
             <div class="defense-value" :aria-label="`Deflect: ${deflectValue}`">
               {{ deflectValue }}
             </div>
             <div class="defense-name">
               Deflect
-              <q-icon name="help_outline" size="12px" class="q-ml-xs" />
+              <Info :size="12" class="q-ml-xs" aria-hidden="true" />
             </div>
           </q-card-section>
-          <q-popup-proxy v-if="deflectDescription" :breakpoint="0" :offset="[0, 8]">
+          <q-popup-proxy
+            v-if="deflectDescription"
+            ref="deflectPopupRef"
+            no-parent-event
+            :breakpoint="0"
+            :offset="[0, 8]"
+          >
             <q-banner dense class="text-body2">{{ deflectDescription }}</q-banner>
           </q-popup-proxy>
         </q-card>
@@ -74,13 +88,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { Info } from 'lucide-vue-next';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
+const deflectPopupRef = ref<{ toggle: () => void } | null>(null);
 
 const allDerivedStats = computed(() => {
   return buildDerivedStatsList(

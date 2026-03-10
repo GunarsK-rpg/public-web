@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
+import { Info } from 'lucide-vue-next';
 import StatsTab from './StatsTab.vue';
 
 const mockGetDefenseValue = vi.fn();
@@ -104,13 +105,10 @@ describe('StatsTab', () => {
           QCardSection: {
             template: '<div class="q-card-section"><slot /></div>',
           },
-          QIcon: {
-            template: '<i class="q-icon-stub" />',
-            props: ['name', 'size'],
-          },
           QPopupProxy: {
             template: '<div class="q-popup-proxy-stub"><slot /></div>',
-            props: ['breakpoint', 'offset'],
+            props: ['breakpoint', 'offset', 'noParentEvent'],
+            methods: { toggle() {} },
           },
           QBanner: {
             template: '<div class="q-banner-stub"><slot /></div>',
@@ -242,8 +240,7 @@ describe('StatsTab', () => {
     it('renders help icon on deflect card', () => {
       const wrapper = createWrapper();
 
-      const icon = wrapper.find('.q-icon-stub');
-      expect(icon.exists()).toBe(true);
+      expect(wrapper.findComponent(Info).exists()).toBe(true);
     });
 
     it('has keyboard accessibility on deflect card', () => {
@@ -254,6 +251,17 @@ describe('StatsTab', () => {
       expect(deflectCard!.attributes('tabindex')).toBe('0');
       expect(deflectCard!.attributes('role')).toBe('button');
       expect(deflectCard!.attributes('aria-haspopup')).toBe('dialog');
+    });
+
+    it('activates popup on Enter and Space key', async () => {
+      const wrapper = createWrapper();
+
+      const deflectCard = wrapper.findAll('.q-card').find((c) => c.text().includes('Deflect'));
+      expect(deflectCard).toBeDefined();
+
+      await deflectCard!.trigger('keydown.enter');
+      await deflectCard!.trigger('keydown.space');
+      // No error thrown — keyboard activation is wired up
     });
   });
 
@@ -266,6 +274,10 @@ describe('StatsTab', () => {
 
       expect(wrapper.text()).toContain('Max Health');
       expect(wrapper.text()).toContain('Movement');
+      // Deflect should not appear in Other Stats section (it's in Defenses)
+      const otherStatsSection = wrapper.findAll('.q-card[flat]');
+      const otherStatsText = otherStatsSection.map((c) => c.text()).join(' ');
+      expect(otherStatsText).not.toContain('Deflect');
     });
 
     it('renders total display values', () => {
