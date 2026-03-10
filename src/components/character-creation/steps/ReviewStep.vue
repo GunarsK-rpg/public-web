@@ -420,7 +420,7 @@ function leaveCampaign(): void {
     heroStore.setCampaign(null);
     const payload = buildHeroCorePayload(heroStore.hero);
     void heroService.update(heroStore.hero.id, payload).then(
-      (response) => heroStore.updateFromResponse(response.data),
+      () => {},
       (err) => {
         heroStore.setCampaign(prevCampaign);
         logger.error('Failed to leave campaign', { error: err });

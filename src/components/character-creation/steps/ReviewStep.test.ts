@@ -227,6 +227,7 @@ describe('ReviewStep', () => {
           DeleteHeroDialog: {
             template: '<div class="delete-hero-dialog-stub" />',
             name: 'DeleteHeroDialog',
+            props: ['modelValue'],
           },
         },
       },
@@ -754,7 +755,7 @@ describe('ReviewStep', () => {
 
       await wrapper.find('[data-testid="delete-hero-btn"]').trigger('click');
 
-      expect(wrapper.findComponent({ name: 'DeleteHeroDialog' }).exists()).toBe(true);
+      expect(wrapper.findComponent({ name: 'DeleteHeroDialog' }).props('modelValue')).toBe(true);
     });
 
     it('calls deleteHero on dialog confirm and navigates on success', async () => {

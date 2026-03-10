@@ -25,7 +25,7 @@ vi.mock('src/stores/hero', () => ({
       return {
         name: mockHeroName.value,
         level: mockHeroLevel.value,
-        campaignId: null as number | null,
+        campaign: null as { id: number; code: string; name: string } | null,
         ancestry: mockHeroAncestry.value,
         activeSingerForm: mockActiveSingerForm.value,
         talents: mockHeroTalents.value,
