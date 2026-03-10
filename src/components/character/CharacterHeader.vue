@@ -16,17 +16,6 @@
             @click="goToEdit"
             ><Pencil :size="20"
           /></q-btn>
-          <q-btn
-            v-if="!readonly && hero?.id"
-            flat
-            dense
-            round
-            size="sm"
-            class="q-ml-xs"
-            aria-label="Delete character"
-            @click="showDeleteDialog = true"
-            ><Trash2 :size="20"
-          /></q-btn>
         </div>
         <div class="text-subtitle1 text-muted">
           Level {{ hero?.level }}
@@ -90,25 +79,17 @@
       </div>
     </div>
     <q-separator />
-
-    <DeleteHeroDialog
-      v-model="showDeleteDialog"
-      :hero-name="hero?.name ?? ''"
-      :deleting="deleting"
-      @confirm="confirmDelete"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { RPG_COLORS } from 'src/constants/theme';
-import { Pencil, Trash2 } from 'lucide-vue-next';
-import DeleteHeroDialog from './DeleteHeroDialog.vue';
+import { Pencil } from 'lucide-vue-next';
 import ResourceBox from './ResourceBox.vue';
 
 const props = defineProps<{
@@ -133,26 +114,10 @@ const activeSingerFormName = computed(() => hero.value?.activeSingerForm?.name);
 const cultureName = computed(() => hero.value?.cultures?.[0]?.culture?.name);
 const campaignName = computed(() => hero.value?.campaign?.name);
 
-const showDeleteDialog = ref(false);
-const deleting = ref(false);
-
 function goToEdit(): void {
   void router.push({
     name: 'character-edit',
     params: { characterId: props.characterId },
   });
-}
-
-async function confirmDelete(): Promise<void> {
-  deleting.value = true;
-  try {
-    const success = await heroStore.deleteHero();
-    if (success) {
-      showDeleteDialog.value = false;
-      void router.push({ name: 'my-characters' });
-    }
-  } finally {
-    deleting.value = false;
-  }
 }
 </script>

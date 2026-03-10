@@ -226,11 +226,45 @@
         </q-card>
       </div>
     </div>
+
+    <!-- Destructive actions (edit mode only) -->
+    <template v-if="isEditMode && !heroStore.isNew">
+      <q-card flat bordered class="q-mt-lg bg-grey-2">
+        <q-card-section class="row q-gutter-sm">
+          <q-btn
+            v-if="campaignName"
+            flat
+            color="negative"
+            data-testid="leave-campaign-btn"
+            @click="leaveCampaign"
+          >
+            <LogOut :size="20" class="on-left" aria-hidden="true" />Leave Campaign
+          </q-btn>
+          <q-btn
+            flat
+            color="negative"
+            data-testid="delete-hero-btn"
+            @click="showDeleteDialog = true"
+          >
+            <Trash2 :size="20" class="on-left" aria-hidden="true" />Delete Character
+          </q-btn>
+        </q-card-section>
+      </q-card>
+
+      <DeleteHeroDialog
+        v-model="showDeleteDialog"
+        :hero-name="heroStore.hero?.name ?? ''"
+        :deleting="deleting"
+        @confirm="confirmDelete"
+      />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
@@ -239,9 +273,15 @@ import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { findById } from 'src/utils/arrayUtils';
-import { CircleAlert, CircleCheck, TriangleAlert } from 'lucide-vue-next';
+import { CircleAlert, CircleCheck, LogOut, Trash2, TriangleAlert } from 'lucide-vue-next';
+import heroService from 'src/services/heroService';
+import { buildHeroCorePayload } from 'src/services/heroPayloads';
+import { logger } from 'src/utils/logger';
+import DeleteHeroDialog from '../../character/DeleteHeroDialog.vue';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
+const router = useRouter();
+const $q = useQuasar();
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
@@ -363,4 +403,43 @@ const equipmentByType = computed(() => {
 
 // Currency in diamond marks
 const totalCurrency = computed(() => heroStore.hero?.currency ?? 0);
+
+// Danger zone
+const showDeleteDialog = ref(false);
+const deleting = ref(false);
+
+function leaveCampaign(): void {
+  $q.dialog({
+    title: 'Leave Campaign',
+    message: `Remove this character from "${campaignName.value}"? You can reassign them later.`,
+    cancel: true,
+    persistent: false,
+  }).onOk(() => {
+    if (!heroStore.hero || heroStore.hero.id <= 0) return;
+    const prevCampaign = heroStore.hero.campaign;
+    heroStore.setCampaign(null);
+    const payload = buildHeroCorePayload(heroStore.hero);
+    void heroService.update(heroStore.hero.id, payload).then(
+      () => {},
+      (err) => {
+        heroStore.setCampaign(prevCampaign);
+        logger.error('Failed to leave campaign', { error: err });
+        $q.notify({ message: 'Failed to leave campaign', type: 'negative', timeout: 2000 });
+      }
+    );
+  });
+}
+
+async function confirmDelete(): Promise<void> {
+  deleting.value = true;
+  try {
+    const success = await heroStore.deleteHero();
+    if (success) {
+      showDeleteDialog.value = false;
+      void router.push({ name: 'my-characters' });
+    }
+  } finally {
+    deleting.value = false;
+  }
+}
 </script>
