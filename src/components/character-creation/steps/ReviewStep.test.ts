@@ -4,23 +4,36 @@ import { createPinia, setActivePinia } from 'pinia';
 import ReviewStep from './ReviewStep.vue';
 
 // Reactive mock data
+const mockDeleteHero = vi.fn();
+const mockSetCampaign = vi.fn();
+const mockWizardMode = { value: 'create' as 'create' | 'edit' };
+const mockRouterPush = vi.fn();
+
 const mockHeroData = {
   value: {
     hero: {
+      id: 42,
       name: 'Test Hero',
       level: 3,
       ancestry: { id: 1, code: 'human', name: 'Human' },
       cultures: [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }],
       startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
       radiantOrder: null as { id: number; code: string; name: string } | null,
+      campaign: { id: 1, code: 'test-campaign', name: 'Test Campaign' } as {
+        id: number;
+        code: string;
+        name: string;
+      } | null,
       currency: 50,
     } as {
+      id: number;
       name: string | null;
       level: number;
       ancestry: { id: number; code: string; name: string };
       cultures: Array<{ culture: { id: number; code: string; name: string } }> | undefined;
       startingKit: { id: number; code: string; name: string } | null;
       radiantOrder: { id: number; code: string; name: string } | null;
+      campaign: { id: number; code: string; name: string } | null;
       currency: number;
     } | null,
     skills: [
@@ -68,10 +81,25 @@ const mockDerivedStats = {
   }>,
 };
 
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push: mockRouterPush }),
+}));
+
+vi.mock('src/services/heroService', () => ({
+  default: { update: vi.fn() },
+}));
+
+vi.mock('src/services/heroPayloads', () => ({
+  buildHeroCorePayload: vi.fn(() => ({})),
+}));
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     get hero() {
       return mockHeroData.value.hero;
+    },
+    get isNew() {
+      return mockHeroData.value.hero?.id === 0;
     },
     get skills() {
       return mockHeroData.value.skills;
@@ -85,6 +113,9 @@ vi.mock('src/stores/hero', () => ({
     get equipment() {
       return mockHeroData.value.equipment;
     },
+    deleteHero: mockDeleteHero,
+    setCampaign: mockSetCampaign,
+    updateFromResponse: vi.fn(),
   }),
 }));
 
@@ -136,6 +167,14 @@ vi.mock('src/stores/classifiers', () => ({
   }),
 }));
 
+vi.mock('src/stores/wizard', () => ({
+  useWizardStore: () => ({
+    get mode() {
+      return mockWizardMode.value;
+    },
+  }),
+}));
+
 vi.mock('src/composables/useStepValidation', () => ({
   useStepValidation: () => ({
     get allStepsValidation() {
@@ -179,6 +218,16 @@ describe('ReviewStep', () => {
             template: '<span class="q-chip"><slot /></span>',
             props: ['color', 'textColor', 'outline'],
           },
+          QBtn: {
+            template:
+              '<button class="q-btn" :data-testid="$attrs[\'data-testid\']" @click="$emit(\'click\')"><slot />{{ label }}</button>',
+            props: ['label', 'color', 'flat'],
+            emits: ['click'],
+          },
+          DeleteHeroDialog: {
+            template: '<div class="delete-hero-dialog-stub" />',
+            name: 'DeleteHeroDialog',
+          },
         },
       },
     });
@@ -188,14 +237,17 @@ describe('ReviewStep', () => {
     vi.clearAllMocks();
 
     // Reset mock data to defaults
+    mockWizardMode.value = 'create';
     mockHeroData.value = {
       hero: {
+        id: 42,
         name: 'Test Hero',
         level: 3,
         ancestry: { id: 1, code: 'human', name: 'Human' },
         cultures: [{ culture: { id: 1, code: 'vorin', name: 'Vorin' } }],
         startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
         radiantOrder: null,
+        campaign: { id: 1, code: 'test-campaign', name: 'Test Campaign' },
         currency: 50,
       },
       skills: [{ skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 2, modifier: 1 }],
@@ -630,6 +682,7 @@ describe('ReviewStep', () => {
 
     it('handles undefined hero cultures', () => {
       mockHeroData.value.hero = {
+        id: 1,
         name: 'Test',
         level: 1,
         ancestry: { id: 1, code: 'human', name: 'Human' },
@@ -638,11 +691,102 @@ describe('ReviewStep', () => {
         }>,
         startingKit: { id: 1, code: 'adventurer', name: 'Adventurer' },
         radiantOrder: null,
+        campaign: null,
         currency: 0,
       };
       const wrapper = createWrapper();
 
       expect(wrapper.exists()).toBe(true);
+    });
+  });
+
+  // ========================================
+  // Danger Zone
+  // ========================================
+  describe('danger zone', () => {
+    it('is hidden in create mode', () => {
+      mockWizardMode.value = 'create';
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('[data-testid="delete-hero-btn"]').exists()).toBe(false);
+    });
+
+    it('is hidden for unpersisted hero in edit mode', () => {
+      mockWizardMode.value = 'edit';
+      mockHeroData.value.hero!.id = 0;
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('[data-testid="delete-hero-btn"]').exists()).toBe(false);
+    });
+
+    it('is visible in edit mode for persisted hero', () => {
+      mockWizardMode.value = 'edit';
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('[data-testid="delete-hero-btn"]').exists()).toBe(true);
+    });
+
+    it('shows leave campaign button when hero has campaign', () => {
+      mockWizardMode.value = 'edit';
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('[data-testid="leave-campaign-btn"]').exists()).toBe(true);
+    });
+
+    it('hides leave campaign button when hero has no campaign', () => {
+      mockWizardMode.value = 'edit';
+      mockHeroData.value.hero!.campaign = null;
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('[data-testid="leave-campaign-btn"]').exists()).toBe(false);
+    });
+
+    it('shows delete character button', () => {
+      mockWizardMode.value = 'edit';
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('[data-testid="delete-hero-btn"]').exists()).toBe(true);
+    });
+
+    it('opens delete dialog when delete button is clicked', async () => {
+      mockWizardMode.value = 'edit';
+      const wrapper = createWrapper();
+
+      await wrapper.find('[data-testid="delete-hero-btn"]').trigger('click');
+
+      expect(wrapper.findComponent({ name: 'DeleteHeroDialog' }).exists()).toBe(true);
+    });
+
+    it('calls deleteHero on dialog confirm and navigates on success', async () => {
+      mockWizardMode.value = 'edit';
+      mockDeleteHero.mockResolvedValueOnce(true);
+      const wrapper = createWrapper();
+
+      await wrapper.find('[data-testid="delete-hero-btn"]').trigger('click');
+      const dialog = wrapper.findComponent({ name: 'DeleteHeroDialog' });
+      dialog.vm.$emit('confirm');
+      await wrapper.vm.$nextTick();
+
+      expect(mockDeleteHero).toHaveBeenCalled();
+      await vi.waitFor(() => {
+        expect(mockRouterPush).toHaveBeenCalledWith({ name: 'my-characters' });
+      });
+    });
+
+    it('does not navigate on failed deletion', async () => {
+      mockWizardMode.value = 'edit';
+      mockDeleteHero.mockResolvedValueOnce(false);
+      const wrapper = createWrapper();
+
+      await wrapper.find('[data-testid="delete-hero-btn"]').trigger('click');
+      const dialog = wrapper.findComponent({ name: 'DeleteHeroDialog' });
+      dialog.vm.$emit('confirm');
+      await wrapper.vm.$nextTick();
+
+      await vi.waitFor(() => {
+        expect(mockDeleteHero).toHaveBeenCalled();
+      });
+      expect(mockRouterPush).not.toHaveBeenCalledWith({ name: 'my-characters' });
     });
   });
 });

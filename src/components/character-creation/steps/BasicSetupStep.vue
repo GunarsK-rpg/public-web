@@ -41,14 +41,8 @@
       <q-separator class="q-my-md" />
       <div class="text-subtitle1 q-mb-md">Campaign</div>
       <q-card flat bordered>
-        <q-card-section class="row items-center">
-          <div>
-            <div class="text-body1">{{ campaignName }}</div>
-          </div>
-          <q-space />
-          <q-btn v-if="!heroStore.isNew" flat color="negative" @click="leaveCampaign"
-            ><LogOut :size="20" class="on-left" aria-hidden="true" />Leave Campaign</q-btn
-          >
+        <q-card-section>
+          <div class="text-body1">{{ campaignName }}</div>
         </q-card-section>
       </q-card>
     </template>
@@ -110,22 +104,17 @@
 
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue';
-import { useQuasar } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
-import heroService from 'src/services/heroService';
-import { buildHeroCorePayload } from 'src/services/heroPayloads';
 import { findByCode } from 'src/utils/arrayUtils';
-import { ArrowLeftRight, Info, LogOut, Plus } from 'lucide-vue-next';
+import { ArrowLeftRight, Info, Plus } from 'lucide-vue-next';
 import { clamp } from 'src/utils/numberUtils';
-import { logger } from 'src/utils/logger';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import SelectableCard from '../shared/SelectableCard.vue';
 import SingerFormSelectionDialog from '../shared/SingerFormSelectionDialog.vue';
 
-const $q = useQuasar();
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
@@ -195,27 +184,5 @@ function selectAncestry(id: number) {
 
 function selectForm(id: number) {
   talentStore.setSingerForm(id);
-}
-
-function leaveCampaign(): void {
-  $q.dialog({
-    title: 'Leave Campaign',
-    message: `Remove this character from "${campaignName.value}"? You can reassign them later.`,
-    cancel: true,
-    persistent: false,
-  }).onOk(() => {
-    if (!heroStore.hero || heroStore.hero.id <= 0) return;
-    const prevCampaign = heroStore.hero.campaign;
-    heroStore.setCampaign(null);
-    const payload = buildHeroCorePayload(heroStore.hero);
-    void heroService.update(heroStore.hero.id, payload).then(
-      (response) => heroStore.updateFromResponse(response.data),
-      (err) => {
-        heroStore.setCampaign(prevCampaign);
-        logger.error('Failed to leave campaign', { error: err });
-        $q.notify({ message: 'Failed to leave campaign', type: 'negative', timeout: 2000 });
-      }
-    );
-  });
 }
 </script>

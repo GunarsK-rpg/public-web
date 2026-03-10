@@ -6,14 +6,12 @@ import BasicSetupStep from './BasicSetupStep.vue';
 // Mock stores
 const mockSetName = vi.fn();
 const mockSetLevel = vi.fn();
-const mockSetCampaign = vi.fn();
 
 const mockSetAncestry = vi.fn();
 const mockSetSingerForm = vi.fn();
 
 const mockHeroLevel = { value: 1 };
 const mockHeroName = { value: 'Test Hero' };
-const mockHeroCampaignId = { value: null as number | null };
 const mockHeroAncestry = {
   value: { id: 1, code: 'human', name: 'Human' } as { id: number; code: string; name: string },
 };
@@ -27,7 +25,7 @@ vi.mock('src/stores/hero', () => ({
       return {
         name: mockHeroName.value,
         level: mockHeroLevel.value,
-        campaignId: mockHeroCampaignId.value,
+        campaignId: null as number | null,
         ancestry: mockHeroAncestry.value,
         activeSingerForm: mockActiveSingerForm.value,
         talents: mockHeroTalents.value,
@@ -38,7 +36,6 @@ vi.mock('src/stores/hero', () => ({
     },
     setName: mockSetName,
     setLevel: mockSetLevel,
-    setCampaign: mockSetCampaign,
   }),
 }));
 
@@ -205,7 +202,6 @@ describe('BasicSetupStep', () => {
     vi.clearAllMocks();
     mockHeroLevel.value = 1;
     mockHeroName.value = 'Test Hero';
-    mockHeroCampaignId.value = null;
     mockLevelData.value = { attributePoints: 10, skillRanks: 10, talentSlots: 3 };
     mockHeroAncestry.value = { id: 1, code: 'human', name: 'Human' };
     mockActiveSingerForm.value = null;
