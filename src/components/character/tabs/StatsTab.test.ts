@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
+import { Info } from 'lucide-vue-next';
 import StatsTab from './StatsTab.vue';
 
 const mockGetDefenseValue = vi.fn();
+const mockPopupToggle = vi.fn();
 const mockAttributeValues: Record<string, number> = {
   str: 3,
   spd: 4,
@@ -39,6 +41,13 @@ vi.mock('src/stores/classifiers', () => ({
     derivedStats: [
       { id: 1, code: 'max_health', name: 'Max Health', formula: 'base' },
       { id: 2, code: 'movement', name: 'Movement', formula: 'spd' },
+      {
+        id: 3,
+        code: 'deflect',
+        name: 'Deflect',
+        description:
+          'Reduces impact, keen, and energy damage by this amount. Does not reduce spirit or vital damage.',
+      },
     ],
     derivedStatValues: [
       { derivedStatId: 1, tier: 2, baseValue: 30 },
@@ -51,8 +60,10 @@ vi.mock('src/utils/derivedStats', () => ({
   buildDerivedStatsList: vi.fn(() => [
     {
       id: 1,
+      code: 'max_health',
       name: 'Max Health',
       totalDisplay: '35',
+      totalValue: 35,
       hasModifier: true,
       modifier: 5,
       baseDisplay: '30',
@@ -60,8 +71,10 @@ vi.mock('src/utils/derivedStats', () => ({
     },
     {
       id: 2,
+      code: 'movement',
       name: 'Movement',
       totalDisplay: '6',
+      totalValue: 6,
       hasModifier: true,
       modifier: 1,
       baseDisplay: '5',
@@ -69,8 +82,10 @@ vi.mock('src/utils/derivedStats', () => ({
     },
     {
       id: 3,
+      code: 'deflect',
       name: 'Deflect',
       totalDisplay: '10',
+      totalValue: 10,
       hasModifier: false,
       modifier: 0,
       baseDisplay: '10',
@@ -85,10 +100,19 @@ describe('StatsTab', () => {
       global: {
         stubs: {
           QCard: {
-            template: '<div class="q-card"><slot /></div>',
+            template:
+              '<div class="q-card" :tabindex="$attrs.tabindex" :role="$attrs.role" :aria-haspopup="$attrs[\'aria-haspopup\']"><slot /></div>',
           },
           QCardSection: {
             template: '<div class="q-card-section"><slot /></div>',
+          },
+          QPopupProxy: {
+            template: '<div class="q-popup-proxy-stub"><slot /></div>',
+            props: ['breakpoint', 'offset', 'noParentEvent'],
+            methods: { toggle: mockPopupToggle },
+          },
+          QBanner: {
+            template: '<div class="q-banner-stub"><slot /></div>',
           },
         },
       },
@@ -198,18 +222,65 @@ describe('StatsTab', () => {
       expect(mockGetDefenseValue).toHaveBeenCalledWith('cognitive');
       expect(mockGetDefenseValue).toHaveBeenCalledWith('spiritual');
     });
+
+    it('renders deflect value in defenses section', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Deflect');
+      expect(wrapper.text()).toContain('10');
+    });
+
+    it('renders deflect description popup', () => {
+      const wrapper = createWrapper();
+
+      const popup = wrapper.find('.q-popup-proxy-stub');
+      expect(popup.exists()).toBe(true);
+      expect(popup.text()).toContain('Reduces impact, keen, and energy damage');
+    });
+
+    it('renders help icon on deflect card', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.findComponent(Info).exists()).toBe(true);
+    });
+
+    it('has keyboard accessibility on deflect card', () => {
+      const wrapper = createWrapper();
+
+      const deflectCard = wrapper.findAll('.q-card').find((c) => c.text().includes('Deflect'));
+      expect(deflectCard).toBeDefined();
+      expect(deflectCard!.attributes('tabindex')).toBe('0');
+      expect(deflectCard!.attributes('role')).toBe('button');
+      expect(deflectCard!.attributes('aria-haspopup')).toBe('dialog');
+    });
+
+    it('calls popup toggle on Enter and Space key', async () => {
+      const wrapper = createWrapper();
+
+      const deflectCard = wrapper.findAll('.q-card').find((c) => c.text().includes('Deflect'));
+      expect(deflectCard).toBeDefined();
+
+      await deflectCard!.trigger('keydown.enter');
+      expect(mockPopupToggle).toHaveBeenCalledTimes(1);
+
+      await deflectCard!.trigger('keydown.space');
+      expect(mockPopupToggle).toHaveBeenCalledTimes(2);
+    });
   });
 
   // ========================================
   // Derived Stats Display
   // ========================================
   describe('derived stats display', () => {
-    it('renders derived stat names', () => {
+    it('renders derived stat names excluding deflect', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Max Health');
       expect(wrapper.text()).toContain('Movement');
-      expect(wrapper.text()).toContain('Deflect');
+      // Deflect should not appear in Other Stats section (it's in Defenses)
+      const rows = wrapper.findAll('.row');
+      const otherStatsRow = rows[rows.length - 1]!;
+      expect(otherStatsRow.text()).not.toContain('Deflect');
     });
 
     it('renders total display values', () => {
@@ -232,11 +303,8 @@ describe('StatsTab', () => {
     it('does not show modifier breakdown when modifier is 0', () => {
       const wrapper = createWrapper();
 
-      // Deflect has hasModifier: false and modifier: 0
-      // Should just show '10' without breakdown
+      // Deflect is in defenses section, not derived stats -- verify no breakdown
       const text = wrapper.text();
-      expect(text).toContain('10');
-      // Verify no breakdown like "(10 +0)" or "(10 -0)" appears for Deflect
       expect(text).not.toMatch(/\(10\s*[+-]\s*0\)/);
     });
   });
