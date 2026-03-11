@@ -9,7 +9,7 @@ export function formatPrerequisite(prereq: TalentPrerequisite): string {
     case 'talent': {
       if (prereq.description) return prereq.description;
       if (prereq.codes?.length) {
-        return prereq.codes.map((t) => t.name).join(' or ') || 'Unknown talents';
+        return [...new Set(prereq.codes.map((t) => t.name))].join(' or ') || 'Unknown talents';
       }
       return 'Unknown talent';
     }
