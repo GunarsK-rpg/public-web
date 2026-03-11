@@ -854,81 +854,33 @@ describe('EquipmentItem', () => {
   // Trait Badges
   // ========================================
   describe('trait badges', () => {
-    it('renders trait badges for equipment with attributes', () => {
+    it('renders TraitBadges component for equipment with id', () => {
       const wrapper = createWrapper({ equipment: eqRef(1) });
 
-      expect(wrapper.text()).toContain('Two-Handed');
-      expect(wrapper.text()).toContain('Deadly');
+      const traitBadges = wrapper.findComponent({ name: 'TraitBadges' });
+      expect(traitBadges.exists()).toBe(true);
+      expect(traitBadges.props('equipmentId')).toBe(1);
     });
 
-    it('shows value in brackets for parameterized traits', () => {
-      const wrapper = createWrapper({
-        equipment: eqRef(3),
-        equipType: { id: 2, code: 'armor', name: 'Armor' },
-      });
-
-      expect(wrapper.text()).toContain('Cumbersome [5]');
-    });
-
-    it('shows Expert indicator for isExpert traits', () => {
-      const wrapper = createWrapper({
-        equipment: eqRef(6),
-        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
-      });
-
-      expect(wrapper.text()).toContain('Specialist (Expert)');
-    });
-
-    it('does not render trait badges when attributes is empty', () => {
-      const wrapper = createWrapper({ equipment: eqRef(2) });
-
-      // Longbow has no attributes
-      expect(wrapper.text()).not.toContain('Two-Handed');
-      expect(wrapper.text()).not.toContain('Deadly');
-      expect(wrapper.text()).not.toContain('Cumbersome');
-    });
-
-    it('does not render trait badges for custom items', () => {
+    it('does not render TraitBadges for custom items without equipment', () => {
       const wrapper = createWrapper({
         equipment: null,
         equipType: { id: 1, code: 'weapon', name: 'Weapon' },
       });
 
-      expect(wrapper.text()).not.toContain('Two-Handed');
-      expect(wrapper.text()).not.toContain('Deadly');
+      const traitBadges = wrapper.findComponent({ name: 'TraitBadges' });
+      expect(traitBadges.exists()).toBe(false);
     });
 
-    it('renders popup with breakpoint=0 and offset for traits with descriptions', () => {
-      const wrapper = createWrapper({ equipment: eqRef(1) });
+    it('passes correct equipment id to TraitBadges', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(3),
+        equipType: { id: 2, code: 'armor', name: 'Armor' },
+      });
 
-      const popups = wrapper.findAll('.q-popup-proxy-stub');
-      expect(popups.length).toBeGreaterThan(0);
-
-      // Verify popup contains description text
-      expect(popups[0]!.text()).toContain('Requires both hands to wield');
-    });
-
-    it('renders popup description for traits with descriptions', () => {
-      const wrapper = createWrapper({ equipment: eqRef(3) }); // chain-mail with cumbersome
-
-      const popups = wrapper.findAll('.q-popup-proxy-stub');
-      const banners = wrapper.findAll('.q-banner-stub');
-
-      // Cumbersome has a description in equipmentAttributes store, so popup should render
-      expect(popups).toHaveLength(1);
-      expect(banners).toHaveLength(1);
-      expect(banners[0]!.text()).toContain('Requires STR >= value or Slowed');
-    });
-
-    it('adds keyboard accessibility attributes to traits with descriptions', () => {
-      const wrapper = createWrapper({ equipment: eqRef(1) });
-
-      const badges = wrapper.findAll('.q-badge');
-      const traitBadge = badges.find((b) => b.text().includes('Two-Handed'));
-      expect(traitBadge).toBeDefined();
-      expect(traitBadge!.attributes('tabindex')).toBe('0');
-      expect(traitBadge!.attributes('role')).toBe('button');
-      expect(traitBadge!.attributes('aria-haspopup')).toBe('dialog');
+      const traitBadges = wrapper.findComponent({ name: 'TraitBadges' });
+      expect(traitBadges.exists()).toBe(true);
+      expect(traitBadges.props('equipmentId')).toBe(3);
     });
   });
 

@@ -468,6 +468,17 @@ function buildStatOverrides(): SpecialEntry[] {
   return overrides;
 }
 
+// For classifier equipment: recalculate from classifier base.
+// For custom equipment: user sets the final value — skip mod recalculation entirely.
+function buildModOverrides(
+  baseSpecial: SpecialEntry[],
+  modifications: AppliedModification[],
+  isCustom: boolean
+): SpecialEntry[] {
+  if (isCustom) return buildStatOverrides();
+  return recalculateSpecialFromMods(baseSpecial, modifications);
+}
+
 // Modification management (calls API directly)
 async function addClassifierModification(): Promise<void> {
   if (!selectedModification.value || !props.editItem || !heroStore.hero) return;
@@ -480,8 +491,11 @@ async function addClassifierModification(): Promise<void> {
     const updated = response.data;
     localModifications.value = updated.modifications;
     selectedModification.value = null;
-    // Recalculate and save overrides from new mod list
-    const newOverrides = recalculateSpecialFromMods(updated.special, updated.modifications);
+    const newOverrides = buildModOverrides(
+      updated.special,
+      updated.modifications,
+      !updated.equipment
+    );
     await heroStore.updateEquipment(updated.id, { specialOverrides: newOverrides });
     syncStatInputs({ ...updated, specialOverrides: newOverrides });
   } catch (err) {
@@ -504,8 +518,11 @@ async function addCustomModification(): Promise<void> {
     const updated = response.data;
     localModifications.value = updated.modifications;
     newModValue.value = '';
-    // Custom text mods don't have special effects, but recalculate for consistency
-    const newOverrides = recalculateSpecialFromMods(updated.special, updated.modifications);
+    const newOverrides = buildModOverrides(
+      updated.special,
+      updated.modifications,
+      !updated.equipment
+    );
     await heroStore.updateEquipment(updated.id, { specialOverrides: newOverrides });
     syncStatInputs({ ...updated, specialOverrides: newOverrides });
   } catch (err) {
@@ -521,9 +538,11 @@ async function removeModification(modId: number): Promise<void> {
   try {
     await equipmentApi.removeModification(heroStore.hero.id, props.editItem.id, modId);
     localModifications.value = localModifications.value.filter((m) => m.id !== modId);
-    // Recalculate from remaining mods
-    const baseSpecial = props.editItem.special;
-    const newOverrides = recalculateSpecialFromMods(baseSpecial, localModifications.value);
+    const newOverrides = buildModOverrides(
+      props.editItem.special,
+      localModifications.value,
+      !props.editItem.equipment
+    );
     await heroStore.updateEquipment(props.editItem.id, { specialOverrides: newOverrides });
     syncStatInputs({
       ...props.editItem,
@@ -584,8 +603,12 @@ async function onSave(): Promise<void> {
     } else if (item.maxCharges != null) {
       changes.maxCharges = null;
     }
-    // Merge mod-derived overrides with manual stat edits (stat entries win per type)
-    const modOverrides = recalculateSpecialFromMods(item.special, localModifications.value);
+    // On save, merge mod-derived overrides with the user's manual stat edits so
+    // explicit form changes (buildStatOverrides) always win per special type.
+    // During mod add/remove, buildModOverrides recomputes from the pristine
+    // classifier base and syncs the UI; here we intentionally allow stat edits to
+    // override that result (e.g. user manually adjusts range after a mod applies it).
+    const modOverrides = buildModOverrides(item.special, localModifications.value, !item.equipment);
     changes.specialOverrides = mergeSpecial(modOverrides, buildStatOverrides());
     await heroStore.updateEquipment(item.id, changes);
     emit('update:modelValue', false);

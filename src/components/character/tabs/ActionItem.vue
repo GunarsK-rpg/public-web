@@ -10,13 +10,21 @@
             :title="activationType?.name ?? 'Action'"
             class="action-icon icon-theme-aware"
           />
-          <span class="action-name">{{ action.name }}</span>
-          <SpecialBadges v-if="hasBadges" :specials="typedEntries" />
-          <q-badge v-if="action.dice" :color="RPG_COLORS.badgeMuted" outline>
-            {{ action.dice }}
+          <span class="action-name">{{ displayName }}</span>
+          <SpecialBadges v-if="typedEntries.length" :specials="typedEntries" />
+          <q-badge v-if="effectiveDice" :color="RPG_COLORS.badgeMuted" outline>
+            {{ effectiveDice }}
           </q-badge>
           <q-badge v-if="action.damageType" :color="RPG_COLORS.badgeMuted" outline>
             {{ action.damageType.name }}
+          </q-badge>
+          <q-badge
+            v-for="(mod, idx) in rollModifiers"
+            :key="idx"
+            :color="mod.display_value === 'Disadvantage' ? 'negative' : 'positive'"
+            outline
+          >
+            {{ mod.display_value }}
           </q-badge>
           <q-badge
             v-for="cost in actionCosts"
@@ -61,6 +69,16 @@
             }}{{ i < narrativeEntries.length - 1 ? ' · ' : '' }}
           </span>
         </div>
+        <!-- Equipment traits (expansion only) -->
+        <TraitBadges
+          v-if="equipmentInstance?.heroEquipment.equipment?.id"
+          :equipment-id="equipmentInstance.heroEquipment.equipment.id"
+          class="q-mt-xs"
+        />
+        <!-- Equipment modifications (expansion only) -->
+        <div v-if="equipmentMods.length" class="q-mt-xs">
+          <ModificationLabel v-for="mod in equipmentMods" :key="mod.id" :mod="mod" />
+        </div>
       </q-card-section>
     </q-card>
   </q-expansion-item>
@@ -75,11 +93,20 @@ import { useEntityIcon } from 'src/composables/useEntityIcon';
 import { RPG_COLORS } from 'src/constants/theme';
 import { SPECIAL, resolveDamageScaling, resolveSkillModifier } from 'src/utils/specialUtils';
 import { findByCode } from 'src/utils/arrayUtils';
+import {
+  getInstanceDice,
+  getInstanceActionSpecial,
+  getModRollModifiers,
+  getInstanceWeaponLabel,
+} from 'src/utils/equipmentActionUtils';
 import SpecialBadges from 'src/components/shared/SpecialBadges.vue';
-import type { Action } from 'src/types';
+import TraitBadges from 'src/components/shared/TraitBadges.vue';
+import ModificationLabel from './ModificationLabel.vue';
+import type { Action, EquipmentActionInstance } from 'src/types';
 
 const props = defineProps<{
   action: Action;
+  equipmentInstance?: EquipmentActionInstance;
   readonly?: boolean;
 }>();
 
@@ -94,6 +121,33 @@ const { entity: activationType, iconUrl } = useEntityIcon(
   'actions'
 );
 
+// Display name: append weapon label when disambiguating and label isn't already in the name
+const displayName = computed(() => {
+  if (!props.equipmentInstance) return props.action.name;
+  const label = getInstanceWeaponLabel(props.equipmentInstance);
+  if (!label || props.action.name.toLowerCase().includes(label.toLowerCase()))
+    return props.action.name;
+  return `${props.action.name} — ${label}`;
+});
+
+// Effective dice: use equipment instance override when available
+const effectiveDice = computed(() => {
+  if (props.equipmentInstance) return getInstanceDice(props.equipmentInstance);
+  return props.action.dice ?? null;
+});
+
+// Roll modifiers from equipment modifications (Advantage/Disadvantage)
+const rollModifiers = computed(() => {
+  if (!props.equipmentInstance) return [];
+  return getModRollModifiers(props.equipmentInstance);
+});
+
+// Source special entries: from equipment instance or action classifier
+const sourceSpecial = computed(() => {
+  if (props.equipmentInstance) return getInstanceActionSpecial(props.equipmentInstance);
+  return props.action.special ?? [];
+});
+
 // Types shown as badge tags in the header
 const TYPED_SPECIAL: Set<string> = new Set([
   SPECIAL.SKILL,
@@ -106,7 +160,7 @@ const TYPED_SPECIAL: Set<string> = new Set([
 ]);
 
 const typedEntries = computed(() =>
-  (props.action.special ?? [])
+  sourceSpecial.value
     .filter((s) => TYPED_SPECIAL.has(s.type) && (s.display_value || s.value != null))
     .map((s) => {
       if (s.type === SPECIAL.DAMAGE_SCALING && s.display_value) {
@@ -127,17 +181,15 @@ const typedEntries = computed(() =>
 
 const narrativeEntries = computed(() =>
   (props.action.special ?? []).filter(
-    (s) => !TYPED_SPECIAL.has(s.type) && (s.display_value || s.value != null)
+    (s) => s.type === SPECIAL.NARRATIVE && (s.display_value || s.value != null)
   )
 );
 
-const hasBadges = computed(
-  () =>
-    typedEntries.value.length > 0 ||
-    !!props.action.dice ||
-    !!props.action.damageType ||
-    actionCosts.value.length > 0
-);
+// Equipment modifications (shown in expansion only)
+const equipmentMods = computed(() => {
+  if (!props.equipmentInstance) return [];
+  return props.equipmentInstance.heroEquipment.modifications;
+});
 
 // Use action
 const hasDeductibleCost = computed(

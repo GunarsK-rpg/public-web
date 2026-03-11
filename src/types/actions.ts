@@ -1,5 +1,6 @@
 import type { Classifier } from './classifier';
 import type { ClassifierRef, SpecialEntry } from './shared';
+import type { HeroEquipment } from './equipments';
 
 /** Activation type classifier (cl_activation_types) */
 export interface ActivationType extends Classifier {
@@ -26,4 +27,18 @@ export interface ActionLink {
   id: number;
   action: ClassifierRef;
   objectId: number;
+}
+
+/** Equipment action resolved to a specific hero equipment instance */
+export interface EquipmentActionInstance {
+  action: Action;
+  heroEquipment: HeroEquipment;
+  effectiveSpecial: SpecialEntry[];
+}
+
+/** Type guard: check if an action entry is an equipment action instance */
+export function isEquipmentActionInstance(
+  entry: Action | EquipmentActionInstance
+): entry is EquipmentActionInstance {
+  return 'heroEquipment' in entry;
 }

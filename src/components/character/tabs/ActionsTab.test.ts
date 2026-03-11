@@ -181,8 +181,9 @@ describe('ActionsTab', () => {
             props: ['bordered', 'separator'],
           },
           ActionItem: {
-            template: '<div class="action-item">{{ action.name }}</div>',
-            props: ['action'],
+            template:
+              '<div class="action-item" :data-equip-id="equipmentInstance?.heroEquipment?.id">{{ action.name }}</div>',
+            props: ['action', 'equipmentInstance', 'readonly'],
           },
         },
       },
@@ -236,7 +237,15 @@ describe('ActionsTab', () => {
   describe('equipment actions', () => {
     it('renders equipment actions for equipped equipment', () => {
       mockHero.value = {
-        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: true }],
+        equipment: [
+          {
+            equipment: { id: 1, code: 'e1', name: 'Equip1' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          },
+        ],
         talents: [],
         radiantOrder: null,
       };
@@ -247,7 +256,15 @@ describe('ActionsTab', () => {
 
     it('does not show actions for unequipped equipment', () => {
       mockHero.value = {
-        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: false }],
+        equipment: [
+          {
+            equipment: { id: 1, code: 'e1', name: 'Equip1' },
+            isEquipped: false,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          },
+        ],
         talents: [],
         radiantOrder: null,
       };
@@ -270,7 +287,15 @@ describe('ActionsTab', () => {
 
     it('does not show actions for unowned equipment', () => {
       mockHero.value = {
-        equipment: [{ equipment: { id: 999, code: 'e999', name: 'Equip999' } }], // Non-existent equipment
+        equipment: [
+          {
+            equipment: { id: 999, code: 'e999', name: 'Equip999' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          },
+        ], // Non-existent equipment
         talents: [],
         radiantOrder: null,
       };
@@ -283,8 +308,20 @@ describe('ActionsTab', () => {
     it('renders multiple equipment actions for equipped items', () => {
       mockHero.value = {
         equipment: [
-          { equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: true }, // Sword
-          { equipment: { id: 2, code: 'e2', name: 'Equip2' }, isEquipped: true }, // Bow
+          {
+            equipment: { id: 1, code: 'e1', name: 'Equip1' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          }, // Sword
+          {
+            equipment: { id: 2, code: 'e2', name: 'Equip2' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          }, // Bow
         ],
         talents: [],
         radiantOrder: null,
@@ -295,11 +332,57 @@ describe('ActionsTab', () => {
       expect(wrapper.text()).toContain('Bow Shot');
     });
 
+    it('renders separate action instances for two equipped items sharing the same equipment id', () => {
+      mockHero.value = {
+        equipment: [
+          {
+            id: 10,
+            equipment: { id: 1, code: 'e1', name: 'Sword A' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          },
+          {
+            id: 11,
+            equipment: { id: 1, code: 'e1', name: 'Sword B' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          },
+        ],
+        talents: [],
+        radiantOrder: null,
+      };
+      const wrapper = createWrapper();
+
+      const equipPanel = wrapper.findAll('.q-tab-panel')[1]!;
+      const items = equipPanel.findAll('.action-item');
+      const names = items.map((item) => item.text());
+      expect(names.filter((n) => n === 'Sword Slash')).toHaveLength(2);
+      const equipIds = items.map((item) => item.attributes('data-equip-id'));
+      expect(equipIds).toContain('10');
+      expect(equipIds).toContain('11');
+    });
+
     it('only shows actions for equipped items in mixed inventory', () => {
       mockHero.value = {
         equipment: [
-          { equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: true }, // Sword - equipped
-          { equipment: { id: 2, code: 'e2', name: 'Equip2' }, isEquipped: false }, // Bow - in backpack
+          {
+            equipment: { id: 1, code: 'e1', name: 'Equip1' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          }, // Sword - equipped
+          {
+            equipment: { id: 2, code: 'e2', name: 'Equip2' },
+            isEquipped: false,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          }, // Bow - in backpack
         ],
         talents: [],
         radiantOrder: null,
@@ -391,7 +474,15 @@ describe('ActionsTab', () => {
 
     it('handles hero with all action types', () => {
       mockHero.value = {
-        equipment: [{ equipment: { id: 1, code: 'e1', name: 'Equip1' }, isEquipped: true }],
+        equipment: [
+          {
+            equipment: { id: 1, code: 'e1', name: 'Equip1' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          },
+        ],
         talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }],
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
       };

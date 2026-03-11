@@ -27,9 +27,10 @@
       >
         <q-list v-if="actionsByType[actionType.id]?.length" bordered separator>
           <ActionItem
-            v-for="action in actionsByType[actionType.id]"
-            :key="action.id"
-            :action="action"
+            v-for="entry in actionsByType[actionType.id]"
+            :key="getEntryKey(entry)"
+            :action="getEntryAction(entry)"
+            v-bind="getEquipmentProps(entry)"
             :readonly="readonly"
           />
         </q-list>
@@ -69,8 +70,17 @@ import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode } from 'src/utils/arrayUtils';
 import { getIconUrl } from 'src/utils/iconUrl';
+import { getEffectiveSpecial } from 'src/utils/equipmentStats';
+import { SPECIAL } from 'src/utils/specialUtils';
+import {
+  createCustomEquipmentAction,
+  getInstanceWeaponLabel,
+} from 'src/utils/equipmentActionUtils';
 import ActionItem from './ActionItem.vue';
-import type { Action } from 'src/types';
+import type { Action, EquipmentActionInstance } from 'src/types';
+import { isEquipmentActionInstance } from 'src/types';
+
+type ActionEntry = Action | EquipmentActionInstance;
 
 defineProps<{
   readonly?: boolean;
@@ -118,14 +128,38 @@ const sortedActivationTypes = computed(() =>
   )
 );
 
-// Sort actions by activation type display order, then alphabetically by name
-function sortActions(actions: Action[]): Action[] {
-  return [...actions].sort((a, b) => {
-    const orderA = activationTypeOrder.value.get(a.activationType.id) ?? Number.MAX_SAFE_INTEGER;
-    const orderB = activationTypeOrder.value.get(b.activationType.id) ?? Number.MAX_SAFE_INTEGER;
-    if (orderA !== orderB) return orderA - orderB;
-    return a.name.localeCompare(b.name);
-  });
+// Extract the Action from an ActionEntry (plain Action or EquipmentActionInstance)
+function getEntryAction(entry: ActionEntry): Action {
+  return isEquipmentActionInstance(entry) ? entry.action : entry;
+}
+
+// Build optional equipment props for ActionItem (avoids passing undefined for exact optional types)
+function getEquipmentProps(
+  entry: ActionEntry
+): { equipmentInstance: EquipmentActionInstance } | Record<string, never> {
+  if (isEquipmentActionInstance(entry)) {
+    return { equipmentInstance: entry };
+  }
+  return {};
+}
+
+// Unique key for an ActionEntry (equipment instances need heroEquipment.id to disambiguate)
+function getEntryKey(entry: ActionEntry): string {
+  if (isEquipmentActionInstance(entry)) {
+    return `${entry.action.id}-${entry.heroEquipment.id}`;
+  }
+  return String(entry.id);
+}
+
+function entrySortKey(entry: ActionEntry): string {
+  const action = getEntryAction(entry);
+  const order = activationTypeOrder.value.get(action.activationType.id) ?? Number.MAX_SAFE_INTEGER;
+  const label = isEquipmentActionInstance(entry) ? (getInstanceWeaponLabel(entry) ?? '') : '';
+  return `${String(order).padStart(10, '0')}\0${action.name}\0${label}`;
+}
+
+function sortEntries<T extends ActionEntry>(entries: T[]): T[] {
+  return [...entries].sort((a, b) => entrySortKey(a).localeCompare(entrySortKey(b)));
 }
 
 // Pre-compute action links map for O(1) lookup: objectId → Set<actionId>
@@ -141,8 +175,8 @@ const actionLinksMap = computed(() => {
 });
 
 // Pre-computed actions grouped by type to avoid repeated filter calls
-const actionsByType = computed((): Record<number, Action[]> => {
-  const result: Record<number, Action[]> = {};
+const actionsByType = computed((): Record<number, ActionEntry[]> => {
+  const result: Record<number, ActionEntry[]> = {};
   for (const actionType of classifiers.actionTypes) {
     result[actionType.id] = getActionsByTypeId(actionType.id);
   }
@@ -154,57 +188,89 @@ function getActionTypeByCode(code: string) {
   return findByCode(classifiers.actionTypes, code);
 }
 
-// Configuration map for extracting hero object IDs by action type
-const heroObjectExtractors: Record<string, () => number[]> = {
-  equipment: () =>
-    (heroStore.hero?.equipment || []).flatMap((e) =>
-      e.isEquipped && e.equipment ? [e.equipment.id] : []
-    ),
-  talent: () => (heroStore.hero?.talents || []).map((t) => t.talent.id),
-  surge: () => {
+// Get hero's object IDs by action type (non-equipment types only)
+function getHeroObjectIds(actionTypeCode: string): Set<number> {
+  if (actionTypeCode === 'talent') {
+    return new Set((heroStore.hero?.talents || []).map((t) => t.talent.id));
+  }
+  if (actionTypeCode === 'surge') {
     const order = heroStore.hero?.radiantOrder;
-    if (!order) return [];
+    if (!order) return new Set();
     const fullOrder = findById(classifiers.radiantOrders, order.id);
-    if (!fullOrder) return [];
+    if (!fullOrder) return new Set();
     const ids: number[] = [];
     if (fullOrder.surge1?.id != null) ids.push(fullOrder.surge1.id);
     if (fullOrder.surge2?.id != null) ids.push(fullOrder.surge2.id);
-    return ids;
-  },
-};
+    return new Set(ids);
+  }
+  return new Set();
+}
 
-// Get hero's object IDs by action type
-// Returns the set of objectIds the hero has for the given action type
-function getHeroObjectIds(actionTypeCode: string): Set<number> {
-  const extractor = heroObjectExtractors[actionTypeCode];
-  return new Set(extractor ? extractor() : []);
+// Build equipment action instances for all equipped items
+function getEquipmentActionInstances(actionTypeId: number): EquipmentActionInstance[] {
+  const actionType = findById(classifiers.actionTypes, actionTypeId);
+  if (!actionType) return [];
+  const defaultActivationType = findByCode(classifiers.activationTypes, 'action');
+
+  return sortEntries(
+    (heroStore.hero?.equipment || [])
+      .filter((e) => e.isEquipped)
+      .flatMap((heroEquip): EquipmentActionInstance[] => {
+        const effectiveSpecial = getEffectiveSpecial(heroEquip);
+        if (heroEquip.equipment) {
+          return [...(actionLinksMap.value.get(heroEquip.equipment.id) ?? [])]
+            .map((id) => findById(classifiers.actions, id))
+            .filter((a): a is Action => !!a && a.actionType.id === actionTypeId)
+            .map((action) => ({ action, heroEquipment: heroEquip, effectiveSpecial }));
+        }
+        if (
+          defaultActivationType &&
+          effectiveSpecial.some((s) => s.type === SPECIAL.DAMAGE && s.value != null)
+        ) {
+          return [
+            {
+              action: createCustomEquipmentAction(heroEquip, actionType, defaultActivationType),
+              heroEquipment: heroEquip,
+              effectiveSpecial,
+            },
+          ];
+        }
+        return [];
+      })
+  );
 }
 
 // Get actions by action type ID
 // - Basic actions: everyone has all of them
+// - Equipment actions: per-instance with effective stats
 // - Other types: only actions linked to objects the hero possesses
-function getActionsByTypeId(actionTypeId: number): Action[] {
+function getActionsByTypeId(actionTypeId: number): ActionEntry[] {
   const actionType = findById(classifiers.actionTypes, actionTypeId);
   if (!actionType) return [];
 
   // Basic actions - everyone has all of them
   const basicType = getActionTypeByCode('basic');
   if (basicType && actionTypeId === basicType.id) {
-    return sortActions(classifiers.actions.filter((a) => a.actionType.id === actionTypeId));
+    return sortEntries(classifiers.actions.filter((a) => a.actionType.id === actionTypeId));
   }
 
   // Stormlight actions - all Radiants have them
   const stormlightType = getActionTypeByCode('stormlight');
   if (stormlightType && actionTypeId === stormlightType.id) {
     if (!heroStore.hero?.radiantOrder) return [];
-    return sortActions(classifiers.actions.filter((a) => a.actionType.id === actionTypeId));
+    return sortEntries(classifiers.actions.filter((a) => a.actionType.id === actionTypeId));
   }
 
-  // Other action types - filter by actionLinks using pre-computed map
+  // Equipment actions - resolve per equipped item instance
+  const equipmentType = getActionTypeByCode('equipment');
+  if (equipmentType && actionTypeId === equipmentType.id) {
+    return getEquipmentActionInstances(actionTypeId);
+  }
+
+  // Other action types (talent, surge) - filter by actionLinks using pre-computed map
   const heroObjectIds = getHeroObjectIds(actionType.code);
   if (heroObjectIds.size === 0) return [];
 
-  // Find action IDs linked to hero's objects using O(1) map lookup
   const linkedActionIds = new Set<number>();
   for (const objectId of heroObjectIds) {
     const actionIds = actionLinksMap.value.get(objectId);
@@ -218,7 +284,7 @@ function getActionsByTypeId(actionTypeId: number): Action[] {
     }
   }
 
-  return sortActions(classifiers.actions.filter((a) => linkedActionIds.has(a.id)));
+  return sortEntries(classifiers.actions.filter((a) => linkedActionIds.has(a.id)));
 }
 </script>
 

@@ -24,25 +24,8 @@
         {{ detailsLine }}
       </q-item-label>
       <!-- Trait badges -->
-      <q-item-label v-if="traitBadges.length" caption>
-        <div class="row wrap q-gutter-xs">
-          <q-badge
-            v-for="trait in traitBadges"
-            :key="trait.code"
-            outline
-            color="grey-7"
-            class="trait-badge"
-            :class="{ 'trait-badge--clickable': trait.description }"
-            :tabindex="trait.description ? 0 : undefined"
-            :role="trait.description ? 'button' : undefined"
-            :aria-haspopup="trait.description ? 'dialog' : undefined"
-          >
-            {{ trait.label }}
-            <q-popup-proxy v-if="trait.description" :breakpoint="0" :offset="[0, 8]">
-              <q-banner dense class="text-body2">{{ trait.description }}</q-banner>
-            </q-popup-proxy>
-          </q-badge>
-        </div>
+      <q-item-label v-if="heroEquipment.equipment?.id" caption>
+        <TraitBadges :equipment-id="heroEquipment.equipment.id" />
       </q-item-label>
       <!-- Charge controls -->
       <q-item-label v-if="heroEquipment.maxCharges != null" caption>
@@ -162,6 +145,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
 import { Pencil, Minus, Plus, Shield, ShieldOff, Trash2 } from 'lucide-vue-next';
 import ModificationLabel from './ModificationLabel.vue';
+import TraitBadges from 'src/components/shared/TraitBadges.vue';
 import { findById } from 'src/utils/arrayUtils';
 import type { HeroEquipment } from 'src/types';
 import { MAX_EQUIPMENT_STACK, INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';
@@ -198,18 +182,6 @@ const { entity: equipmentType, iconUrl } = useEntityIcon(
 const displayName = computed(
   () => props.heroEquipment.customName || equipment.value?.name || 'Custom Item'
 );
-
-// Build trait badges from equipment attributes
-const traitBadges = computed(() => {
-  const attrs = equipment.value?.attributes ?? [];
-  return attrs.map((attr) => {
-    const full = findById(classifiers.equipmentAttributes, attr.id);
-    let label = attr.name;
-    if (attr.value != null) label += ` [${attr.value}]`;
-    if (attr.isExpert) label += ' (Expert)';
-    return { code: attr.code, label, description: full?.description ?? '' };
-  });
-});
 
 // Build details line from effective special (overrides merged over classifier base)
 const detailsLine = computed(() => {
@@ -274,13 +246,5 @@ function confirmRemove(): void {
 .equipment-icon {
   width: 24px;
   height: 24px;
-}
-
-.trait-badge {
-  font-size: 0.7rem;
-}
-
-.trait-badge--clickable {
-  cursor: pointer;
 }
 </style>
