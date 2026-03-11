@@ -52,6 +52,7 @@ function makeHero(overrides: Partial<HeroSheet> = {}): HeroSheet {
     connections: [],
     companions: [],
     cultures: [],
+    favoriteActions: [],
     ...overrides,
   };
 }

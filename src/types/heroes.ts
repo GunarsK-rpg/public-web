@@ -9,6 +9,7 @@ import type { HeroCondition, HeroInjury } from './conditions';
 import type { HeroGoal, HeroConnection } from './goals';
 import type { HeroCompanion } from './companions';
 import type { HeroCulture } from './culture';
+import type { HeroFavoriteAction } from './actions';
 
 /** Hero - upsert payload (client-controlled fields) */
 export interface HeroBase {
@@ -58,4 +59,5 @@ export interface HeroSheet extends Hero {
   connections: HeroConnection[];
   companions: HeroCompanion[];
   cultures: HeroCulture[];
+  favoriteActions: HeroFavoriteAction[];
 }

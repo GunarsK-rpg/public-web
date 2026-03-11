@@ -32,6 +32,7 @@ const mockHero = {
   connections: [],
   companions: [],
   cultures: [],
+  favoriteActions: [],
 };
 
 const {
@@ -41,6 +42,8 @@ const {
   mockPatchFocus,
   mockPatchInvestiture,
   mockPatchCurrency,
+  mockUpsertSubResource,
+  mockDeleteSubResource,
 } = vi.hoisted(() => ({
   mockGetSheet: vi.fn(),
   mockDeleteHero: vi.fn(),
@@ -48,6 +51,8 @@ const {
   mockPatchFocus: vi.fn(),
   mockPatchInvestiture: vi.fn(),
   mockPatchCurrency: vi.fn(),
+  mockUpsertSubResource: vi.fn(),
+  mockDeleteSubResource: vi.fn(),
 }));
 
 vi.mock('src/services/heroService', () => ({
@@ -59,8 +64,8 @@ vi.mock('src/services/heroService', () => ({
     update: vi.fn(),
     delete: mockDeleteHero,
     getSubResource: vi.fn(),
-    upsertSubResource: vi.fn(),
-    deleteSubResource: vi.fn(),
+    upsertSubResource: mockUpsertSubResource,
+    deleteSubResource: mockDeleteSubResource,
     patchHealth: mockPatchHealth,
     patchFocus: mockPatchFocus,
     patchInvestiture: mockPatchInvestiture,
@@ -830,6 +835,125 @@ describe('useHeroStore', () => {
       await store.deleteHero();
 
       expect(store.hero).not.toBeNull();
+    });
+  });
+
+  // ========================================
+  // Favorite Actions
+  // ========================================
+  describe('findFavoriteAction', () => {
+    it('returns undefined when favoriteActions is empty', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+
+      expect(store.findFavoriteAction(42)).toBeUndefined();
+    });
+
+    it('returns the row for a matching classifier action', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      store.hero!.favoriteActions = [{ id: 10, actionId: 42, heroEquipmentId: null }];
+
+      expect(store.findFavoriteAction(42)).toEqual({ id: 10, actionId: 42, heroEquipmentId: null });
+    });
+
+    it('returns the row for a matching equipment action instance', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      store.hero!.favoriteActions = [{ id: 11, actionId: 5, heroEquipmentId: 99 }];
+
+      expect(store.findFavoriteAction(5, 99)).toEqual({
+        id: 11,
+        actionId: 5,
+        heroEquipmentId: 99,
+      });
+    });
+
+    it('returns undefined when heroEquipmentId does not match', async () => {
+      const store = useHeroStore();
+      await store.loadHero(1);
+      store.hero!.favoriteActions = [{ id: 11, actionId: 5, heroEquipmentId: 99 }];
+
+      expect(store.findFavoriteAction(5, 100)).toBeUndefined();
+    });
+  });
+
+  describe('addFavoriteAction', () => {
+    it('calls upsertSubResource and pushes result to favoriteActions', async () => {
+      mockUpsertSubResource.mockResolvedValueOnce({
+        data: { id: 20, actionId: 7, heroEquipmentId: null },
+      });
+
+      const store = useHeroStore();
+      await store.loadHero(1);
+      await store.addFavoriteAction(7);
+
+      expect(mockUpsertSubResource).toHaveBeenCalledWith(1, 'favorites', {
+        heroId: 1,
+        actionId: 7,
+        heroEquipmentId: null,
+      });
+      expect(store.hero?.favoriteActions).toContainEqual({
+        id: 20,
+        actionId: 7,
+        heroEquipmentId: null,
+      });
+    });
+
+    it('sets error on API failure', async () => {
+      mockUpsertSubResource.mockRejectedValueOnce(axiosError(500));
+
+      const store = useHeroStore();
+      await store.loadHero(1);
+      await store.addFavoriteAction(7);
+
+      expect(store.error).toBeTruthy();
+    });
+  });
+
+  describe('removeFavoriteAction', () => {
+    it('calls deleteSubResource and removes from favoriteActions', async () => {
+      mockDeleteSubResource.mockResolvedValueOnce({});
+
+      const store = useHeroStore();
+      await store.loadHero(1);
+      store.hero!.favoriteActions = [{ id: 30, actionId: 8, heroEquipmentId: null }];
+
+      await store.removeFavoriteAction(30);
+
+      expect(mockDeleteSubResource).toHaveBeenCalledWith(1, 'favorites', 30);
+      expect(store.hero?.favoriteActions).toHaveLength(0);
+    });
+
+    it('sets error on API failure', async () => {
+      mockDeleteSubResource.mockRejectedValueOnce(axiosError(500));
+
+      const store = useHeroStore();
+      await store.loadHero(1);
+      store.hero!.favoriteActions = [{ id: 30, actionId: 8, heroEquipmentId: null }];
+
+      await store.removeFavoriteAction(30);
+
+      expect(store.error).toBeTruthy();
+    });
+  });
+
+  describe('removeEquipment with favorites', () => {
+    it('removes favorite actions for the unequipped item', async () => {
+      mockDeleteSubResource.mockResolvedValue({});
+
+      const store = useHeroStore();
+      await store.loadHero(1);
+      store.hero!.equipment = [{ id: 55 } as never];
+      store.hero!.favoriteActions = [
+        { id: 40, actionId: 3, heroEquipmentId: 55 },
+        { id: 41, actionId: 4, heroEquipmentId: null },
+      ];
+
+      await store.removeEquipment(55);
+
+      expect(store.hero?.favoriteActions).toHaveLength(1);
+      expect(store.hero?.favoriteActions[0]?.id).toBe(41);
     });
   });
 });

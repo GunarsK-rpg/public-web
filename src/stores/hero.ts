@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Hero, HeroSheet, HeroEquipment } from 'src/types';
+import type { Hero, HeroSheet, HeroEquipment, HeroFavoriteAction } from 'src/types';
 import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
@@ -42,6 +42,7 @@ function createEmptyHero(): HeroSheet {
     connections: [],
     companions: [],
     cultures: [],
+    favoriteActions: [],
   };
 }
 
@@ -78,6 +79,7 @@ export const useHeroStore = defineStore('hero', () => {
   const conditions = computed(() => hero.value?.conditions ?? []);
   const injuries = computed(() => hero.value?.injuries ?? []);
   const cultures = computed(() => hero.value?.cultures ?? []);
+  const favoriteActions = computed(() => hero.value?.favoriteActions ?? []);
 
   // ===================
   // LOAD / SAVE / INIT
@@ -305,6 +307,9 @@ export const useHeroStore = defineStore('hero', () => {
       await heroService.deleteSubResource(hero.value.id, 'equipment', heroEquipmentId);
       if (!hero.value) return;
       hero.value.equipment = hero.value.equipment.filter((e) => e.id !== heroEquipmentId);
+      hero.value.favoriteActions = hero.value.favoriteActions.filter(
+        (f) => f.heroEquipmentId !== heroEquipmentId
+      );
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to remove equipment' });
     } finally {
@@ -412,6 +417,53 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
+  // ===================
+  // FAVORITE ACTIONS
+  // ===================
+  function findFavoriteAction(
+    actionId: number | null,
+    heroEquipmentId: number | null = null
+  ): HeroFavoriteAction | undefined {
+    return hero.value?.favoriteActions.find(
+      (f) => f.actionId === actionId && f.heroEquipmentId === heroEquipmentId
+    );
+  }
+
+  async function addFavoriteAction(
+    actionId: number | null,
+    heroEquipmentId: number | null = null
+  ): Promise<void> {
+    if (!hero.value) return;
+    savingCount.value++;
+    try {
+      const response = await heroService.upsertSubResource<HeroFavoriteAction>(
+        hero.value.id,
+        'favorites',
+        { heroId: hero.value.id, actionId, heroEquipmentId }
+      );
+      if (!hero.value) return;
+      hero.value.favoriteActions.push(response.data);
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to add favorite' });
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function removeFavoriteAction(favoriteId: number): Promise<void> {
+    if (!hero.value) return;
+    savingCount.value++;
+    try {
+      await heroService.deleteSubResource(hero.value.id, 'favorites', favoriteId);
+      if (!hero.value) return;
+      hero.value.favoriteActions = hero.value.favoriteActions.filter((f) => f.id !== favoriteId);
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to remove favorite' });
+    } finally {
+      savingCount.value--;
+    }
+  }
+
   async function deleteHero(): Promise<boolean> {
     if (!hero.value || hero.value.id === 0) return false;
     try {
@@ -448,6 +500,7 @@ export const useHeroStore = defineStore('hero', () => {
     conditions,
     injuries,
     cultures,
+    favoriteActions,
 
     // Load/Save/Init
     loadHero,
@@ -476,5 +529,10 @@ export const useHeroStore = defineStore('hero', () => {
     addCustomEquipment,
     removeEquipment,
     updateEquipment,
+
+    // Favorite actions
+    findFavoriteAction,
+    addFavoriteAction,
+    removeFavoriteAction,
   };
 });

@@ -1,6 +1,5 @@
 <template>
   <div class="actions-tab">
-    <!-- Tabs from cl_action_types classifier -->
     <q-tabs
       v-model="activeTab"
       dense
@@ -10,32 +9,24 @@
       mobile-arrows
       outside-arrows
     >
-      <q-tab
-        v-for="actionType in classifiers.actionTypes"
-        :key="actionType.id"
-        :name="actionType.id"
-        :label="actionType.name"
-      />
+      <q-tab v-for="tab in allTabs" :key="tab.id" :name="tab.id" :label="tab.name" />
     </q-tabs>
 
     <q-tab-panels v-model="activeTab" animated>
-      <q-tab-panel
-        v-for="actionType in classifiers.actionTypes"
-        :key="actionType.id"
-        :name="actionType.id"
-        class="q-pa-none"
-      >
-        <q-list v-if="actionsByType[actionType.id]?.length" bordered separator>
+      <q-tab-panel v-for="tab in allTabs" :key="tab.id" :name="tab.id" class="q-pa-none">
+        <q-list v-if="entriesByTab[tab.id]?.length" bordered separator>
           <ActionItem
-            v-for="entry in actionsByType[actionType.id]"
+            v-for="entry in entriesByTab[tab.id]"
             :key="getEntryKey(entry)"
             :action="getEntryAction(entry)"
             v-bind="getEquipmentProps(entry)"
+            :is-favorite="isEntryFavorite(entry)"
             :readonly="readonly"
+            @toggle-favorite="toggleFavorite(entry)"
           />
         </q-list>
         <div v-else class="text-center text-muted q-pa-lg">
-          No {{ actionType.name.toLowerCase() }} available.
+          No {{ tab.name.toLowerCase() }} available.
         </div>
       </q-tab-panel>
     </q-tab-panels>
@@ -95,9 +86,16 @@ function getActionIconUrl(icon: string | undefined): string {
 
 // Sentinel value for uninitialized tab state (action type IDs are always >= 1)
 const UNINITIALIZED_TAB = -1;
+const FAVORITES_TAB = 'favorites';
 
-// Active tab with sync to actionTypes (handles async classifier loading)
-const activeTab = ref(classifiers.actionTypes[0]?.id ?? UNINITIALIZED_TAB);
+// Active tab — start on Favorites if present, first action type if loaded, otherwise uninitialized
+const activeTab = ref<number | string>(
+  heroStore.favoriteActions.length > 0
+    ? FAVORITES_TAB
+    : (classifiers.actionTypes[0]?.id ?? UNINITIALIZED_TAB)
+);
+
+const hasFavorites = computed(() => heroStore.favoriteActions.length > 0);
 
 // Sync activeTab when actionTypes become available (async classifier init)
 watch(
@@ -105,11 +103,18 @@ watch(
   (types) => {
     const firstType = types[0];
     if (firstType && activeTab.value === UNINITIALIZED_TAB) {
-      activeTab.value = firstType.id;
+      activeTab.value = hasFavorites.value ? FAVORITES_TAB : firstType.id;
     }
   },
   { immediate: true }
 );
+
+// When favorites tab disappears, switch to first action type tab
+watch(hasFavorites, (has) => {
+  if (!has && activeTab.value === FAVORITES_TAB) {
+    activeTab.value = classifiers.actionTypes[0]?.id ?? UNINITIALIZED_TAB;
+  }
+});
 
 // Activation type display order lookup: id → displayOrder
 const activationTypeOrder = computed(() => {
@@ -162,6 +167,36 @@ function sortEntries<T extends ActionEntry>(entries: T[]): T[] {
   return [...entries].sort((a, b) => entrySortKey(a).localeCompare(entrySortKey(b)));
 }
 
+// Resolve an ActionEntry's actionId for favorites (null for custom equipment)
+function entryActionId(entry: ActionEntry): number | null {
+  if (isEquipmentActionInstance(entry)) {
+    return entry.heroEquipment.equipment ? entry.action.id : null;
+  }
+  return entry.id;
+}
+
+// Resolve an ActionEntry's heroEquipmentId (null for non-equipment entries)
+function entryEquipmentId(entry: ActionEntry): number | null {
+  return isEquipmentActionInstance(entry) ? entry.heroEquipment.id : null;
+}
+
+// Check whether an entry is currently in favorites
+function isEntryFavorite(entry: ActionEntry): boolean {
+  return !!heroStore.findFavoriteAction(entryActionId(entry), entryEquipmentId(entry));
+}
+
+// Toggle favorite state for an entry
+async function toggleFavorite(entry: ActionEntry): Promise<void> {
+  const actionId = entryActionId(entry);
+  const heroEquipmentId = entryEquipmentId(entry);
+  const existing = heroStore.findFavoriteAction(actionId, heroEquipmentId);
+  if (existing) {
+    await heroStore.removeFavoriteAction(existing.id);
+  } else {
+    await heroStore.addFavoriteAction(actionId, heroEquipmentId);
+  }
+}
+
 // Pre-compute action links map for O(1) lookup: objectId → Set<actionId>
 const actionLinksMap = computed(() => {
   const map = new Map<number, Set<number>>();
@@ -179,6 +214,41 @@ const actionsByType = computed((): Record<number, ActionEntry[]> => {
   const result: Record<number, ActionEntry[]> = {};
   for (const actionType of classifiers.actionTypes) {
     result[actionType.id] = getActionsByTypeId(actionType.id);
+  }
+  return result;
+});
+
+// All action entries across all types (flattened, for favorite lookup)
+const allEntries = computed((): ActionEntry[] => Object.values(actionsByType.value).flat());
+
+// Unified tab list: favorites (when present) followed by action type tabs
+const allTabs = computed(() => [
+  ...(hasFavorites.value ? [{ id: FAVORITES_TAB as string | number, name: 'Favorites' }] : []),
+  ...classifiers.actionTypes.map((t) => ({ id: t.id as string | number, name: t.name })),
+]);
+
+// Entries keyed by tab id — favorites resolved from store, others from actionsByType
+const entriesByTab = computed((): Record<string | number, ActionEntry[]> => {
+  const favEntries = sortEntries(
+    heroStore.favoriteActions
+      .map((fav): ActionEntry | null => {
+        if (fav.heroEquipmentId !== null) {
+          return (
+            allEntries.value.find(
+              (e): e is EquipmentActionInstance =>
+                isEquipmentActionInstance(e) &&
+                e.heroEquipment.id === fav.heroEquipmentId &&
+                (fav.actionId === null ? !e.heroEquipment.equipment : e.action.id === fav.actionId)
+            ) ?? null
+          );
+        }
+        return classifiers.actions.find((a) => a.id === fav.actionId) ?? null;
+      })
+      .filter((e): e is ActionEntry => e !== null)
+  );
+  const result: Record<string | number, ActionEntry[]> = { [FAVORITES_TAB]: favEntries };
+  for (const actionType of classifiers.actionTypes) {
+    result[actionType.id] = actionsByType.value[actionType.id] ?? [];
   }
   return result;
 });

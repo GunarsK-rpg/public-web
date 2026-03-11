@@ -35,6 +35,18 @@
           >
             {{ cost.value }} {{ cost.label }}
           </q-badge>
+          <q-btn
+            v-if="!readonly"
+            flat
+            dense
+            round
+            size="xs"
+            :color="isFavorite ? 'warning' : 'grey'"
+            :title="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
+            @click.stop="emit('toggle-favorite')"
+          >
+            <Star :size="14" :fill="isFavorite ? 'currentColor' : 'none'" />
+          </q-btn>
         </div>
         <div v-if="action.descriptionShort || action.description" class="text-caption text-muted">
           {{ action.descriptionShort || action.description }}
@@ -86,6 +98,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { Star } from 'lucide-vue-next';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
@@ -108,6 +121,11 @@ const props = defineProps<{
   action: Action;
   equipmentInstance?: EquipmentActionInstance;
   readonly?: boolean;
+  isFavorite?: boolean;
+}>();
+
+const emit = defineEmits<{
+  'toggle-favorite': [];
 }>();
 
 const classifiers = useClassifierStore();
