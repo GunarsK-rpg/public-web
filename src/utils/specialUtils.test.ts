@@ -23,6 +23,7 @@ function createHeroEquipment(special: SpecialEntry[], isEquipped = true): HeroEq
     equipment: { id: 1, code: 'test_eq', name: 'Test Equipment' },
     equipType: { id: 1, code: 'weapon', name: 'Weapon' },
     special,
+    specialOverrides: [],
     charges: null,
     maxCharges: null,
     amount: 1,
@@ -217,6 +218,20 @@ describe('getHeroBonus', () => {
       const equipment = [createHeroEquipment([{ type: 'deflect', value: 3 }], false)];
 
       expect(getHeroBonus([], equipment, null, 'deflect')).toBe(0);
+    });
+
+    it('uses specialOverrides over base special', () => {
+      const eq = createHeroEquipment([{ type: 'deflect', value: 2 }], true);
+      eq.specialOverrides = [{ type: 'deflect', value: 5 }];
+
+      expect(getHeroBonus([], [eq], null, 'deflect')).toBe(5);
+    });
+
+    it('falls back to base special when no override for type', () => {
+      const eq = createHeroEquipment([{ type: 'deflect', value: 3 }], true);
+      eq.specialOverrides = [{ type: 'damage', display_value: '1d{dice_size}', value: 10 }];
+
+      expect(getHeroBonus([], [eq], null, 'deflect')).toBe(3);
     });
 
     it('sums from multiple equipped items', () => {

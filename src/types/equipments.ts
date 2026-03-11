@@ -28,10 +28,17 @@ export interface Equipment extends Classifier {
   attributes: EquipmentAttributeRef[];
 }
 
-/** Equipment modification (upgrade or drawback) */
-export interface Modification {
-  type: 'upgrade' | 'drawback';
-  display_value: string;
+/** Applied modification (from heroes.equipment_modifications link table via view) */
+export interface AppliedModification {
+  id: number;
+  modType: 'upgrade' | 'drawback';
+  modification: ClassifierRef | null;
+  special: SpecialEntry[];
+  customText: string | null;
+}
+
+export function isClassifierMod(mod: AppliedModification): boolean {
+  return mod.modification !== null;
 }
 
 /** Hero equipment - upsert payload */
@@ -46,7 +53,7 @@ export interface HeroEquipmentBase {
   customName?: string | null;
   charges?: number | null;
   maxCharges?: number | null;
-  modifications?: Modification[];
+  specialOverrides?: SpecialEntry[];
 }
 
 /** Hero equipment - API response */
@@ -55,7 +62,8 @@ export interface HeroEquipment extends HeroEquipmentBase {
   equipment: ClassifierRef | null;
   equipType: ClassifierRef | null;
   special: SpecialEntry[];
+  specialOverrides: SpecialEntry[];
   charges: number | null;
   maxCharges: number | null;
-  modifications: Modification[];
+  modifications: AppliedModification[];
 }

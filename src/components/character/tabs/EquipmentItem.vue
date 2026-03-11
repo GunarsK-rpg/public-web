@@ -79,9 +79,10 @@
         v-for="(mod, idx) in heroEquipment.modifications"
         :key="idx"
         caption
-        :class="mod.type === 'upgrade' ? 'text-positive' : 'text-negative'"
+        :class="mod.modType === 'upgrade' ? 'text-positive' : 'text-negative'"
       >
-        {{ mod.type === 'upgrade' ? '+' : '-' }} {{ mod.display_value }}
+        {{ mod.modType === 'upgrade' ? '+' : '-' }}
+        {{ mod.modification?.name ?? mod.customText }}
       </q-item-label>
       <q-item-label v-if="heroEquipment.notes" caption class="text-italic">
         {{ heroEquipment.notes }}

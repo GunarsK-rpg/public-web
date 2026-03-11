@@ -10,6 +10,7 @@ import type { SingerForm } from './singerForms';
 import type { Talent } from './talents';
 import type { Unit } from './units';
 import type { EquipmentType, DamageType, Equipment } from './equipments';
+import type { ModificationClassifier } from './modifications';
 import type { EquipmentAttribute } from './equipmentAttributes';
 import type { Condition, Injury } from './conditions';
 import type { GoalStatus, ConnectionType } from './goals';
@@ -53,6 +54,7 @@ export interface Classifiers {
   damageTypes: DamageType[];
   equipmentAttributes: EquipmentAttribute[];
   equipment: Equipment[];
+  modifications: ModificationClassifier[];
 
   // Conditions & Status
   conditions: Condition[];
