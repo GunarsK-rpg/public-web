@@ -1,7 +1,7 @@
 import type { SpecialEntry, HeroEquipment, AppliedModification } from 'src/types';
 import { SPECIAL } from './specialUtils';
 
-const DIE_SIZES = [4, 6, 8, 10, 12, 20];
+export const DIE_SIZES: readonly number[] = [4, 6, 8, 10, 12, 20];
 
 /**
  * Sum the accumulated delta for a given modifier type across all classifier mods.

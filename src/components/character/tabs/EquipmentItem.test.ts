@@ -136,6 +136,7 @@ vi.mock('src/stores/classifiers', () => ({
       { id: 1, code: 'slashing', name: 'Slashing' },
       { id: 2, code: 'piercing', name: 'Piercing' },
     ],
+    modifications: [],
   }),
 }));
 
@@ -300,6 +301,7 @@ describe('EquipmentItem', () => {
           QBanner: {
             template: '<div class="q-banner-stub"><slot /></div>',
           },
+          ModificationLabel: false,
         },
       },
     });
@@ -414,22 +416,55 @@ describe('EquipmentItem', () => {
   // ========================================
   describe('details line', () => {
     it('shows damage for weapons', () => {
-      const wrapper = createWrapper({ equipment: eqRef(1) });
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        special: [{ type: 'damage', display_value: '2d6' }],
+      });
 
       expect(wrapper.text()).toContain('2d6');
       expect(wrapper.text()).toContain('Slashing');
     });
 
     it('shows range for ranged weapons', () => {
-      const wrapper = createWrapper({ equipment: eqRef(2) });
+      const wrapper = createWrapper({
+        equipment: eqRef(2),
+        special: [
+          { type: 'damage', display_value: '1d8' },
+          { type: 'range', display_value: '120 ft' },
+        ],
+      });
 
       expect(wrapper.text()).toContain('120 ft');
     });
 
     it('shows deflect for armor', () => {
-      const wrapper = createWrapper({ equipment: eqRef(3) });
+      const wrapper = createWrapper({
+        equipment: eqRef(3),
+        special: [{ type: 'deflect', value: 2 }],
+      });
 
       expect(wrapper.text()).toContain('Deflect 2');
+    });
+
+    it('resolves {dice_size} placeholder with value', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        special: [{ type: 'damage', display_value: '1d{dice_size}', value: 8 }],
+      });
+
+      expect(wrapper.text()).toContain('1d8');
+      expect(wrapper.text()).not.toContain('{dice_size}');
+    });
+
+    it('displays overridden damage from specialOverrides', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        special: [{ type: 'damage', display_value: '1d{dice_size}', value: 8 }],
+        specialOverrides: [{ type: 'damage', display_value: '1d{dice_size}', value: 10 }],
+      });
+
+      expect(wrapper.text()).toContain('1d10');
+      expect(wrapper.text()).not.toContain('1d8');
     });
 
     it('shows charges for consumables', () => {
@@ -736,6 +771,23 @@ describe('EquipmentItem', () => {
       expect(wrapper.text()).not.toContain('- ');
     });
 
+    it('renders custom text modification with customText', () => {
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        modifications: [
+          {
+            id: 3,
+            modType: 'drawback',
+            modification: null,
+            special: [],
+            customText: 'GM cursed this item',
+          },
+        ],
+      });
+
+      expect(wrapper.text()).toContain('- GM cursed this item');
+    });
+
     it('does not show modification editing controls (moved to dialog)', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
@@ -904,6 +956,7 @@ describe('EquipmentItem', () => {
     it('renders all badges and details together', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
+        special: [{ type: 'damage', display_value: '2d6' }],
         isEquipped: true,
         amount: 2,
         notes: 'Special item',

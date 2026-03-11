@@ -76,6 +76,7 @@
           emit-value
           map-options
           clearable
+          behavior="menu"
           class="col equipment-select"
           @update:model-value="(val) => (newEquipmentByType[eqType.id] = val)"
         />
