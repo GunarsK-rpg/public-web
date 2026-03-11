@@ -480,8 +480,11 @@ async function addClassifierModification(): Promise<void> {
     const updated = response.data;
     localModifications.value = updated.modifications;
     selectedModification.value = null;
-    // Recalculate and save overrides from new mod list
-    const newOverrides = recalculateSpecialFromMods(updated.special, updated.modifications);
+    // Recalculate mod-derived overrides and merge with user stat overrides (e.g. custom damage dice)
+    const newOverrides = mergeSpecial(
+      recalculateSpecialFromMods(updated.special, updated.modifications),
+      buildStatOverrides()
+    );
     await heroStore.updateEquipment(updated.id, { specialOverrides: newOverrides });
     syncStatInputs({ ...updated, specialOverrides: newOverrides });
   } catch (err) {
@@ -504,8 +507,11 @@ async function addCustomModification(): Promise<void> {
     const updated = response.data;
     localModifications.value = updated.modifications;
     newModValue.value = '';
-    // Custom text mods don't have special effects, but recalculate for consistency
-    const newOverrides = recalculateSpecialFromMods(updated.special, updated.modifications);
+    // Recalculate mod-derived overrides and merge with user stat overrides (e.g. custom damage dice)
+    const newOverrides = mergeSpecial(
+      recalculateSpecialFromMods(updated.special, updated.modifications),
+      buildStatOverrides()
+    );
     await heroStore.updateEquipment(updated.id, { specialOverrides: newOverrides });
     syncStatInputs({ ...updated, specialOverrides: newOverrides });
   } catch (err) {
@@ -521,9 +527,11 @@ async function removeModification(modId: number): Promise<void> {
   try {
     await equipmentApi.removeModification(heroStore.hero.id, props.editItem.id, modId);
     localModifications.value = localModifications.value.filter((m) => m.id !== modId);
-    // Recalculate from remaining mods
-    const baseSpecial = props.editItem.special;
-    const newOverrides = recalculateSpecialFromMods(baseSpecial, localModifications.value);
+    // Recalculate mod-derived overrides and merge with user stat overrides (e.g. custom damage dice)
+    const newOverrides = mergeSpecial(
+      recalculateSpecialFromMods(props.editItem.special, localModifications.value),
+      buildStatOverrides()
+    );
     await heroStore.updateEquipment(props.editItem.id, { specialOverrides: newOverrides });
     syncStatInputs({
       ...props.editItem,

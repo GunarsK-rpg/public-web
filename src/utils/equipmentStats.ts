@@ -27,8 +27,8 @@ export function mergeSpecial(
   classifierSpecial: SpecialEntry[],
   overrides: SpecialEntry[]
 ): SpecialEntry[] {
-  if (!overrides.length) return classifierSpecial;
-  if (!classifierSpecial.length) return overrides;
+  if (!overrides?.length) return classifierSpecial ?? [];
+  if (!classifierSpecial?.length) return overrides;
 
   const merged = new Map<string, SpecialEntry>();
   for (const entry of classifierSpecial) {
