@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
+import { Star } from 'lucide-vue-next';
 import ActionItem from './ActionItem.vue';
 import type { Action, ClassifierRef } from 'src/types';
 
@@ -86,9 +87,10 @@ vi.mock('src/constants/theme', () => ({
 }));
 
 describe('ActionItem', () => {
-  const createWrapper = (action: Partial<Action>) =>
+  const createWrapper = (action: Partial<Action>, extraProps: Record<string, unknown> = {}) =>
     shallowMount(ActionItem, {
       props: {
+        ...extraProps,
         action: {
           id: 1,
           name: 'Strike',
@@ -687,6 +689,40 @@ describe('ActionItem', () => {
       await wrapper.find('.use-action-btn').trigger('click');
       expect(mockPatchFocus).not.toHaveBeenCalled();
       expect(mockPatchInvestiture).not.toHaveBeenCalled();
+    });
+  });
+
+  // ========================================
+  // Star Button (Favorites)
+  // ========================================
+  describe('star button', () => {
+    it('shows star button when not readonly', () => {
+      const wrapper = createWrapper({});
+
+      expect(wrapper.findComponent(Star).exists()).toBe(true);
+    });
+
+    it('hides star button when readonly', () => {
+      const wrapper = createWrapper({}, { readonly: true });
+
+      expect(wrapper.findComponent(Star).exists()).toBe(false);
+    });
+
+    it('emits toggle-favorite when star button is clicked', async () => {
+      const wrapper = createWrapper({});
+      const starBtn = wrapper.findAll('.q-btn').find((btn) => btn.findComponent(Star).exists());
+
+      expect(starBtn).toBeTruthy();
+      await starBtn!.trigger('click');
+
+      expect(wrapper.emitted('toggle-favorite')).toBeTruthy();
+    });
+
+    it('does not emit toggle-favorite when clicking the use-action button', async () => {
+      const wrapper = createWrapper({ focusCost: 1 });
+      await wrapper.find('.use-action-btn').trigger('click');
+
+      expect(wrapper.emitted('toggle-favorite')).toBeFalsy();
     });
   });
 });

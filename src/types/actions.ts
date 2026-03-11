@@ -36,6 +36,13 @@ export interface EquipmentActionInstance {
   effectiveSpecial: SpecialEntry[];
 }
 
+/** Hero favorite action (heroes.favorite_actions) */
+export interface HeroFavoriteAction {
+  id: number;
+  actionId: number | null;
+  heroEquipmentId: number | null;
+}
+
 /** Type guard: check if an action entry is an equipment action instance */
 export function isEquipmentActionInstance(
   entry: Action | EquipmentActionInstance

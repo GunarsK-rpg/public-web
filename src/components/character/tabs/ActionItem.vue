@@ -2,56 +2,71 @@
   <q-expansion-item switch-toggle-side dense class="action-expansion-item">
     <template #header>
       <div class="action-header">
-        <div class="action-row-name">
-          <img
-            v-if="activationType?.icon"
-            :src="iconUrl"
-            :alt="activationType?.name ?? 'Action'"
-            :title="activationType?.name ?? 'Action'"
-            class="action-icon icon-theme-aware"
+        <div class="action-main">
+          <div class="action-row-name">
+            <img
+              v-if="activationType?.icon"
+              :src="iconUrl"
+              :alt="activationType?.name ?? 'Action'"
+              :title="activationType?.name ?? 'Action'"
+              class="action-icon icon-theme-aware"
+            />
+            <span class="action-name">{{ displayName }}</span>
+            <SpecialBadges v-if="typedEntries.length" :specials="typedEntries" />
+            <q-badge v-if="effectiveDice" :color="RPG_COLORS.badgeMuted" outline>
+              {{ effectiveDice }}
+            </q-badge>
+            <q-badge v-if="action.damageType" :color="RPG_COLORS.badgeMuted" outline>
+              {{ action.damageType.name }}
+            </q-badge>
+            <q-badge
+              v-for="(mod, idx) in rollModifiers"
+              :key="idx"
+              :color="mod.display_value === 'Disadvantage' ? 'negative' : 'positive'"
+              outline
+            >
+              {{ mod.display_value }}
+            </q-badge>
+            <q-badge
+              v-for="cost in actionCosts"
+              :key="cost.label"
+              :color="cost.color"
+              :title="cost.title"
+              outline
+            >
+              {{ cost.value }} {{ cost.label }}
+            </q-badge>
+          </div>
+          <div v-if="action.descriptionShort || action.description" class="text-caption text-muted">
+            {{ action.descriptionShort || action.description }}
+          </div>
+          <q-btn
+            v-if="hasDeductibleCost && !readonly"
+            class="use-action-btn"
+            size="sm"
+            flat
+            dense
+            color="primary"
+            label="Use"
+            :disable="!canUse"
+            :loading="using"
+            title="Use action"
+            @click.stop="useAction"
           />
-          <span class="action-name">{{ displayName }}</span>
-          <SpecialBadges v-if="typedEntries.length" :specials="typedEntries" />
-          <q-badge v-if="effectiveDice" :color="RPG_COLORS.badgeMuted" outline>
-            {{ effectiveDice }}
-          </q-badge>
-          <q-badge v-if="action.damageType" :color="RPG_COLORS.badgeMuted" outline>
-            {{ action.damageType.name }}
-          </q-badge>
-          <q-badge
-            v-for="(mod, idx) in rollModifiers"
-            :key="idx"
-            :color="mod.display_value === 'Disadvantage' ? 'negative' : 'positive'"
-            outline
-          >
-            {{ mod.display_value }}
-          </q-badge>
-          <q-badge
-            v-for="cost in actionCosts"
-            :key="cost.label"
-            :color="cost.color"
-            :title="cost.title"
-            outline
-          >
-            {{ cost.value }} {{ cost.label }}
-          </q-badge>
-        </div>
-        <div v-if="action.descriptionShort || action.description" class="text-caption text-muted">
-          {{ action.descriptionShort || action.description }}
         </div>
         <q-btn
-          v-if="hasDeductibleCost && !readonly"
-          class="use-action-btn"
-          size="sm"
+          v-if="!readonly"
           flat
           dense
-          color="primary"
-          label="Use"
-          :disable="!canUse"
-          :loading="using"
-          title="Use action"
-          @click.stop="useAction"
-        />
+          round
+          size="xs"
+          :color="isFavorite ? 'warning' : 'grey'"
+          :title="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
+          :aria-label="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
+          @click.stop="emit('toggle-favorite')"
+        >
+          <Star :size="14" :fill="isFavorite ? 'currentColor' : 'none'" />
+        </q-btn>
       </div>
     </template>
 
@@ -86,6 +101,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { Star } from 'lucide-vue-next';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
@@ -108,6 +124,11 @@ const props = defineProps<{
   action: Action;
   equipmentInstance?: EquipmentActionInstance;
   readonly?: boolean;
+  isFavorite?: boolean;
+}>();
+
+const emit = defineEmits<{
+  'toggle-favorite': [];
 }>();
 
 const classifiers = useClassifierStore();
@@ -252,6 +273,15 @@ const actionCosts = computed(() => {
 
 <style scoped>
 .action-header {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.action-main {
   display: flex;
   flex-direction: column;
   flex: 1;

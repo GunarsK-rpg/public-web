@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import ActionsTab from './ActionsTab.vue';
-import type { HeroEquipment, HeroTalent } from 'src/types';
+import type { HeroEquipment, HeroFavoriteAction, HeroTalent } from 'src/types';
 
 const mockHero = ref<{
   equipment: Partial<HeroEquipment>[];
@@ -10,9 +10,20 @@ const mockHero = ref<{
   radiantOrder: { id: number; code: string; name: string } | null;
 } | null>(null);
 
+const mockFavoriteActions = ref<HeroFavoriteAction[]>([]);
+const mockAddFavoriteAction = vi.fn();
+const mockRemoveFavoriteAction = vi.fn();
+const mockFindFavoriteAction = vi.fn().mockReturnValue(undefined);
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     hero: mockHero.value,
+    get favoriteActions() {
+      return mockFavoriteActions.value;
+    },
+    findFavoriteAction: mockFindFavoriteAction,
+    addFavoriteAction: mockAddFavoriteAction,
+    removeFavoriteAction: mockRemoveFavoriteAction,
   }),
 }));
 
@@ -181,9 +192,11 @@ describe('ActionsTab', () => {
             props: ['bordered', 'separator'],
           },
           ActionItem: {
+            name: 'ActionItem',
             template:
               '<div class="action-item" :data-equip-id="equipmentInstance?.heroEquipment?.id">{{ action.name }}</div>',
-            props: ['action', 'equipmentInstance', 'readonly'],
+            props: ['action', 'equipmentInstance', 'readonly', 'isFavorite'],
+            emits: ['toggle-favorite'],
           },
         },
       },
@@ -191,6 +204,8 @@ describe('ActionsTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFavoriteActions.value = [];
+    mockFindFavoriteAction.mockReturnValue(undefined);
     mockHero.value = {
       equipment: [],
       talents: [],
@@ -543,6 +558,76 @@ describe('ActionsTab', () => {
 
       const legend = wrapper.find('.icon-legend');
       expect(legend.text()).toContain('Action Types');
+    });
+  });
+
+  // ========================================
+  // Favorites Tab
+  // ========================================
+  describe('favorites tab', () => {
+    it('does not render favorites tab when no favorites', () => {
+      mockFavoriteActions.value = [];
+      const wrapper = createWrapper();
+
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.attributes('data-name') === 'favorites')).toBe(false);
+    });
+
+    it('renders favorites tab when favorites exist', () => {
+      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      const wrapper = createWrapper();
+
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.attributes('data-name') === 'favorites')).toBe(true);
+    });
+
+    it('favorites tab appears before other tabs', () => {
+      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      const wrapper = createWrapper();
+
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs[0]?.attributes('data-name')).toBe('favorites');
+    });
+
+    it('renders favorites tab panel when favorites exist', () => {
+      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      const wrapper = createWrapper();
+
+      const panels = wrapper.findAll('.q-tab-panel');
+      expect(panels.some((p) => p.attributes('data-name') === 'favorites')).toBe(true);
+    });
+
+    it('has 5 panels (favorites + 4 action types) when favorites exist', () => {
+      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      const wrapper = createWrapper();
+
+      const panels = wrapper.findAll('.q-tab-panel');
+      expect(panels.length).toBe(5);
+    });
+
+    it('toggleFavorite calls addFavoriteAction for unfavorited classifier action', async () => {
+      mockFindFavoriteAction.mockReturnValue(undefined);
+      const wrapper = createWrapper();
+
+      const actionItems = wrapper.findAllComponents({ name: 'ActionItem' });
+      expect(actionItems.length).toBeGreaterThan(0);
+      await actionItems[0]!.vm.$emit('toggle-favorite');
+      await wrapper.vm.$nextTick();
+
+      expect(mockAddFavoriteAction).toHaveBeenCalled();
+    });
+
+    it('toggleFavorite calls removeFavoriteAction for favorited classifier action', async () => {
+      const existingFavorite = { id: 42, actionId: 1, heroEquipmentId: null };
+      mockFindFavoriteAction.mockReturnValue(existingFavorite);
+      const wrapper = createWrapper();
+
+      const actionItems = wrapper.findAllComponents({ name: 'ActionItem' });
+      expect(actionItems.length).toBeGreaterThan(0);
+      await actionItems[0]!.vm.$emit('toggle-favorite');
+      await wrapper.vm.$nextTick();
+
+      expect(mockRemoveFavoriteAction).toHaveBeenCalledWith(existingFavorite.id);
     });
   });
 });
