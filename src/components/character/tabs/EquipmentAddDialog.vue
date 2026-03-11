@@ -480,7 +480,10 @@ function buildModOverrides(
 ): SpecialEntry[] {
   if (isCustom) return buildStatOverrides();
   const modOverrides = recalculateSpecialFromMods(baseSpecial, modifications);
-  const baseTypes = new Set(baseSpecial.map((e) => e.type));
+  const baseTypes = new Set([
+    ...baseSpecial.map((e) => e.type),
+    ...modOverrides.map((e) => e.type),
+  ]);
   const extraStats = buildStatOverrides().filter((e) => !baseTypes.has(e.type));
   if (!extraStats.length) return modOverrides;
   return mergeSpecial(modOverrides, extraStats);
