@@ -248,6 +248,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { X, Plus } from 'lucide-vue-next';
 import ModificationLabel from './ModificationLabel.vue';
 import { useHeroStore } from 'src/stores/hero';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
 import { clamp } from 'src/utils/numberUtils';
 import { getSpecialByType, SPECIAL } from 'src/utils/specialUtils';
@@ -260,8 +261,8 @@ import type {
   ModificationClassifier,
 } from 'src/types';
 import type { SpecialEntry } from 'src/types/shared';
+import { DIE_SIZES } from 'src/utils/equipmentStats';
 
-const DIE_SIZES = [4, 6, 8, 10, 12, 20];
 const dieSizeOptions = DIE_SIZES.map((d) => ({ value: d, label: `d${d}` }));
 
 const props = defineProps<{
@@ -276,6 +277,7 @@ const emit = defineEmits<{
 
 const classifiers = useClassifierStore();
 const heroStore = useHeroStore();
+const { handleError } = useErrorHandler();
 const saving = computed(() => heroStore.saving);
 const modBusy = ref(false);
 
@@ -478,8 +480,8 @@ async function addClassifierModification(): Promise<void> {
     const newOverrides = recalculateSpecialFromMods(updated.special, updated.modifications);
     await heroStore.updateEquipment(updated.id, { specialOverrides: newOverrides });
     syncStatInputs({ ...updated, specialOverrides: newOverrides });
-  } catch {
-    // Handled by API interceptor logging
+  } catch (err) {
+    handleError(err as Error, { message: 'Failed to add modification' });
   } finally {
     modBusy.value = false;
   }
@@ -502,8 +504,8 @@ async function addCustomModification(): Promise<void> {
     const newOverrides = recalculateSpecialFromMods(updated.special, updated.modifications);
     await heroStore.updateEquipment(updated.id, { specialOverrides: newOverrides });
     syncStatInputs({ ...updated, specialOverrides: newOverrides });
-  } catch {
-    // Handled by API interceptor logging
+  } catch (err) {
+    handleError(err as Error, { message: 'Failed to add modification' });
   } finally {
     modBusy.value = false;
   }
@@ -524,8 +526,8 @@ async function removeModification(modId: number): Promise<void> {
       specialOverrides: newOverrides,
       modifications: localModifications.value,
     });
-  } catch {
-    // Handled by API interceptor logging
+  } catch (err) {
+    handleError(err as Error, { message: 'Failed to remove modification' });
   } finally {
     modBusy.value = false;
   }

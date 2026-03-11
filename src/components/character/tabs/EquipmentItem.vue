@@ -75,7 +75,7 @@
         </div>
       </q-item-label>
       <!-- Modifications (read-only display; editing in dialog) -->
-      <q-item-label v-for="(mod, idx) in heroEquipment.modifications" :key="idx" caption>
+      <q-item-label v-for="mod in heroEquipment.modifications" :key="mod.id" caption>
         <ModificationLabel :mod="mod" />
       </q-item-label>
       <q-item-label v-if="heroEquipment.notes" caption class="text-italic">

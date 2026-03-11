@@ -90,6 +90,14 @@ vi.mock('src/stores/classifiers', () => ({
   }),
 }));
 
+const mockHandleError = vi.fn();
+
+vi.mock('src/composables/useErrorHandler', () => ({
+  useErrorHandler: () => ({
+    handleError: mockHandleError,
+  }),
+}));
+
 const mockAddModification = vi.fn();
 const mockRemoveModification = vi.fn();
 
@@ -452,10 +460,9 @@ describe('EquipmentAddDialog', () => {
 
       await (wrapper.vm as unknown as { onSave: () => Promise<void> }).onSave();
 
-      if (mockUpdateEquipment.mock.calls.length > 0) {
-        const payload = mockUpdateEquipment.mock.calls[0]![1] as Record<string, unknown>;
-        expect(payload).not.toHaveProperty('modifications');
-      }
+      expect(mockUpdateEquipment).toHaveBeenCalledTimes(1);
+      const payload = mockUpdateEquipment.mock.calls[0]![1] as Record<string, unknown>;
+      expect(payload).not.toHaveProperty('modifications');
     });
   });
 
