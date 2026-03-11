@@ -470,13 +470,20 @@ function buildStatOverrides(): SpecialEntry[] {
 
 // For classifier equipment: recalculate from classifier base.
 // For custom equipment: user sets the final value — skip mod recalculation entirely.
+// For classifier equipment, stat overrides for stats absent from the classifier base
+// (e.g. a manually-set damage die on a fabrial) are preserved, since mod recalculation
+// only operates on stats the classifier defines.
 function buildModOverrides(
   baseSpecial: SpecialEntry[],
   modifications: AppliedModification[],
   isCustom: boolean
 ): SpecialEntry[] {
   if (isCustom) return buildStatOverrides();
-  return recalculateSpecialFromMods(baseSpecial, modifications);
+  const modOverrides = recalculateSpecialFromMods(baseSpecial, modifications);
+  const baseTypes = new Set(baseSpecial.map((e) => e.type));
+  const extraStats = buildStatOverrides().filter((e) => !baseTypes.has(e.type));
+  if (!extraStats.length) return modOverrides;
+  return mergeSpecial(modOverrides, extraStats);
 }
 
 // Modification management (calls API directly)
