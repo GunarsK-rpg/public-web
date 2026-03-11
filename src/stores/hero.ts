@@ -434,14 +434,15 @@ export const useHeroStore = defineStore('hero', () => {
     heroEquipmentId: number | null = null
   ): Promise<void> {
     if (!hero.value) return;
+    const currentHeroId = hero.value.id;
     savingCount.value++;
     try {
       const response = await heroService.upsertSubResource<HeroFavoriteAction>(
-        hero.value.id,
+        currentHeroId,
         'favorites',
-        { heroId: hero.value.id, actionId, heroEquipmentId }
+        { heroId: currentHeroId, actionId, heroEquipmentId }
       );
-      if (!hero.value) return;
+      if (!hero.value || hero.value.id !== currentHeroId) return;
       const idx = hero.value.favoriteActions.findIndex((f) => f.id === response.data.id);
       if (idx !== -1) {
         hero.value.favoriteActions[idx] = response.data;
@@ -457,10 +458,11 @@ export const useHeroStore = defineStore('hero', () => {
 
   async function removeFavoriteAction(favoriteId: number): Promise<void> {
     if (!hero.value) return;
+    const currentHeroId = hero.value.id;
     savingCount.value++;
     try {
-      await heroService.deleteSubResource(hero.value.id, 'favorites', favoriteId);
-      if (!hero.value) return;
+      await heroService.deleteSubResource(currentHeroId, 'favorites', favoriteId);
+      if (!hero.value || hero.value.id !== currentHeroId) return;
       hero.value.favoriteActions = hero.value.favoriteActions.filter((f) => f.id !== favoriteId);
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to remove favorite' });

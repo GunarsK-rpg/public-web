@@ -616,5 +616,18 @@ describe('ActionsTab', () => {
 
       expect(mockAddFavoriteAction).toHaveBeenCalled();
     });
+
+    it('toggleFavorite calls removeFavoriteAction for favorited classifier action', async () => {
+      const existingFavorite = { id: 42, actionId: 1, heroEquipmentId: null };
+      mockFindFavoriteAction.mockReturnValue(existingFavorite);
+      const wrapper = createWrapper();
+
+      const actionItems = wrapper.findAllComponents({ name: 'ActionItem' });
+      expect(actionItems.length).toBeGreaterThan(0);
+      await actionItems[0]!.vm.$emit('toggle-favorite');
+      await wrapper.vm.$nextTick();
+
+      expect(mockRemoveFavoriteAction).toHaveBeenCalledWith(existingFavorite.id);
+    });
   });
 });
