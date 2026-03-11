@@ -468,14 +468,15 @@ function buildStatOverrides(): SpecialEntry[] {
   return overrides;
 }
 
-// For classifier equipment: recalculate from classifier base (ignores form inputs).
-// For custom equipment: use current form stats as the base so die modifiers apply on top.
+// For classifier equipment: recalculate from classifier base.
+// For custom equipment: user sets the final value — skip mod recalculation entirely.
 function buildModOverrides(
   baseSpecial: SpecialEntry[],
   modifications: AppliedModification[],
   isCustom: boolean
 ): SpecialEntry[] {
-  return recalculateSpecialFromMods(isCustom ? buildStatOverrides() : baseSpecial, modifications);
+  if (isCustom) return buildStatOverrides();
+  return recalculateSpecialFromMods(baseSpecial, modifications);
 }
 
 // Modification management (calls API directly)
@@ -602,7 +603,11 @@ async function onSave(): Promise<void> {
     } else if (item.maxCharges != null) {
       changes.maxCharges = null;
     }
-    // Merge mod-derived overrides with manual stat edits (stat entries win per type)
+    // On save, merge mod-derived overrides with the user's manual stat edits so
+    // explicit form changes (buildStatOverrides) always win per special type.
+    // During mod add/remove, buildModOverrides recomputes from the pristine
+    // classifier base and syncs the UI; here we intentionally allow stat edits to
+    // override that result (e.g. user manually adjusts range after a mod applies it).
     const modOverrides = recalculateSpecialFromMods(item.special, localModifications.value);
     changes.specialOverrides = mergeSpecial(modOverrides, buildStatOverrides());
     await heroStore.updateEquipment(item.id, changes);

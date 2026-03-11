@@ -181,7 +181,8 @@ describe('ActionsTab', () => {
             props: ['bordered', 'separator'],
           },
           ActionItem: {
-            template: '<div class="action-item">{{ action.name }}</div>',
+            template:
+              '<div class="action-item" :data-equip-id="equipmentInstance?.heroEquipment?.id">{{ action.name }}</div>',
             props: ['action', 'equipmentInstance', 'readonly'],
           },
         },
@@ -360,6 +361,9 @@ describe('ActionsTab', () => {
       const items = equipPanel.findAll('.action-item');
       const names = items.map((item) => item.text());
       expect(names.filter((n) => n === 'Sword Slash')).toHaveLength(2);
+      const equipIds = items.map((item) => item.attributes('data-equip-id'));
+      expect(equipIds).toContain('10');
+      expect(equipIds).toContain('11');
     });
 
     it('only shows actions for equipped items in mixed inventory', () => {
