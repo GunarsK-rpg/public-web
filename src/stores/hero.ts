@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Hero, HeroSheet, HeroEquipment } from 'src/types';
-import type { CampaignRef, ClassifierRef } from 'src/types/shared';
+import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
@@ -315,7 +315,7 @@ export const useHeroStore = defineStore('hero', () => {
   async function addCustomEquipment(
     equipTypeCode: string,
     customName: string,
-    options?: { notes?: string; maxCharges?: number }
+    options?: { notes?: string; maxCharges?: number; specialOverrides?: SpecialEntry[] }
   ): Promise<boolean> {
     if (!hero.value) return false;
     savingCount.value++;
@@ -331,6 +331,9 @@ export const useHeroStore = defineStore('hero', () => {
       if (options?.maxCharges != null) {
         payload.maxCharges = options.maxCharges;
         payload.charges = options.maxCharges;
+      }
+      if (options?.specialOverrides?.length) {
+        payload.specialOverrides = options.specialOverrides;
       }
       const response = await heroService.upsertSubResource<HeroEquipment>(
         hero.value.id,
@@ -359,7 +362,7 @@ export const useHeroStore = defineStore('hero', () => {
         | 'customName'
         | 'charges'
         | 'maxCharges'
-        | 'modifications'
+        | 'specialOverrides'
       >
     >
   ): Promise<void> {
@@ -392,7 +395,8 @@ export const useHeroStore = defineStore('hero', () => {
               ? null
               : existing.charges;
       }
-      if (changes.modifications !== undefined) payload.modifications = changes.modifications;
+      if (changes.specialOverrides !== undefined)
+        payload.specialOverrides = changes.specialOverrides;
       const response = await heroService.upsertSubResource<HeroEquipment>(
         hero.value.id,
         'equipment',

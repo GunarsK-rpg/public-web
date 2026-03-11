@@ -361,6 +361,49 @@ describe('buildEquipmentPayload', () => {
     expect(payload.customName).toBe('Mystery Gadget');
     expect(payload.notes).toBe('Hand-crafted');
   });
+
+  it('includes specialOverrides when non-empty', () => {
+    const overrides = [{ type: 'damage', value: 8, display_value: '{dice_size}' }];
+    const equip: HeroEquipment = {
+      id: 80,
+      heroId: 1,
+      equipment: { id: 13, code: 'longsword', name: 'Longsword' },
+      equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+      amount: 1,
+      isEquipped: true,
+      notes: null,
+      customName: null,
+      special: [{ type: 'damage', value: 6, display_value: '{dice_size}' }],
+      specialOverrides: overrides,
+      charges: null,
+      maxCharges: null,
+      modifications: [],
+    };
+    const payload = buildEquipmentPayload(1, equip);
+
+    expect(payload.specialOverrides).toEqual(overrides);
+  });
+
+  it('omits specialOverrides when empty', () => {
+    const equip: HeroEquipment = {
+      id: 60,
+      heroId: 1,
+      equipment: { id: 13, code: 'longsword', name: 'Longsword' },
+      equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+      amount: 1,
+      isEquipped: true,
+      notes: null,
+      customName: null,
+      special: [],
+      specialOverrides: [],
+      charges: null,
+      maxCharges: null,
+      modifications: [],
+    };
+    const payload = buildEquipmentPayload(1, equip);
+
+    expect(payload.specialOverrides).toBeUndefined();
+  });
 });
 
 // ========================================

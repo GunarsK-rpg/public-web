@@ -107,6 +107,7 @@ export function buildEquipmentPayload(heroId: number, equip: HeroEquipment): Her
     isEquipped: equip.isEquipped,
     notes: equip.notes ?? null,
     customName: equip.customName ?? null,
+    ...(equip.specialOverrides.length > 0 && { specialOverrides: equip.specialOverrides }),
   };
 }
 

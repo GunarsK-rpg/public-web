@@ -75,14 +75,8 @@
         </div>
       </q-item-label>
       <!-- Modifications (read-only display; editing in dialog) -->
-      <q-item-label
-        v-for="(mod, idx) in heroEquipment.modifications"
-        :key="idx"
-        caption
-        :class="mod.modType === 'upgrade' ? 'text-positive' : 'text-negative'"
-      >
-        {{ mod.modType === 'upgrade' ? '+' : '-' }}
-        {{ mod.modification?.name ?? mod.customText }}
+      <q-item-label v-for="(mod, idx) in heroEquipment.modifications" :key="idx" caption>
+        <ModificationLabel :mod="mod" />
       </q-item-label>
       <q-item-label v-if="heroEquipment.notes" caption class="text-italic">
         {{ heroEquipment.notes }}
@@ -167,10 +161,12 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroStore } from 'src/stores/hero';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
 import { Pencil, Minus, Plus, Shield, ShieldOff, Trash2 } from 'lucide-vue-next';
+import ModificationLabel from './ModificationLabel.vue';
 import { findById } from 'src/utils/arrayUtils';
 import type { HeroEquipment } from 'src/types';
 import { MAX_EQUIPMENT_STACK, INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';
-import { getSpecialByType, SPECIAL } from 'src/utils/specialUtils';
+import { getSpecialByType, resolveDiceSize, SPECIAL } from 'src/utils/specialUtils';
+import { getEffectiveSpecial } from 'src/utils/equipmentStats';
 
 const props = defineProps<{
   heroEquipment: HeroEquipment;
@@ -215,18 +211,18 @@ const traitBadges = computed(() => {
   });
 });
 
-// Build details line from special properties
+// Build details line from effective special (overrides merged over classifier base)
 const detailsLine = computed(() => {
-  const eq = equipment.value;
-  const special = eq?.special ?? [];
+  const special = getEffectiveSpecial(props.heroEquipment);
   if (!special.length) return '';
 
   const parts: string[] = [];
 
   const damage = getSpecialByType(special, SPECIAL.DAMAGE);
   if (damage?.display_value) {
-    const damageTypeName = eq?.damageType?.name;
-    parts.push(`${damage.display_value}${damageTypeName ? ` ${damageTypeName}` : ''}`);
+    const label = resolveDiceSize(damage.display_value, damage.value);
+    const damageTypeName = equipment.value?.damageType?.name;
+    parts.push(`${label}${damageTypeName ? ` ${damageTypeName}` : ''}`);
   }
 
   const range = getSpecialByType(special, SPECIAL.RANGE);

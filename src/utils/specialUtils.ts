@@ -65,6 +65,14 @@ export function resolveDamageScaling(
 }
 
 /**
+ * Replace {dice_size} placeholder with the entry's numeric value (e.g. "1d{dice_size}" + 8 -> "1d8").
+ */
+export function resolveDiceSize(displayValue: string, dieSize: number | undefined): string {
+  if (dieSize == null) return displayValue;
+  return displayValue.replace('{dice_size}', String(dieSize));
+}
+
+/**
  * Prepend the hero's skill modifier to a skill display value (e.g. "Light Weaponry" -> "+4 Light Weaponry").
  */
 export function resolveSkillModifier(displayValue: string, skillModifier: number): string {
