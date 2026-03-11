@@ -72,7 +72,10 @@ import { findById, findByCode } from 'src/utils/arrayUtils';
 import { getIconUrl } from 'src/utils/iconUrl';
 import { getEffectiveSpecial } from 'src/utils/equipmentStats';
 import { SPECIAL } from 'src/utils/specialUtils';
-import { createCustomEquipmentAction } from 'src/utils/equipmentActionUtils';
+import {
+  createCustomEquipmentAction,
+  getInstanceWeaponLabel,
+} from 'src/utils/equipmentActionUtils';
 import ActionItem from './ActionItem.vue';
 import type { Action, EquipmentActionInstance } from 'src/types';
 import { isEquipmentActionInstance } from 'src/types';
@@ -148,26 +151,15 @@ function getEntryKey(entry: ActionEntry): string {
   return String(entry.id);
 }
 
-// Sort action entries by activation type display order, then by name.
-// Equipment instances add a weapon label tiebreaker.
+function entrySortKey(entry: ActionEntry): string {
+  const action = getEntryAction(entry);
+  const order = activationTypeOrder.value.get(action.activationType.id) ?? Number.MAX_SAFE_INTEGER;
+  const label = isEquipmentActionInstance(entry) ? (getInstanceWeaponLabel(entry) ?? '') : '';
+  return `${String(order).padStart(10, '0')}\0${action.name}\0${label}`;
+}
+
 function sortEntries<T extends ActionEntry>(entries: T[]): T[] {
-  return [...entries].sort((a, b) => {
-    const actionA = getEntryAction(a);
-    const actionB = getEntryAction(b);
-    const orderA =
-      activationTypeOrder.value.get(actionA.activationType.id) ?? Number.MAX_SAFE_INTEGER;
-    const orderB =
-      activationTypeOrder.value.get(actionB.activationType.id) ?? Number.MAX_SAFE_INTEGER;
-    if (orderA !== orderB) return orderA - orderB;
-    const nameComp = actionA.name.localeCompare(actionB.name);
-    if (nameComp !== 0) return nameComp;
-    if (isEquipmentActionInstance(a) && isEquipmentActionInstance(b)) {
-      const labelA = a.heroEquipment.customName ?? a.heroEquipment.equipment?.name ?? '';
-      const labelB = b.heroEquipment.customName ?? b.heroEquipment.equipment?.name ?? '';
-      return labelA.localeCompare(labelB);
-    }
-    return 0;
-  });
+  return [...entries].sort((a, b) => entrySortKey(a).localeCompare(entrySortKey(b)));
 }
 
 // Pre-compute action links map for O(1) lookup: objectId → Set<actionId>
@@ -218,37 +210,34 @@ function getHeroObjectIds(actionTypeCode: string): Set<number> {
 function getEquipmentActionInstances(actionTypeId: number): EquipmentActionInstance[] {
   const actionType = findById(classifiers.actionTypes, actionTypeId);
   if (!actionType) return [];
-
   const defaultActivationType = findByCode(classifiers.activationTypes, 'action');
-  const instances: EquipmentActionInstance[] = [];
 
-  for (const heroEquip of (heroStore.hero?.equipment || []).filter((e) => e.isEquipped)) {
-    if (heroEquip.equipment) {
-      // Classifier-linked equipment: resolve actions via action links
-      const actionIds = actionLinksMap.value.get(heroEquip.equipment.id);
-      if (!actionIds) continue;
-      for (const actionId of actionIds) {
-        const action = findById(classifiers.actions, actionId);
-        if (!action || action.actionType.id !== actionTypeId) continue;
-        instances.push({
-          action,
-          heroEquipment: heroEquip,
-          effectiveSpecial: getEffectiveSpecial(heroEquip),
-        });
-      }
-    } else if (defaultActivationType) {
-      // Custom equipment: synthesize an attack action if it has damage dice
-      const effectiveSpecial = getEffectiveSpecial(heroEquip);
-      if (!effectiveSpecial.some((s) => s.type === SPECIAL.DAMAGE && s.value != null)) continue;
-      instances.push({
-        action: createCustomEquipmentAction(heroEquip, actionType, defaultActivationType),
-        heroEquipment: heroEquip,
-        effectiveSpecial,
-      });
-    }
-  }
-
-  return sortEntries(instances);
+  return sortEntries(
+    (heroStore.hero?.equipment || [])
+      .filter((e) => e.isEquipped)
+      .flatMap((heroEquip): EquipmentActionInstance[] => {
+        const effectiveSpecial = getEffectiveSpecial(heroEquip);
+        if (heroEquip.equipment) {
+          return [...(actionLinksMap.value.get(heroEquip.equipment.id) ?? [])]
+            .map((id) => findById(classifiers.actions, id))
+            .filter((a): a is Action => !!a && a.actionType.id === actionTypeId)
+            .map((action) => ({ action, heroEquipment: heroEquip, effectiveSpecial }));
+        }
+        if (
+          defaultActivationType &&
+          effectiveSpecial.some((s) => s.type === SPECIAL.DAMAGE && s.value != null)
+        ) {
+          return [
+            {
+              action: createCustomEquipmentAction(heroEquip, actionType, defaultActivationType),
+              heroEquipment: heroEquip,
+              effectiveSpecial,
+            },
+          ];
+        }
+        return [];
+      })
+  );
 }
 
 // Get actions by action type ID

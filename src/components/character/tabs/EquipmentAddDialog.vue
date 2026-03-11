@@ -468,6 +468,16 @@ function buildStatOverrides(): SpecialEntry[] {
   return overrides;
 }
 
+// For classifier equipment: recalculate from classifier base (ignores form inputs).
+// For custom equipment: use current form stats as the base so die modifiers apply on top.
+function buildModOverrides(
+  baseSpecial: SpecialEntry[],
+  modifications: AppliedModification[],
+  isCustom: boolean
+): SpecialEntry[] {
+  return recalculateSpecialFromMods(isCustom ? buildStatOverrides() : baseSpecial, modifications);
+}
+
 // Modification management (calls API directly)
 async function addClassifierModification(): Promise<void> {
   if (!selectedModification.value || !props.editItem || !heroStore.hero) return;
@@ -480,10 +490,10 @@ async function addClassifierModification(): Promise<void> {
     const updated = response.data;
     localModifications.value = updated.modifications;
     selectedModification.value = null;
-    // Recalculate mod-derived overrides and merge with user stat overrides (e.g. custom damage dice)
-    const newOverrides = mergeSpecial(
-      recalculateSpecialFromMods(updated.special, updated.modifications),
-      buildStatOverrides()
+    const newOverrides = buildModOverrides(
+      updated.special,
+      updated.modifications,
+      !updated.equipment
     );
     await heroStore.updateEquipment(updated.id, { specialOverrides: newOverrides });
     syncStatInputs({ ...updated, specialOverrides: newOverrides });
@@ -507,10 +517,10 @@ async function addCustomModification(): Promise<void> {
     const updated = response.data;
     localModifications.value = updated.modifications;
     newModValue.value = '';
-    // Recalculate mod-derived overrides and merge with user stat overrides (e.g. custom damage dice)
-    const newOverrides = mergeSpecial(
-      recalculateSpecialFromMods(updated.special, updated.modifications),
-      buildStatOverrides()
+    const newOverrides = buildModOverrides(
+      updated.special,
+      updated.modifications,
+      !updated.equipment
     );
     await heroStore.updateEquipment(updated.id, { specialOverrides: newOverrides });
     syncStatInputs({ ...updated, specialOverrides: newOverrides });
@@ -527,10 +537,10 @@ async function removeModification(modId: number): Promise<void> {
   try {
     await equipmentApi.removeModification(heroStore.hero.id, props.editItem.id, modId);
     localModifications.value = localModifications.value.filter((m) => m.id !== modId);
-    // Recalculate mod-derived overrides and merge with user stat overrides (e.g. custom damage dice)
-    const newOverrides = mergeSpecial(
-      recalculateSpecialFromMods(props.editItem.special, localModifications.value),
-      buildStatOverrides()
+    const newOverrides = buildModOverrides(
+      props.editItem.special,
+      localModifications.value,
+      !props.editItem.equipment
     );
     await heroStore.updateEquipment(props.editItem.id, { specialOverrides: newOverrides });
     syncStatInputs({

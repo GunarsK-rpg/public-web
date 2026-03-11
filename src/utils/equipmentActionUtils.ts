@@ -9,8 +9,10 @@ import { SPECIAL } from './specialUtils';
  */
 export function getInstanceDice(instance: EquipmentActionInstance): string | null {
   const damageEntry = instance.effectiveSpecial.find((s) => s.type === SPECIAL.DAMAGE);
-  if (damageEntry?.value != null && damageEntry.display_value) {
-    return damageEntry.display_value.replace('{dice_size}', String(damageEntry.value));
+  if (damageEntry?.display_value) {
+    return damageEntry.value != null
+      ? damageEntry.display_value.replace('{dice_size}', String(damageEntry.value))
+      : damageEntry.display_value;
   }
   return instance.action.dice ?? null;
 }
@@ -20,18 +22,16 @@ export function getInstanceDice(instance: EquipmentActionInstance): string | nul
  * values where they exist (range, skill, etc.).
  */
 export function getInstanceActionSpecial(instance: EquipmentActionInstance): SpecialEntry[] {
-  const actionSpecial = instance.action.special ?? [];
-  const equipSpecial = instance.effectiveSpecial;
-
+  const actionMap = new Map<string, SpecialEntry>();
+  for (const entry of instance.action.special ?? []) {
+    actionMap.set(entry.type, entry);
+  }
   const equipMap = new Map<string, SpecialEntry>();
-  for (const entry of equipSpecial) {
+  for (const entry of instance.effectiveSpecial) {
     equipMap.set(entry.type, entry);
   }
-
-  return actionSpecial.map((actionEntry) => {
-    const equipEntry = equipMap.get(actionEntry.type);
-    return equipEntry ?? actionEntry;
-  });
+  const types = new Set([...actionMap.keys(), ...equipMap.keys()]);
+  return [...types].map((type) => equipMap.get(type) ?? actionMap.get(type)!);
 }
 
 /**

@@ -10,6 +10,8 @@
       :tabindex="trait.description ? 0 : undefined"
       :role="trait.description ? 'button' : undefined"
       :aria-haspopup="trait.description ? 'dialog' : undefined"
+      @keydown.enter.prevent="trait.description && ($event.currentTarget as HTMLElement).click()"
+      @keydown.space.prevent="trait.description && ($event.currentTarget as HTMLElement).click()"
     >
       {{ trait.label }}
       <q-popup-proxy v-if="trait.description" :breakpoint="0" :offset="[0, 8]">

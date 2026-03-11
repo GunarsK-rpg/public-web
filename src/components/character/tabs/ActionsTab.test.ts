@@ -331,6 +331,37 @@ describe('ActionsTab', () => {
       expect(wrapper.text()).toContain('Bow Shot');
     });
 
+    it('renders separate action instances for two equipped items sharing the same equipment id', () => {
+      mockHero.value = {
+        equipment: [
+          {
+            id: 10,
+            equipment: { id: 1, code: 'e1', name: 'Sword A' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          },
+          {
+            id: 11,
+            equipment: { id: 1, code: 'e1', name: 'Sword B' },
+            isEquipped: true,
+            special: [],
+            specialOverrides: [],
+            modifications: [],
+          },
+        ],
+        talents: [],
+        radiantOrder: null,
+      };
+      const wrapper = createWrapper();
+
+      const equipPanel = wrapper.findAll('.q-tab-panel')[1]!;
+      const items = equipPanel.findAll('.action-item');
+      const names = items.map((item) => item.text());
+      expect(names.filter((n) => n === 'Sword Slash')).toHaveLength(2);
+    });
+
     it('only shows actions for equipped items in mixed inventory', () => {
       mockHero.value = {
         equipment: [
