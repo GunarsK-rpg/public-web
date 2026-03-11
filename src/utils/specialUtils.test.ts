@@ -220,6 +220,20 @@ describe('getHeroBonus', () => {
       expect(getHeroBonus([], equipment, null, 'deflect')).toBe(0);
     });
 
+    it('uses specialOverrides over base special', () => {
+      const eq = createHeroEquipment([{ type: 'deflect', value: 2 }], true);
+      eq.specialOverrides = [{ type: 'deflect', value: 5 }];
+
+      expect(getHeroBonus([], [eq], null, 'deflect')).toBe(5);
+    });
+
+    it('falls back to base special when no override for type', () => {
+      const eq = createHeroEquipment([{ type: 'deflect', value: 3 }], true);
+      eq.specialOverrides = [{ type: 'damage', display_value: '1d{dice_size}', value: 10 }];
+
+      expect(getHeroBonus([], [eq], null, 'deflect')).toBe(3);
+    });
+
     it('sums from multiple equipped items', () => {
       const equipment = [
         createHeroEquipment([{ type: 'attribute_str', value: 2 }], true),

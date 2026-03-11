@@ -96,9 +96,10 @@ export function getHeroBonus(
   }
   for (const e of equipment) {
     if (!e.isEquipped) continue;
-    for (const entry of e.special ?? []) {
-      if (entry.type === type && entry.value !== undefined) total += entry.value;
-    }
+    // Check overrides first (per-instance stats), fall back to classifier base
+    const override = e.specialOverrides?.find((s) => s.type === type);
+    const entry = override ?? (e.special ?? []).find((s) => s.type === type);
+    if (entry?.value !== undefined) total += entry.value;
   }
   if (singerForm) {
     for (const entry of singerForm.special ?? []) {

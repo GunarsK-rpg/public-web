@@ -283,9 +283,7 @@ const modTypeOptions = [
 ];
 
 function removeModification(idx: number): void {
-  editModifications.value = editModifications.value.filter(
-    (_: EditModification, i: number) => i !== idx
-  );
+  editModifications.value = editModifications.value.filter((_, i) => i !== idx);
 }
 
 function addModification(): void {
