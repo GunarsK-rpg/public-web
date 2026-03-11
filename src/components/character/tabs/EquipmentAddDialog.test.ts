@@ -453,6 +453,32 @@ describe('EquipmentAddDialog', () => {
       );
     });
 
+    it('preserves non-stat mod-derived specials in save payload', async () => {
+      mockUpdateEquipment.mockResolvedValueOnce(undefined);
+
+      const mods: AppliedModification[] = [
+        {
+          id: 1,
+          modType: 'upgrade',
+          modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
+          special: [{ type: 'roll_modifier', display_value: 'Advantage' }],
+          customText: null,
+        },
+      ];
+      const wrapper = await mountInEditMode(createHeroEquipment({ modifications: mods }));
+
+      await (wrapper.vm as unknown as { onSave: () => Promise<void> }).onSave();
+
+      expect(mockUpdateEquipment).toHaveBeenCalledWith(
+        100,
+        expect.objectContaining({
+          specialOverrides: expect.arrayContaining([
+            expect.objectContaining({ type: 'roll_modifier', display_value: 'Advantage' }),
+          ]),
+        })
+      );
+    });
+
     it('does not include modifications in save payload', async () => {
       mockUpdateEquipment.mockResolvedValueOnce(undefined);
 

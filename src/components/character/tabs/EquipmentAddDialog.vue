@@ -252,7 +252,11 @@ import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
 import { clamp } from 'src/utils/numberUtils';
 import { getSpecialByType, SPECIAL } from 'src/utils/specialUtils';
-import { getEffectiveSpecial, recalculateSpecialFromMods } from 'src/utils/equipmentStats';
+import {
+  getEffectiveSpecial,
+  mergeSpecial,
+  recalculateSpecialFromMods,
+} from 'src/utils/equipmentStats';
 import equipmentApi from 'src/services/equipmentApi';
 import type {
   Equipment,
@@ -580,8 +584,9 @@ async function onSave(): Promise<void> {
     } else if (item.maxCharges != null) {
       changes.maxCharges = null;
     }
-    // Build specialOverrides from stat inputs (manual edits take priority)
-    changes.specialOverrides = buildStatOverrides();
+    // Merge mod-derived overrides with manual stat edits (stat entries win per type)
+    const modOverrides = recalculateSpecialFromMods(item.special, localModifications.value);
+    changes.specialOverrides = mergeSpecial(modOverrides, buildStatOverrides());
     await heroStore.updateEquipment(item.id, changes);
     emit('update:modelValue', false);
     return;
