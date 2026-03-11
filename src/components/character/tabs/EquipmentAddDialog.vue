@@ -181,7 +181,13 @@ import { X, Plus } from 'lucide-vue-next';
 import { useHeroStore } from 'src/stores/hero';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
 import { clamp } from 'src/utils/numberUtils';
-import type { Equipment, HeroEquipment, Modification } from 'src/types';
+import type { Equipment, HeroEquipment } from 'src/types';
+
+// TODO: Replace with proper AppliedModification handling in Task 7
+interface EditModification {
+  type: 'upgrade' | 'drawback';
+  display_value: string;
+}
 
 const props = defineProps<{
   modelValue: boolean;
@@ -224,7 +230,8 @@ watch([() => props.modelValue, () => props.editItem], () => {
     customName.value = props.editItem.customName || props.editItem.equipment?.name || '';
     customNotes.value = props.editItem.notes || '';
     customMaxCharges.value = props.editItem.maxCharges;
-    editModifications.value = [...(props.editItem.modifications || [])];
+    // TODO: Task 7 reworks this to use AppliedModification properly
+    editModifications.value = (props.editItem.modifications || []) as unknown as EditModification[];
     newModType.value = 'upgrade';
     newModValue.value = '';
     // Not used in edit mode but reset for cleanliness
@@ -267,7 +274,7 @@ const editBaseName = computed(() => {
 });
 
 // Modification editing (edit mode)
-const editModifications = ref<Modification[]>([]);
+const editModifications = ref<EditModification[]>([]);
 const newModType = ref<'upgrade' | 'drawback'>('upgrade');
 const newModValue = ref('');
 const modTypeOptions = [
@@ -276,7 +283,9 @@ const modTypeOptions = [
 ];
 
 function removeModification(idx: number): void {
-  editModifications.value = editModifications.value.filter((_, i) => i !== idx);
+  editModifications.value = editModifications.value.filter(
+    (_: EditModification, i: number) => i !== idx
+  );
 }
 
 function addModification(): void {
@@ -336,7 +345,10 @@ async function onSave(): Promise<void> {
     } else if (item.maxCharges != null) {
       changes.maxCharges = null;
     }
-    changes.modifications = editModifications.value;
+    // TODO: Task 7 reworks this to use AppliedModification
+    changes.modifications = editModifications.value as unknown as NonNullable<
+      typeof changes.modifications
+    >;
     await heroStore.updateEquipment(item.id, changes);
     emit('update:modelValue', false);
     return;

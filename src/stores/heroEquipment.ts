@@ -53,6 +53,7 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
         maxCharges: equip.maxCharges ?? null,
         amount: isIndividual ? 1 : Math.min(validAmount, MAX_EQUIPMENT_STACK),
         isEquipped: false,
+        specialOverrides: [],
         modifications: [],
       });
     }

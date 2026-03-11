@@ -38,6 +38,11 @@ export const SPECIAL = {
   NARRATIVE: 'narrative',
   DAMAGE_SCALING: 'damage_scaling',
 
+  // Modification effect types
+  DIE_MODIFIER: 'die_modifier',
+  ROLL_MODIFIER: 'roll_modifier',
+  CHARGES_MODIFIER: 'charges_modifier',
+
   // Flag types (value: 1)
   SPECIALIST: 'specialist',
   PAIRED: 'paired',

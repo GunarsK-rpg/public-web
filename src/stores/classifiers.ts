@@ -27,6 +27,7 @@ import type {
   EquipmentAttribute,
   DamageType,
   Equipment,
+  ModificationClassifier,
   Condition,
   Injury,
   GoalStatus,
@@ -81,6 +82,7 @@ export const useClassifierStore = defineStore('classifiers', () => {
     (): EquipmentAttribute[] => data.value?.equipmentAttributes || []
   );
   const equipment = computed((): Equipment[] => data.value?.equipment || []);
+  const modifications = computed((): ModificationClassifier[] => data.value?.modifications || []);
 
   // Conditions & Status
   const conditions = computed((): Condition[] => data.value?.conditions || []);
@@ -225,6 +227,7 @@ export const useClassifierStore = defineStore('classifiers', () => {
     damageTypes,
     equipmentAttributes,
     equipment,
+    modifications,
 
     // Conditions & Status
     conditions,

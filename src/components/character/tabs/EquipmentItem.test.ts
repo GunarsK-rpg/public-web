@@ -259,6 +259,7 @@ describe('EquipmentItem', () => {
           equipment: eqRef(1),
           equipType: { id: 1, code: 'weapon', name: 'Weapon' },
           special: [],
+          specialOverrides: [],
           charges: null,
           maxCharges: null,
           amount: 1,
@@ -669,7 +670,15 @@ describe('EquipmentItem', () => {
     it('renders upgrade modifications with positive prefix', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
-        modifications: [{ type: 'upgrade', display_value: 'Keen Edge' }],
+        modifications: [
+          {
+            id: 1,
+            modType: 'upgrade',
+            modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
+            special: [],
+            customText: null,
+          },
+        ],
       });
 
       expect(wrapper.text()).toContain('+ Keen Edge');
@@ -678,7 +687,15 @@ describe('EquipmentItem', () => {
     it('renders drawback modifications with negative prefix', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
-        modifications: [{ type: 'drawback', display_value: 'Heavy' }],
+        modifications: [
+          {
+            id: 2,
+            modType: 'drawback',
+            modification: { id: 11, code: 'heavy', name: 'Heavy' },
+            special: [],
+            customText: null,
+          },
+        ],
       });
 
       expect(wrapper.text()).toContain('- Heavy');
@@ -688,8 +705,20 @@ describe('EquipmentItem', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
         modifications: [
-          { type: 'upgrade', display_value: 'Keen Edge' },
-          { type: 'drawback', display_value: 'Heavy' },
+          {
+            id: 1,
+            modType: 'upgrade',
+            modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
+            special: [],
+            customText: null,
+          },
+          {
+            id: 2,
+            modType: 'drawback',
+            modification: { id: 11, code: 'heavy', name: 'Heavy' },
+            special: [],
+            customText: null,
+          },
         ],
       });
 
@@ -710,7 +739,15 @@ describe('EquipmentItem', () => {
     it('does not show modification editing controls (moved to dialog)', () => {
       const wrapper = createWrapper({
         equipment: eqRef(1),
-        modifications: [{ type: 'upgrade', display_value: 'Keen Edge' }],
+        modifications: [
+          {
+            id: 1,
+            modType: 'upgrade',
+            modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
+            special: [],
+            customText: null,
+          },
+        ],
       });
 
       expect(wrapper.find('button[aria-label="Remove modification"]').exists()).toBe(false);

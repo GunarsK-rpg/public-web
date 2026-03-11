@@ -18,6 +18,7 @@ export * from './talents';
 export * from './units';
 export * from './equipmentAttributes';
 export * from './equipments';
+export * from './modifications';
 export * from './conditions';
 export * from './companionTypes';
 export * from './startingKits';

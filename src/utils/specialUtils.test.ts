@@ -23,6 +23,7 @@ function createHeroEquipment(special: SpecialEntry[], isEquipped = true): HeroEq
     equipment: { id: 1, code: 'test_eq', name: 'Test Equipment' },
     equipType: { id: 1, code: 'weapon', name: 'Weapon' },
     special,
+    specialOverrides: [],
     charges: null,
     maxCharges: null,
     amount: 1,
