@@ -608,7 +608,7 @@ async function onSave(): Promise<void> {
     // During mod add/remove, buildModOverrides recomputes from the pristine
     // classifier base and syncs the UI; here we intentionally allow stat edits to
     // override that result (e.g. user manually adjusts range after a mod applies it).
-    const modOverrides = recalculateSpecialFromMods(item.special, localModifications.value);
+    const modOverrides = buildModOverrides(item.special, localModifications.value, !item.equipment);
     changes.specialOverrides = mergeSpecial(modOverrides, buildStatOverrides());
     await heroStore.updateEquipment(item.id, changes);
     emit('update:modelValue', false);
