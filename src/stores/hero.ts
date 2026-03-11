@@ -442,7 +442,12 @@ export const useHeroStore = defineStore('hero', () => {
         { heroId: hero.value.id, actionId, heroEquipmentId }
       );
       if (!hero.value) return;
-      hero.value.favoriteActions.push(response.data);
+      const idx = hero.value.favoriteActions.findIndex((f) => f.id === response.data.id);
+      if (idx !== -1) {
+        hero.value.favoriteActions[idx] = response.data;
+      } else {
+        hero.value.favoriteActions.push(response.data);
+      }
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to add favorite' });
     } finally {

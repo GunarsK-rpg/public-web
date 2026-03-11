@@ -192,9 +192,11 @@ describe('ActionsTab', () => {
             props: ['bordered', 'separator'],
           },
           ActionItem: {
+            name: 'ActionItem',
             template:
               '<div class="action-item" :data-equip-id="equipmentInstance?.heroEquipment?.id">{{ action.name }}</div>',
-            props: ['action', 'equipmentInstance', 'readonly'],
+            props: ['action', 'equipmentInstance', 'readonly', 'isFavorite'],
+            emits: ['toggle-favorite'],
           },
         },
       },
@@ -607,14 +609,12 @@ describe('ActionsTab', () => {
       mockFindFavoriteAction.mockReturnValue(undefined);
       const wrapper = createWrapper();
 
-      // Find any ActionItem stub and trigger toggle-favorite
       const actionItems = wrapper.findAllComponents({ name: 'ActionItem' });
-      if (actionItems.length > 0) {
-        await actionItems[0]?.vm.$emit('toggle-favorite');
-      }
+      expect(actionItems.length).toBeGreaterThan(0);
+      await actionItems[0]!.vm.$emit('toggle-favorite');
+      await wrapper.vm.$nextTick();
 
-      // Since findFavoriteAction returns undefined, addFavoriteAction should be called
-      // (actual call happens inside ActionsTab when it handles the event)
+      expect(mockAddFavoriteAction).toHaveBeenCalled();
     });
   });
 });

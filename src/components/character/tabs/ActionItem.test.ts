@@ -712,7 +712,8 @@ describe('ActionItem', () => {
       const wrapper = createWrapper({});
       const starBtn = wrapper.findAll('.q-btn').find((btn) => btn.findComponent(Star).exists());
 
-      await starBtn?.trigger('click');
+      expect(starBtn).toBeTruthy();
+      await starBtn!.trigger('click');
 
       expect(wrapper.emitted('toggle-favorite')).toBeTruthy();
     });
