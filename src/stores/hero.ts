@@ -571,7 +571,14 @@ export const useHeroStore = defineStore('hero', () => {
 
       // Auto-remove linked condition
       if (linkedConditionId) {
-        await removeCondition(linkedConditionId);
+        try {
+          await removeCondition(linkedConditionId);
+        } catch (condErr) {
+          handleError(condErr, {
+            errorRef: error,
+            message: 'Failed to remove linked condition after injury deletion',
+          });
+        }
       }
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to remove injury' });
