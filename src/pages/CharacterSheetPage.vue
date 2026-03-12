@@ -63,6 +63,7 @@ import {
   Sparkles,
   GraduationCap,
   Ellipsis,
+  Activity,
 } from 'lucide-vue-next';
 import CharacterHeader from 'components/character/CharacterHeader.vue';
 import StatsTab from 'components/character/tabs/StatsTab.vue';
@@ -71,6 +72,7 @@ import ActionsTab from 'components/character/tabs/ActionsTab.vue';
 import EquipmentTab from 'components/character/tabs/EquipmentTab.vue';
 import TalentsTab from 'components/character/tabs/TalentsTab.vue';
 import ExpertisesTab from 'components/character/tabs/ExpertisesTab.vue';
+import ConditionsTab from 'components/character/tabs/ConditionsTab.vue';
 import OthersTab from 'components/character/tabs/OthersTab.vue';
 
 // Static tab configuration - hoisted outside reactive scope for performance
@@ -81,6 +83,7 @@ const tabs: { id: string; label: string; icon: Component }[] = [
   { id: 'equipment', label: 'Equipment', icon: Shield },
   { id: 'talents', label: 'Talents', icon: Sparkles },
   { id: 'expertises', label: 'Expertises', icon: GraduationCap },
+  { id: 'conditions', label: 'Conditions', icon: Activity },
   { id: 'others', label: 'Others', icon: Ellipsis },
 ];
 
@@ -92,6 +95,7 @@ const tabComponents: Record<string, Component> = {
   equipment: EquipmentTab,
   talents: TalentsTab,
   expertises: ExpertisesTab,
+  conditions: ConditionsTab,
   others: OthersTab,
 };
 

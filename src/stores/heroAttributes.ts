@@ -4,7 +4,7 @@ import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { findById, findByCode, findByProp, toClassifierRef } from 'src/utils/arrayUtils';
 import { calculateFormulaStat } from 'src/utils/derivedStats';
-import { getHeroBonus, SPECIAL } from 'src/utils/specialUtils';
+import { getHeroBonus, getConditionBonus, SPECIAL } from 'src/utils/specialUtils';
 import {
   MIN_ATTRIBUTE_VALUE,
   MAX_ATTRIBUTE_VALUE,
@@ -62,7 +62,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     const statCode = `${attrTypeCode}_defense`;
     const baseValue = calculateFormulaStat(
       statCode,
-      attributeValues.value,
+      baseAttributeValues.value,
       levelData.value,
       tierData.value
     );
@@ -84,7 +84,14 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     const skillData = findByCode(classifierStore.skills, skillCode);
     if (!skillData || !heroStore.hero) return 0;
     const attrValue = getAttributeValueById(skillData.attr.id);
-    return attrValue + getSkillRank(skillData.id, true);
+    const attrCode = skillData.attr?.code ?? '';
+    const enhancedBonus = attrCode ? conditionBonus(`attribute_${attrCode}`) : 0;
+    return (
+      attrValue +
+      getSkillRank(skillData.id, true) +
+      enhancedBonus +
+      conditionBonus(SPECIAL.EXHAUSTED_PENALTY)
+    );
   }
 
   // ===================
@@ -100,14 +107,29 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     );
   }
 
-  // Memoized attribute values for derived stat calculations (includes special bonuses).
-  // Bonus keys are built as `attribute_${attr.code}` — matches SPECIAL constants
-  // (e.g. attr.code="str" -> SPECIAL.ATTRIBUTE_STR="attribute_str").
-  const attributeValues = computed(() => {
+  function conditionBonus(type: string): number {
+    if (!heroStore.hero) return 0;
+    return getConditionBonus(heroStore.hero.conditions, type);
+  }
+
+  // Base attribute values (talents + equipment + singer form, NO condition bonuses).
+  // Used by defense and max resource formulas where Enhanced bonuses are excluded.
+  const baseAttributeValues = computed(() => {
     const attrs: Record<string, number> = {};
     for (const attr of classifierStore.attributes) {
       const base = getAttributeValue(attr.code);
       attrs[attr.code] = base + bonus(`attribute_${attr.code}`);
+    }
+    return attrs;
+  });
+
+  // Full attribute values including condition bonuses (Enhanced).
+  // Used for display and skill modifiers.
+  const attributeValues = computed(() => {
+    const attrs: Record<string, number> = {};
+    for (const attr of classifierStore.attributes) {
+      attrs[attr.code] =
+        (baseAttributeValues.value[attr.code] ?? 0) + conditionBonus(`attribute_${attr.code}`);
     }
     return attrs;
   });
@@ -145,17 +167,28 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     }
   }
 
+  function hasCondition(code: string): boolean {
+    return heroStore.conditions.some((c) => c.condition.code === code);
+  }
+
+  function applyMovementConditions(value: number): number {
+    if (hasCondition('immobilized') || hasCondition('restrained') || hasCondition('unconscious'))
+      return 0;
+    if (hasCondition('slowed')) return Math.floor(value / 2);
+    return value;
+  }
+
   function getDerivedStatTotal(statCode: string): number {
-    const baseValue = calculateFormulaStat(
-      statCode,
-      attributeValues.value,
-      levelData.value,
-      tierData.value
-    );
+    // Movement uses full attribute values (Enhanced Speed bonus applies)
+    // Defense and resource stats use base values (Enhanced excluded per game rules)
+    const attrVals = statCode === 'movement' ? attributeValues.value : baseAttributeValues.value;
+    const baseValue = calculateFormulaStat(statCode, attrVals, levelData.value, tierData.value);
     const heroStat = getHeroDerivedStat(statCode);
     const modifier = heroStat?.modifier ?? 0;
 
-    return baseValue + modifier + getStatBonus(statCode);
+    const total = baseValue + modifier + getStatBonus(statCode);
+    if (statCode === 'movement') return applyMovementConditions(total);
+    return total;
   }
 
   function getDerivedStatModifier(statId: number): number {
@@ -304,6 +337,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     tierData,
 
     // Attribute lookups
+    baseAttributeValues,
     attributeValues,
     getAttributeValue,
     getAttributeValueById,
@@ -317,6 +351,8 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     getStatBonus,
     getDerivedStatTotal,
     getDerivedStatModifier,
+    hasCondition,
+    applyMovementConditions,
 
     // Mutations
     setAttribute,

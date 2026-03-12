@@ -5,6 +5,9 @@ import SkillsTab from './SkillsTab.vue';
 
 const mockGetSkillModifier = vi.fn();
 const mockGetSkillRank = vi.fn();
+const mockConditions = ref<
+  { condition: { code: string }; special?: { type: string; value: number }[] }[]
+>([]);
 const mockHero = ref<{ radiantOrder: { id: number; code: string; name: string } | null }>({
   radiantOrder: null,
 });
@@ -12,6 +15,7 @@ const mockHero = ref<{ radiantOrder: { id: number; code: string; name: string } 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     hero: mockHero.value,
+    conditions: mockConditions.value,
   }),
 }));
 
@@ -150,6 +154,8 @@ vi.mock('src/stores/classifiers', () => ({
 vi.mock('src/constants/theme', () => ({
   COLORS: {
     muted: 'grey',
+    success: 'positive',
+    error: 'negative',
   },
 }));
 
@@ -171,7 +177,8 @@ describe('SkillsTab', () => {
             template: '<div class="q-item-label"><slot /></div>',
           },
           QAvatar: {
-            template: '<div class="q-avatar"><slot /></div>',
+            name: 'QAvatar',
+            template: '<div class="q-avatar" :data-color="color"><slot /></div>',
             props: ['color', 'textColor', 'size'],
           },
         },
@@ -181,6 +188,7 @@ describe('SkillsTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockHero.value = { radiantOrder: null };
+    mockConditions.value = [];
     mockGetSkillModifier.mockImplementation((code: string) => {
       const values: Record<string, number> = {
         athletics: 5,
@@ -421,6 +429,70 @@ describe('SkillsTab', () => {
 
       // Should render without throwing
       expect(wrapper.exists()).toBe(true);
+    });
+  });
+
+  // ========================================
+  // Condition Visual Indicators
+  // ========================================
+  describe('condition indicators', () => {
+    it('uses grey avatar color when no conditions active', () => {
+      const wrapper = createWrapper();
+      const avatars = wrapper.findAll('.q-avatar');
+      expect(avatars.length).toBe(12);
+      avatars.forEach((avatar) => {
+        expect(avatar.attributes('data-color')).toBe('grey');
+      });
+    });
+
+    it('uses green avatar for STR skills when Enhanced boosts STR', () => {
+      mockConditions.value = [
+        {
+          condition: { code: 'enhanced' },
+          special: [{ type: 'attribute_str', value: 2 }],
+        },
+      ];
+      const wrapper = createWrapper();
+      const avatars = wrapper.findAll('.q-avatar');
+      expect(avatars.length).toBe(12);
+      // STR skills (Athletics, Heavy Weapons) should be positive
+      expect(avatars[0]!.attributes('data-color')).toBe('positive');
+      expect(avatars[1]!.attributes('data-color')).toBe('positive');
+      // Non-STR skill (Agility = SPD) should remain grey
+      expect(avatars[2]!.attributes('data-color')).toBe('grey');
+    });
+
+    it('uses red avatar when Exhausted penalty is active', () => {
+      mockConditions.value = [
+        {
+          condition: { code: 'exhausted' },
+          special: [{ type: 'exhausted_penalty', value: -2 }],
+        },
+      ];
+      const wrapper = createWrapper();
+      const avatars = wrapper.findAll('.q-avatar');
+      expect(avatars.length).toBe(12);
+      avatars.forEach((avatar) => {
+        expect(avatar.attributes('data-color')).toBe('negative');
+      });
+    });
+
+    it('uses grey avatar when Enhanced and Exhausted cancel out', () => {
+      mockConditions.value = [
+        {
+          condition: { code: 'enhanced' },
+          special: [{ type: 'attribute_str', value: 2 }],
+        },
+        {
+          condition: { code: 'exhausted' },
+          special: [{ type: 'exhausted_penalty', value: -2 }],
+        },
+      ];
+      const wrapper = createWrapper();
+      const avatars = wrapper.findAll('.q-avatar');
+      expect(avatars.length).toBe(12);
+      // STR skills: enhanced +2 + exhausted -2 = 0 → grey
+      expect(avatars[0]!.attributes('data-color')).toBe('grey');
     });
   });
 

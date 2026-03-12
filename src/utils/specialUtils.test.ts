@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { getSpecialByType, getHeroBonus, resolveSkillModifier, SPECIAL } from './specialUtils';
-import type { SpecialEntry, HeroTalent, HeroEquipment } from 'src/types';
+import {
+  getSpecialByType,
+  getHeroBonus,
+  getConditionBonus,
+  resolveSkillModifier,
+  SPECIAL,
+} from './specialUtils';
+import type { SpecialEntry, HeroTalent, HeroEquipment, HeroCondition } from 'src/types';
 import type { SingerForm } from 'src/types/singerForms';
 
 // =============================================================================
@@ -31,6 +37,16 @@ function createHeroEquipment(special: SpecialEntry[], isEquipped = true): HeroEq
     customName: null,
     notes: null,
     modifications: [],
+  };
+}
+
+function createHeroCondition(code: string, special?: SpecialEntry[]): HeroCondition {
+  return {
+    id: 1,
+    heroId: 0,
+    condition: { id: 1, code, name: code },
+    notes: null,
+    special: special ?? null,
   };
 }
 
@@ -353,5 +369,46 @@ describe('getHeroBonus', () => {
       expect(getHeroBonus([], equipment, null, 'deflect')).toBe(2);
       expect(getHeroBonus([], equipment, null, 'cumbersome')).toBe(3);
     });
+  });
+});
+
+// =============================================================================
+// getConditionBonus
+// =============================================================================
+
+describe('getConditionBonus', () => {
+  it('returns 0 for empty conditions array', () => {
+    expect(getConditionBonus([], 'attribute_str')).toBe(0);
+  });
+
+  it('sums matching entries from condition special arrays', () => {
+    const conditions = [createHeroCondition('enhanced', [{ type: 'attribute_str', value: 2 }])];
+    expect(getConditionBonus(conditions, 'attribute_str')).toBe(2);
+  });
+
+  it('sums across multiple condition rows (stacked Enhanced)', () => {
+    const conditions = [
+      createHeroCondition('enhanced', [{ type: 'attribute_str', value: 2 }]),
+      { ...createHeroCondition('enhanced', [{ type: 'attribute_spd', value: 1 }]), id: 2 },
+    ];
+    expect(getConditionBonus(conditions, 'attribute_str')).toBe(2);
+    expect(getConditionBonus(conditions, 'attribute_spd')).toBe(1);
+  });
+
+  it('ignores conditions with null special', () => {
+    const conditions = [createHeroCondition('slowed')];
+    expect(getConditionBonus(conditions, 'attribute_str')).toBe(0);
+  });
+
+  it('ignores entries without numeric value', () => {
+    const conditions = [
+      createHeroCondition('afflicted', [{ type: 'afflicted_damage', display_value: '1d4 vital' }]),
+    ];
+    expect(getConditionBonus(conditions, 'afflicted_damage')).toBe(0);
+  });
+
+  it('returns non-matching type as 0', () => {
+    const conditions = [createHeroCondition('enhanced', [{ type: 'attribute_str', value: 2 }])];
+    expect(getConditionBonus(conditions, 'attribute_spd')).toBe(0);
   });
 });

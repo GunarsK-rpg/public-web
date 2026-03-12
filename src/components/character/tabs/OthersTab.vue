@@ -168,29 +168,18 @@
       </q-card>
     </q-expansion-item>
 
-    <!-- Conditions Section -->
-    <q-expansion-item aria-label="Conditions and Injuries section" class="q-mb-sm">
+    <!-- Injuries Section -->
+    <q-expansion-item aria-label="Injuries section" class="q-mb-sm">
       <template #header>
         <q-item-section avatar>
           <TriangleAlert />
         </q-item-section>
         <q-item-section>
-          <q-item-label>Conditions & Injuries</q-item-label>
+          <q-item-label>Injuries</q-item-label>
         </q-item-section>
       </template>
       <q-card>
         <q-card-section>
-          <div class="text-subtitle2 q-mb-sm">Active Conditions</div>
-          <div v-if="heroStore.conditions.length === 0" class="text-empty q-mb-md">
-            No active conditions
-          </div>
-          <div v-else class="q-mb-md">
-            <q-chip v-for="cond in heroStore.conditions" :key="cond.id">
-              {{ getConditionName(cond.condition?.id) }}
-            </q-chip>
-          </div>
-
-          <div class="text-subtitle2 q-mb-sm">Injuries</div>
           <div v-if="heroStore.injuries.length === 0" class="text-empty">No injuries</div>
           <q-list v-else dense>
             <q-item v-for="injury in heroStore.injuries" :key="injury.id">
@@ -240,7 +229,6 @@ const getConnectionTypeName = makeNameGetter(
 const getCompanionTypeName = makeNameGetter(
   computed(() => buildIdNameMap(classifiers.companionTypes))
 );
-const getConditionName = makeNameGetter(computed(() => buildIdNameMap(classifiers.conditions)));
 const getInjuryName = makeNameGetter(computed(() => buildIdNameMap(classifiers.injuries)));
 </script>
 

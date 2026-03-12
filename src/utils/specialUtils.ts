@@ -1,4 +1,4 @@
-import type { SpecialEntry, HeroTalent, HeroEquipment } from 'src/types';
+import type { SpecialEntry, HeroTalent, HeroEquipment, HeroCondition } from 'src/types';
 import type { SingerForm } from 'src/types/singerForms';
 
 // Auto-calculable types (value field, frontend sums into derived stats)
@@ -42,6 +42,11 @@ export const SPECIAL = {
   DIE_MODIFIER: 'die_modifier',
   ROLL_MODIFIER: 'roll_modifier',
   CHARGES_MODIFIER: 'charges_modifier',
+
+  // Condition-specific types
+  EXHAUSTED_PENALTY: 'exhausted_penalty',
+  AFFLICTED_DAMAGE: 'afflicted_damage',
+  FOCUSED: 'focused',
 
   // Flag types (value: 1)
   SPECIALIST: 'specialist',
@@ -111,6 +116,21 @@ export function getHeroBonus(
   }
   if (singerForm) {
     for (const entry of singerForm.special ?? []) {
+      if (entry.type === type && entry.value !== undefined) total += entry.value;
+    }
+  }
+  return total;
+}
+
+/**
+ * Get total numeric bonus for a type from hero condition special arrays.
+ * Separate from getHeroBonus so Enhanced attribute bonuses can be excluded
+ * from defense/max resource formulas per game rules.
+ */
+export function getConditionBonus(conditions: HeroCondition[], type: string): number {
+  let total = 0;
+  for (const c of conditions) {
+    for (const entry of c.special ?? []) {
       if (entry.type === type && entry.value !== undefined) total += entry.value;
     }
   }

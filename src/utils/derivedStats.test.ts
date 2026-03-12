@@ -632,6 +632,94 @@ describe('buildDerivedStatsList', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Override Callback (applyOverride parameter)
+  // ---------------------------------------------------------------------------
+  describe('applyOverride callback', () => {
+    it('applies override to totalValue', () => {
+      const derivedStats = [createDerivedStat({ id: 1, code: 'movement', name: 'Movement' })];
+      const attributes = [createAttribute({ id: 1, code: 'spd', name: 'Speed' })];
+      const derivedStatValues = [
+        createDerivedStatValue({
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'spd', name: 'Speed' },
+          attrMin: 0,
+          attrMax: null,
+          value: 30,
+        }),
+      ];
+      const attrs = createAttrs({ spd: 3 });
+
+      const result = buildDerivedStatsList(
+        derivedStats,
+        derivedStatValues,
+        attributes,
+        attrs,
+        undefined,
+        undefined,
+        () => 0,
+        undefined,
+        (statCode, value) => (statCode === 'movement' ? 0 : value) // immobilized
+      );
+
+      expect(result[0]!.baseValue).toBe(30);
+      expect(result[0]!.totalValue).toBe(0);
+      expect(result[0]!.totalDisplay).toBe('0 ft');
+    });
+
+    it('does not affect stats not targeted by override', () => {
+      const derivedStats = [createDerivedStat({ id: 1, code: 'max_health', name: 'Max Health' })];
+      const attrs = createAttrs({ str: 2 });
+      const level = createLevel({ healthBase: 10 });
+      const tier = createTier({ id: 1 });
+
+      const result = buildDerivedStatsList(
+        derivedStats,
+        [],
+        [],
+        attrs,
+        level,
+        tier,
+        () => 0,
+        undefined,
+        (statCode, value) => (statCode === 'movement' ? 0 : value)
+      );
+
+      // max_health should be unaffected
+      expect(result[0]!.totalValue).toBe(12); // 10 + (2 * 1)
+    });
+
+    it('halves movement when slowed', () => {
+      const derivedStats = [createDerivedStat({ id: 1, code: 'movement', name: 'Movement' })];
+      const attributes = [createAttribute({ id: 1, code: 'spd', name: 'Speed' })];
+      const derivedStatValues = [
+        createDerivedStatValue({
+          derivedStat: { id: 1, code: 'test', name: 'Test' },
+          attr: { id: 1, code: 'spd', name: 'Speed' },
+          attrMin: 0,
+          attrMax: null,
+          value: 30,
+        }),
+      ];
+      const attrs = createAttrs({ spd: 3 });
+
+      const result = buildDerivedStatsList(
+        derivedStats,
+        derivedStatValues,
+        attributes,
+        attrs,
+        undefined,
+        undefined,
+        () => 0,
+        undefined,
+        (statCode, value) => (statCode === 'movement' ? Math.floor(value / 2) : value)
+      );
+
+      expect(result[0]!.totalValue).toBe(15);
+      expect(result[0]!.totalDisplay).toBe('15 ft');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // Edge Cases
   // ---------------------------------------------------------------------------
   describe('edge cases', () => {

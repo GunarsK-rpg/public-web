@@ -11,9 +11,7 @@
       aria-label="Modification details"
     >
       <Info :size="14" />
-      <q-popup-proxy :breakpoint="0" :offset="[0, 8]">
-        <q-banner dense class="text-body2">{{ description }}</q-banner>
-      </q-popup-proxy>
+      <InfoPopup>{{ description }}</InfoPopup>
     </q-btn>
   </span>
 </template>
@@ -22,6 +20,7 @@
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { Info } from 'lucide-vue-next';
+import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import type { AppliedModification } from 'src/types';
 
 const props = defineProps<{

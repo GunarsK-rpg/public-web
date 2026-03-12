@@ -32,6 +32,7 @@ vi.mock('src/stores/hero', () => ({
     get saving() {
       return mockSaving.value;
     },
+    conditions: [],
     patchHealth: vi.fn(),
     patchFocus: vi.fn(),
     patchInvestiture: vi.fn(),
@@ -55,6 +56,12 @@ vi.mock('src/stores/heroTalents', () => ({
     get isRadiant() {
       return mockIsRadiant.value;
     },
+  }),
+}));
+
+vi.mock('src/stores/classifiers', () => ({
+  useClassifierStore: () => ({
+    conditions: [],
   }),
 }));
 

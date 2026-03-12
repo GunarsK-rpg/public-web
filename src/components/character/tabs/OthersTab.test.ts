@@ -2,14 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import OthersTab from './OthersTab.vue';
-import type {
-  HeroCulture,
-  HeroGoal,
-  HeroConnection,
-  HeroCompanion,
-  HeroCondition,
-  HeroInjury,
-} from 'src/types';
+import type { HeroCulture, HeroGoal, HeroConnection, HeroCompanion, HeroInjury } from 'src/types';
 
 const mockHero = ref<{
   ancestry: { id: number; code: string; name: string } | null;
@@ -23,7 +16,6 @@ const mockCultures = ref<HeroCulture[]>([]);
 const mockGoals = ref<HeroGoal[]>([]);
 const mockConnections = ref<HeroConnection[]>([]);
 const mockCompanions = ref<HeroCompanion[]>([]);
-const mockConditions = ref<HeroCondition[]>([]);
 const mockInjuries = ref<HeroInjury[]>([]);
 const mockIsSinger = ref(false);
 
@@ -43,9 +35,6 @@ vi.mock('src/stores/hero', () => ({
     },
     get companions() {
       return mockCompanions.value;
-    },
-    get conditions() {
-      return mockConditions.value;
     },
     get injuries() {
       return mockInjuries.value;
@@ -86,10 +75,6 @@ vi.mock('src/stores/classifiers', () => ({
     companionTypes: [
       { id: 1, code: 'pet', name: 'Pet' },
       { id: 2, code: 'spren', name: 'Spren' },
-    ],
-    conditions: [
-      { id: 1, code: 'exhausted', name: 'Exhausted' },
-      { id: 2, code: 'frightened', name: 'Frightened' },
     ],
     injuries: [
       { id: 1, code: 'broken-arm', name: 'Broken Arm' },
@@ -159,7 +144,6 @@ describe('OthersTab', () => {
     mockGoals.value = [];
     mockConnections.value = [];
     mockCompanions.value = [];
-    mockConditions.value = [];
     mockInjuries.value = [];
     mockIsSinger.value = false;
   });
@@ -198,10 +182,10 @@ describe('OthersTab', () => {
       expect(wrapper.find('[aria-label="Biography section"]').exists()).toBe(true);
     });
 
-    it('renders Conditions & Injuries section', () => {
+    it('renders Injuries section', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.find('[aria-label="Conditions and Injuries section"]').exists()).toBe(true);
+      expect(wrapper.find('[aria-label="Injuries section"]').exists()).toBe(true);
     });
   });
 
@@ -511,25 +495,9 @@ describe('OthersTab', () => {
   });
 
   // ========================================
-  // Conditions & Injuries
+  // Injuries
   // ========================================
-  describe('conditions & injuries', () => {
-    it('renders active conditions', () => {
-      mockConditions.value = [
-        { id: 1, heroId: 1, condition: { id: 1, code: 'cond1', name: 'Condition1' } },
-      ] as HeroCondition[];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Exhausted');
-    });
-
-    it('shows empty message when no conditions', () => {
-      mockConditions.value = [];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('No active conditions');
-    });
-
+  describe('injuries', () => {
     it('renders injuries', () => {
       mockInjuries.value = [
         { id: 1, heroId: 1, injury: { id: 1, code: 'inj1', name: 'Injury1' } },

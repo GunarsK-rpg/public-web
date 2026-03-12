@@ -166,7 +166,7 @@ describe('CharacterSheetPage', () => {
       await flushPromises();
 
       const tabs = wrapper.findAll('.q-tab');
-      expect(tabs.length).toBe(7);
+      expect(tabs.length).toBe(8);
     });
   });
 

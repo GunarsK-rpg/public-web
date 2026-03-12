@@ -390,6 +390,78 @@ describe('useHeroAttributesStore', () => {
       const store = useHeroAttributesStore();
       expect(store.getSkillModifier('athletics')).toBe(0);
     });
+
+    it('includes Enhanced condition bonus for the skill attribute', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 1, code: 'enhanced', name: 'Enhanced' },
+            notes: null,
+            special: [{ type: 'attribute_str', value: 2, display_value: 'STR +2' }],
+          },
+        ];
+      }
+
+      // athletics: strength (3) + rank (2) + enhanced (2) = 7
+      expect(store.getSkillModifier('athletics')).toBe(7);
+      // acrobatics: speed (2) + rank (0) + no enhanced = 2
+      expect(store.getSkillModifier('acrobatics')).toBe(2);
+    });
+
+    it('includes Exhausted condition penalty', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 2, code: 'exhausted', name: 'Exhausted' },
+            notes: null,
+            special: [{ type: 'exhausted_penalty', value: -2, display_value: '-2' }],
+          },
+        ];
+      }
+
+      // athletics: strength (3) + rank (2) + exhausted (-2) = 3
+      expect(store.getSkillModifier('athletics')).toBe(3);
+    });
+
+    it('combines Enhanced bonus and Exhausted penalty', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 1, code: 'enhanced', name: 'Enhanced' },
+            notes: null,
+            special: [{ type: 'attribute_str', value: 2, display_value: 'STR +2' }],
+          },
+          {
+            id: 101,
+            heroId: 0,
+            condition: { id: 2, code: 'exhausted', name: 'Exhausted' },
+            notes: null,
+            special: [{ type: 'exhausted_penalty', value: -1, display_value: '-1' }],
+          },
+        ];
+      }
+
+      // athletics: strength (3) + rank (2) + enhanced (2) + exhausted (-1) = 6
+      expect(store.getSkillModifier('athletics')).toBe(6);
+    });
   });
 
   // ========================================
@@ -1052,6 +1124,180 @@ describe('useHeroAttributesStore', () => {
       }
 
       expect(store.getStatBonus('deflect')).toBe(5);
+    });
+  });
+
+  // ========================================
+  // hasCondition
+  // ========================================
+  describe('hasCondition', () => {
+    it('returns true when hero has the condition', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 1, code: 'immobilized', name: 'Immobilized' },
+            notes: null,
+            special: [],
+          },
+        ];
+      }
+
+      expect(store.hasCondition('immobilized')).toBe(true);
+    });
+
+    it('returns false when hero does not have the condition', () => {
+      setupHeroWithAttributes();
+      const store = useHeroAttributesStore();
+
+      expect(store.hasCondition('immobilized')).toBe(false);
+    });
+  });
+
+  // ========================================
+  // applyMovementConditions
+  // ========================================
+  describe('applyMovementConditions', () => {
+    it('returns 0 when immobilized', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 1, code: 'immobilized', name: 'Immobilized' },
+            notes: null,
+            special: [],
+          },
+        ];
+      }
+
+      expect(store.applyMovementConditions(30)).toBe(0);
+    });
+
+    it('returns 0 when restrained', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 1, code: 'restrained', name: 'Restrained' },
+            notes: null,
+            special: [],
+          },
+        ];
+      }
+
+      expect(store.applyMovementConditions(30)).toBe(0);
+    });
+
+    it('returns 0 when unconscious', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 1, code: 'unconscious', name: 'Unconscious' },
+            notes: null,
+            special: [],
+          },
+        ];
+      }
+
+      expect(store.applyMovementConditions(30)).toBe(0);
+    });
+
+    it('halves movement when slowed', () => {
+      setupHeroWithAttributes();
+      const heroStore = useHeroStore();
+      const store = useHeroAttributesStore();
+
+      if (heroStore.hero) {
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 1, code: 'slowed', name: 'Slowed' },
+            notes: null,
+            special: [],
+          },
+        ];
+      }
+
+      expect(store.applyMovementConditions(30)).toBe(15);
+      expect(store.applyMovementConditions(25)).toBe(12); // floors
+    });
+
+    it('returns original value when no movement conditions', () => {
+      setupHeroWithAttributes();
+      const store = useHeroAttributesStore();
+
+      expect(store.applyMovementConditions(30)).toBe(30);
+    });
+  });
+
+  // ========================================
+  // Condition Bonus Integration
+  // ========================================
+  describe('condition bonus integration', () => {
+    it('attributeValues includes condition bonuses', () => {
+      const heroStore = useHeroStore();
+      heroStore.initNewHero();
+      if (heroStore.hero) {
+        heroStore.hero.attributes = [
+          { id: 1, heroId: 0, attribute: { id: 1, code: 'str', name: 'Strength' }, value: 3 },
+        ];
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 1, code: 'enhanced', name: 'Enhanced' },
+            notes: null,
+            special: [{ type: 'attribute_str', value: 2, display_value: 'STR +2' }],
+          },
+        ];
+      }
+
+      const attrStore = useHeroAttributesStore();
+      expect(attrStore.attributeValues['str']).toBe(5); // 3 base + 2 enhanced
+    });
+
+    it('baseAttributeValues excludes condition bonuses', () => {
+      const heroStore = useHeroStore();
+      heroStore.initNewHero();
+      if (heroStore.hero) {
+        heroStore.hero.attributes = [
+          { id: 1, heroId: 0, attribute: { id: 1, code: 'str', name: 'Strength' }, value: 3 },
+        ];
+        heroStore.hero.conditions = [
+          {
+            id: 100,
+            heroId: 0,
+            condition: { id: 1, code: 'enhanced', name: 'Enhanced' },
+            notes: null,
+            special: [{ type: 'attribute_str', value: 2, display_value: 'STR +2' }],
+          },
+        ];
+      }
+
+      const attrStore = useHeroAttributesStore();
+      expect(attrStore.baseAttributeValues['str']).toBe(3); // base only, no condition bonus
     });
   });
 
