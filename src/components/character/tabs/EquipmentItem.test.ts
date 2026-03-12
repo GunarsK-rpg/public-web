@@ -101,10 +101,38 @@ vi.mock('src/stores/classifiers', () => ({
       },
     ],
     equipmentTypes: [
-      { id: 1, code: 'weapon', name: 'Weapon', icon: 'weapon.svg' },
-      { id: 2, code: 'armor', name: 'Armor', icon: 'armor.svg' },
-      { id: 3, code: 'consumable', name: 'Consumable', icon: 'consumable.svg' },
-      { id: 4, code: 'gear', name: 'Gear', icon: 'gear.svg' },
+      {
+        id: 1,
+        code: 'weapon',
+        name: 'Weapon',
+        icon: 'weapon.svg',
+        isEquippable: true,
+        isStackable: false,
+      },
+      {
+        id: 2,
+        code: 'armor',
+        name: 'Armor',
+        icon: 'armor.svg',
+        isEquippable: true,
+        isStackable: false,
+      },
+      {
+        id: 3,
+        code: 'consumable',
+        name: 'Consumable',
+        icon: 'consumable.svg',
+        isEquippable: false,
+        isStackable: true,
+      },
+      {
+        id: 4,
+        code: 'gear',
+        name: 'Gear',
+        icon: 'gear.svg',
+        isEquippable: false,
+        isStackable: true,
+      },
     ],
     equipmentAttributes: [
       {
@@ -197,11 +225,49 @@ const equipmentMap: Record<
   },
 };
 
-const equipmentTypeMap: Record<number, { id: number; code: string; name: string; icon: string }> = {
-  1: { id: 1, code: 'weapon', name: 'Weapon', icon: 'weapon.svg' },
-  2: { id: 2, code: 'armor', name: 'Armor', icon: 'armor.svg' },
-  3: { id: 3, code: 'consumable', name: 'Consumable', icon: 'consumable.svg' },
-  4: { id: 4, code: 'gear', name: 'Gear', icon: 'gear.svg' },
+const equipmentTypeMap: Record<
+  number,
+  {
+    id: number;
+    code: string;
+    name: string;
+    icon: string;
+    isEquippable: boolean;
+    isStackable: boolean;
+  }
+> = {
+  1: {
+    id: 1,
+    code: 'weapon',
+    name: 'Weapon',
+    icon: 'weapon.svg',
+    isEquippable: true,
+    isStackable: false,
+  },
+  2: {
+    id: 2,
+    code: 'armor',
+    name: 'Armor',
+    icon: 'armor.svg',
+    isEquippable: true,
+    isStackable: false,
+  },
+  3: {
+    id: 3,
+    code: 'consumable',
+    name: 'Consumable',
+    icon: 'consumable.svg',
+    isEquippable: false,
+    isStackable: true,
+  },
+  4: {
+    id: 4,
+    code: 'gear',
+    name: 'Gear',
+    icon: 'gear.svg',
+    isEquippable: false,
+    isStackable: true,
+  },
 };
 
 vi.mock('src/composables/useEntityIcon', () => ({
@@ -603,7 +669,23 @@ describe('EquipmentItem', () => {
       expect(mockRemoveEquipment).not.toHaveBeenCalled();
     });
 
-    it('disables all action buttons when saving', () => {
+    it('disables equip and remove buttons when saving (weapon)', () => {
+      mockSaving.value = true;
+      const wrapper = createWrapper({
+        equipment: eqRef(1),
+        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+        amount: 1,
+        isEquipped: false,
+      });
+
+      const equipBtn = wrapper.find('button[aria-label="Equip"]');
+      const removeBtn = wrapper.find('button[aria-label="Remove equipment"]');
+
+      expect(equipBtn.attributes('disabled')).toBeDefined();
+      expect(removeBtn.attributes('disabled')).toBeDefined();
+    });
+
+    it('disables amount and remove buttons when saving (gear)', () => {
       mockSaving.value = true;
       const wrapper = createWrapper({
         equipment: eqRef(5),
@@ -613,12 +695,10 @@ describe('EquipmentItem', () => {
 
       const decreaseBtn = wrapper.find('button[aria-label="Decrease amount"]');
       const increaseBtn = wrapper.find('button[aria-label="Increase amount"]');
-      const equipBtn = wrapper.find('button[aria-label="Equip"]');
       const removeBtn = wrapper.find('button[aria-label="Remove equipment"]');
 
       expect(decreaseBtn.attributes('disabled')).toBeDefined();
       expect(increaseBtn.attributes('disabled')).toBeDefined();
-      expect(equipBtn.attributes('disabled')).toBeDefined();
       expect(removeBtn.attributes('disabled')).toBeDefined();
     });
   });

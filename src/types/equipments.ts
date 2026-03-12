@@ -4,6 +4,8 @@ import type { ClassifierRef, ClassifierInput, SpecialEntry } from './shared';
 /** Equipment type classifier (cl_equipment_types) */
 export interface EquipmentType extends Classifier {
   icon: string;
+  isEquippable: boolean;
+  isStackable: boolean;
 }
 
 /** Damage type classifier (cl_damage_types) */

@@ -3,7 +3,7 @@ import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { useHeroAttributesStore } from './heroAttributes';
 import { findById } from 'src/utils/arrayUtils';
-import { MAX_EQUIPMENT_STACK, INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';
+import { MAX_EQUIPMENT_STACK } from 'src/constants';
 
 export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
   const heroStore = useHeroStore();
@@ -27,7 +27,8 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     const equip = findById(classifierStore.equipment, equipmentId);
     if (!equip) return;
 
-    const isIndividual = INDIVIDUAL_EQUIPMENT_TYPES.includes(equip.equipType.code);
+    const eqType = findById(classifierStore.equipmentTypes, equip.equipType.id);
+    const isIndividual = !(eqType?.isStackable ?? false);
 
     if (!isIndividual) {
       const existing = heroStore.hero.equipment.find((e) => e.equipment?.id === equipmentId);

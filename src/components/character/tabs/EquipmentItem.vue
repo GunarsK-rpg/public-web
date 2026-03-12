@@ -104,8 +104,9 @@
           ><Pencil :size="20"
         /></q-btn>
 
-        <!-- Equip toggle -->
+        <!-- Equip toggle (not applicable to gear or consumables) -->
         <q-btn
+          v-if="isEquippable"
           flat
           dense
           round
@@ -148,7 +149,7 @@ import ModificationLabel from './ModificationLabel.vue';
 import TraitBadges from 'src/components/shared/TraitBadges.vue';
 import { findById } from 'src/utils/arrayUtils';
 import type { HeroEquipment } from 'src/types';
-import { MAX_EQUIPMENT_STACK, INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';
+import { MAX_EQUIPMENT_STACK } from 'src/constants';
 import { getSpecialByType, resolveDiceSize, SPECIAL } from 'src/utils/specialUtils';
 import { getEffectiveSpecial } from 'src/utils/equipmentStats';
 
@@ -165,9 +166,8 @@ const $q = useQuasar();
 const classifiers = useClassifierStore();
 const heroStore = useHeroStore();
 const saving = computed(() => heroStore.saving);
-const isIndividualItem = computed(() =>
-  INDIVIDUAL_EQUIPMENT_TYPES.includes(props.heroEquipment.equipType?.code ?? '')
-);
+const isIndividualItem = computed(() => !(equipmentType.value?.isStackable ?? false));
+const isEquippable = computed(() => equipmentType.value?.isEquippable ?? true);
 
 const equipment = computed(() =>
   findById(classifiers.equipment, props.heroEquipment.equipment?.id)
