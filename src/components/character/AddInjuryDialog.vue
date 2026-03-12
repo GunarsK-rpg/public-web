@@ -26,7 +26,7 @@
           behavior="menu"
           class="q-mb-sm"
         />
-        <q-input v-model="notes" label="Notes (duration, cause)" dense outlined />
+        <q-input v-model="notes" label="Notes (duration, cause)" dense outlined maxlength="500" />
       </q-card-section>
 
       <q-separator />

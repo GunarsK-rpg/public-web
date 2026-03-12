@@ -28,7 +28,7 @@
           {{ activeSingerFormName }}
         </div>
         <!-- Death Indicator -->
-        <div v-if="isDead" class="q-mt-xs">
+        <div v-if="isDead" class="q-mt-xs" role="status">
           <q-badge color="negative" class="text-bold">DEAD</q-badge>
         </div>
         <!-- Active Condition Badges -->

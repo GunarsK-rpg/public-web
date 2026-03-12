@@ -63,12 +63,6 @@ vi.mock('src/stores/classifiers', () => ({
   }),
 }));
 
-vi.mock('src/constants/theme', () => ({
-  RPG_COLORS: {
-    badgeMuted: 'grey',
-  },
-}));
-
 function createHeroExpertise(overrides: Partial<HeroExpertise> = {}): HeroExpertise {
   return {
     id: 1,
@@ -87,10 +81,6 @@ describe('ExpertisesTab', () => {
         stubs: {
           QChip: {
             template: '<span class="q-chip" :aria-label="$attrs[\'aria-label\']"><slot /></span>',
-          },
-          QBadge: {
-            template: '<span class="q-badge"><slot /></span>',
-            props: ['color'],
           },
         },
       },

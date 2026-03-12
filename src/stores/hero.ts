@@ -585,6 +585,7 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   async function updateGoalValue(goalId: number, value: number): Promise<HeroGoal | null> {
     if (!hero.value) return null;
+    if (!Number.isInteger(value) || value < 0 || value > 3) return null;
     const goal = hero.value.goals.find((g) => g.id === goalId);
     if (!goal) return null;
     const currentHeroId = hero.value.id;

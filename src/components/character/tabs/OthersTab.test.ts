@@ -5,6 +5,7 @@ import OthersTab from './OthersTab.vue';
 import type { HeroCulture, HeroGoal, HeroConnection, HeroCompanion, HeroInjury } from 'src/types';
 
 const mockHero = ref<{
+  id: number;
   ancestry: { id: number; code: string; name: string } | null;
   activeSingerForm: { id: number; code: string; name: string } | null;
   appearance: string | null;
@@ -137,8 +138,10 @@ describe('OthersTab', () => {
             props: ['color'],
           },
           QCheckbox: {
-            template: '<input type="checkbox" class="q-checkbox" />',
+            template:
+              '<input type="checkbox" class="q-checkbox" @change="$emit(\'update:modelValue\', !modelValue)" />',
             props: ['modelValue', 'disable', 'size', 'dense'],
+            emits: ['update:modelValue'],
           },
           QSelect: {
             template: '<select class="q-select"></select>',
@@ -159,6 +162,7 @@ describe('OthersTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockHero.value = {
+      id: 1,
       ancestry: { id: 1, code: 'human', name: 'Human' },
       activeSingerForm: null,
       appearance: 'Tall with dark hair',
@@ -537,6 +541,53 @@ describe('OthersTab', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('No injuries');
+    });
+  });
+
+  // ========================================
+  // Interactions
+  // ========================================
+  describe('interactions', () => {
+    it('calls updateGoalValue when goal checkbox is toggled', async () => {
+      mockGoals.value = [
+        {
+          id: 10,
+          heroId: 1,
+          name: 'Test Goal',
+          status: { id: 1, code: 'active', name: 'Active' },
+          value: 1,
+        },
+      ] as HeroGoal[];
+      const wrapper = createWrapper();
+
+      const checkboxes = wrapper.findAll('.q-checkbox');
+      expect(checkboxes.length).toBeGreaterThan(1);
+      await checkboxes[1]!.trigger('change');
+
+      expect(mockUpdateGoalValue).toHaveBeenCalledWith(10, 2);
+    });
+
+    it('calls removeInjury when remove button is clicked', async () => {
+      mockInjuries.value = [
+        { id: 5, heroId: 1, injury: { id: 1, code: 'broken-arm', name: 'Broken Arm' } },
+      ] as HeroInjury[];
+      const wrapper = createWrapper();
+
+      const removeBtn = wrapper.find('button[aria-label="Remove injury: Broken Arm"]');
+      await removeBtn.trigger('click');
+
+      expect(mockRemoveInjury).toHaveBeenCalledWith(5, undefined);
+    });
+
+    it('calls upsertInjury when injury is added via dialog', async () => {
+      const wrapper = createWrapper();
+      const dialog = wrapper.findComponent({ name: 'AddInjuryDialog' });
+      await dialog.vm.$emit('add', 'broken-arm', 'Fell down');
+
+      expect(mockUpsertInjury).toHaveBeenCalledWith(
+        { heroId: 1, injury: { code: 'broken-arm' }, notes: 'Fell down' },
+        expect.objectContaining({ code: 'broken-arm' })
+      );
     });
   });
 

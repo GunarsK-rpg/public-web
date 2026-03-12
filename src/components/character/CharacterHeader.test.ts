@@ -23,6 +23,7 @@ const mockMaxHealth = ref(30);
 const mockMaxFocus = ref(10);
 const mockMaxInvestiture = ref(20);
 const mockSaving = ref(false);
+const mockInjuries = ref<{ id: number; injury: { code: string } }[]>([]);
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
@@ -33,7 +34,9 @@ vi.mock('src/stores/hero', () => ({
       return mockSaving.value;
     },
     conditions: [],
-    injuries: [],
+    get injuries() {
+      return mockInjuries.value;
+    },
     patchHealth: vi.fn(),
     patchFocus: vi.fn(),
     patchInvestiture: vi.fn(),
@@ -101,6 +104,10 @@ describe('CharacterHeader', () => {
             template:
               '<button class="q-btn-stub" :aria-label="$attrs[\'aria-label\']"><slot /></button>',
           },
+          QBadge: {
+            template: '<span class="q-badge"><slot /></span>',
+            props: ['color', 'outline'],
+          },
         },
       },
     });
@@ -126,6 +133,7 @@ describe('CharacterHeader', () => {
     mockMaxFocus.value = 10;
     mockMaxInvestiture.value = 20;
     mockSaving.value = false;
+    mockInjuries.value = [];
   });
 
   describe('basic rendering', () => {
@@ -216,6 +224,24 @@ describe('CharacterHeader', () => {
         name: 'character-edit',
         params: { characterId: '42' },
       });
+    });
+  });
+
+  describe('death indicator', () => {
+    it('renders DEAD badge when hero has death injury', () => {
+      mockInjuries.value = [{ id: 1, injury: { code: 'death' } }];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('DEAD');
+      expect(wrapper.classes()).toContain('hero-dead');
+    });
+
+    it('does not render DEAD badge when no death injury', () => {
+      mockInjuries.value = [];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).not.toContain('DEAD');
+      expect(wrapper.classes()).not.toContain('hero-dead');
     });
   });
 
