@@ -190,6 +190,7 @@ function createHeroTalent(overrides: Partial<HeroTalent> = {}): HeroTalent {
     heroId: 1,
     talent: { id: 1, code: 'talent1', name: 'Talent 1' },
     special: [],
+    grantSelections: [],
     ...overrides,
   };
 }

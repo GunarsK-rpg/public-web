@@ -239,13 +239,10 @@ function removePath(pathId: number) {
 
   // Remove all talents belonging to this path (key + path-level + specialty)
   const pathTalentIds = getAllPathTalentIds(pathId);
-  for (const ht of heroStore.hero?.talents ?? []) {
-    if (pathTalentIds.has(ht.talent.id)) {
-      deletionTracker?.trackDeletion('talents', ht.id);
-    }
-  }
-  if (heroStore.hero) {
-    heroStore.hero.talents = heroStore.hero.talents.filter((t) => !pathTalentIds.has(t.talent.id));
+  const toRemove = (heroStore.hero?.talents ?? []).filter((ht) => pathTalentIds.has(ht.talent.id));
+  for (const ht of toRemove) {
+    if (ht.id > 0) deletionTracker?.trackDeletion('talents', ht.id);
+    talentStore.removeTalent(ht.talent.id);
   }
 }
 
@@ -272,7 +269,7 @@ function trackRadiantTalentDeletions() {
   }
 
   for (const ht of heroStore.hero.talents) {
-    if (radiantClassifierIds.has(ht.talent.id)) {
+    if (radiantClassifierIds.has(ht.talent.id) && ht.id > 0) {
       deletionTracker?.trackDeletion('talents', ht.id);
     }
   }
@@ -305,7 +302,7 @@ function setIdealLevel(level: number | null) {
 function handleToggleTalent(talentId: number, available: boolean) {
   // Track deletion if talent is being removed (already selected)
   const heroTalent = heroStore.hero?.talents.find((t) => t.talent.id === talentId);
-  if (heroTalent) {
+  if (heroTalent && heroTalent.id > 0) {
     deletionTracker?.trackDeletion('talents', heroTalent.id);
   }
   toggleTalent(talentId, available);

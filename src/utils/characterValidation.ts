@@ -94,8 +94,13 @@ function validateExpertises(
   const warnings: string[] = [];
 
   const budget = BASE_EXPERTISE_SLOTS + intellectValue + expertisesModifier;
-  // Count only non-starting-kit expertises
-  const spent = expertises.filter((e) => e.source?.sourceType !== 'starting_kit').length;
+  // Count only player-purchased expertises (exclude starting kit, talent, and singer form grants)
+  const spent = expertises.filter(
+    (e) =>
+      e.source?.sourceType !== 'starting_kit' &&
+      e.source?.sourceType !== 'talent' &&
+      e.source?.sourceType !== 'singer_form'
+  ).length;
   const remaining = budget - spent;
 
   if (remaining < 0) {

@@ -53,6 +53,14 @@ export const SPECIAL = {
   PAIRED: 'paired',
   REWARD_ONLY: 'reward_only',
   PERMANENT: 'permanent',
+
+  // Talent grant types
+  EXPERTISE_GRANT: 'expertise_grant',
+  EXPERTISE_CHOICE: 'expertise_choice',
+  EXPERTISE_TYPE_CHOICE: 'expertise_type_choice',
+  ITEM_GRANT: 'item_grant',
+  ITEM_CHOICE: 'item_choice',
+  SKILL_MODIFIER_CHOICE: 'skill_modifier_choice',
 } as const;
 
 /**

@@ -12,8 +12,12 @@
           v-for="heroExp in expertisesByTypeRecord[expType.id]"
           :key="heroExp.id"
           :aria-label="`${getDisplayName(heroExp)} expertise`"
+          :outline="!!heroExp.source"
         >
           {{ getDisplayName(heroExp) }}
+          <q-tooltip v-if="sourceLabels[heroExp.id]">
+            {{ sourceLabels[heroExp.id] }}
+          </q-tooltip>
         </q-chip>
       </template>
       <div v-else class="text-empty q-pa-sm">No {{ expType.name.toLowerCase() }} expertises</div>
@@ -26,7 +30,7 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
-import type { HeroExpertise } from 'src/types';
+import type { HeroExpertise, ExpertiseSourceData } from 'src/types';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -53,6 +57,32 @@ function getDisplayName(heroExp: HeroExpertise): string {
     return getClassifierName(heroExp.expertise.id);
   }
   return heroExp.customName || 'Custom';
+}
+
+// Pre-compute source labels keyed by heroExpertise id to avoid repeated lookups in template
+const sourceLabels = computed((): Record<number, string | null> => {
+  const result: Record<number, string | null> = {};
+  for (const heroExp of heroExpertises.value) {
+    result[heroExp.id] = getSourceLabel(heroExp.source);
+  }
+  return result;
+});
+
+function getSourceLabel(source?: ExpertiseSourceData | null): string | null {
+  if (!source) return null;
+  if (source.sourceType === 'talent' && source.sourceId) {
+    const heroTalent = heroStore.hero?.talents.find((t) => t.talent.id === source.sourceId);
+    return heroTalent ? `From: ${heroTalent.talent.name}` : 'From talent';
+  }
+  if (source.sourceType === 'singer_form' && source.sourceId) {
+    const form = classifiers.singerForms.find((f) => f.id === source.sourceId);
+    return form ? `From: ${form.name}` : 'From singer form';
+  }
+  if (source.sourceType === 'culture' && source.sourceId) {
+    const culture = classifiers.cultures.find((c) => c.id === source.sourceId);
+    return culture ? `From: ${culture.name}` : 'From culture';
+  }
+  return source.sourceType ? `From: ${source.sourceType}` : null;
 }
 </script>
 

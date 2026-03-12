@@ -61,6 +61,7 @@ const createTalent = (overrides: Partial<HeroTalent> = {}): HeroTalent => ({
   heroId: 1,
   talent: { id: 1, code: 'test', name: 'Test' },
   special: [],
+  grantSelections: [],
   ...overrides,
 });
 

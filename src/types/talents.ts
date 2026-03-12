@@ -28,6 +28,7 @@ export interface HeroTalentBase {
   heroId: number;
   talent: ClassifierInput;
   notes?: string | null;
+  special?: SpecialEntry[];
 }
 
 /** Hero talent - API response */
@@ -35,4 +36,5 @@ export interface HeroTalent extends HeroTalentBase {
   id: number;
   talent: ClassifierRef;
   special: SpecialEntry[];
+  grantSelections: SpecialEntry[];
 }

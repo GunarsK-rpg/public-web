@@ -263,6 +263,7 @@ describe('buildTalentPayload', () => {
       talent: { id: 9, code: 'shield-mastery', name: 'Shield Mastery' },
       notes: 'Favorite ability',
       special: [],
+      grantSelections: [],
     };
     const payload = buildTalentPayload(1, talent);
 
@@ -270,7 +271,23 @@ describe('buildTalentPayload', () => {
       heroId: 1,
       talent: { code: 'shield-mastery' },
       notes: 'Favorite ability',
+      special: [],
     });
+  });
+
+  it('includes grant selections in special field', () => {
+    const talent: HeroTalent = {
+      id: 41,
+      heroId: 1,
+      talent: { id: 10, code: 'erudition', name: 'Erudition' },
+      special: [{ type: 'skill_modifier_choice', codes: ['int', 'wil'], value: 2 }],
+      grantSelections: [{ type: 'skill_modifier_choice', codes: ['diplomacy', 'investigation'] }],
+    };
+    const payload = buildTalentPayload(1, talent);
+
+    expect(payload.special).toEqual([
+      { type: 'skill_modifier_choice', codes: ['diplomacy', 'investigation'] },
+    ]);
   });
 });
 

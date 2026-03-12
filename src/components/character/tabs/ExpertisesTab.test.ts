@@ -6,10 +6,17 @@ import type { HeroExpertise } from 'src/types';
 
 const mockExpertises = ref<HeroExpertise[]>([]);
 
+const mockHero = {
+  talents: [] as { talent: { id: number; name: string } }[],
+};
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     get expertises() {
       return mockExpertises.value;
+    },
+    get hero() {
+      return mockHero;
     },
   }),
 }));
@@ -22,6 +29,8 @@ vi.mock('src/stores/classifiers', () => ({
       { id: 3, code: 'tool', name: 'Tool' },
       { id: 4, code: 'culture', name: 'Culture' },
     ],
+    cultures: [{ id: 1, code: 'alethi', name: 'Alethi' }],
+    singerForms: [],
     expertises: [
       {
         id: 1,
@@ -82,6 +91,7 @@ describe('ExpertisesTab', () => {
           QChip: {
             template: '<span class="q-chip" :aria-label="$attrs[\'aria-label\']"><slot /></span>',
           },
+          QTooltip: { template: '<span />' },
         },
       },
     });
