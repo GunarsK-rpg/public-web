@@ -40,7 +40,9 @@
               color="negative"
               :saving="saving"
               :readonly="readonly"
+              :use-dialog="!readonly"
               @update="heroStore.patchHealth($event)"
+              @open-dialog="showHpDialog = true"
             />
           </div>
           <div :class="isRadiant ? 'col-3' : 'col-4'">
@@ -79,11 +81,19 @@
       </div>
     </div>
     <q-separator />
+    <HpManagementDialog
+      v-if="!readonly"
+      v-model="showHpDialog"
+      :current-hp="hero?.currentHealth ?? 0"
+      :max-hp="maxHealth"
+      :saving="saving"
+      @update="heroStore.patchHealth($event)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
@@ -91,6 +101,7 @@ import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { RPG_COLORS } from 'src/constants/theme';
 import { Pencil } from 'lucide-vue-next';
 import ResourceBox from './ResourceBox.vue';
+import HpManagementDialog from './HpManagementDialog.vue';
 
 const props = defineProps<{
   characterId: string;
@@ -102,6 +113,7 @@ const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
 const hero = computed(() => heroStore.hero);
+const showHpDialog = ref(false);
 const saving = computed(() => heroStore.saving);
 const maxHealth = computed(() => attrStore.getDerivedStatTotal('max_health'));
 const maxFocus = computed(() => attrStore.getDerivedStatTotal('max_focus'));

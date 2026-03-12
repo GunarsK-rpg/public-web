@@ -23,8 +23,9 @@ const createDefaultEquipmentData = (): Array<{
   equipment: ClassifierRef;
   amount: number;
 }> => [
-  { id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 2 },
+  { id: 1, equipment: { id: 1, code: 'sword', name: 'Sword' }, amount: 1 },
   { id: 2, equipment: { id: 2, code: 'shield', name: 'Shield' }, amount: 1 },
+  { id: 3, equipment: { id: 3, code: 'rope', name: 'Rope' }, amount: 2 },
 ];
 
 // Reactive mock data
@@ -112,8 +113,8 @@ const createDefaultClassifierData = () => ({
     { id: 3, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
   ],
   equipmentTypes: [
-    { id: 1, code: 'weapons', name: 'Weapons' },
-    { id: 2, code: 'gear', name: 'Gear' },
+    { id: 1, code: 'weapons', name: 'Weapons', isStackable: false },
+    { id: 2, code: 'gear', name: 'Gear', isStackable: true },
   ],
 });
 
