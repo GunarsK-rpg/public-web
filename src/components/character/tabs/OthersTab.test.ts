@@ -5,6 +5,7 @@ import OthersTab from './OthersTab.vue';
 import type { HeroCulture, HeroGoal, HeroConnection, HeroCompanion, HeroInjury } from 'src/types';
 
 const mockHero = ref<{
+  id: number;
   ancestry: { id: number; code: string; name: string } | null;
   activeSingerForm: { id: number; code: string; name: string } | null;
   appearance: string | null;
@@ -18,6 +19,13 @@ const mockConnections = ref<HeroConnection[]>([]);
 const mockCompanions = ref<HeroCompanion[]>([]);
 const mockInjuries = ref<HeroInjury[]>([]);
 const mockIsSinger = ref(false);
+
+const mockConditions = ref<
+  { id: number; condition: { code: string; name: string }; notes?: string }[]
+>([]);
+const mockUpsertInjury = vi.fn();
+const mockRemoveInjury = vi.fn();
+const mockUpdateGoalValue = vi.fn();
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
@@ -39,6 +47,12 @@ vi.mock('src/stores/hero', () => ({
     get injuries() {
       return mockInjuries.value;
     },
+    get conditions() {
+      return mockConditions.value;
+    },
+    upsertInjury: mockUpsertInjury,
+    removeInjury: mockRemoveInjury,
+    updateGoalValue: mockUpdateGoalValue,
   }),
 }));
 
@@ -94,17 +108,13 @@ describe('OthersTab', () => {
     shallowMount(OthersTab, {
       global: {
         stubs: {
-          QExpansionItem: {
-            template: `<div class="q-expansion-item" :aria-label="$attrs['aria-label']">
+          SectionPanel: {
+            template: `<div class="section-panel" :aria-label="label + ' section'">
+              <slot name="icon" />
+              <slot name="header-side" />
               <slot />
             </div>`,
-            props: ['icon', 'label', 'defaultOpened'],
-          },
-          QCard: {
-            template: '<div class="q-card"><slot /></div>',
-          },
-          QCardSection: {
-            template: '<div class="q-card-section"><slot /></div>',
+            props: ['label', 'defaultOpened'],
           },
           QList: {
             template: '<div class="q-list"><slot /></div>',
@@ -127,6 +137,24 @@ describe('OthersTab', () => {
             template: '<span class="q-badge"><slot /></span>',
             props: ['color'],
           },
+          QCheckbox: {
+            template:
+              '<input type="checkbox" class="q-checkbox" @change="$emit(\'update:modelValue\', !modelValue)" />',
+            props: ['modelValue', 'disable', 'size', 'dense'],
+            emits: ['update:modelValue'],
+          },
+          QSelect: {
+            template: '<select class="q-select"></select>',
+            props: ['modelValue', 'options', 'label'],
+          },
+          QInput: {
+            template: '<input class="q-input" />',
+            props: ['modelValue', 'label'],
+          },
+          QBtn: {
+            template: '<button class="q-btn"><slot /></button>',
+            props: ['flat', 'dense', 'round', 'size', 'icon', 'color', 'label', 'disable'],
+          },
         },
       },
     });
@@ -134,6 +162,7 @@ describe('OthersTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockHero.value = {
+      id: 1,
       ancestry: { id: 1, code: 'human', name: 'Human' },
       activeSingerForm: null,
       appearance: 'Tall with dark hair',
@@ -145,6 +174,7 @@ describe('OthersTab', () => {
     mockConnections.value = [];
     mockCompanions.value = [];
     mockInjuries.value = [];
+    mockConditions.value = [];
     mockIsSinger.value = false;
   });
 
@@ -155,7 +185,7 @@ describe('OthersTab', () => {
     it('renders Ancestry & Culture section', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.find('[aria-label="Ancestry and Culture section"]').exists()).toBe(true);
+      expect(wrapper.find('[aria-label="Ancestry & Culture section"]').exists()).toBe(true);
     });
 
     it('renders Goals section', () => {
@@ -302,21 +332,6 @@ describe('OthersTab', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Important task');
-    });
-
-    it('renders goal status badge', () => {
-      mockGoals.value = [
-        {
-          id: 1,
-          heroId: 1,
-          name: 'Goal',
-          status: { id: 1, code: 's1', name: 'Status1' },
-          value: 3,
-        },
-      ] as HeroGoal[];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Active');
     });
 
     it('shows empty message when no goals', () => {
@@ -526,6 +541,53 @@ describe('OthersTab', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('No injuries');
+    });
+  });
+
+  // ========================================
+  // Interactions
+  // ========================================
+  describe('interactions', () => {
+    it('calls updateGoalValue when goal checkbox is toggled', async () => {
+      mockGoals.value = [
+        {
+          id: 10,
+          heroId: 1,
+          name: 'Test Goal',
+          status: { id: 1, code: 'active', name: 'Active' },
+          value: 1,
+        },
+      ] as HeroGoal[];
+      const wrapper = createWrapper();
+
+      const checkboxes = wrapper.findAll('.q-checkbox');
+      expect(checkboxes.length).toBeGreaterThan(1);
+      await checkboxes[1]!.trigger('change');
+
+      expect(mockUpdateGoalValue).toHaveBeenCalledWith(10, 2);
+    });
+
+    it('calls removeInjury when remove button is clicked', async () => {
+      mockInjuries.value = [
+        { id: 5, heroId: 1, injury: { id: 1, code: 'broken-arm', name: 'Broken Arm' } },
+      ] as HeroInjury[];
+      const wrapper = createWrapper();
+
+      const removeBtn = wrapper.find('button[aria-label="Remove injury: Broken Arm"]');
+      await removeBtn.trigger('click');
+
+      expect(mockRemoveInjury).toHaveBeenCalledWith(5, undefined);
+    });
+
+    it('calls upsertInjury when injury is added via dialog', async () => {
+      const wrapper = createWrapper();
+      const dialog = wrapper.findComponent({ name: 'AddInjuryDialog' });
+      await dialog.vm.$emit('add', 'broken-arm', 'Fell down');
+
+      expect(mockUpsertInjury).toHaveBeenCalledWith(
+        { heroId: 1, injury: { code: 'broken-arm' }, notes: 'Fell down' },
+        expect.objectContaining({ code: 'broken-arm' })
+      );
     });
   });
 

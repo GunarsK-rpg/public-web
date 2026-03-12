@@ -14,9 +14,6 @@
           :aria-label="`${getDisplayName(heroExp)} expertise`"
         >
           {{ getDisplayName(heroExp) }}
-          <q-badge v-if="heroExp.source" :color="RPG_COLORS.badgeMuted" class="q-ml-xs">
-            {{ heroExp.source.sourceType }}
-          </q-badge>
         </q-chip>
       </template>
       <div v-else class="text-empty q-pa-sm">No {{ expType.name.toLowerCase() }} expertises</div>
@@ -29,7 +26,6 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
-import { RPG_COLORS } from 'src/constants/theme';
 import type { HeroExpertise } from 'src/types';
 
 const heroStore = useHeroStore();

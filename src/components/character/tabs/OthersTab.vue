@@ -1,212 +1,205 @@
 <template>
   <div class="others-tab">
     <!-- Ancestry & Culture Section -->
-    <q-expansion-item aria-label="Ancestry and Culture section" default-opened class="q-mb-sm">
-      <template #header>
-        <q-item-section avatar>
-          <Globe />
-        </q-item-section>
-        <q-item-section>
-          <q-item-label>Ancestry & Culture</q-item-label>
-        </q-item-section>
+    <SectionPanel label="Ancestry & Culture" default-opened>
+      <template #icon><Globe /></template>
+
+      <div class="text-subtitle2 q-mb-sm">Ancestry</div>
+      <div class="row items-center q-mb-md">
+        <div>
+          <div class="text-body1 text-weight-medium">{{ ancestry?.name ?? 'Unknown' }}</div>
+          <div class="text-caption text-muted">{{ ancestry?.description }}</div>
+        </div>
+      </div>
+
+      <template v-if="talentStore.isSinger && activeSingerForm">
+        <div class="text-subtitle2 q-mb-sm">Current Form</div>
+        <div class="row items-center q-mb-md">
+          <q-chip>{{ activeSingerForm.name }}</q-chip>
+        </div>
+        <div v-if="activeSingerForm.description" class="text-caption q-mb-md">
+          {{ activeSingerForm.description }}
+        </div>
       </template>
-      <q-card>
-        <q-card-section>
-          <!-- Ancestry -->
-          <div class="text-subtitle2 q-mb-sm">Ancestry</div>
-          <div class="row items-center q-mb-md">
-            <div>
-              <div class="text-body1 text-weight-medium">{{ ancestry?.name ?? 'Unknown' }}</div>
-              <div class="text-caption text-muted">{{ ancestry?.description }}</div>
-            </div>
-          </div>
 
-          <!-- Singer Form (if Singer) -->
-          <template v-if="talentStore.isSinger && activeSingerForm">
-            <div class="text-subtitle2 q-mb-sm">Current Form</div>
-            <div class="row items-center q-mb-md">
-              <q-chip>{{ activeSingerForm.name }}</q-chip>
-            </div>
-            <div v-if="activeSingerForm.description" class="text-caption q-mb-md">
-              {{ activeSingerForm.description }}
-            </div>
-          </template>
-
-          <!-- Cultures -->
-          <div class="text-subtitle2 q-mb-sm">Cultures</div>
-          <div v-if="heroStore.cultures.length === 0" class="text-empty q-mb-md">
-            No cultures selected
-          </div>
-          <q-list v-else separator class="q-mb-md">
-            <q-item v-for="heroCulture in heroStore.cultures" :key="heroCulture.id" dense>
-              <q-item-section>
-                <q-item-label>{{ getCultureName(heroCulture.culture?.id) }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
+      <div class="text-subtitle2 q-mb-sm">Cultures</div>
+      <div v-if="heroStore.cultures.length === 0" class="text-empty q-mb-md">
+        No cultures selected
+      </div>
+      <q-list v-else separator class="q-mb-md">
+        <q-item v-for="heroCulture in heroStore.cultures" :key="heroCulture.id" dense>
+          <q-item-section>
+            <q-item-label>{{ getCultureName(heroCulture.culture?.id) }}</q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </SectionPanel>
 
     <!-- Goals Section -->
-    <q-expansion-item aria-label="Goals section" class="q-mb-sm">
-      <template #header>
-        <q-item-section avatar>
-          <Flag />
-        </q-item-section>
-        <q-item-section>
-          <q-item-label>Goals</q-item-label>
-        </q-item-section>
-      </template>
-      <q-card>
-        <q-card-section>
-          <div v-if="heroStore.goals.length === 0" class="text-empty">No goals set</div>
-          <q-list v-else separator>
-            <q-item v-for="goal in heroStore.goals" :key="goal.id">
-              <q-item-section>
-                <q-item-label>{{ goal.name }}</q-item-label>
-                <q-item-label v-if="goal.description" caption>{{ goal.description }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-badge :color="RPG_COLORS.badgeMuted">{{
-                  getGoalStatusName(goal.status?.id)
-                }}</q-badge>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
+    <SectionPanel label="Goals">
+      <template #icon><Flag /></template>
+
+      <div v-if="heroStore.goals.length === 0" class="text-empty">No goals set</div>
+      <q-list v-else separator>
+        <q-item v-for="goal in heroStore.goals" :key="goal.id">
+          <q-item-section>
+            <q-item-label>{{ goal.name }}</q-item-label>
+            <q-item-label v-if="goal.description" caption>{{ goal.description }}</q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <div class="goal-progress row items-center no-wrap">
+              <q-checkbox
+                v-for="step in 3"
+                :key="step"
+                :model-value="goal.value >= step"
+                :disable="readonly"
+                :aria-label="`Goal progress step ${step} of 3`"
+                @update:model-value="handleGoalProgress(goal, step)"
+              />
+            </div>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </SectionPanel>
 
     <!-- Connections Section -->
-    <q-expansion-item aria-label="Connections section" class="q-mb-sm">
-      <template #header>
-        <q-item-section avatar>
-          <Users />
-        </q-item-section>
-        <q-item-section>
-          <q-item-label>Connections</q-item-label>
-        </q-item-section>
-      </template>
-      <q-card>
-        <q-card-section>
-          <div v-if="heroStore.connections.length === 0" class="text-empty">No connections</div>
-          <q-list v-else separator>
-            <q-item v-for="conn in heroStore.connections" :key="conn.id">
-              <q-item-section>
-                <q-item-label>{{ conn.description ?? 'Connection' }}</q-item-label>
-                <q-item-label v-if="conn.notes" caption>{{ conn.notes }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-badge :color="RPG_COLORS.badgeMuted">{{
-                  getConnectionTypeName(conn.connectionType?.id)
-                }}</q-badge>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
+    <SectionPanel label="Connections">
+      <template #icon><Users /></template>
+
+      <div v-if="heroStore.connections.length === 0" class="text-empty">No connections</div>
+      <q-list v-else separator>
+        <q-item v-for="conn in heroStore.connections" :key="conn.id">
+          <q-item-section>
+            <q-item-label>{{ conn.description ?? 'Connection' }}</q-item-label>
+            <q-item-label v-if="conn.notes" caption>{{ conn.notes }}</q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-badge :color="RPG_COLORS.badgeMuted">{{
+              getConnectionTypeName(conn.connectionType?.id)
+            }}</q-badge>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </SectionPanel>
 
     <!-- Companions Section -->
-    <q-expansion-item aria-label="Companions section" class="q-mb-sm">
-      <template #header>
-        <q-item-section avatar>
-          <PawPrint />
-        </q-item-section>
-        <q-item-section>
-          <q-item-label>Companions</q-item-label>
-        </q-item-section>
-      </template>
-      <q-card>
-        <q-card-section>
-          <div v-if="heroStore.companions.length === 0" class="text-empty">No companions</div>
-          <q-list v-else separator>
-            <q-item v-for="comp in heroStore.companions" :key="comp.id">
-              <q-item-section>
-                <q-item-label>{{ comp.description ?? 'Companion' }}</q-item-label>
-                <q-item-label v-if="comp.notes" caption>{{ comp.notes }}</q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-badge :color="RPG_COLORS.badgeMuted">{{
-                  getCompanionTypeName(comp.companionType?.id)
-                }}</q-badge>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
+    <SectionPanel label="Companions">
+      <template #icon><PawPrint /></template>
+
+      <div v-if="heroStore.companions.length === 0" class="text-empty">No companions</div>
+      <q-list v-else separator>
+        <q-item v-for="comp in heroStore.companions" :key="comp.id">
+          <q-item-section>
+            <q-item-label>{{ comp.description ?? 'Companion' }}</q-item-label>
+            <q-item-label v-if="comp.notes" caption>{{ comp.notes }}</q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-badge :color="RPG_COLORS.badgeMuted">{{
+              getCompanionTypeName(comp.companionType?.id)
+            }}</q-badge>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </SectionPanel>
 
     <!-- Biography Section -->
-    <q-expansion-item aria-label="Biography section" class="q-mb-sm">
-      <template #header>
-        <q-item-section avatar>
-          <User />
-        </q-item-section>
-        <q-item-section>
-          <q-item-label>Biography</q-item-label>
-        </q-item-section>
-      </template>
-      <q-card>
-        <q-card-section>
-          <div class="text-subtitle2 q-mb-sm">Appearance</div>
-          <div class="text-body2 q-mb-md">
-            {{ heroAppearance }}
-          </div>
+    <SectionPanel label="Biography">
+      <template #icon><User /></template>
 
-          <div class="text-subtitle2 q-mb-sm">Biography</div>
-          <div class="text-body2 q-mb-md">
-            {{ heroBiography }}
-          </div>
+      <div class="text-subtitle2 q-mb-sm">Appearance</div>
+      <div class="text-body2 q-mb-md">
+        {{ heroAppearance }}
+      </div>
 
-          <div class="text-subtitle2 q-mb-sm">Notes</div>
-          <div class="text-body2">
-            {{ heroNotes }}
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
+      <div class="text-subtitle2 q-mb-sm">Biography</div>
+      <div class="text-body2 q-mb-md">
+        {{ heroBiography }}
+      </div>
+
+      <div class="text-subtitle2 q-mb-sm">Notes</div>
+      <div class="text-body2">
+        {{ heroNotes }}
+      </div>
+    </SectionPanel>
 
     <!-- Injuries Section -->
-    <q-expansion-item aria-label="Injuries section" class="q-mb-sm">
-      <template #header>
-        <q-item-section avatar>
-          <TriangleAlert />
-        </q-item-section>
-        <q-item-section>
-          <q-item-label>Injuries</q-item-label>
+    <SectionPanel label="Injuries">
+      <template #icon><TriangleAlert /></template>
+      <template v-if="heroStore.injuries.length > 0" #header-side>
+        <q-item-section side>
+          <q-badge color="negative">{{ heroStore.injuries.length }}</q-badge>
         </q-item-section>
       </template>
-      <q-card>
-        <q-card-section>
-          <div v-if="heroStore.injuries.length === 0" class="text-empty">No injuries</div>
-          <q-list v-else dense>
-            <q-item v-for="injury in heroStore.injuries" :key="injury.id">
-              <q-item-section>
-                <q-item-label>{{ getInjuryName(injury.injury?.id) }}</q-item-label>
-                <q-item-label v-if="injury.notes" caption>{{ injury.notes }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-      </q-card>
-    </q-expansion-item>
+
+      <div v-if="heroStore.injuries.length === 0" class="text-empty">No injuries</div>
+      <q-list v-if="heroStore.injuries.length > 0" dense separator>
+        <q-item v-for="injury in heroStore.injuries" :key="injury.id">
+          <q-item-section>
+            <q-item-label>{{ getInjuryName(injury.injury?.id) }}</q-item-label>
+            <q-item-label v-if="getInjuryConditionName(injury.injury?.id)" caption>
+              Applies: {{ getInjuryConditionName(injury.injury?.id) }}
+            </q-item-label>
+            <q-item-label v-if="injury.notes" caption>{{ injury.notes }}</q-item-label>
+          </q-item-section>
+          <q-item-section v-if="!readonly" side>
+            <q-btn
+              flat
+              dense
+              round
+              size="sm"
+              icon="close"
+              :aria-label="`Remove injury: ${getInjuryName(injury.injury?.id)}`"
+              @click="handleRemoveInjury(injury)"
+            />
+          </q-item-section>
+        </q-item>
+      </q-list>
+
+      <q-btn
+        v-if="!readonly"
+        flat
+        dense
+        color="primary"
+        label="Add Injury"
+        class="q-mt-sm"
+        @click="showInjuryDialog = true"
+      />
+    </SectionPanel>
+
+    <AddInjuryDialog
+      v-if="!readonly"
+      v-model="showInjuryDialog"
+      :injuries="classifiers.injuries"
+      @add="handleAddInjury"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 import { Globe, Flag, Users, PawPrint, User, TriangleAlert } from 'lucide-vue-next';
+import SectionPanel from 'src/components/shared/SectionPanel.vue';
+import AddInjuryDialog from 'src/components/character/AddInjuryDialog.vue';
+import type { HeroInjury } from 'src/types/conditions';
+import type { HeroGoal } from 'src/types/goals';
+
+defineProps<{
+  readonly?: boolean;
+}>();
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
+
+// ===================
+// STATE
+// ===================
+const showInjuryDialog = ref(false);
 
 // Biography fields - computed for consistency with other hero data access
 const heroAppearance = computed(() => heroStore.hero?.appearance ?? 'No appearance description');
@@ -222,7 +215,6 @@ const activeSingerForm = computed(() =>
 
 // Name getter functions using factory pattern
 const getCultureName = makeNameGetter(computed(() => buildIdNameMap(classifiers.cultures)));
-const getGoalStatusName = makeNameGetter(computed(() => buildIdNameMap(classifiers.goalStatuses)));
 const getConnectionTypeName = makeNameGetter(
   computed(() => buildIdNameMap(classifiers.connectionTypes))
 );
@@ -230,6 +222,56 @@ const getCompanionTypeName = makeNameGetter(
   computed(() => buildIdNameMap(classifiers.companionTypes))
 );
 const getInjuryName = makeNameGetter(computed(() => buildIdNameMap(classifiers.injuries)));
+
+// Injury condition name lookup
+function getInjuryConditionName(injuryId: number | undefined): string | null {
+  if (!injuryId) return null;
+  const injury = classifiers.injuries.find((i) => i.id === injuryId);
+  return injury?.condition?.name ?? null;
+}
+
+// ===================
+// GOAL ACTIONS
+// ===================
+async function handleGoalProgress(goal: HeroGoal, step: number): Promise<void> {
+  const newValue = goal.value >= step ? step - 1 : step;
+  await heroStore.updateGoalValue(goal.id, newValue);
+}
+
+// ===================
+// INJURY ACTIONS
+// ===================
+async function handleAddInjury(injuryCode: string, notes: string | null): Promise<void> {
+  if (!heroStore.hero) return;
+  const injuryClassifier = classifiers.injuries.find((i) => i.code === injuryCode);
+  if (!injuryClassifier) return;
+
+  await heroStore.upsertInjury(
+    {
+      heroId: heroStore.hero.id,
+      injury: { code: injuryCode },
+      notes,
+    },
+    injuryClassifier
+  );
+}
+
+async function handleRemoveInjury(injury: HeroInjury): Promise<void> {
+  // Find the linked condition to auto-remove
+  const injuryClassifier = classifiers.injuries.find((i) => i.id === injury.injury?.id);
+  let linkedConditionId: number | undefined;
+
+  if (injuryClassifier?.condition) {
+    // Find the condition instance that was auto-applied for this injury
+    const condCode = injuryClassifier.condition.code;
+    const match = heroStore.conditions.find(
+      (c) => c.condition.code === condCode && c.notes === `From injury: ${injuryClassifier.name}`
+    );
+    linkedConditionId = match?.id;
+  }
+
+  await heroStore.removeInjury(injury.id, linkedConditionId);
+}
 </script>
 
 <style scoped>
