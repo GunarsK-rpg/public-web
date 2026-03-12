@@ -78,8 +78,7 @@ describe('HpManagementDialog', () => {
       await damageBtn.trigger('click');
       expect(wrapper.emitted('update')).toEqual([[0]]);
     });
-
-});
+  });
 
   describe('override', () => {
     it('set button emits exact override value', async () => {
