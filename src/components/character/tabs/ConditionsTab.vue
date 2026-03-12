@@ -10,11 +10,18 @@
           'condition-active': isActive(cond.code),
           'condition-positive': cond.isPositive && isActive(cond.code),
           'condition-negative': !cond.isPositive && isActive(cond.code),
+          'condition-interactive': !readonly,
         }"
-        role="button"
-        tabindex="0"
-        :aria-label="`Toggle ${cond.name}`"
-        :aria-pressed="isActive(cond.code)"
+        v-bind="
+          readonly
+            ? {}
+            : {
+                role: 'button',
+                tabindex: 0,
+                'aria-label': `Toggle ${cond.name}`,
+                'aria-pressed': isActive(cond.code),
+              }
+        "
         @click="!readonly && toggleCondition(cond)"
         @keydown.enter.space.prevent="!readonly && toggleCondition(cond)"
       >
@@ -38,6 +45,7 @@
           round
           size="xs"
           icon="close"
+          :aria-label="`Remove enhanced: ${getEnhancedLabel(inst)}`"
           @click="removeCondition(inst.id)"
         />
       </div>
@@ -80,9 +88,25 @@
     <div v-if="exhaustedInstance" class="q-mt-md">
       <div class="text-subtitle2 q-mb-sm">Exhausted Penalty</div>
       <div class="row items-center q-gutter-sm">
-        <q-btn v-if="!readonly" flat dense round icon="remove" @click="adjustExhausted(1)" />
+        <q-btn
+          v-if="!readonly"
+          flat
+          dense
+          round
+          icon="remove"
+          aria-label="Increase exhausted penalty"
+          @click="adjustExhausted(1)"
+        />
         <span class="text-h6">{{ exhaustedValue }}</span>
-        <q-btn v-if="!readonly" flat dense round icon="add" @click="adjustExhausted(-1)" />
+        <q-btn
+          v-if="!readonly"
+          flat
+          dense
+          round
+          icon="add"
+          aria-label="Decrease exhausted penalty"
+          @click="adjustExhausted(-1)"
+        />
       </div>
     </div>
 
@@ -102,6 +126,7 @@
           round
           size="xs"
           icon="close"
+          :aria-label="`Remove afflicted: ${getAfflictedLabel(inst)}`"
           @click="removeCondition(inst.id)"
         />
       </div>
@@ -284,8 +309,7 @@ async function addEnhanced(): Promise<void> {
   if (!heroStore.hero || !newEnhancedAttr.value) return;
   const attrCode = newEnhancedAttr.value;
   const value = newEnhancedValue.value;
-  const attrName = classifiers.attributes.find((a) => a.code === attrCode)?.name ?? attrCode;
-  const displayValue = `${attrName.toUpperCase().slice(0, 3)} +${value}`;
+  const displayValue = `${attrCode.toUpperCase().slice(0, 3)} +${value}`;
 
   await heroStore.upsertCondition({
     heroId: heroStore.hero.id,
@@ -333,12 +357,15 @@ async function addAfflicted(): Promise<void> {
   padding: 12px;
   border-radius: 8px;
   text-align: center;
-  cursor: pointer;
   border: 1px solid rgba(128, 128, 128, 0.3);
   opacity: 0.5;
   transition:
     opacity 0.2s,
     border-color 0.2s;
+}
+
+.condition-interactive {
+  cursor: pointer;
 }
 
 .condition-active {

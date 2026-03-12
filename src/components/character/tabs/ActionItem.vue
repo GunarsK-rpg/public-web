@@ -243,7 +243,7 @@ async function useAction(): Promise<void> {
   if (!heroStore.hero || !canUse.value || using.value) return;
   using.value = true;
   try {
-    if (props.action.focusCost > 0) {
+    if (effectiveFocusCost.value > 0) {
       await heroStore.patchFocus(heroStore.hero.currentFocus - effectiveFocusCost.value);
     }
     if (props.action.investitureCost > 0) {
