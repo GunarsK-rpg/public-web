@@ -967,7 +967,7 @@ describe('useHeroAttributesStore', () => {
       expect(store.getStatBonus('deflect')).toBe(3);
     });
 
-    it('returns movement bonus minus cumbersome', () => {
+    it('cumbersome does not directly reduce movement', () => {
       setupHeroWithAttributes();
       const heroStore = useHeroStore();
       const store = useHeroAttributesStore();
@@ -1001,8 +1001,8 @@ describe('useHeroAttributesStore', () => {
         ];
       }
 
-      // movement(10) - cumbersome(3) = 7
-      expect(store.getStatBonus('movement')).toBe(7);
+      // cumbersome does not directly reduce movement (it gates on STR, applying Slowed if unmet)
+      expect(store.getStatBonus('movement')).toBe(10);
     });
 
     it('returns physical defense bonus from equipment', () => {
