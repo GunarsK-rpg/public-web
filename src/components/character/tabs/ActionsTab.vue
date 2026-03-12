@@ -73,7 +73,7 @@ import { isEquipmentActionInstance } from 'src/types';
 
 type ActionEntry = Action | EquipmentActionInstance;
 
-defineProps<{
+const props = defineProps<{
   readonly?: boolean;
 }>();
 
@@ -88,33 +88,9 @@ function getActionIconUrl(icon: string | undefined): string {
 const UNINITIALIZED_TAB = -1;
 const FAVORITES_TAB = 'favorites';
 
-// Active tab — start on Favorites if present, first action type if loaded, otherwise uninitialized
-const activeTab = ref<number | string>(
-  heroStore.favoriteActions.length > 0
-    ? FAVORITES_TAB
-    : (classifiers.actionTypes[0]?.id ?? UNINITIALIZED_TAB)
-);
+const activeTab = ref<number | string>(UNINITIALIZED_TAB);
 
 const hasFavorites = computed(() => heroStore.favoriteActions.length > 0);
-
-// Sync activeTab when actionTypes become available (async classifier init)
-watch(
-  () => classifiers.actionTypes,
-  (types) => {
-    const firstType = types[0];
-    if (firstType && activeTab.value === UNINITIALIZED_TAB) {
-      activeTab.value = hasFavorites.value ? FAVORITES_TAB : firstType.id;
-    }
-  },
-  { immediate: true }
-);
-
-// When favorites tab disappears, switch to first action type tab
-watch(hasFavorites, (has) => {
-  if (!has && activeTab.value === FAVORITES_TAB) {
-    activeTab.value = classifiers.actionTypes[0]?.id ?? UNINITIALIZED_TAB;
-  }
-});
 
 // Activation type display order lookup: id → displayOrder
 const activationTypeOrder = computed(() => {
@@ -221,11 +197,24 @@ const actionsByType = computed((): Record<number, ActionEntry[]> => {
 // All action entries across all types (flattened, for favorite lookup)
 const allEntries = computed((): ActionEntry[] => Object.values(actionsByType.value).flat());
 
-// Unified tab list: favorites (when present) followed by action type tabs
+// Unified tab list: favorites (when present and not readonly) followed by action type tabs
 const allTabs = computed(() => [
-  ...(hasFavorites.value ? [{ id: FAVORITES_TAB as string | number, name: 'Favorites' }] : []),
+  ...(!props.readonly && hasFavorites.value
+    ? [{ id: FAVORITES_TAB as string | number, name: 'Favorites' }]
+    : []),
   ...classifiers.actionTypes.map((t) => ({ id: t.id as string | number, name: t.name })),
 ]);
+
+// Default to first available tab; recover if current tab is removed (e.g. favorites cleared)
+watch(
+  allTabs,
+  (tabs) => {
+    if (tabs.length && !tabs.some((t) => t.id === activeTab.value)) {
+      activeTab.value = tabs[0]!.id;
+    }
+  },
+  { immediate: true }
+);
 
 // Entries keyed by tab id — favorites resolved from store, others from actionsByType
 const entriesByTab = computed((): Record<string | number, ActionEntry[]> => {

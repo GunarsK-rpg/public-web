@@ -101,7 +101,6 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import { Backpack, Trash2, Plus } from 'lucide-vue-next';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
-import { INDIVIDUAL_EQUIPMENT_TYPES } from 'src/constants';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 
 const heroStore = useHeroStore();
@@ -143,7 +142,9 @@ function getEquipmentName(equipmentId: number): string {
 
 function isIndividualItem(equipmentId: number): boolean {
   const eq = findById(classifiers.equipment, equipmentId);
-  return eq ? INDIVIDUAL_EQUIPMENT_TYPES.includes(eq.equipType.code) : false;
+  if (!eq) return false;
+  const eqType = findById(classifiers.equipmentTypes, eq.equipType.id);
+  return !(eqType?.isStackable ?? true);
 }
 
 // Pre-computed equipment grouped by type using O(n) single pass
