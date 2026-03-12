@@ -967,7 +967,7 @@ describe('useHeroAttributesStore', () => {
       expect(store.getStatBonus('deflect')).toBe(3);
     });
 
-    it('returns movement bonus minus cumbersome', () => {
+    it('cumbersome does not directly reduce movement', () => {
       setupHeroWithAttributes();
       const heroStore = useHeroStore();
       const store = useHeroAttributesStore();

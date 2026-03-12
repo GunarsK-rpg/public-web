@@ -28,6 +28,7 @@
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
+import { useHeroStore } from 'src/stores/hero';
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import { findById } from 'src/utils/arrayUtils';
 
@@ -36,6 +37,7 @@ const props = defineProps<{
 }>();
 
 const classifiers = useClassifierStore();
+const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 
 const fullEquipment = computed(() => findById(classifiers.equipment, props.equipmentId));
@@ -49,7 +51,7 @@ const traitBadges = computed(() => {
     if (attr.isExpert) label += ' (Expert)';
 
     let warning = '';
-    if (attr.code === 'cumbersome' && attr.value != null) {
+    if (attr.code === 'cumbersome' && attr.value != null && heroStore.isLoaded) {
       const str = attrStore.attributeValues.str ?? 0;
       if (str < attr.value) {
         const isWeapon = fullEquipment.value?.equipType?.code === 'weapon';
