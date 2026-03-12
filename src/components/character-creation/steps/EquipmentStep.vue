@@ -144,7 +144,7 @@ function isIndividualItem(equipmentId: number): boolean {
   const eq = findById(classifiers.equipment, equipmentId);
   if (!eq) return false;
   const eqType = findById(classifiers.equipmentTypes, eq.equipType.id);
-  return !(eqType?.isStackable ?? true);
+  return !(eqType?.isStackable ?? false);
 }
 
 // Pre-computed equipment grouped by type using O(n) single pass

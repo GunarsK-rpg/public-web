@@ -28,7 +28,7 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
     if (!equip) return;
 
     const eqType = findById(classifierStore.equipmentTypes, equip.equipType.id);
-    const isIndividual = !(eqType?.isStackable ?? true);
+    const isIndividual = !(eqType?.isStackable ?? false);
 
     if (!isIndividual) {
       const existing = heroStore.hero.equipment.find((e) => e.equipment?.id === equipmentId);

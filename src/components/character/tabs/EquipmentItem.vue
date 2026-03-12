@@ -166,7 +166,7 @@ const $q = useQuasar();
 const classifiers = useClassifierStore();
 const heroStore = useHeroStore();
 const saving = computed(() => heroStore.saving);
-const isIndividualItem = computed(() => !(equipmentType.value?.isStackable ?? true));
+const isIndividualItem = computed(() => !(equipmentType.value?.isStackable ?? false));
 const isEquippable = computed(() => equipmentType.value?.isEquippable ?? true);
 
 const equipment = computed(() =>

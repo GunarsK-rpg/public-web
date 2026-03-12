@@ -672,7 +672,7 @@ describe('EquipmentItem', () => {
     it('disables equip and remove buttons when saving (weapon)', () => {
       mockSaving.value = true;
       const wrapper = createWrapper({
-        equipment: eqRef(5),
+        equipment: eqRef(1),
         equipType: { id: 1, code: 'weapon', name: 'Weapon' },
         amount: 1,
         isEquipped: false,
