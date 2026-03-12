@@ -239,13 +239,10 @@ function removePath(pathId: number) {
 
   // Remove all talents belonging to this path (key + path-level + specialty)
   const pathTalentIds = getAllPathTalentIds(pathId);
-  for (const ht of heroStore.hero?.talents ?? []) {
-    if (pathTalentIds.has(ht.talent.id)) {
-      deletionTracker?.trackDeletion('talents', ht.id);
-    }
-  }
-  if (heroStore.hero) {
-    heroStore.hero.talents = heroStore.hero.talents.filter((t) => !pathTalentIds.has(t.talent.id));
+  const toRemove = (heroStore.hero?.talents ?? []).filter((ht) => pathTalentIds.has(ht.talent.id));
+  for (const ht of toRemove) {
+    deletionTracker?.trackDeletion('talents', ht.id);
+    talentStore.removeTalent(ht.talent.id);
   }
 }
 

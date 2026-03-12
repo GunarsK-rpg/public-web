@@ -19,6 +19,7 @@ function createHeroTalent(special: SpecialEntry[], code = 'test'): HeroTalent {
     heroId: 0,
     talent: { id: 1, code, name: 'Test Talent' },
     special,
+    grantSelections: [],
   };
 }
 
@@ -214,6 +215,7 @@ describe('getHeroBonus', () => {
         heroId: 0,
         talent: { id: 1, code: 'test', name: 'Test' },
         special: undefined as unknown as SpecialEntry[],
+        grantSelections: [],
       };
 
       expect(getHeroBonus([talent], [], null, 'deflect')).toBe(0);

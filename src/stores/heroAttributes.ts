@@ -325,10 +325,52 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
   }
 
   function removeExpertiseBySource(sourceType: string, sourceId: number) {
-    if (!heroStore.hero) return;
+    if (!heroStore.hero?.expertises) return;
     heroStore.hero.expertises = heroStore.hero.expertises.filter(
       (e) => !(e.source?.sourceType === sourceType && e.source?.sourceId === sourceId)
     );
+  }
+
+  function getSkillModifierSelections(talentId: number): string[] {
+    const heroTalent = heroStore.hero?.talents.find((t) => t.talent.id === talentId);
+    const entry = (heroTalent?.grantSelections ?? []).find(
+      (s) => s.type === SPECIAL.SKILL_MODIFIER_CHOICE
+    );
+    return entry?.codes ?? [];
+  }
+
+  function setSkillModifierSelections(talentId: number, codes: string[]) {
+    const heroTalent = heroStore.hero?.talents.find((t) => t.talent.id === talentId);
+    if (!heroTalent) return;
+    if (!heroTalent.grantSelections) heroTalent.grantSelections = [];
+    const existing = heroTalent.grantSelections.find(
+      (s) => s.type === SPECIAL.SKILL_MODIFIER_CHOICE
+    );
+    if (existing) {
+      existing.codes = codes;
+    } else {
+      heroTalent.grantSelections.push({ type: SPECIAL.SKILL_MODIFIER_CHOICE, codes });
+    }
+  }
+
+  function removeSkillModifiersBySource(sourceType: string, sourceId: number) {
+    if (!heroStore.hero) return;
+    if (sourceType !== 'talent') return;
+
+    const heroTalent = heroStore.hero.talents.find((t) => t.talent.id === sourceId);
+    const entry = (heroTalent?.grantSelections ?? []).find(
+      (s) => s.type === SPECIAL.SKILL_MODIFIER_CHOICE
+    );
+
+    for (const skillCode of entry?.codes ?? []) {
+      const skill = classifierStore.skills.find((s) => s.code === skillCode);
+      if (skill) {
+        const heroSkill = heroStore.hero.skills.find((s) => s.skill.id === skill.id);
+        if (heroSkill) {
+          heroSkill.modifier = Math.max(0, heroSkill.modifier - 1);
+        }
+      }
+    }
   }
 
   return {
@@ -364,5 +406,8 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     removeExpertiseBySource,
     addCustomExpertise,
     removeCustomExpertise,
+    getSkillModifierSelections,
+    setSkillModifierSelections,
+    removeSkillModifiersBySource,
   };
 });

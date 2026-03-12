@@ -18,13 +18,26 @@
           {{ talent.description || 'No description available' }}
         </div>
         <PrerequisiteList :prerequisites="talent.prerequisites ?? []" />
+        <div v-if="grantedExpertises.length > 0" class="q-mt-xs">
+          <q-badge
+            v-for="exp in grantedExpertises"
+            :key="exp.id"
+            outline
+            color="positive"
+            class="q-mr-xs"
+          >
+            {{ exp.name }}
+          </q-badge>
+        </div>
       </q-card-section>
     </q-card>
   </q-expansion-item>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { RPG_COLORS } from 'src/constants/theme';
+import { useHeroStore } from 'src/stores/hero';
 import PrerequisiteList from 'src/components/shared/PrerequisiteList.vue';
 import type { Talent } from 'src/types';
 import { logger } from 'src/utils/logger';
@@ -32,6 +45,14 @@ import { logger } from 'src/utils/logger';
 const props = defineProps<{
   talent: Talent;
 }>();
+
+const heroStore = useHeroStore();
+
+const grantedExpertises = computed(() =>
+  (heroStore.hero?.expertises ?? [])
+    .filter((e) => e.source?.sourceType === 'talent' && e.source?.sourceId === props.talent.id)
+    .map((e) => ({ id: e.id, name: e.expertise?.name ?? e.customName ?? 'Unknown' }))
+);
 
 // Runtime validation - log warning if talent is missing required fields
 if (!props.talent?.name) {

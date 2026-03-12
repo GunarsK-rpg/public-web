@@ -88,6 +88,7 @@ export function buildTalentPayload(heroId: number, talent: HeroTalent): HeroTale
     heroId,
     talent: toClassifierInput(talent.talent),
     notes: talent.notes ?? null,
+    special: talent.grantSelections ?? [],
   };
 }
 

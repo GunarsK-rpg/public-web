@@ -96,6 +96,12 @@
           <div v-if="selectedForm.description" class="text-body2">
             {{ selectedForm.description }}
           </div>
+          <TalentGrantChoice
+            v-if="formHasChoices"
+            source-type="singer_form"
+            :source-id="selectedForm.id"
+            :special="selectedForm.special"
+          />
         </q-card-section>
       </q-card>
     </template>
@@ -112,8 +118,11 @@ import { findByCode } from 'src/utils/arrayUtils';
 import { ArrowLeftRight, Info, Plus } from 'lucide-vue-next';
 import { clamp } from 'src/utils/numberUtils';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import { filterSpecial } from 'src/utils/talentGrants';
+import { SPECIAL } from 'src/utils/specialUtils';
 import SelectableCard from '../shared/SelectableCard.vue';
 import SingerFormSelectionDialog from '../shared/SingerFormSelectionDialog.vue';
+import TalentGrantChoice from '../shared/TalentGrantChoice.vue';
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
@@ -140,6 +149,17 @@ const availableForms = computed(() =>
     if (!form.talent?.id) return true;
     return heroStore.talents.some((t) => t.talent.id === form.talent?.id);
   })
+);
+
+const formHasChoices = computed(
+  () =>
+    selectedForm.value &&
+    filterSpecial(
+      selectedForm.value.special ?? [],
+      SPECIAL.EXPERTISE_CHOICE,
+      SPECIAL.EXPERTISE_TYPE_CHOICE,
+      SPECIAL.ITEM_CHOICE
+    ).length > 0
 );
 
 function setName(val: string | number | null) {

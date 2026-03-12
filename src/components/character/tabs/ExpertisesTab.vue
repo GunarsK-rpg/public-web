@@ -12,8 +12,12 @@
           v-for="heroExp in expertisesByTypeRecord[expType.id]"
           :key="heroExp.id"
           :aria-label="`${getDisplayName(heroExp)} expertise`"
+          :outline="!!heroExp.source"
         >
           {{ getDisplayName(heroExp) }}
+          <q-tooltip v-if="getSourceLabel(heroExp.source)">
+            {{ getSourceLabel(heroExp.source) }}
+          </q-tooltip>
         </q-chip>
       </template>
       <div v-else class="text-empty q-pa-sm">No {{ expType.name.toLowerCase() }} expertises</div>
@@ -26,7 +30,7 @@ import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
-import type { HeroExpertise } from 'src/types';
+import type { HeroExpertise, ExpertiseSourceData } from 'src/types';
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -53,6 +57,19 @@ function getDisplayName(heroExp: HeroExpertise): string {
     return getClassifierName(heroExp.expertise.id);
   }
   return heroExp.customName || 'Custom';
+}
+
+function getSourceLabel(source?: ExpertiseSourceData | null): string | null {
+  if (!source) return null;
+  if (source.sourceType === 'talent' && source.sourceId) {
+    const heroTalent = heroStore.hero?.talents.find((t) => t.talent.id === source.sourceId);
+    return heroTalent ? `From: ${heroTalent.talent.name}` : 'From talent';
+  }
+  if (source.sourceType === 'singer_form' && source.sourceId) {
+    const form = classifiers.singerForms.find((f) => f.id === source.sourceId);
+    return form ? `From: ${form.name}` : 'From singer form';
+  }
+  return null;
 }
 </script>
 

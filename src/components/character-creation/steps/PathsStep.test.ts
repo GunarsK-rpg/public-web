@@ -5,7 +5,9 @@ import PathsStep from './PathsStep.vue';
 
 // Mock stores
 const mockAddKeyTalentForPath = vi.fn();
-const mockRemoveTalent = vi.fn();
+const mockRemoveTalent = vi.fn((talentId: number) => {
+  mockHero.talents = mockHero.talents.filter((t) => t.talent.id !== talentId);
+});
 const mockSetRadiantOrder = vi.fn();
 const mockSetRadiantIdeal = vi.fn();
 

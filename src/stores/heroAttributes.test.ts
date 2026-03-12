@@ -276,6 +276,7 @@ describe('useHeroAttributesStore', () => {
             heroId: 0,
             talent: { id: 1, code: 'test_talent', name: 'Test' },
             special: [{ type: 'defense_physical', value: 2 }],
+            grantSelections: [],
           },
         ];
       }
@@ -325,6 +326,7 @@ describe('useHeroAttributesStore', () => {
             heroId: 0,
             talent: { id: 1, code: 'test', name: 'Test' },
             special: [{ type: 'attribute_str', value: 2 }],
+            grantSelections: [],
           },
         ];
       }
@@ -865,6 +867,7 @@ describe('useHeroAttributesStore', () => {
             heroId: 0,
             talent: { id: 1, code: 'hardy', name: 'Hardy' },
             special: [{ type: 'health_per_level', value: 1 }],
+            grantSelections: [],
           },
         ];
       }
@@ -885,6 +888,7 @@ describe('useHeroAttributesStore', () => {
             heroId: 0,
             talent: { id: 1, code: 'composed', name: 'Composed' },
             special: [{ type: 'focus_per_tier', value: 1 }],
+            grantSelections: [],
           },
         ];
       }
@@ -905,6 +909,7 @@ describe('useHeroAttributesStore', () => {
             heroId: 0,
             talent: { id: 1, code: 'focus_talent', name: 'Focus Talent' },
             special: [{ type: 'focus', value: 3 }],
+            grantSelections: [],
           },
         ];
       }
@@ -925,6 +930,7 @@ describe('useHeroAttributesStore', () => {
             heroId: 0,
             talent: { id: 1, code: 'invested', name: 'Invested' },
             special: [{ type: 'investiture_per_tier', value: 1 }],
+            grantSelections: [],
           },
         ];
       }
@@ -973,6 +979,7 @@ describe('useHeroAttributesStore', () => {
             heroId: 0,
             talent: { id: 1, code: 'surefooted', name: 'Surefooted' },
             special: [{ type: 'movement', value: 10 }],
+            grantSelections: [],
           },
         ];
         heroStore.hero.equipment = [
@@ -1041,6 +1048,7 @@ describe('useHeroAttributesStore', () => {
               { type: 'defense_cognitive', value: 2 },
               { type: 'defense_spiritual', value: 2 },
             ],
+            grantSelections: [],
           },
         ];
       }
@@ -1102,6 +1110,7 @@ describe('useHeroAttributesStore', () => {
             heroId: 0,
             talent: { id: 1, code: 'test', name: 'Test' },
             special: [{ type: 'deflect', value: 2 }],
+            grantSelections: [],
           },
         ];
         heroStore.hero.equipment = [

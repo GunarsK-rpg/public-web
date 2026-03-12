@@ -5,11 +5,16 @@ import { useClassifierStore } from './classifiers';
 import { useHeroAttributesStore } from './heroAttributes';
 import { findById, findByCode, toClassifierRef } from 'src/utils/arrayUtils';
 import { clamp } from 'src/utils/numberUtils';
+import { extractCodes } from 'src/utils/talentGrants';
+import { SPECIAL } from 'src/utils/specialUtils';
+import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
+import type { Talent } from 'src/types';
 
 export const useHeroTalentsStore = defineStore('heroTalents', () => {
   const heroStore = useHeroStore();
   const classifierStore = useClassifierStore();
   const attrStore = useHeroAttributesStore();
+  const equipStore = useHeroEquipmentStore();
 
   // ===================
   // COMPUTED
@@ -28,6 +33,30 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   const radiantIdeal = computed(() => heroStore.hero?.radiantIdeal ?? 0);
 
   // ===================
+  // HELPERS
+  // ===================
+  function pushHeroTalent(talent: Talent) {
+    heroStore.hero!.talents.push({
+      id: heroStore.nextTempId(),
+      heroId: heroStore.hero!.id,
+      talent: toClassifierRef(talent),
+      special: talent.special ?? [],
+      grantSelections: [],
+    });
+  }
+
+  function removeEquipmentByCode(code: string) {
+    const heroEquip = heroStore.hero?.equipment.find((e) => e.equipment?.code === code);
+    if (heroEquip) equipStore.removeEquipment(heroEquip.id);
+  }
+
+  function removeTalentsByIds(talentIds: Set<number>) {
+    if (!heroStore.hero) return;
+    for (const id of talentIds) removeGrantsForTalent(id);
+    heroStore.hero.talents = heroStore.hero.talents.filter((t) => !talentIds.has(t.talent.id));
+  }
+
+  // ===================
   // ANCESTRY
   // ===================
   function setAncestry(ancestryId: number) {
@@ -43,9 +72,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
       const prevAncestryTalentIds = new Set(
         classifierStore.talents.filter((t) => t.ancestry?.id === prevAncestryId).map((t) => t.id)
       );
-      heroStore.hero.talents = heroStore.hero.talents.filter(
-        (t) => !prevAncestryTalentIds.has(t.talent.id)
-      );
+      removeTalentsByIds(prevAncestryTalentIds);
     }
 
     const ancestry = findById(classifierStore.ancestries, ancestryId);
@@ -64,24 +91,40 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
         singerKeyTalent &&
         !heroStore.hero.talents.find((t) => t.talent.id === singerKeyTalent.id)
       ) {
-        heroStore.hero.talents.push({
-          id: heroStore.nextTempId(),
-          heroId: heroStore.hero.id,
-          talent: toClassifierRef(singerKeyTalent),
-          special: singerKeyTalent.special ?? [],
-        });
+        pushHeroTalent(singerKeyTalent);
       }
     }
   }
 
   function setSingerForm(singerFormId: number | null) {
     if (!heroStore.hero) return;
+    const prevFormId = heroStore.hero.activeSingerForm?.id ?? null;
+
+    // No-op if same form
+    if (singerFormId === prevFormId) return;
+
+    // Remove grants from previous form
+    if (prevFormId) {
+      attrStore.removeExpertiseBySource('singer_form', prevFormId);
+    }
+
     if (singerFormId === null) {
       heroStore.hero.activeSingerForm = null;
     } else {
       const form = findById(classifierStore.singerForms, singerFormId);
       if (!form) return;
       heroStore.hero.activeSingerForm = toClassifierRef(form);
+
+      // Auto-add fixed expertise grants
+      for (const code of extractCodes(form.special ?? [], SPECIAL.EXPERTISE_GRANT)) {
+        const expertise = findByCode(classifierStore.expertises, code);
+        if (expertise) {
+          attrStore.addExpertise(expertise.id, {
+            sourceType: 'singer_form',
+            sourceId: singerFormId,
+          });
+        }
+      }
     }
   }
 
@@ -126,20 +169,62 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
   // ===================
   function addTalent(talentId: number) {
     if (!heroStore.hero) return;
-    if (!heroStore.hero.talents.find((t) => t.talent.id === talentId)) {
-      const tal = findById(classifierStore.talents, talentId);
-      if (!tal) return;
-      heroStore.hero.talents.push({
-        id: heroStore.nextTempId(),
-        heroId: heroStore.hero.id,
-        talent: toClassifierRef(tal),
-        special: tal.special ?? [],
-      });
+    if (heroStore.hero.talents.find((t) => t.talent.id === talentId)) return;
+
+    const tal = findById(classifierStore.talents, talentId);
+    if (!tal) return;
+    pushHeroTalent(tal);
+
+    // Auto-add fixed expertise grants
+    for (const code of extractCodes(tal.special ?? [], SPECIAL.EXPERTISE_GRANT)) {
+      const expertise = findByCode(classifierStore.expertises, code);
+      if (expertise) {
+        attrStore.addExpertise(expertise.id, { sourceType: 'talent', sourceId: talentId });
+      }
+    }
+
+    // Auto-add fixed item grants
+    for (const code of extractCodes(tal.special ?? [], SPECIAL.ITEM_GRANT)) {
+      const equip = findByCode(classifierStore.equipment, code);
+      if (equip) {
+        equipStore.addEquipment(equip.id);
+      }
+    }
+  }
+
+  function removeGrantsForTalent(talentId: number) {
+    if (!heroStore.hero) return;
+
+    // Remove expertises granted by this talent
+    attrStore.removeExpertiseBySource('talent', talentId);
+
+    // Remove skill modifiers granted by this talent
+    attrStore.removeSkillModifiersBySource('talent', talentId);
+
+    // Remove fixed item grants
+    const talent = classifierStore.talents.find((t) => t.id === talentId);
+    if (talent) {
+      for (const code of extractCodes(talent.special ?? [], SPECIAL.ITEM_GRANT)) {
+        removeEquipmentByCode(code);
+      }
+    }
+
+    // Remove chosen item grants
+    const heroTalent = heroStore.hero.talents.find((t) => t.talent.id === talentId);
+    if (heroTalent) {
+      const itemEntry = (heroTalent.grantSelections ?? []).find(
+        (s) => s.type === SPECIAL.ITEM_CHOICE
+      );
+      for (const code of itemEntry?.codes ?? []) {
+        removeEquipmentByCode(code);
+      }
+      heroTalent.grantSelections = [];
     }
   }
 
   function removeTalent(talentId: number) {
     if (!heroStore.hero) return;
+    removeGrantsForTalent(talentId);
     heroStore.hero.talents = heroStore.hero.talents.filter((t) => t.talent.id !== talentId);
   }
 
@@ -188,9 +273,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
             allRadiantTalentIds.add(talent.id);
           }
         }
-        heroStore.hero.talents = heroStore.hero.talents.filter(
-          (t) => !allRadiantTalentIds.has(t.talent.id)
-        );
+        removeTalentsByIds(allRadiantTalentIds);
 
         // Remove previous surge skills
         const prevSurgeSkillIds = new Set(getSurgeSkillIds(prevOrderId));
@@ -214,12 +297,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
         (t) => t.radiantOrder?.id === orderId && t.isKey
       );
       if (keyTalent && !heroStore.hero.talents.find((t) => t.talent.id === keyTalent.id)) {
-        heroStore.hero.talents.push({
-          id: heroStore.nextTempId(),
-          heroId: heroStore.hero.id,
-          talent: toClassifierRef(keyTalent),
-          special: keyTalent.special ?? [],
-        });
+        pushHeroTalent(keyTalent);
       }
 
       // Grant rank 1 in each surge skill (don't downgrade existing higher ranks)
