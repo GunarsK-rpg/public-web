@@ -19,9 +19,9 @@
         :class="{ clickable: !readonly }"
         :role="readonly ? undefined : 'button'"
         :tabindex="readonly ? undefined : 0"
-        @click="!readonly && startEdit()"
-        @keyup.enter="!readonly && startEdit()"
-        @keydown.space.prevent="!readonly && startEdit()"
+        @click="!readonly && handleValueClick()"
+        @keyup.enter="!readonly && handleValueClick()"
+        @keydown.space.prevent="!readonly && handleValueClick()"
       >
         {{ current }}{{ max != null ? ` / ${max}` : '' }}{{ suffix ? ` ${suffix}` : '' }}
       </span>
@@ -79,10 +79,12 @@ const props = defineProps<{
   suffix?: string;
   saving: boolean;
   readonly?: boolean;
+  useDialog?: boolean;
 }>();
 
 const emit = defineEmits<{
   update: [value: number];
+  'open-dialog': [];
 }>();
 
 const editing = ref(false);
@@ -93,6 +95,14 @@ const progressValue = computed(() => {
   if (props.max == null || props.max <= 0) return 0;
   return clamp(props.current / props.max, 0, 1);
 });
+
+function handleValueClick() {
+  if (props.useDialog) {
+    emit('open-dialog');
+  } else {
+    startEdit();
+  }
+}
 
 function startEdit() {
   editValue.value = props.current;

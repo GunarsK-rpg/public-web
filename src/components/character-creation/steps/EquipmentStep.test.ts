@@ -112,8 +112,8 @@ const createDefaultClassifierData = () => ({
     { id: 3, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
   ],
   equipmentTypes: [
-    { id: 1, code: 'weapons', name: 'Weapons' },
-    { id: 2, code: 'gear', name: 'Gear' },
+    { id: 1, code: 'weapons', name: 'Weapons', isStackable: true },
+    { id: 2, code: 'gear', name: 'Gear', isStackable: true },
   ],
 });
 

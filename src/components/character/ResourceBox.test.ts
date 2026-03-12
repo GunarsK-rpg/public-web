@@ -132,6 +132,35 @@ describe('ResourceBox', () => {
     });
   });
 
+  describe('useDialog prop', () => {
+    it('emits open-dialog instead of entering edit mode when useDialog is true', async () => {
+      const wrapper = shallowMount(ResourceBox, {
+        props: { label: 'HP', current: 25, max: 30, saving: false, useDialog: true },
+        global: { stubs },
+      });
+      await wrapper.find('.resource-value').trigger('click');
+      expect(wrapper.emitted('open-dialog')).toEqual([[]]);
+      expect(wrapper.find('.resource-input').exists()).toBe(false);
+    });
+
+    it('enters inline edit when useDialog is false', async () => {
+      const wrapper = createWrapper({ label: 'HP', current: 25, max: 30 });
+      await wrapper.find('.resource-value').trigger('click');
+      expect(wrapper.emitted('open-dialog')).toBeUndefined();
+      expect(wrapper.find('.resource-input').exists()).toBe(true);
+    });
+
+    it('+1/-1 buttons still emit update regardless of useDialog', async () => {
+      const wrapper = shallowMount(ResourceBox, {
+        props: { label: 'HP', current: 25, max: 30, saving: false, useDialog: true },
+        global: { stubs },
+      });
+      const buttons = wrapper.findAll('.q-btn');
+      await buttons[0]!.trigger('click');
+      expect(wrapper.emitted('update')).toEqual([[24]]);
+    });
+  });
+
   describe('progress clamping', () => {
     it('handles zero max', () => {
       const wrapper = createWrapper({ label: 'HP', current: 25, max: 0 });
