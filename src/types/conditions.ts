@@ -23,7 +23,10 @@ export interface HeroCondition extends HeroConditionBase {
 }
 
 /** Injury classifier (cl_injuries) */
-export type Injury = Classifier;
+export interface Injury extends Classifier {
+  condition?: ClassifierRef | null;
+  special?: SpecialEntry[] | null;
+}
 
 /** Hero injury - upsert payload */
 export interface HeroInjuryBase {

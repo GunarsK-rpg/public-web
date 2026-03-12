@@ -1,5 +1,5 @@
 <template>
-  <div class="cosmere-showcase">
+  <div class="cosmere-showcase" :class="{ 'hero-dead': isDead }">
     <div class="q-pa-md row items-center q-col-gutter-md">
       <!-- Name and Level -->
       <div class="col-12 col-sm-6">
@@ -26,6 +26,10 @@
         </div>
         <div v-if="activeSingerFormName" :class="`text-caption text-${RPG_COLORS.singerForm}`">
           {{ activeSingerFormName }}
+        </div>
+        <!-- Death Indicator -->
+        <div v-if="isDead" class="q-mt-xs">
+          <q-badge color="negative" class="text-bold">DEAD</q-badge>
         </div>
         <!-- Active Condition Badges -->
         <div
@@ -140,6 +144,8 @@ const maxFocus = computed(() => attrStore.getDerivedStatTotal('max_focus'));
 const maxInvestiture = computed(() => attrStore.getDerivedStatTotal('max_investiture'));
 const isRadiant = computed(() => talentStore.isRadiant);
 
+const isDead = computed(() => heroStore.injuries.some((i) => i.injury?.code === 'death'));
+
 const orderName = computed(() => hero.value?.radiantOrder?.name);
 const ancestryName = computed(() => hero.value?.ancestry?.name);
 const activeSingerFormName = computed(() => hero.value?.activeSingerForm?.name);
@@ -169,3 +175,10 @@ function goToEdit(): void {
   });
 }
 </script>
+
+<style scoped>
+.hero-dead {
+  opacity: 0.6;
+  filter: grayscale(40%);
+}
+</style>

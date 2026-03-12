@@ -165,32 +165,11 @@ describe('ExpertisesTab', () => {
       expect(wrapper.text()).toContain('Alethi Culture');
     });
 
-    it('shows source badge when source is present', () => {
+    it('does not render source badges', () => {
       const wrapper = createWrapper();
 
       const badges = wrapper.findAll('.q-badge');
-      // Swords has culture source, Light Armor has talent source, Alethi Culture has culture source
-      expect(badges.length).toBe(3);
-    });
-
-    it('displays source type in badge', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('culture');
-      expect(wrapper.text()).toContain('talent');
-    });
-
-    it('does not show badge when source is null', () => {
-      // Bows has no source
-      const wrapper = createWrapper();
-
-      // Bows chip should exist but without badge inside
-      const chips = wrapper.findAll('.q-chip');
-      const bowsChip = chips.find((c) => c.text().includes('Bows'));
-      expect(bowsChip).toBeDefined();
-      // The text should be just "Bows" without a source type
-      expect(bowsChip?.text()).not.toContain('culture');
-      expect(bowsChip?.text()).not.toContain('talent');
+      expect(badges.length).toBe(0);
     });
   });
 

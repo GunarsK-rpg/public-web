@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Hero, HeroSheet, HeroEquipment, HeroFavoriteAction, HeroCondition } from 'src/types';
-import type { HeroConditionBase } from 'src/types/conditions';
+import type { HeroConditionBase, HeroInjury, HeroInjuryBase, Injury } from 'src/types/conditions';
+import type { HeroGoal } from 'src/types/goals';
 import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
@@ -516,6 +517,97 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
+  // ===================
+  // INJURIES (sheet)
+  // ===================
+  async function upsertInjury(
+    payload: HeroInjuryBase,
+    injuryClassifier?: Injury
+  ): Promise<HeroInjury | null> {
+    if (!hero.value) return null;
+    const currentHeroId = hero.value.id;
+    savingCount.value++;
+    try {
+      const response = await heroService.upsertSubResource<HeroInjury>(
+        currentHeroId,
+        'injuries',
+        payload
+      );
+      if (!hero.value || hero.value.id !== currentHeroId) return null;
+      const idx = hero.value.injuries.findIndex((i) => i.id === response.data.id);
+      if (idx !== -1) {
+        hero.value.injuries[idx] = response.data;
+      } else {
+        hero.value.injuries.push(response.data);
+      }
+
+      // Auto-apply linked condition (if classifier provides mapping and this is a new injury)
+      if (idx === -1 && injuryClassifier?.condition) {
+        await upsertCondition({
+          heroId: currentHeroId,
+          condition: { code: injuryClassifier.condition.code },
+          notes: `From injury: ${injuryClassifier.name}`,
+          special: injuryClassifier.special ?? null,
+        });
+      }
+
+      return response.data;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to save injury' });
+      return null;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function removeInjury(injuryId: number, linkedConditionId?: number): Promise<void> {
+    if (!hero.value) return;
+    const currentHeroId = hero.value.id;
+    savingCount.value++;
+    try {
+      await heroService.deleteSubResource(currentHeroId, 'injuries', injuryId);
+      if (!hero.value || hero.value.id !== currentHeroId) return;
+      hero.value.injuries = hero.value.injuries.filter((i) => i.id !== injuryId);
+
+      // Auto-remove linked condition
+      if (linkedConditionId) {
+        await removeCondition(linkedConditionId);
+      }
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to remove injury' });
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  // ===================
+  // GOALS (sheet)
+  // ===================
+  async function updateGoalValue(goalId: number, value: number): Promise<HeroGoal | null> {
+    if (!hero.value) return null;
+    const goal = hero.value.goals.find((g) => g.id === goalId);
+    if (!goal) return null;
+    const currentHeroId = hero.value.id;
+    savingCount.value++;
+    try {
+      const response = await heroService.upsertSubResource<HeroGoal>(currentHeroId, 'goals', {
+        ...goal,
+        heroId: currentHeroId,
+        status: { code: goal.status.code },
+        value,
+      });
+      if (!hero.value || hero.value.id !== currentHeroId) return null;
+      const idx = hero.value.goals.findIndex((g) => g.id === response.data.id);
+      if (idx !== -1) hero.value.goals[idx] = response.data;
+      return response.data;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to update goal' });
+      return null;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
   async function deleteHero(): Promise<boolean> {
     if (!hero.value || hero.value.id === 0) return false;
     try {
@@ -590,5 +682,12 @@ export const useHeroStore = defineStore('hero', () => {
     // Conditions (sheet)
     upsertCondition,
     removeCondition,
+
+    // Injuries (sheet)
+    upsertInjury,
+    removeInjury,
+
+    // Goals (sheet)
+    updateGoalValue,
   };
 });

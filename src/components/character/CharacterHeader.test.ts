@@ -33,6 +33,7 @@ vi.mock('src/stores/hero', () => ({
       return mockSaving.value;
     },
     conditions: [],
+    injuries: [],
     patchHealth: vi.fn(),
     patchFocus: vi.fn(),
     patchInvestiture: vi.fn(),

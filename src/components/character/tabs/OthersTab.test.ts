@@ -19,6 +19,13 @@ const mockCompanions = ref<HeroCompanion[]>([]);
 const mockInjuries = ref<HeroInjury[]>([]);
 const mockIsSinger = ref(false);
 
+const mockConditions = ref<
+  { id: number; condition: { code: string; name: string }; notes?: string }[]
+>([]);
+const mockUpsertInjury = vi.fn();
+const mockRemoveInjury = vi.fn();
+const mockUpdateGoalValue = vi.fn();
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
     get hero() {
@@ -39,6 +46,12 @@ vi.mock('src/stores/hero', () => ({
     get injuries() {
       return mockInjuries.value;
     },
+    get conditions() {
+      return mockConditions.value;
+    },
+    upsertInjury: mockUpsertInjury,
+    removeInjury: mockRemoveInjury,
+    updateGoalValue: mockUpdateGoalValue,
   }),
 }));
 
@@ -94,17 +107,13 @@ describe('OthersTab', () => {
     shallowMount(OthersTab, {
       global: {
         stubs: {
-          QExpansionItem: {
-            template: `<div class="q-expansion-item" :aria-label="$attrs['aria-label']">
+          SectionPanel: {
+            template: `<div class="section-panel" :aria-label="label + ' section'">
+              <slot name="icon" />
+              <slot name="header-side" />
               <slot />
             </div>`,
-            props: ['icon', 'label', 'defaultOpened'],
-          },
-          QCard: {
-            template: '<div class="q-card"><slot /></div>',
-          },
-          QCardSection: {
-            template: '<div class="q-card-section"><slot /></div>',
+            props: ['label', 'defaultOpened'],
           },
           QList: {
             template: '<div class="q-list"><slot /></div>',
@@ -127,6 +136,22 @@ describe('OthersTab', () => {
             template: '<span class="q-badge"><slot /></span>',
             props: ['color'],
           },
+          QCheckbox: {
+            template: '<input type="checkbox" class="q-checkbox" />',
+            props: ['modelValue', 'disable', 'size', 'dense'],
+          },
+          QSelect: {
+            template: '<select class="q-select"></select>',
+            props: ['modelValue', 'options', 'label'],
+          },
+          QInput: {
+            template: '<input class="q-input" />',
+            props: ['modelValue', 'label'],
+          },
+          QBtn: {
+            template: '<button class="q-btn"><slot /></button>',
+            props: ['flat', 'dense', 'round', 'size', 'icon', 'color', 'label', 'disable'],
+          },
         },
       },
     });
@@ -145,6 +170,7 @@ describe('OthersTab', () => {
     mockConnections.value = [];
     mockCompanions.value = [];
     mockInjuries.value = [];
+    mockConditions.value = [];
     mockIsSinger.value = false;
   });
 
@@ -155,7 +181,7 @@ describe('OthersTab', () => {
     it('renders Ancestry & Culture section', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.find('[aria-label="Ancestry and Culture section"]').exists()).toBe(true);
+      expect(wrapper.find('[aria-label="Ancestry & Culture section"]').exists()).toBe(true);
     });
 
     it('renders Goals section', () => {
@@ -302,21 +328,6 @@ describe('OthersTab', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Important task');
-    });
-
-    it('renders goal status badge', () => {
-      mockGoals.value = [
-        {
-          id: 1,
-          heroId: 1,
-          name: 'Goal',
-          status: { id: 1, code: 's1', name: 'Status1' },
-          value: 3,
-        },
-      ] as HeroGoal[];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Active');
     });
 
     it('shows empty message when no goals', () => {

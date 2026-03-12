@@ -222,18 +222,6 @@ $touch-target-min: 44px;
     min-width: $touch-target-min;
   }
 
-  // Checkbox and radio touch targets
-  .q-checkbox,
-  .q-radio {
-    min-height: $touch-target-min;
-
-    .q-checkbox__inner,
-    .q-radio__inner {
-      min-height: $touch-target-min;
-      min-width: $touch-target-min;
-    }
-  }
-
   // List items should be tappable
   .q-item--clickable {
     min-height: $touch-target-min;
