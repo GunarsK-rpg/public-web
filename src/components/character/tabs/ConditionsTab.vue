@@ -94,7 +94,7 @@
           dense
           round
           icon="remove"
-          aria-label="Increase exhausted penalty"
+          aria-label="Decrease exhausted penalty"
           @click="adjustExhausted(1)"
         />
         <span class="text-h6">{{ exhaustedValue }}</span>
@@ -104,7 +104,7 @@
           dense
           round
           icon="add"
-          aria-label="Decrease exhausted penalty"
+          aria-label="Increase exhausted penalty"
           @click="adjustExhausted(-1)"
         />
       </div>

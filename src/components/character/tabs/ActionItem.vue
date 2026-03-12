@@ -222,7 +222,7 @@ const effectiveFocusCost = computed(() => {
 
 // Use action
 const hasDeductibleCost = computed(
-  () => props.action.focusCost > 0 || props.action.investitureCost > 0
+  () => effectiveFocusCost.value > 0 || props.action.investitureCost > 0
 );
 
 const canUse = computed(() => {
