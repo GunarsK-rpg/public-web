@@ -57,7 +57,7 @@
       <q-separator />
 
       <q-card-section>
-        <div class="text-subtitle2 q-mb-xs">Set HP to...</div>
+        <div class="text-subtitle2 q-mb-xs">Set HP</div>
         <div class="row q-gutter-sm items-center">
           <q-input
             v-model.number="overrideValue"
