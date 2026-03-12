@@ -19,6 +19,7 @@
         :class="{ clickable: !readonly }"
         :role="readonly ? undefined : 'button'"
         :tabindex="readonly ? undefined : 0"
+        :aria-haspopup="useDialog ? 'dialog' : undefined"
         @click="!readonly && handleValueClick()"
         @keyup.enter="!readonly && handleValueClick()"
         @keydown.space.prevent="!readonly && handleValueClick()"

@@ -150,6 +150,26 @@ describe('ResourceBox', () => {
       expect(wrapper.find('.resource-input').exists()).toBe(true);
     });
 
+    it('emits open-dialog on Enter key when useDialog is true', async () => {
+      const wrapper = shallowMount(ResourceBox, {
+        props: { label: 'HP', current: 25, max: 30, saving: false, useDialog: true },
+        global: { stubs },
+      });
+      await wrapper.find('.resource-value').trigger('keyup.enter');
+      expect(wrapper.emitted('open-dialog')).toEqual([[]]);
+      expect(wrapper.find('.resource-input').exists()).toBe(false);
+    });
+
+    it('emits open-dialog on Space key when useDialog is true', async () => {
+      const wrapper = shallowMount(ResourceBox, {
+        props: { label: 'HP', current: 25, max: 30, saving: false, useDialog: true },
+        global: { stubs },
+      });
+      await wrapper.find('.resource-value').trigger('keydown.space');
+      expect(wrapper.emitted('open-dialog')).toEqual([[]]);
+      expect(wrapper.find('.resource-input').exists()).toBe(false);
+    });
+
     it('+1/-1 buttons still emit update regardless of useDialog', async () => {
       const wrapper = shallowMount(ResourceBox, {
         props: { label: 'HP', current: 25, max: 30, saving: false, useDialog: true },
