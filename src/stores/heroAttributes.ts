@@ -161,7 +161,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
       case 'spiritual_defense':
         return bonus(SPECIAL.DEFENSE_SPIRITUAL);
       case 'movement':
-        return bonus(SPECIAL.MOVEMENT) - bonus(SPECIAL.CUMBERSOME);
+        return bonus(SPECIAL.MOVEMENT);
       default:
         return 0;
     }

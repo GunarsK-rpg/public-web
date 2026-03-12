@@ -1001,8 +1001,8 @@ describe('useHeroAttributesStore', () => {
         ];
       }
 
-      // movement(10) - cumbersome(3) = 7
-      expect(store.getStatBonus('movement')).toBe(7);
+      // cumbersome does not directly reduce movement (it gates on STR, applying Slowed if unmet)
+      expect(store.getStatBonus('movement')).toBe(10);
     });
 
     it('returns physical defense bonus from equipment', () => {
