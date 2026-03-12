@@ -53,13 +53,13 @@ function getAvailableSkills(grant: SpecialEntry, slotIndex: number) {
 function onSelectSkill(slotIndex: number, code: string | null) {
   const prevCode = selectedCodes.value[slotIndex] ?? null;
 
-  // Remove previous modifier (-1, clamped to 0)
+  // Remove previous modifier
   if (prevCode) {
     const prevSkill = classifierStore.skills.find((s) => s.code === prevCode);
     if (prevSkill) {
       const currentModifier =
         heroStore.hero?.skills.find((s) => s.skill.id === prevSkill.id)?.modifier ?? 0;
-      attrStore.setSkillModifier(prevSkill.id, Math.max(0, currentModifier - 1));
+      attrStore.setSkillModifier(prevSkill.id, currentModifier - 1);
     }
   }
 

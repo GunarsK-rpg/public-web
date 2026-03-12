@@ -367,7 +367,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
       if (skill) {
         const heroSkill = heroStore.hero.skills.find((s) => s.skill.id === skill.id);
         if (heroSkill) {
-          heroSkill.modifier = Math.max(0, heroSkill.modifier - 1);
+          setSkillModifier(skill.id, heroSkill.modifier - 1);
         }
       }
     }
