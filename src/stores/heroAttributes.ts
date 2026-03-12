@@ -336,7 +336,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     const entry = (heroTalent?.grantSelections ?? []).find(
       (s) => s.type === SPECIAL.SKILL_MODIFIER_CHOICE
     );
-    return entry?.codes ?? [];
+    return entry?.codes ? [...entry.codes] : [];
   }
 
   function setSkillModifierSelections(talentId: number, codes: string[]) {

@@ -15,8 +15,8 @@
           :outline="!!heroExp.source"
         >
           {{ getDisplayName(heroExp) }}
-          <q-tooltip v-if="getSourceLabel(heroExp.source)">
-            {{ getSourceLabel(heroExp.source) }}
+          <q-tooltip v-if="sourceLabels[heroExp.id]">
+            {{ sourceLabels[heroExp.id] }}
           </q-tooltip>
         </q-chip>
       </template>
@@ -59,6 +59,15 @@ function getDisplayName(heroExp: HeroExpertise): string {
   return heroExp.customName || 'Custom';
 }
 
+// Pre-compute source labels keyed by heroExpertise id to avoid repeated lookups in template
+const sourceLabels = computed((): Record<number, string | null> => {
+  const result: Record<number, string | null> = {};
+  for (const heroExp of heroExpertises.value) {
+    result[heroExp.id] = getSourceLabel(heroExp.source);
+  }
+  return result;
+});
+
 function getSourceLabel(source?: ExpertiseSourceData | null): string | null {
   if (!source) return null;
   if (source.sourceType === 'talent' && source.sourceId) {
@@ -69,7 +78,11 @@ function getSourceLabel(source?: ExpertiseSourceData | null): string | null {
     const form = classifiers.singerForms.find((f) => f.id === source.sourceId);
     return form ? `From: ${form.name}` : 'From singer form';
   }
-  return null;
+  if (source.sourceType === 'culture' && source.sourceId) {
+    const culture = classifiers.cultures.find((c) => c.id === source.sourceId);
+    return culture ? `From: ${culture.name}` : 'From culture';
+  }
+  return source.sourceType ? `From: ${source.sourceType}` : null;
 }
 </script>
 

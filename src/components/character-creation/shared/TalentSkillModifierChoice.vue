@@ -4,7 +4,7 @@
       <q-select
         :model-value="selectedCodes[slotIndex - 1] ?? null"
         :options="getAvailableSkills(grant, slotIndex - 1)"
-        label="Choose skill (+1 modifier)"
+        :label="`Choose skill (+1 modifier)${(grant.value ?? 0) > 1 ? ` — slot ${slotIndex}` : ''}`"
         option-value="code"
         option-label="name"
         emit-value
@@ -78,8 +78,8 @@ function onSelectSkill(slotIndex: number, code: string | null) {
   if (code) {
     newCodes[slotIndex] = code;
   } else {
-    newCodes.splice(slotIndex, 1);
+    newCodes[slotIndex] = '';
   }
-  attrStore.setSkillModifierSelections(props.talentId, newCodes.filter(Boolean));
+  attrStore.setSkillModifierSelections(props.talentId, newCodes);
 }
 </script>
