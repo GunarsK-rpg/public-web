@@ -6,7 +6,7 @@
       <q-list separator>
         <q-item v-for="skill in skillsByAttrType[attrType.id]" :key="skill.id">
           <q-item-section avatar>
-            <q-avatar :color="COLORS.muted" text-color="white" size="md">
+            <q-avatar :color="skillColor(skill)" text-color="white" size="md">
               {{ formatModifier(attrStore.getSkillModifier(skill.code)) }}
             </q-avatar>
           </q-item-section>
@@ -43,6 +43,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { groupByKey, findById } from 'src/utils/arrayUtils';
+import { getConditionBonus, SPECIAL } from 'src/utils/specialUtils';
 import { COLORS } from 'src/constants/theme';
 import type { Skill } from 'src/types';
 
@@ -72,6 +73,16 @@ const skillsByAttrType = computed((): Record<number, Skill[]> => {
 
 function getAttributeCode(skill: Skill): string {
   return (skill.attr?.code ?? '').toUpperCase();
+}
+
+function skillColor(skill: Skill): string {
+  const attrCode = skill.attr?.code ?? '';
+  const enhanced = attrCode ? getConditionBonus(heroStore.conditions, `attribute_${attrCode}`) : 0;
+  const exhausted = getConditionBonus(heroStore.conditions, SPECIAL.EXHAUSTED_PENALTY);
+  const net = enhanced + exhausted;
+  if (net > 0) return COLORS.success;
+  if (net < 0) return COLORS.error;
+  return COLORS.muted;
 }
 
 function formatModifier(value: number): string {

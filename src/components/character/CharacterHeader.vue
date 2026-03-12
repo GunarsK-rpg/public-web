@@ -27,6 +27,23 @@
         <div v-if="activeSingerFormName" :class="`text-caption text-${RPG_COLORS.singerForm}`">
           {{ activeSingerFormName }}
         </div>
+        <!-- Active Condition Badges -->
+        <div
+          v-if="activeConditionBadges.length"
+          class="row items-center q-gutter-xs q-mt-xs"
+          style="flex-wrap: wrap"
+        >
+          <q-badge
+            v-for="badge in activeConditionBadges"
+            :key="badge.id"
+            :color="badge.positive ? 'positive' : 'warning'"
+            outline
+            class="cursor-pointer"
+          >
+            {{ badge.label }}
+            <InfoPopup>{{ badge.description }}</InfoPopup>
+          </q-badge>
+        </div>
       </div>
 
       <!-- Resources -->
@@ -98,10 +115,12 @@ import { useRouter } from 'vue-router';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
+import { useClassifierStore } from 'src/stores/classifiers';
 import { RPG_COLORS } from 'src/constants/theme';
 import { Pencil } from 'lucide-vue-next';
 import ResourceBox from './ResourceBox.vue';
 import HpManagementDialog from './HpManagementDialog.vue';
+import InfoPopup from 'src/components/shared/InfoPopup.vue';
 
 const props = defineProps<{
   characterId: string;
@@ -112,6 +131,7 @@ const router = useRouter();
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
+const classifiers = useClassifierStore();
 const hero = computed(() => heroStore.hero);
 const showHpDialog = ref(false);
 const saving = computed(() => heroStore.saving);
@@ -125,6 +145,22 @@ const ancestryName = computed(() => hero.value?.ancestry?.name);
 const activeSingerFormName = computed(() => hero.value?.activeSingerForm?.name);
 const cultureName = computed(() => hero.value?.cultures?.[0]?.culture?.name);
 const campaignName = computed(() => hero.value?.campaign?.name);
+
+const activeConditionBadges = computed(() => {
+  if (!heroStore.conditions.length) return [];
+  return heroStore.conditions.map((c) => {
+    const classifier = classifiers.conditions.find((cl) => cl.id === c.condition.id);
+    const dv = c.special?.[0]?.display_value;
+    const label = dv ? `${c.condition.name} [${dv}]` : c.condition.name;
+
+    return {
+      id: c.id,
+      label,
+      description: classifier?.description ?? '',
+      positive: classifier?.isPositive ?? false,
+    };
+  });
+});
 
 function goToEdit(): void {
   void router.push({

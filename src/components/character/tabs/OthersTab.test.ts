@@ -198,10 +198,10 @@ describe('OthersTab', () => {
       expect(wrapper.find('[aria-label="Biography section"]').exists()).toBe(true);
     });
 
-    it('renders Conditions & Injuries section', () => {
+    it('renders Injuries section', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.find('[aria-label="Conditions and Injuries section"]').exists()).toBe(true);
+      expect(wrapper.find('[aria-label="Injuries section"]').exists()).toBe(true);
     });
   });
 
@@ -511,25 +511,9 @@ describe('OthersTab', () => {
   });
 
   // ========================================
-  // Conditions & Injuries
+  // Injuries
   // ========================================
-  describe('conditions & injuries', () => {
-    it('renders active conditions', () => {
-      mockConditions.value = [
-        { id: 1, heroId: 1, condition: { id: 1, code: 'cond1', name: 'Condition1' } },
-      ] as HeroCondition[];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Exhausted');
-    });
-
-    it('shows empty message when no conditions', () => {
-      mockConditions.value = [];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('No active conditions');
-    });
-
+  describe('injuries', () => {
     it('renders injuries', () => {
       mockInjuries.value = [
         { id: 1, heroId: 1, injury: { id: 1, code: 'inj1', name: 'Injury1' } },

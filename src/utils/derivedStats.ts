@@ -9,6 +9,7 @@ export interface DerivedStatDisplay {
   baseValue: number;
   baseDisplay: string;
   modifier: number;
+  bonus: number;
   totalValue: number;
   totalDisplay: string;
   hasModifier: boolean;
@@ -85,6 +86,7 @@ export function calculateFormulaStat(
  * @param tierData - hero's tier data
  * @param getModifier - function to get hero's modifier for a stat
  * @param getBonus - optional function to get special bonus for a stat (talents, equipment, singer form)
+ * @param applyOverride - optional function to apply condition overrides to the final value (e.g. movement = 0 when immobilized)
  * @returns display list for rendering
  */
 export function buildDerivedStatsList(
@@ -95,7 +97,8 @@ export function buildDerivedStatsList(
   levelData: Level | undefined,
   tierData: Tier | undefined,
   getModifier: (statId: number) => number,
-  getBonus?: (statCode: string) => number
+  getBonus?: (statCode: string) => number,
+  applyOverride?: (statCode: string, value: number) => number
 ): DerivedStatDisplay[] {
   return derivedStats.map((stat) => {
     // Check if this stat has lookup table entries
@@ -126,7 +129,8 @@ export function buildDerivedStatsList(
 
     const modifier = getModifier(stat.id);
     const bonus = getBonus?.(stat.code) ?? 0;
-    const totalValue = hasModifier ? baseValue + modifier + bonus : baseValue;
+    const rawTotal = hasModifier ? baseValue + modifier + bonus : baseValue;
+    const totalValue = applyOverride ? applyOverride(stat.code, rawTotal) : rawTotal;
 
     return {
       id: stat.id,
@@ -135,8 +139,9 @@ export function buildDerivedStatsList(
       baseValue,
       baseDisplay: valueDisplay ?? formatValue(stat.code, baseValue),
       modifier,
+      bonus,
       totalValue,
-      totalDisplay: valueDisplay ?? formatValue(stat.code, totalValue),
+      totalDisplay: formatValue(stat.code, totalValue),
       hasModifier,
       valueDisplay,
     };

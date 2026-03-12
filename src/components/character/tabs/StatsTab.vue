@@ -22,9 +22,8 @@
           tabindex="0"
           role="button"
           aria-haspopup="dialog"
-          @click="deflectPopupRef?.toggle()"
-          @keydown.enter.prevent="deflectPopupRef?.toggle()"
-          @keydown.space.prevent="deflectPopupRef?.toggle()"
+          @keydown.enter.prevent="($event.currentTarget as HTMLElement).click()"
+          @keydown.space.prevent="($event.currentTarget as HTMLElement).click()"
         >
           <q-card-section class="text-center q-pa-sm">
             <div class="defense-value" :aria-label="`Deflect: ${deflectValue}`">
@@ -35,15 +34,7 @@
               <Info :size="12" class="q-ml-xs" aria-hidden="true" />
             </div>
           </q-card-section>
-          <q-popup-proxy
-            v-if="deflectDescription"
-            ref="deflectPopupRef"
-            no-parent-event
-            :breakpoint="0"
-            :offset="[0, 8]"
-          >
-            <q-banner dense class="text-body2">{{ deflectDescription }}</q-banner>
-          </q-popup-proxy>
+          <InfoPopup v-if="deflectDescription">{{ deflectDescription }}</InfoPopup>
         </q-card>
       </div>
     </div>
@@ -57,9 +48,15 @@
             <div class="attribute-abbr">{{ attr.code.toUpperCase() }}</div>
             <div
               class="attribute-value"
+              :class="{ 'text-positive': getEnhancedBonus(attr.code) > 0 }"
               :aria-label="`${attr.name}: ${attrStore.attributeValues[attr.code] ?? 0}`"
             >
               {{ attrStore.attributeValues[attr.code] ?? 0 }}
+              <InfoPopup v-if="getEnhancedBonus(attr.code) > 0">
+                Base {{ attrStore.baseAttributeValues[attr.code] ?? 0 }} + Enhanced +{{
+                  getEnhancedBonus(attr.code)
+                }}
+              </InfoPopup>
             </div>
             <div class="attribute-name">{{ attr.name }}</div>
           </q-card-section>
@@ -76,9 +73,11 @@
             <div class="text-caption text-muted">{{ stat.name }}</div>
             <div class="text-body1">
               {{ stat.totalDisplay }}
-              <span v-if="stat.hasModifier && stat.modifier !== 0" class="text-caption">
-                ({{ stat.baseDisplay }} {{ stat.modifier >= 0 ? '+' : '' }}{{ stat.modifier }})
-              </span>
+              <span
+                v-if="stat.hasModifier && (stat.modifier !== 0 || stat.bonus !== 0)"
+                class="text-caption"
+                >{{ statBreakdown(stat) }}</span
+              >
             </div>
           </q-card-section>
         </q-card>
@@ -88,15 +87,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { Info } from 'lucide-vue-next';
+import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
+import { getConditionBonus } from 'src/utils/specialUtils';
+import InfoPopup from 'src/components/shared/InfoPopup.vue';
 
+const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
-const deflectPopupRef = ref<{ toggle: () => void } | null>(null);
+
+function getEnhancedBonus(attrCode: string): number {
+  return getConditionBonus(heroStore.conditions, `attribute_${attrCode}`);
+}
 
 const allDerivedStats = computed(() => {
   return buildDerivedStatsList(
@@ -107,7 +113,9 @@ const allDerivedStats = computed(() => {
     attrStore.levelData,
     attrStore.tierData,
     (statId) => attrStore.getDerivedStatModifier(statId),
-    (statCode) => attrStore.getStatBonus(statCode)
+    (statCode) => attrStore.getStatBonus(statCode),
+    (statCode, value) =>
+      statCode === 'movement' ? attrStore.applyMovementConditions(value) : value
   );
 });
 
@@ -123,6 +131,13 @@ const deflectDescription = computed(() => deflectStat.value?.description ?? '');
 const derivedStatsList = computed(() => {
   return allDerivedStats.value.filter((s) => s.code !== 'deflect');
 });
+
+function statBreakdown(stat: { baseDisplay: string; modifier: number; bonus: number }): string {
+  let result = `(${stat.baseDisplay}`;
+  if (stat.modifier !== 0) result += ` ${stat.modifier >= 0 ? '+' : ''}${stat.modifier}`;
+  if (stat.bonus !== 0) result += ` ${stat.bonus >= 0 ? '+' : ''}${stat.bonus}`;
+  return result + ')';
+}
 </script>
 
 <style scoped>

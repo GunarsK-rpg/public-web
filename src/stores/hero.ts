@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Hero, HeroSheet, HeroEquipment, HeroFavoriteAction } from 'src/types';
+import type { Hero, HeroSheet, HeroEquipment, HeroFavoriteAction, HeroCondition } from 'src/types';
+import type { HeroConditionBase } from 'src/types/conditions';
 import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
@@ -471,6 +472,50 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
+  // ===================
+  // CONDITIONS (sheet)
+  // ===================
+  async function upsertCondition(payload: HeroConditionBase): Promise<HeroCondition | null> {
+    if (!hero.value) return null;
+    const currentHeroId = hero.value.id;
+    savingCount.value++;
+    try {
+      const response = await heroService.upsertSubResource<HeroCondition>(
+        currentHeroId,
+        'conditions',
+        payload
+      );
+      if (!hero.value || hero.value.id !== currentHeroId) return null;
+      const idx = hero.value.conditions.findIndex((c) => c.id === response.data.id);
+      if (idx !== -1) {
+        hero.value.conditions[idx] = response.data;
+      } else {
+        hero.value.conditions.push(response.data);
+      }
+      return response.data;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to save condition' });
+      return null;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function removeCondition(conditionId: number): Promise<void> {
+    if (!hero.value) return;
+    const currentHeroId = hero.value.id;
+    savingCount.value++;
+    try {
+      await heroService.deleteSubResource(currentHeroId, 'conditions', conditionId);
+      if (!hero.value || hero.value.id !== currentHeroId) return;
+      hero.value.conditions = hero.value.conditions.filter((c) => c.id !== conditionId);
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to remove condition' });
+    } finally {
+      savingCount.value--;
+    }
+  }
+
   async function deleteHero(): Promise<boolean> {
     if (!hero.value || hero.value.id === 0) return false;
     try {
@@ -541,5 +586,9 @@ export const useHeroStore = defineStore('hero', () => {
     findFavoriteAction,
     addFavoriteAction,
     removeFavoriteAction,
+
+    // Conditions (sheet)
+    upsertCondition,
+    removeCondition,
   };
 });

@@ -212,6 +212,14 @@ const equipmentMods = computed(() => {
   return props.equipmentInstance.heroEquipment.modifications;
 });
 
+// Focused condition: reduce focus cost by 1
+const isFocused = computed(() => heroStore.conditions.some((c) => c.condition.code === 'focused'));
+
+const effectiveFocusCost = computed(() => {
+  if (!isFocused.value) return props.action.focusCost;
+  return Math.max(0, props.action.focusCost - 1);
+});
+
 // Use action
 const hasDeductibleCost = computed(
   () => props.action.focusCost > 0 || props.action.investitureCost > 0
@@ -219,7 +227,7 @@ const hasDeductibleCost = computed(
 
 const canUse = computed(() => {
   if (!heroStore.hero) return false;
-  if (props.action.focusCost > 0 && heroStore.hero.currentFocus < props.action.focusCost)
+  if (effectiveFocusCost.value > 0 && heroStore.hero.currentFocus < effectiveFocusCost.value)
     return false;
   if (
     props.action.investitureCost > 0 &&
@@ -236,7 +244,7 @@ async function useAction(): Promise<void> {
   using.value = true;
   try {
     if (props.action.focusCost > 0) {
-      await heroStore.patchFocus(heroStore.hero.currentFocus - props.action.focusCost);
+      await heroStore.patchFocus(heroStore.hero.currentFocus - effectiveFocusCost.value);
     }
     if (props.action.investitureCost > 0) {
       await heroStore.patchInvestiture(
@@ -252,10 +260,11 @@ async function useAction(): Promise<void> {
 const actionCosts = computed(() => {
   const costs: { value: number; label: string; title: string; color: string }[] = [];
   if (props.action.focusCost > 0) {
+    const effective = effectiveFocusCost.value;
     costs.push({
-      value: props.action.focusCost,
+      value: effective,
       label: 'Focus',
-      title: 'Focus',
+      title: isFocused.value ? `Focus (reduced from ${props.action.focusCost})` : 'Focus',
       color: RPG_COLORS.focusCost,
     });
   }

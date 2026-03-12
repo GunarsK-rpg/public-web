@@ -14,9 +14,7 @@
       @keydown.space.prevent="trait.description && ($event.currentTarget as HTMLElement).click()"
     >
       {{ trait.label }}
-      <q-popup-proxy v-if="trait.description" :breakpoint="0" :offset="[0, 8]">
-        <q-banner dense class="text-body2">{{ trait.description }}</q-banner>
-      </q-popup-proxy>
+      <InfoPopup v-if="trait.description">{{ trait.description }}</InfoPopup>
     </q-badge>
   </div>
 </template>
@@ -24,6 +22,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
+import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import { findById } from 'src/utils/arrayUtils';
 
 const props = defineProps<{

@@ -1,8 +1,11 @@
 import type { Classifier } from './classifier';
-import type { ClassifierRef, ClassifierInput } from './shared';
+import type { ClassifierRef, ClassifierInput, SpecialEntry } from './shared';
 
 /** Condition classifier (cl_conditions) */
-export type Condition = Classifier;
+export interface Condition extends Classifier {
+  isPositive: boolean;
+  isParameterized: boolean;
+}
 
 /** Hero condition - upsert payload */
 export interface HeroConditionBase {
@@ -10,6 +13,7 @@ export interface HeroConditionBase {
   heroId: number;
   condition: ClassifierInput;
   notes?: string | null;
+  special?: SpecialEntry[] | null;
 }
 
 /** Hero condition - API response */

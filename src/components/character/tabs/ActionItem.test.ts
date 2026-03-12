@@ -20,6 +20,7 @@ vi.mock('src/stores/hero', () => ({
     get hero() {
       return mockHeroData.value;
     },
+    conditions: [],
     patchFocus: mockPatchFocus,
     patchInvestiture: mockPatchInvestiture,
   }),
