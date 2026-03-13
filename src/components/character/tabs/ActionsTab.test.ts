@@ -12,7 +12,7 @@ const mockHero = ref<{
 } | null>(null);
 
 const mockFavoriteActions = ref<HeroFavoriteAction[]>([]);
-const mockAddFavoriteAction = vi.fn();
+const mockUpsertFavoriteAction = vi.fn();
 const mockRemoveFavoriteAction = vi.fn();
 const mockFindFavoriteAction = vi.fn().mockReturnValue(undefined);
 
@@ -23,7 +23,7 @@ vi.mock('src/stores/hero', () => ({
       return mockFavoriteActions.value;
     },
     findFavoriteAction: mockFindFavoriteAction,
-    upsertFavoriteAction: mockAddFavoriteAction,
+    upsertFavoriteAction: mockUpsertFavoriteAction,
     removeFavoriteAction: mockRemoveFavoriteAction,
   }),
 }));
@@ -630,7 +630,11 @@ describe('ActionsTab', () => {
       await actionItems[0]!.vm.$emit('toggle-favorite');
       await wrapper.vm.$nextTick();
 
-      expect(mockAddFavoriteAction).toHaveBeenCalledWith(expect.objectContaining({ heroId: 1 }));
+      expect(mockUpsertFavoriteAction).toHaveBeenCalledWith({
+        heroId: 1,
+        actionId: 2, // Move (first basic action after sorting)
+        heroEquipmentId: null,
+      });
     });
 
     it('toggleFavorite calls removeFavoriteAction for favorited classifier action', async () => {

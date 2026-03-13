@@ -267,7 +267,10 @@ const connectionItems = computed(() =>
     id: c.id,
     name: c.description ?? 'Connection',
     description: c.notes,
-    typeName: findByCode(classifiers.connectionTypes, c.connectionType.code)?.name ?? 'Unknown',
+    typeName:
+      findByCode(classifiers.connectionTypes, c.connectionType.code)?.name ??
+      c.connectionType.name ??
+      'Unknown',
   }))
 );
 
@@ -276,7 +279,10 @@ const companionItems = computed(() =>
     id: c.id,
     name: c.description ?? 'Companion',
     description: c.notes,
-    typeName: findByCode(classifiers.companionTypes, c.companionType.code)?.name ?? 'Unknown',
+    typeName:
+      findByCode(classifiers.companionTypes, c.companionType.code)?.name ??
+      c.companionType.name ??
+      'Unknown',
   }))
 );
 

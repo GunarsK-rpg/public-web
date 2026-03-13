@@ -134,7 +134,10 @@ const connectionItems = computed(() =>
     id: c.id,
     name: c.description ?? 'Connection',
     description: c.notes,
-    typeName: findByCode(classifiers.connectionTypes, c.connectionType.code)?.name ?? 'Unknown',
+    typeName:
+      findByCode(classifiers.connectionTypes, c.connectionType.code)?.name ??
+      c.connectionType.name ??
+      'Unknown',
   }))
 );
 
@@ -143,7 +146,10 @@ const companionItems = computed(() =>
     id: c.id,
     name: c.description ?? 'Companion',
     description: c.notes,
-    typeName: findByCode(classifiers.companionTypes, c.companionType.code)?.name ?? 'Unknown',
+    typeName:
+      findByCode(classifiers.companionTypes, c.companionType.code)?.name ??
+      c.companionType.name ??
+      'Unknown',
   }))
 );
 
@@ -205,7 +211,7 @@ function handleAddGoal(name: string, description: string | null) {
 }
 
 function removeGoal(goalId: number) {
-  deletionTracker?.trackDeletion('goals', goalId);
+  if (goalId > 0) deletionTracker?.trackDeletion('goals', goalId);
   removeById(heroStore.hero?.goals, goalId);
 }
 
@@ -227,7 +233,7 @@ function handleAddConnection(name: string, description: string | null, typeCode:
 }
 
 function removeConnection(connectionId: number) {
-  deletionTracker?.trackDeletion('connections', connectionId);
+  if (connectionId > 0) deletionTracker?.trackDeletion('connections', connectionId);
   removeById(heroStore.hero?.connections, connectionId);
 }
 
@@ -249,7 +255,7 @@ function handleAddCompanion(name: string, description: string | null, typeCode: 
 }
 
 function removeCompanion(companionId: number) {
-  deletionTracker?.trackDeletion('companions', companionId);
+  if (companionId > 0) deletionTracker?.trackDeletion('companions', companionId);
   removeById(heroStore.hero?.companions, companionId);
 }
 </script>

@@ -567,7 +567,7 @@ describe('PersonalDetailsStep', () => {
       expect(wrapper.text()).toContain('Simple Connection');
     });
 
-    it('shows Unknown for connection with invalid type', () => {
+    it('falls back to model type name for unrecognized classifier code', () => {
       mockHero.value!.connections = [
         {
           id: 1,
@@ -578,7 +578,7 @@ describe('PersonalDetailsStep', () => {
       ];
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Unknown');
+      expect(wrapper.text()).toContain('Invalid');
     });
   });
 
