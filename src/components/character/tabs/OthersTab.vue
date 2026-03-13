@@ -54,7 +54,7 @@
                   :key="step"
                   :model-value="goal.value >= step"
                   :disable="readonly"
-                  :aria-label="`Goal progress step ${step} of 3`"
+                  :aria-label="`${goal.name}: progress step ${step} of 3`"
                   @update:model-value="handleGoalProgress(goal, step)"
                 />
               </div>

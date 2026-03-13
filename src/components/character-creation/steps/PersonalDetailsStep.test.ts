@@ -1,8 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import PersonalDetailsStep from './PersonalDetailsStep.vue';
 import EditableItemList from 'src/components/shared/EditableItemList.vue';
+
+function findDialogByTestId(wrapper: VueWrapper, testId: string): VueWrapper {
+  const dialogs = wrapper.findAllComponents({ name: 'AddOtherDialog' });
+  const match = dialogs.find((d) => d.attributes('data-testid') === testId);
+  if (!match) throw new Error(`AddOtherDialog with data-testid="${testId}" not found`);
+  return match as VueWrapper;
+}
 
 // Reactive mock data
 const mockHero = {
@@ -74,10 +81,12 @@ vi.mock('src/stores/classifiers', () => ({
   }),
 }));
 
+const debounceCancelSpies: ReturnType<typeof vi.fn>[] = [];
 vi.mock('src/utils/debounce', () => ({
   debounce: (fn: (...args: unknown[]) => void) => {
     const wrapped = (...args: unknown[]) => fn(...args);
     wrapped.cancel = vi.fn();
+    debounceCancelSpies.push(wrapped.cancel);
     return wrapped;
   },
 }));
@@ -196,7 +205,11 @@ describe('PersonalDetailsStep', () => {
           QSeparator: {
             template: '<hr class="q-separator" />',
           },
-          AddOtherDialog: true,
+          AddOtherDialog: {
+            name: 'AddOtherDialog',
+            template: '<div />',
+            inheritAttrs: true,
+          },
         },
         provide: {
           deletionTracker: {
@@ -212,6 +225,7 @@ describe('PersonalDetailsStep', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    debounceCancelSpies.length = 0;
     tempIdCounter = -100;
     mockHero.value = createHero();
   });
@@ -341,11 +355,11 @@ describe('PersonalDetailsStep', () => {
   // Adding Goals via Dialog
   // ========================================
   describe('adding goals', () => {
-    it('pushes goal to hero when dialog emits add', async () => {
+    it('pushes goal to hero when dialog emits add', () => {
       const wrapper = createWrapper();
 
-      const dialog = wrapper.findComponent({ name: 'AddOtherDialog' });
-      await dialog.vm.$emit('add', 'New Goal', 'Some description', null);
+      const dialog = findDialogByTestId(wrapper, 'add-other-goal');
+      dialog.vm.$emit('add', 'New Goal', 'Some description', null);
 
       expect(mockHero.value!.goals.length).toBe(2);
       const added = mockHero.value!.goals[1]!;
@@ -354,11 +368,11 @@ describe('PersonalDetailsStep', () => {
       expect(added.value).toBe(0);
     });
 
-    it('does not add description when dialog emits null', async () => {
+    it('does not add description when dialog emits null', () => {
       const wrapper = createWrapper();
 
-      const dialog = wrapper.findComponent({ name: 'AddOtherDialog' });
-      await dialog.vm.$emit('add', 'New Goal', null, null);
+      const dialog = findDialogByTestId(wrapper, 'add-other-goal');
+      dialog.vm.$emit('add', 'New Goal', null, null);
 
       const added = mockHero.value!.goals[1]!;
       expect(added.name).toBe('New Goal');
@@ -370,12 +384,11 @@ describe('PersonalDetailsStep', () => {
   // Adding Connections via Dialog
   // ========================================
   describe('adding connections', () => {
-    it('pushes connection to hero when dialog emits add', async () => {
+    it('pushes connection to hero when dialog emits add', () => {
       const wrapper = createWrapper();
 
-      const dialogs = wrapper.findAllComponents({ name: 'AddOtherDialog' });
-      const connectionDialog = dialogs[1];
-      await connectionDialog!.vm.$emit('add', 'New Connection', 'Some notes', 'ally');
+      const connectionDialog = findDialogByTestId(wrapper, 'add-other-connection');
+      connectionDialog.vm.$emit('add', 'New Connection', 'Some notes', 'ally');
 
       expect(mockHero.value!.connections.length).toBe(2);
       const added = mockHero.value!.connections[1]!;
@@ -384,12 +397,11 @@ describe('PersonalDetailsStep', () => {
       expect(added.connectionType.code).toBe('ally');
     });
 
-    it('does not add connection when typeCode is null', async () => {
+    it('does not add connection when typeCode is null', () => {
       const wrapper = createWrapper();
 
-      const dialogs = wrapper.findAllComponents({ name: 'AddOtherDialog' });
-      const connectionDialog = dialogs[1];
-      await connectionDialog!.vm.$emit('add', 'New Connection', null, null);
+      const connectionDialog = findDialogByTestId(wrapper, 'add-other-connection');
+      connectionDialog.vm.$emit('add', 'New Connection', null, null);
 
       expect(mockHero.value!.connections.length).toBe(1);
     });
@@ -399,12 +411,11 @@ describe('PersonalDetailsStep', () => {
   // Adding Companions via Dialog
   // ========================================
   describe('adding companions', () => {
-    it('pushes companion to hero when dialog emits add', async () => {
+    it('pushes companion to hero when dialog emits add', () => {
       const wrapper = createWrapper();
 
-      const dialogs = wrapper.findAllComponents({ name: 'AddOtherDialog' });
-      const companionDialog = dialogs[2];
-      await companionDialog!.vm.$emit('add', 'Syl', 'Honorspren', 'spren');
+      const companionDialog = findDialogByTestId(wrapper, 'add-other-companion');
+      companionDialog.vm.$emit('add', 'Syl', 'Honorspren', 'spren');
 
       expect(mockHero.value!.companions.length).toBe(2);
       const added = mockHero.value!.companions[1]!;
@@ -413,12 +424,11 @@ describe('PersonalDetailsStep', () => {
       expect(added.companionType.code).toBe('spren');
     });
 
-    it('does not add companion when typeCode is null', async () => {
+    it('does not add companion when typeCode is null', () => {
       const wrapper = createWrapper();
 
-      const dialogs = wrapper.findAllComponents({ name: 'AddOtherDialog' });
-      const companionDialog = dialogs[2];
-      await companionDialog!.vm.$emit('add', 'Syl', null, null);
+      const companionDialog = findDialogByTestId(wrapper, 'add-other-companion');
+      companionDialog.vm.$emit('add', 'Syl', null, null);
 
       expect(mockHero.value!.companions.length).toBe(1);
     });
@@ -601,6 +611,7 @@ describe('PersonalDetailsStep', () => {
               trackDeletion: vi.fn(),
               getDeletions: vi.fn(() => []),
               clearDeletions: vi.fn(),
+              clearAll: vi.fn(),
             },
           },
         },
@@ -615,10 +626,15 @@ describe('PersonalDetailsStep', () => {
 
     it('cancels debounced calls on unmount', () => {
       const wrapper = createWrapper();
+      const cancelsBefore = debounceCancelSpies.map((spy) => spy.mock.calls.length);
+
       wrapper.unmount();
 
-      // Component should unmount without errors
-      expect(true).toBe(true);
+      // Each debounced handler (biography, appearance, notes) should have cancel called
+      expect(debounceCancelSpies.length).toBe(3);
+      debounceCancelSpies.forEach((spy, i) => {
+        expect(spy.mock.calls.length).toBeGreaterThan(cancelsBefore[i]!);
+      });
     });
   });
 });

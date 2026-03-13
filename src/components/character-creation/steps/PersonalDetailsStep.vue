@@ -78,13 +78,19 @@
       @update:model-value="setNotes"
     />
 
-    <AddOtherDialog v-model="showGoalDialog" title="Add Goal" @add="handleAddGoal" />
+    <AddOtherDialog
+      v-model="showGoalDialog"
+      title="Add Goal"
+      data-testid="add-other-goal"
+      @add="handleAddGoal"
+    />
 
     <AddOtherDialog
       v-model="showConnectionDialog"
       title="Add Connection"
       type-label="Connection type"
       :types="classifiers.connectionTypes"
+      data-testid="add-other-connection"
       @add="handleAddConnection"
     />
 
@@ -93,6 +99,7 @@
       title="Add Companion"
       type-label="Companion type"
       :types="classifiers.companionTypes"
+      data-testid="add-other-companion"
       @add="handleAddCompanion"
     />
   </div>
@@ -207,14 +214,14 @@ function handleAddConnection(name: string, description: string | null, typeCode:
   if (!heroStore.hero || !typeCode) return;
   const connType = findByCode(classifiers.connectionTypes, typeCode);
   if (!connType) return;
-  const trimmedDesc = trimText(name);
-  if (!trimmedDesc) return;
+  const trimmedName = trimName(name);
+  if (!trimmedName) return;
   const trimmedNotes = description ? trimText(description) : undefined;
   heroStore.hero.connections.push({
     id: heroStore.nextTempId(),
     heroId: heroStore.hero.id,
     connectionType: toClassifierRef(connType),
-    description: trimmedDesc,
+    description: trimmedName,
     ...(trimmedNotes ? { notes: trimmedNotes } : {}),
   });
 }
@@ -229,14 +236,14 @@ function handleAddCompanion(name: string, description: string | null, typeCode: 
   if (!heroStore.hero || !typeCode) return;
   const compType = findByCode(classifiers.companionTypes, typeCode);
   if (!compType) return;
-  const trimmedDesc = trimText(name);
-  if (!trimmedDesc) return;
+  const trimmedName = trimName(name);
+  if (!trimmedName) return;
   const trimmedNotes = description ? trimText(description) : undefined;
   heroStore.hero.companions.push({
     id: heroStore.nextTempId(),
     heroId: heroStore.hero.id,
     companionType: toClassifierRef(compType),
-    description: trimmedDesc,
+    description: trimmedName,
     ...(trimmedNotes ? { notes: trimmedNotes } : {}),
   });
 }

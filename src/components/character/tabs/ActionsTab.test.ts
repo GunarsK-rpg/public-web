@@ -5,6 +5,7 @@ import ActionsTab from './ActionsTab.vue';
 import type { HeroEquipment, HeroFavoriteAction, HeroTalent } from 'src/types';
 
 const mockHero = ref<{
+  id: number;
   equipment: Partial<HeroEquipment>[];
   talents: Partial<HeroTalent>[];
   radiantOrder: { id: number; code: string; name: string } | null;
@@ -207,6 +208,7 @@ describe('ActionsTab', () => {
     mockFavoriteActions.value = [];
     mockFindFavoriteAction.mockReturnValue(undefined);
     mockHero.value = {
+      id: 1,
       equipment: [],
       talents: [],
       radiantOrder: null,
@@ -252,6 +254,7 @@ describe('ActionsTab', () => {
   describe('equipment actions', () => {
     it('renders equipment actions for equipped equipment', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -271,6 +274,7 @@ describe('ActionsTab', () => {
 
     it('does not show actions for unequipped equipment', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -291,6 +295,7 @@ describe('ActionsTab', () => {
 
     it('shows empty message when no equipment', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: null,
@@ -302,6 +307,7 @@ describe('ActionsTab', () => {
 
     it('does not show actions for unowned equipment', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 999, code: 'e999', name: 'Equip999' },
@@ -322,6 +328,7 @@ describe('ActionsTab', () => {
 
     it('renders multiple equipment actions for equipped items', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -349,6 +356,7 @@ describe('ActionsTab', () => {
 
     it('renders separate action instances for two equipped items sharing the same equipment id', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             id: 10,
@@ -383,6 +391,7 @@ describe('ActionsTab', () => {
 
     it('only shows actions for equipped items in mixed inventory', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -415,6 +424,7 @@ describe('ActionsTab', () => {
   describe('talent actions', () => {
     it('renders talent actions for owned talents', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }],
         radiantOrder: null,
@@ -426,6 +436,7 @@ describe('ActionsTab', () => {
 
     it('shows empty message when no talent actions', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [{ talent: { id: 999, code: 't999', name: 'Talent999' } }], // Talent without actions
         radiantOrder: null,
@@ -442,6 +453,7 @@ describe('ActionsTab', () => {
   describe('surge actions', () => {
     it('renders surge actions for radiant orders', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' }, // Windrunner with surge1: { id: 100, ... }
@@ -453,6 +465,7 @@ describe('ActionsTab', () => {
 
     it('shows empty message when not radiant', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: null,
@@ -478,6 +491,7 @@ describe('ActionsTab', () => {
 
     it('handles empty equipment array', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: null,
@@ -489,6 +503,7 @@ describe('ActionsTab', () => {
 
     it('handles hero with all action types', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -511,6 +526,7 @@ describe('ActionsTab', () => {
 
     it('handles non-existent radiant order', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: { id: 999, code: 'ro999', name: 'RadiantOrder999' }, // Non-existent
@@ -614,7 +630,7 @@ describe('ActionsTab', () => {
       await actionItems[0]!.vm.$emit('toggle-favorite');
       await wrapper.vm.$nextTick();
 
-      expect(mockAddFavoriteAction).toHaveBeenCalled();
+      expect(mockAddFavoriteAction).toHaveBeenCalledWith(expect.objectContaining({ heroId: 1 }));
     });
 
     it('toggleFavorite calls removeFavoriteAction for favorited classifier action', async () => {
