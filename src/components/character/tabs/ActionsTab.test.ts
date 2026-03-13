@@ -626,27 +626,33 @@ describe('ActionsTab', () => {
       const wrapper = createWrapper();
 
       const actionItems = wrapper.findAllComponents({ name: 'ActionItem' });
-      expect(actionItems.length).toBeGreaterThan(0);
-      await actionItems[0]!.vm.$emit('toggle-favorite');
+      const moveItem = actionItems.find((ai) => ai.text() === 'Move');
+      expect(moveItem).toBeDefined();
+      await moveItem!.vm.$emit('toggle-favorite');
       await wrapper.vm.$nextTick();
 
       expect(mockUpsertFavoriteAction).toHaveBeenCalledWith({
         heroId: 1,
-        actionId: 2, // Move (first basic action after sorting)
+        actionId: 2,
         heroEquipmentId: null,
       });
     });
 
     it('toggleFavorite calls removeFavoriteAction for favorited classifier action', async () => {
-      const existingFavorite = { id: 42, heroId: 1, actionId: 1, heroEquipmentId: null };
-      mockFindFavoriteAction.mockReturnValue(existingFavorite);
+      const existingFavorite = { id: 42, heroId: 1, actionId: 2, heroEquipmentId: null };
+      mockFindFavoriteAction.mockImplementation(
+        (actionId: number, heroEquipmentId: number | null) =>
+          actionId === 2 && heroEquipmentId === null ? existingFavorite : undefined
+      );
       const wrapper = createWrapper();
 
       const actionItems = wrapper.findAllComponents({ name: 'ActionItem' });
-      expect(actionItems.length).toBeGreaterThan(0);
-      await actionItems[0]!.vm.$emit('toggle-favorite');
+      const moveItem = actionItems.find((ai) => ai.text() === 'Move');
+      expect(moveItem).toBeDefined();
+      await moveItem!.vm.$emit('toggle-favorite');
       await wrapper.vm.$nextTick();
 
+      expect(mockFindFavoriteAction).toHaveBeenCalledWith(2, null);
       expect(mockRemoveFavoriteAction).toHaveBeenCalledWith(existingFavorite.id);
     });
   });

@@ -23,7 +23,7 @@ const mockHero = {
       name: string;
       description?: string;
       value: number;
-      status: unknown;
+      status: { id: number; code: string; name: string };
     }>;
     connections: Array<{
       id: number;
