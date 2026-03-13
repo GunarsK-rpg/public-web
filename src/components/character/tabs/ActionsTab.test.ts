@@ -5,13 +5,14 @@ import ActionsTab from './ActionsTab.vue';
 import type { HeroEquipment, HeroFavoriteAction, HeroTalent } from 'src/types';
 
 const mockHero = ref<{
+  id: number;
   equipment: Partial<HeroEquipment>[];
   talents: Partial<HeroTalent>[];
   radiantOrder: { id: number; code: string; name: string } | null;
 } | null>(null);
 
 const mockFavoriteActions = ref<HeroFavoriteAction[]>([]);
-const mockAddFavoriteAction = vi.fn();
+const mockUpsertFavoriteAction = vi.fn();
 const mockRemoveFavoriteAction = vi.fn();
 const mockFindFavoriteAction = vi.fn().mockReturnValue(undefined);
 
@@ -22,7 +23,7 @@ vi.mock('src/stores/hero', () => ({
       return mockFavoriteActions.value;
     },
     findFavoriteAction: mockFindFavoriteAction,
-    addFavoriteAction: mockAddFavoriteAction,
+    upsertFavoriteAction: mockUpsertFavoriteAction,
     removeFavoriteAction: mockRemoveFavoriteAction,
   }),
 }));
@@ -207,6 +208,7 @@ describe('ActionsTab', () => {
     mockFavoriteActions.value = [];
     mockFindFavoriteAction.mockReturnValue(undefined);
     mockHero.value = {
+      id: 1,
       equipment: [],
       talents: [],
       radiantOrder: null,
@@ -252,6 +254,7 @@ describe('ActionsTab', () => {
   describe('equipment actions', () => {
     it('renders equipment actions for equipped equipment', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -271,6 +274,7 @@ describe('ActionsTab', () => {
 
     it('does not show actions for unequipped equipment', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -291,6 +295,7 @@ describe('ActionsTab', () => {
 
     it('shows empty message when no equipment', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: null,
@@ -302,6 +307,7 @@ describe('ActionsTab', () => {
 
     it('does not show actions for unowned equipment', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 999, code: 'e999', name: 'Equip999' },
@@ -322,6 +328,7 @@ describe('ActionsTab', () => {
 
     it('renders multiple equipment actions for equipped items', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -349,6 +356,7 @@ describe('ActionsTab', () => {
 
     it('renders separate action instances for two equipped items sharing the same equipment id', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             id: 10,
@@ -383,6 +391,7 @@ describe('ActionsTab', () => {
 
     it('only shows actions for equipped items in mixed inventory', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -415,6 +424,7 @@ describe('ActionsTab', () => {
   describe('talent actions', () => {
     it('renders talent actions for owned talents', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }],
         radiantOrder: null,
@@ -426,6 +436,7 @@ describe('ActionsTab', () => {
 
     it('shows empty message when no talent actions', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [{ talent: { id: 999, code: 't999', name: 'Talent999' } }], // Talent without actions
         radiantOrder: null,
@@ -442,6 +453,7 @@ describe('ActionsTab', () => {
   describe('surge actions', () => {
     it('renders surge actions for radiant orders', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' }, // Windrunner with surge1: { id: 100, ... }
@@ -453,6 +465,7 @@ describe('ActionsTab', () => {
 
     it('shows empty message when not radiant', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: null,
@@ -478,6 +491,7 @@ describe('ActionsTab', () => {
 
     it('handles empty equipment array', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: null,
@@ -489,6 +503,7 @@ describe('ActionsTab', () => {
 
     it('handles hero with all action types', () => {
       mockHero.value = {
+        id: 1,
         equipment: [
           {
             equipment: { id: 1, code: 'e1', name: 'Equip1' },
@@ -511,6 +526,7 @@ describe('ActionsTab', () => {
 
     it('handles non-existent radiant order', () => {
       mockHero.value = {
+        id: 1,
         equipment: [],
         talents: [],
         radiantOrder: { id: 999, code: 'ro999', name: 'RadiantOrder999' }, // Non-existent
@@ -574,7 +590,7 @@ describe('ActionsTab', () => {
     });
 
     it('renders favorites tab when favorites exist', () => {
-      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      mockFavoriteActions.value = [{ id: 1, heroId: 1, actionId: 1, heroEquipmentId: null }];
       const wrapper = createWrapper();
 
       const tabs = wrapper.findAll('.q-tab');
@@ -582,7 +598,7 @@ describe('ActionsTab', () => {
     });
 
     it('favorites tab appears before other tabs', () => {
-      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      mockFavoriteActions.value = [{ id: 1, heroId: 1, actionId: 1, heroEquipmentId: null }];
       const wrapper = createWrapper();
 
       const tabs = wrapper.findAll('.q-tab');
@@ -590,7 +606,7 @@ describe('ActionsTab', () => {
     });
 
     it('renders favorites tab panel when favorites exist', () => {
-      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      mockFavoriteActions.value = [{ id: 1, heroId: 1, actionId: 1, heroEquipmentId: null }];
       const wrapper = createWrapper();
 
       const panels = wrapper.findAll('.q-tab-panel');
@@ -598,35 +614,45 @@ describe('ActionsTab', () => {
     });
 
     it('has 5 panels (favorites + 4 action types) when favorites exist', () => {
-      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      mockFavoriteActions.value = [{ id: 1, heroId: 1, actionId: 1, heroEquipmentId: null }];
       const wrapper = createWrapper();
 
       const panels = wrapper.findAll('.q-tab-panel');
       expect(panels.length).toBe(5);
     });
 
-    it('toggleFavorite calls addFavoriteAction for unfavorited classifier action', async () => {
+    it('toggleFavorite calls upsertFavoriteAction for unfavorited classifier action', async () => {
       mockFindFavoriteAction.mockReturnValue(undefined);
       const wrapper = createWrapper();
 
       const actionItems = wrapper.findAllComponents({ name: 'ActionItem' });
-      expect(actionItems.length).toBeGreaterThan(0);
-      await actionItems[0]!.vm.$emit('toggle-favorite');
+      const moveItem = actionItems.find((ai) => ai.text() === 'Move');
+      expect(moveItem).toBeDefined();
+      await moveItem!.vm.$emit('toggle-favorite');
       await wrapper.vm.$nextTick();
 
-      expect(mockAddFavoriteAction).toHaveBeenCalled();
+      expect(mockUpsertFavoriteAction).toHaveBeenCalledWith({
+        heroId: 1,
+        actionId: 2,
+        heroEquipmentId: null,
+      });
     });
 
     it('toggleFavorite calls removeFavoriteAction for favorited classifier action', async () => {
-      const existingFavorite = { id: 42, actionId: 1, heroEquipmentId: null };
-      mockFindFavoriteAction.mockReturnValue(existingFavorite);
+      const existingFavorite = { id: 42, heroId: 1, actionId: 2, heroEquipmentId: null };
+      mockFindFavoriteAction.mockImplementation(
+        (actionId: number, heroEquipmentId: number | null) =>
+          actionId === 2 && heroEquipmentId === null ? existingFavorite : undefined
+      );
       const wrapper = createWrapper();
 
       const actionItems = wrapper.findAllComponents({ name: 'ActionItem' });
-      expect(actionItems.length).toBeGreaterThan(0);
-      await actionItems[0]!.vm.$emit('toggle-favorite');
+      const moveItem = actionItems.find((ai) => ai.text() === 'Move');
+      expect(moveItem).toBeDefined();
+      await moveItem!.vm.$emit('toggle-favorite');
       await wrapper.vm.$nextTick();
 
+      expect(mockFindFavoriteAction).toHaveBeenCalledWith(2, null);
       expect(mockRemoveFavoriteAction).toHaveBeenCalledWith(existingFavorite.id);
     });
   });

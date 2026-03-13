@@ -47,59 +47,73 @@
             <q-item-label v-if="goal.description" caption>{{ goal.description }}</q-item-label>
           </q-item-section>
           <q-item-section side>
-            <div class="goal-progress row items-center no-wrap">
-              <q-checkbox
-                v-for="step in 3"
-                :key="step"
-                :model-value="goal.value >= step"
-                :disable="readonly"
-                :aria-label="`Goal progress step ${step} of 3`"
-                @update:model-value="handleGoalProgress(goal, step)"
+            <div class="row items-center no-wrap">
+              <div class="goal-progress row items-center no-wrap">
+                <q-checkbox
+                  v-for="step in 3"
+                  :key="step"
+                  :model-value="goal.value >= step"
+                  :disable="readonly"
+                  :aria-label="`${goal.name} (${goal.id}): progress step ${step} of 3`"
+                  @update:model-value="handleGoalProgress(goal, step)"
+                />
+              </div>
+              <q-btn
+                v-if="!readonly"
+                flat
+                dense
+                round
+                size="sm"
+                icon="close"
+                :aria-label="`Remove goal: ${goal.name}`"
+                @click="handleRemoveGoal(goal)"
               />
             </div>
           </q-item-section>
         </q-item>
       </q-list>
+
+      <q-btn
+        v-if="!readonly"
+        flat
+        dense
+        color="primary"
+        label="Add Goal"
+        class="q-mt-sm"
+        @click="showGoalDialog = true"
+      />
     </SectionPanel>
 
     <!-- Connections Section -->
     <SectionPanel label="Connections">
       <template #icon><Users /></template>
 
-      <div v-if="heroStore.connections.length === 0" class="text-empty">No connections</div>
-      <q-list v-else separator>
-        <q-item v-for="conn in heroStore.connections" :key="conn.id">
-          <q-item-section>
-            <q-item-label>{{ conn.description ?? 'Connection' }}</q-item-label>
-            <q-item-label v-if="conn.notes" caption>{{ conn.notes }}</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-badge :color="RPG_COLORS.badgeMuted">{{
-              getConnectionTypeName(conn.connectionType?.id)
-            }}</q-badge>
-          </q-item-section>
-        </q-item>
-      </q-list>
+      <EditableItemList
+        :items="connectionItems"
+        item-label="connection"
+        add-label="Add Connection"
+        empty-message="No connections"
+        :readonly="readonly"
+        :badge-color="RPG_COLORS.badgeMuted"
+        @add="showConnectionDialog = true"
+        @remove="handleRemoveConnection"
+      />
     </SectionPanel>
 
     <!-- Companions Section -->
     <SectionPanel label="Companions">
       <template #icon><PawPrint /></template>
 
-      <div v-if="heroStore.companions.length === 0" class="text-empty">No companions</div>
-      <q-list v-else separator>
-        <q-item v-for="comp in heroStore.companions" :key="comp.id">
-          <q-item-section>
-            <q-item-label>{{ comp.description ?? 'Companion' }}</q-item-label>
-            <q-item-label v-if="comp.notes" caption>{{ comp.notes }}</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-badge :color="RPG_COLORS.badgeMuted">{{
-              getCompanionTypeName(comp.companionType?.id)
-            }}</q-badge>
-          </q-item-section>
-        </q-item>
-      </q-list>
+      <EditableItemList
+        :items="companionItems"
+        item-label="companion"
+        add-label="Add Companion"
+        empty-message="No companions"
+        :readonly="readonly"
+        :badge-color="RPG_COLORS.badgeMuted"
+        @add="showCompanionDialog = true"
+        @remove="handleRemoveCompanion"
+      />
     </SectionPanel>
 
     <!-- Biography Section -->
@@ -166,6 +180,31 @@
       />
     </SectionPanel>
 
+    <AddOtherDialog
+      v-if="!readonly"
+      v-model="showGoalDialog"
+      title="Add Goal"
+      @add="handleAddGoal"
+    />
+
+    <AddOtherDialog
+      v-if="!readonly"
+      v-model="showConnectionDialog"
+      title="Add Connection"
+      type-label="Connection type"
+      :types="classifiers.connectionTypes"
+      @add="handleAddConnection"
+    />
+
+    <AddOtherDialog
+      v-if="!readonly"
+      v-model="showCompanionDialog"
+      title="Add Companion"
+      type-label="Companion type"
+      :types="classifiers.companionTypes"
+      @add="handleAddCompanion"
+    />
+
     <AddInjuryDialog
       v-if="!readonly"
       v-model="showInjuryDialog"
@@ -180,11 +219,13 @@ import { ref, computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findById, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
+import { findById, findByCode, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
 import { Globe, Flag, Users, PawPrint, User, TriangleAlert } from 'lucide-vue-next';
 import SectionPanel from 'src/components/shared/SectionPanel.vue';
+import EditableItemList from 'src/components/shared/EditableItemList.vue';
 import AddInjuryDialog from 'src/components/character/AddInjuryDialog.vue';
+import AddOtherDialog from 'src/components/character/AddOtherDialog.vue';
 import type { HeroInjury } from 'src/types/conditions';
 import type { HeroGoal } from 'src/types/goals';
 
@@ -200,11 +241,16 @@ const classifiers = useClassifierStore();
 // STATE
 // ===================
 const showInjuryDialog = ref(false);
+const showGoalDialog = ref(false);
+const showConnectionDialog = ref(false);
+const showCompanionDialog = ref(false);
 
 // Biography fields - computed for consistency with other hero data access
-const heroAppearance = computed(() => heroStore.hero?.appearance ?? 'No appearance description');
-const heroBiography = computed(() => heroStore.hero?.biography ?? 'No biography');
-const heroNotes = computed(() => heroStore.hero?.notes ?? 'No notes');
+const heroAppearance = computed(
+  () => heroStore.hero?.appearance?.trim() || 'No appearance description'
+);
+const heroBiography = computed(() => heroStore.hero?.biography?.trim() || 'No biography');
+const heroNotes = computed(() => heroStore.hero?.notes?.trim() || 'No notes');
 
 // Ancestry & Singer Form
 const ancestry = computed(() => findById(classifiers.ancestries, heroStore.hero?.ancestry?.id));
@@ -215,13 +261,32 @@ const activeSingerForm = computed(() =>
 
 // Name getter functions using factory pattern
 const getCultureName = makeNameGetter(computed(() => buildIdNameMap(classifiers.cultures)));
-const getConnectionTypeName = makeNameGetter(
-  computed(() => buildIdNameMap(classifiers.connectionTypes))
-);
-const getCompanionTypeName = makeNameGetter(
-  computed(() => buildIdNameMap(classifiers.companionTypes))
-);
 const getInjuryName = makeNameGetter(computed(() => buildIdNameMap(classifiers.injuries)));
+
+// Normalized list items for EditableItemList
+const connectionItems = computed(() =>
+  heroStore.connections.map((c) => ({
+    id: c.id,
+    name: c.description ?? 'Connection',
+    description: c.notes,
+    typeName:
+      findByCode(classifiers.connectionTypes, c.connectionType.code)?.name ??
+      c.connectionType.name ??
+      'Unknown',
+  }))
+);
+
+const companionItems = computed(() =>
+  heroStore.companions.map((c) => ({
+    id: c.id,
+    name: c.description ?? 'Companion',
+    description: c.notes,
+    typeName:
+      findByCode(classifiers.companionTypes, c.companionType.code)?.name ??
+      c.companionType.name ??
+      'Unknown',
+  }))
+);
 
 // Injury condition name lookup
 function getInjuryConditionName(injuryId: number | undefined): string | null {
@@ -236,6 +301,63 @@ function getInjuryConditionName(injuryId: number | undefined): string | null {
 async function handleGoalProgress(goal: HeroGoal, step: number): Promise<void> {
   const newValue = goal.value >= step ? step - 1 : step;
   await heroStore.updateGoalValue(goal.id, newValue);
+}
+
+async function handleAddGoal(name: string, description: string | null): Promise<void> {
+  if (!heroStore.hero) return;
+  await heroStore.upsertGoal({
+    heroId: heroStore.hero.id,
+    status: { code: 'active' },
+    name,
+    description,
+    value: 0,
+  });
+}
+
+async function handleRemoveGoal(goal: HeroGoal): Promise<void> {
+  await heroStore.removeGoal(goal.id);
+}
+
+// ===================
+// CONNECTION ACTIONS
+// ===================
+async function handleAddConnection(
+  name: string,
+  description: string | null,
+  typeCode: string | null
+): Promise<void> {
+  if (!heroStore.hero || !typeCode) return;
+  await heroStore.upsertConnection({
+    heroId: heroStore.hero.id,
+    connectionType: { code: typeCode },
+    description: name,
+    notes: description,
+  });
+}
+
+async function handleRemoveConnection(id: number): Promise<void> {
+  await heroStore.removeConnection(id);
+}
+
+// ===================
+// COMPANION ACTIONS
+// ===================
+async function handleAddCompanion(
+  name: string,
+  description: string | null,
+  typeCode: string | null
+): Promise<void> {
+  if (!heroStore.hero || !typeCode) return;
+  await heroStore.upsertCompanion({
+    heroId: heroStore.hero.id,
+    companionType: { code: typeCode },
+    description: name,
+    notes: description,
+  });
+}
+
+async function handleRemoveCompanion(id: number): Promise<void> {
+  await heroStore.removeCompanion(id);
 }
 
 // ===================

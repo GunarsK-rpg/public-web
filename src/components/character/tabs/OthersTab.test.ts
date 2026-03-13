@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import OthersTab from './OthersTab.vue';
+import EditableItemList from 'src/components/shared/EditableItemList.vue';
 import type { HeroCulture, HeroGoal, HeroConnection, HeroCompanion, HeroInjury } from 'src/types';
 
 const mockHero = ref<{
@@ -108,6 +109,7 @@ describe('OthersTab', () => {
     shallowMount(OthersTab, {
       global: {
         stubs: {
+          EditableItemList,
           SectionPanel: {
             template: `<div class="section-panel" :aria-label="label + ' section'">
               <slot name="icon" />
@@ -381,7 +383,7 @@ describe('OthersTab', () => {
           id: 1,
           heroId: 1,
           description: 'Friend',
-          connectionType: { id: 1, code: 'ct1', name: 'ConnType1' },
+          connectionType: { id: 1, code: 'ally', name: 'Ally' },
         },
       ] as HeroConnection[];
       const wrapper = createWrapper();
@@ -435,7 +437,7 @@ describe('OthersTab', () => {
           id: 1,
           heroId: 1,
           description: 'Syl',
-          companionType: { id: 2, code: 'cpt2', name: 'CompType2' },
+          companionType: { id: 2, code: 'spren', name: 'Spren' },
         },
       ] as HeroCompanion[];
       const wrapper = createWrapper();

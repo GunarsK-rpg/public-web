@@ -1,49 +1,50 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import PersonalDetailsStep from './PersonalDetailsStep.vue';
+import EditableItemList from 'src/components/shared/EditableItemList.vue';
 
-// Mock stores
-const mockSetBiography = vi.fn();
-const mockSetAppearance = vi.fn();
-const mockSetNotes = vi.fn();
-const mockAddGoal = vi.fn();
-const mockRemoveGoalById = vi.fn();
-const mockAddConnection = vi.fn();
-const mockRemoveConnectionById = vi.fn();
+function findDialogByTestId(wrapper: VueWrapper, testId: string): VueWrapper {
+  const dialogs = wrapper.findAllComponents({ name: 'AddOtherDialog' });
+  const match = dialogs.find((d) => d.attributes('data-testid') === testId);
+  if (!match) throw new Error(`AddOtherDialog with data-testid="${testId}" not found`);
+  return match as VueWrapper;
+}
 
 // Reactive mock data
 const mockHero = {
-  value: {
-    biography: '',
-    appearance: '',
-    notes: '',
-  } as { biography: string; appearance: string; notes: string } | null,
+  value: null as {
+    id: number;
+    biography: string;
+    appearance: string;
+    notes: string;
+    goals: Array<{
+      id: number;
+      name: string;
+      description?: string;
+      value: number;
+      status: { id: number; code: string; name: string };
+    }>;
+    connections: Array<{
+      id: number;
+      heroId: number;
+      connectionType: { id: number; code: string; name: string };
+      description: string;
+      notes?: string;
+    }>;
+    companions: Array<{
+      id: number;
+      heroId: number;
+      companionType: { id: number; code: string; name: string };
+      description: string;
+      notes?: string;
+    }>;
+  } | null,
 };
 
-const mockGoals = {
-  value: [{ id: 1, name: 'Goal 1', description: 'Description' }] as Array<{
-    id: number;
-    name: string;
-    description?: string;
-  }>,
-};
-
-const mockConnections = {
-  value: [
-    {
-      id: 1,
-      connectionType: { id: 1, code: 'ally', name: 'Ally' },
-      description: 'Connection 1',
-      notes: 'Notes',
-    },
-  ] as Array<{
-    id: number;
-    connectionType: { id: number; code: string; name: string };
-    description: string;
-    notes?: string;
-  }>,
-};
+let tempIdCounter = -100;
+const mockNextTempId = vi.fn(() => tempIdCounter--);
+const mockTrackDeletion = vi.fn();
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
@@ -51,53 +52,109 @@ vi.mock('src/stores/hero', () => ({
       return mockHero.value;
     },
     get goals() {
-      return mockGoals.value;
+      return mockHero.value?.goals ?? [];
     },
     get connections() {
-      return mockConnections.value;
+      return mockHero.value?.connections ?? [];
     },
-  }),
-}));
-
-vi.mock('src/stores/heroDetails', () => ({
-  useHeroDetailsStore: () => ({
-    setBiography: mockSetBiography,
-    setAppearance: mockSetAppearance,
-    setNotes: mockSetNotes,
-    addGoal: mockAddGoal,
-    removeGoalById: mockRemoveGoalById,
-    addConnection: mockAddConnection,
-    removeConnectionById: mockRemoveConnectionById,
+    get companions() {
+      return mockHero.value?.companions ?? [];
+    },
+    nextTempId: mockNextTempId,
   }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    goalStatuses: [
+      { id: 1, code: 'active', name: 'Active' },
+      { id: 2, code: 'completed', name: 'Completed' },
+    ],
     connectionTypes: [
       { id: 1, code: 'ally', name: 'Ally' },
       { id: 2, code: 'rival', name: 'Rival' },
     ],
+    companionTypes: [
+      { id: 1, code: 'pet', name: 'Pet' },
+      { id: 2, code: 'spren', name: 'Spren' },
+    ],
   }),
 }));
 
+const debounceCancelSpies: ReturnType<typeof vi.fn>[] = [];
 vi.mock('src/utils/debounce', () => ({
   debounce: (fn: (...args: unknown[]) => void) => {
     const wrapped = (...args: unknown[]) => fn(...args);
     wrapped.cancel = vi.fn();
+    debounceCancelSpies.push(wrapped.cancel);
     return wrapped;
   },
 }));
 
 vi.mock('src/utils/arrayUtils', () => ({
-  findById: <T extends { id: number }>(arr: T[], id: number | null | undefined) =>
-    arr?.find((item) => item.id === id),
+  findByCode: <T extends { code: string }>(arr: T[], code: string | null | undefined) =>
+    arr?.find((item) => item.code === code),
+  removeById: <T extends { id: number }>(arr: T[] | undefined | null, id: number) => {
+    if (!arr) return false;
+    const idx = arr.findIndex((item) => item.id === id);
+    if (idx === -1) return false;
+    arr.splice(idx, 1);
+    return true;
+  },
+  toClassifierRef: (c: { id: number; code: string; name: string }) => ({
+    id: c.id,
+    code: c.code,
+    name: c.name,
+  }),
 }));
+
+vi.mock('src/utils/stringUtils', () => ({
+  trimText: (val: string) => val.trim(),
+  trimName: (val: string) => val.trim(),
+}));
+
+function createHero() {
+  return {
+    id: 1,
+    biography: '',
+    appearance: '',
+    notes: '',
+    goals: [
+      {
+        id: 1,
+        name: 'Goal 1',
+        description: 'Description',
+        value: 0,
+        status: { id: 1, code: 'active', name: 'Active' },
+      },
+    ],
+    connections: [
+      {
+        id: 1,
+        heroId: 1,
+        connectionType: { id: 1, code: 'ally', name: 'Ally' },
+        description: 'Connection 1',
+        notes: 'Notes',
+      },
+    ],
+    companions: [
+      {
+        id: 1,
+        heroId: 1,
+        companionType: { id: 1, code: 'pet', name: 'Pet' },
+        description: 'Companion 1',
+        notes: 'Loyal',
+      },
+    ],
+  };
+}
 
 describe('PersonalDetailsStep', () => {
   const createWrapper = () =>
     shallowMount(PersonalDetailsStep, {
       global: {
         stubs: {
+          EditableItemList,
           QInput: {
             template: `<input
               class="q-input"
@@ -105,26 +162,6 @@ describe('PersonalDetailsStep', () => {
               @input="$emit('update:modelValue', $event.target.value)"
             />`,
             props: ['modelValue', 'type', 'label', 'outlined', 'autogrow', 'maxlength', 'dense'],
-            emits: ['update:modelValue'],
-          },
-          QSelect: {
-            template: `<select
-              class="q-select"
-              :value="modelValue"
-              @change="$emit('update:modelValue', $event.target.value === '' ? null : Number($event.target.value))"
-            >
-              <option :value="null">Select...</option>
-              <option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-            </select>`,
-            props: [
-              'modelValue',
-              'options',
-              'label',
-              'outlined',
-              'dense',
-              'emitValue',
-              'mapOptions',
-            ],
             emits: ['update:modelValue'],
           },
           QList: {
@@ -147,8 +184,18 @@ describe('PersonalDetailsStep', () => {
               :disabled="disable"
               :aria-label="ariaLabel"
               @click="$emit('click')"
-            ><slot /></button>`,
-            props: ['flat', 'round', 'color', 'size', 'ariaLabel', 'disable'],
+            >{{ label }}<slot /></button>`,
+            props: [
+              'flat',
+              'round',
+              'color',
+              'size',
+              'ariaLabel',
+              'disable',
+              'dense',
+              'label',
+              'icon',
+            ],
             emits: ['click'],
           },
           QBadge: {
@@ -158,10 +205,15 @@ describe('PersonalDetailsStep', () => {
           QSeparator: {
             template: '<hr class="q-separator" />',
           },
+          AddOtherDialog: {
+            name: 'AddOtherDialog',
+            template: '<div />',
+            inheritAttrs: true,
+          },
         },
         provide: {
           deletionTracker: {
-            trackDeletion: vi.fn(),
+            trackDeletion: mockTrackDeletion,
             getDeletions: vi.fn(() => []),
             clearDeletions: vi.fn(),
             clearAll: vi.fn(),
@@ -173,20 +225,9 @@ describe('PersonalDetailsStep', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-    mockHero.value = {
-      biography: '',
-      appearance: '',
-      notes: '',
-    };
-    mockGoals.value = [{ id: 1, name: 'Goal 1', description: 'Description' }];
-    mockConnections.value = [
-      {
-        id: 1,
-        connectionType: { id: 1, code: 'ally', name: 'Ally' },
-        description: 'Connection 1',
-        notes: 'Notes',
-      },
-    ];
+    debounceCancelSpies.length = 0;
+    tempIdCounter = -100;
+    mockHero.value = createHero();
   });
 
   // ========================================
@@ -232,8 +273,8 @@ describe('PersonalDetailsStep', () => {
     it('has add goal button', () => {
       const wrapper = createWrapper();
 
-      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add'));
-      expect(addBtns.length).toBeGreaterThan(0);
+      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add Goal'));
+      expect(addBtns.length).toBe(1);
     });
 
     it('has remove goal button', () => {
@@ -273,44 +314,123 @@ describe('PersonalDetailsStep', () => {
   });
 
   // ========================================
-  // Notes
+  // Companions
   // ========================================
-  describe('notes', () => {
-    it('renders multiple text inputs including notes', () => {
+  describe('companions', () => {
+    it('displays existing companions', () => {
       const wrapper = createWrapper();
 
-      // Biography, Appearance, Goal Name, Goal Description, Connection Description, Connection Notes, Notes
-      // At least 5 text inputs should exist
-      const inputs = wrapper.findAll('.q-input');
-      expect(inputs.length).toBeGreaterThanOrEqual(5);
+      expect(wrapper.text()).toContain('Companion 1');
+    });
+
+    it('displays companion type badge', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Pet');
+    });
+
+    it('has remove companion button', () => {
+      const wrapper = createWrapper();
+
+      const removeBtns = wrapper
+        .findAll('.q-btn')
+        .filter((b) => b.attributes('aria-label')?.includes('Remove companion'));
+      expect(removeBtns.length).toBe(1);
     });
   });
 
   // ========================================
-  // Adding Goals
+  // Notes
+  // ========================================
+  describe('notes', () => {
+    it('renders text inputs for biography, appearance, and notes', () => {
+      const wrapper = createWrapper();
+
+      const inputs = wrapper.findAll('.q-input');
+      expect(inputs.length).toBe(3);
+    });
+  });
+
+  // ========================================
+  // Adding Goals via Dialog
   // ========================================
   describe('adding goals', () => {
-    it('calls addGoal when add button clicked with goal name', async () => {
+    it('pushes goal to hero when dialog emits add', () => {
       const wrapper = createWrapper();
 
-      // Fill in goal name
-      const inputs = wrapper.findAll('.q-input');
-      // Goal Name input is after biography and appearance
-      await inputs[2]?.setValue('New Goal');
+      const dialog = findDialogByTestId(wrapper, 'add-other-goal');
+      dialog.vm.$emit('add', 'New Goal', 'Some description', null);
 
-      // Find and click Add button (first Add button for goals)
-      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add'));
-      await addBtns[0]?.trigger('click');
-
-      expect(mockAddGoal).toHaveBeenCalledWith('New Goal', undefined);
+      expect(mockHero.value!.goals.length).toBe(2);
+      const added = mockHero.value!.goals[1]!;
+      expect(added.name).toBe('New Goal');
+      expect(added.description).toBe('Some description');
+      expect(added.value).toBe(0);
     });
 
-    it('disables add goal button when no name entered', () => {
+    it('does not add description when dialog emits null', () => {
       const wrapper = createWrapper();
 
-      // First Add button (for goals) should be disabled when no name
-      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add'));
-      expect(addBtns[0]?.attributes('disabled')).toBeDefined();
+      const dialog = findDialogByTestId(wrapper, 'add-other-goal');
+      dialog.vm.$emit('add', 'New Goal', null, null);
+
+      const added = mockHero.value!.goals[1]!;
+      expect(added.name).toBe('New Goal');
+      expect(added.description).toBeUndefined();
+    });
+  });
+
+  // ========================================
+  // Adding Connections via Dialog
+  // ========================================
+  describe('adding connections', () => {
+    it('pushes connection to hero when dialog emits add', () => {
+      const wrapper = createWrapper();
+
+      const connectionDialog = findDialogByTestId(wrapper, 'add-other-connection');
+      connectionDialog.vm.$emit('add', 'New Connection', 'Some notes', 'ally');
+
+      expect(mockHero.value!.connections.length).toBe(2);
+      const added = mockHero.value!.connections[1]!;
+      expect(added.description).toBe('New Connection');
+      expect(added.notes).toBe('Some notes');
+      expect(added.connectionType.code).toBe('ally');
+    });
+
+    it('does not add connection when typeCode is null', () => {
+      const wrapper = createWrapper();
+
+      const connectionDialog = findDialogByTestId(wrapper, 'add-other-connection');
+      connectionDialog.vm.$emit('add', 'New Connection', null, null);
+
+      expect(mockHero.value!.connections.length).toBe(1);
+    });
+  });
+
+  // ========================================
+  // Adding Companions via Dialog
+  // ========================================
+  describe('adding companions', () => {
+    it('pushes companion to hero when dialog emits add', () => {
+      const wrapper = createWrapper();
+
+      const companionDialog = findDialogByTestId(wrapper, 'add-other-companion');
+      companionDialog.vm.$emit('add', 'Syl', 'Honorspren', 'spren');
+
+      expect(mockHero.value!.companions.length).toBe(2);
+      const added = mockHero.value!.companions[1]!;
+      expect(added.description).toBe('Syl');
+      expect(added.notes).toBe('Honorspren');
+      expect(added.companionType.code).toBe('spren');
+    });
+
+    it('does not add companion when typeCode is null', () => {
+      const wrapper = createWrapper();
+
+      const companionDialog = findDialogByTestId(wrapper, 'add-other-companion');
+      companionDialog.vm.$emit('add', 'Syl', null, null);
+
+      expect(mockHero.value!.companions.length).toBe(1);
     });
   });
 
@@ -318,48 +438,31 @@ describe('PersonalDetailsStep', () => {
   // Removing Goals
   // ========================================
   describe('removing goals', () => {
-    it('calls removeGoalById when remove button clicked', async () => {
+    it('removes goal from hero and tracks deletion', async () => {
       const wrapper = createWrapper();
 
       const removeBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Remove goal'));
-      expect(removeBtns.length).toBeGreaterThan(0);
       await removeBtns[0]!.trigger('click');
 
-      expect(mockRemoveGoalById).toHaveBeenCalledWith(1);
-    });
-  });
-
-  // ========================================
-  // Adding Connections
-  // ========================================
-  describe('adding connections', () => {
-    it('calls addConnection when add button clicked with valid data', async () => {
-      const wrapper = createWrapper();
-
-      // Fill in connection description
-      const inputs = wrapper.findAll('.q-input');
-      // Connection description is after goal inputs
-      await inputs[4]?.setValue('New Connection');
-
-      // Set connection type via select
-      const selects = wrapper.findAll('.q-select');
-      await selects[0]?.setValue(1);
-
-      // Click Add button for connections
-      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add'));
-      await addBtns[1]?.trigger('click');
-
-      expect(mockAddConnection).toHaveBeenCalledWith(1, 'New Connection', undefined);
+      expect(mockHero.value!.goals.length).toBe(0);
+      expect(mockTrackDeletion).toHaveBeenCalledWith('goals', 1);
     });
 
-    it('disables add connection button when no description', () => {
+    it('does not track deletion for temp-ID goal', async () => {
+      mockHero.value!.goals = [
+        { id: -1, name: 'Temp Goal', value: 0, status: { id: 1, code: 'active', name: 'Active' } },
+      ];
       const wrapper = createWrapper();
 
-      // Second Add button (for connections) should be disabled
-      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add'));
-      expect(addBtns[1]?.attributes('disabled')).toBeDefined();
+      const removeBtns = wrapper
+        .findAll('.q-btn')
+        .filter((b) => b.attributes('aria-label')?.includes('Remove goal'));
+      await removeBtns[0]!.trigger('click');
+
+      expect(mockHero.value!.goals.length).toBe(0);
+      expect(mockTrackDeletion).not.toHaveBeenCalled();
     });
   });
 
@@ -367,16 +470,73 @@ describe('PersonalDetailsStep', () => {
   // Removing Connections
   // ========================================
   describe('removing connections', () => {
-    it('calls removeConnectionById when remove button clicked', async () => {
+    it('removes connection from hero and tracks deletion', async () => {
       const wrapper = createWrapper();
 
       const removeBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Remove connection'));
-      expect(removeBtns.length).toBeGreaterThan(0);
       await removeBtns[0]!.trigger('click');
 
-      expect(mockRemoveConnectionById).toHaveBeenCalledWith(1);
+      expect(mockHero.value!.connections.length).toBe(0);
+      expect(mockTrackDeletion).toHaveBeenCalledWith('connections', 1);
+    });
+
+    it('does not track deletion for temp-ID connection', async () => {
+      mockHero.value!.connections = [
+        {
+          id: -1,
+          heroId: 1,
+          connectionType: { id: 1, code: 'ally', name: 'Ally' },
+          description: 'Temp Connection',
+        },
+      ];
+      const wrapper = createWrapper();
+
+      const removeBtns = wrapper
+        .findAll('.q-btn')
+        .filter((b) => b.attributes('aria-label')?.includes('Remove connection'));
+      await removeBtns[0]!.trigger('click');
+
+      expect(mockHero.value!.connections.length).toBe(0);
+      expect(mockTrackDeletion).not.toHaveBeenCalled();
+    });
+  });
+
+  // ========================================
+  // Removing Companions
+  // ========================================
+  describe('removing companions', () => {
+    it('removes companion from hero and tracks deletion', async () => {
+      const wrapper = createWrapper();
+
+      const removeBtns = wrapper
+        .findAll('.q-btn')
+        .filter((b) => b.attributes('aria-label')?.includes('Remove companion'));
+      await removeBtns[0]!.trigger('click');
+
+      expect(mockHero.value!.companions.length).toBe(0);
+      expect(mockTrackDeletion).toHaveBeenCalledWith('companions', 1);
+    });
+
+    it('does not track deletion for temp-ID companion', async () => {
+      mockHero.value!.companions = [
+        {
+          id: -1,
+          heroId: 1,
+          companionType: { id: 1, code: 'pet', name: 'Pet' },
+          description: 'Temp Companion',
+        },
+      ];
+      const wrapper = createWrapper();
+
+      const removeBtns = wrapper
+        .findAll('.q-btn')
+        .filter((b) => b.attributes('aria-label')?.includes('Remove companion'));
+      await removeBtns[0]!.trigger('click');
+
+      expect(mockHero.value!.companions.length).toBe(0);
+      expect(mockTrackDeletion).not.toHaveBeenCalled();
     });
   });
 
@@ -384,32 +544,31 @@ describe('PersonalDetailsStep', () => {
   // Text Input Handlers
   // ========================================
   describe('text input handlers', () => {
-    it('calls setBiography when biography input changes', async () => {
+    it('sets biography on hero when input changes', async () => {
       const wrapper = createWrapper();
 
       const inputs = wrapper.findAll('.q-input');
       await inputs[0]?.setValue('My biography');
 
-      expect(mockSetBiography).toHaveBeenCalledWith('My biography');
+      expect(mockHero.value!.biography).toBe('My biography');
     });
 
-    it('calls setAppearance when appearance input changes', async () => {
+    it('sets appearance on hero when input changes', async () => {
       const wrapper = createWrapper();
 
       const inputs = wrapper.findAll('.q-input');
       await inputs[1]?.setValue('Tall and dark');
 
-      expect(mockSetAppearance).toHaveBeenCalledWith('Tall and dark');
+      expect(mockHero.value!.appearance).toBe('Tall and dark');
     });
 
-    it('calls setNotes when notes input changes', async () => {
+    it('sets notes on hero when input changes', async () => {
       const wrapper = createWrapper();
 
-      // Notes is the last input (index 6)
       const inputs = wrapper.findAll('.q-input');
       await inputs[inputs.length - 1]?.setValue('Some notes');
 
-      expect(mockSetNotes).toHaveBeenCalledWith('Some notes');
+      expect(mockHero.value!.notes).toBe('Some notes');
     });
   });
 
@@ -418,7 +577,7 @@ describe('PersonalDetailsStep', () => {
   // ========================================
   describe('edge cases', () => {
     it('handles empty goals list', () => {
-      mockGoals.value = [];
+      mockHero.value!.goals = [];
       const wrapper = createWrapper();
 
       expect(wrapper.exists()).toBe(true);
@@ -426,7 +585,7 @@ describe('PersonalDetailsStep', () => {
     });
 
     it('handles empty connections list', () => {
-      mockConnections.value = [];
+      mockHero.value!.connections = [];
       const wrapper = createWrapper();
 
       expect(wrapper.exists()).toBe(true);
@@ -441,16 +600,19 @@ describe('PersonalDetailsStep', () => {
     });
 
     it('displays goal without description', () => {
-      mockGoals.value = [{ id: 1, name: 'Simple Goal' }];
+      mockHero.value!.goals = [
+        { id: 1, name: 'Simple Goal', value: 0, status: { id: 1, code: 'active', name: 'Active' } },
+      ];
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Simple Goal');
     });
 
     it('displays connection without notes', () => {
-      mockConnections.value = [
+      mockHero.value!.connections = [
         {
           id: 1,
+          heroId: 1,
           connectionType: { id: 1, code: 'ally', name: 'Ally' },
           description: 'Simple Connection',
         },
@@ -460,24 +622,18 @@ describe('PersonalDetailsStep', () => {
       expect(wrapper.text()).toContain('Simple Connection');
     });
 
-    it('shows Unknown for connection with invalid type', () => {
-      mockConnections.value = [
+    it('falls back to model type name for unrecognized classifier code', () => {
+      mockHero.value!.connections = [
         {
           id: 1,
+          heroId: 1,
           connectionType: { id: 999, code: 'invalid', name: 'Invalid' },
           description: 'Test',
         },
       ];
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Unknown');
-    });
-
-    it('displays connection type select options', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Ally');
-      expect(wrapper.text()).toContain('Rival');
+      expect(wrapper.text()).toContain('Invalid');
     });
   });
 
@@ -485,7 +641,7 @@ describe('PersonalDetailsStep', () => {
   // Debounced Handler Edge Cases
   // ========================================
   describe('debounced handler edge cases', () => {
-    it('handles null value in biography handler', async () => {
+    it('ignores null value in biography handler', async () => {
       const wrapper = shallowMount(PersonalDetailsStep, {
         global: {
           stubs: {
@@ -496,7 +652,6 @@ describe('PersonalDetailsStep', () => {
               props: ['modelValue'],
               emits: ['update:modelValue'],
             },
-            QSelect: { template: '<div class="q-select" />', props: ['modelValue', 'options'] },
             QList: { template: '<div class="q-list"><slot /></div>' },
             QItem: { template: '<div class="q-item"><slot /></div>' },
             QItemSection: { template: '<div class="q-item-section"><slot /></div>' },
@@ -504,95 +659,37 @@ describe('PersonalDetailsStep', () => {
             QBtn: { template: '<button class="q-btn" />' },
             QBadge: { template: '<span class="q-badge"><slot /></span>' },
             QSeparator: { template: '<hr />' },
+            AddOtherDialog: { name: 'AddOtherDialog', template: '<div />', inheritAttrs: true },
           },
           provide: {
             deletionTracker: {
               trackDeletion: vi.fn(),
               getDeletions: vi.fn(() => []),
               clearDeletions: vi.fn(),
+              clearAll: vi.fn(),
             },
           },
         },
       });
 
-      mockSetBiography.mockClear();
       const nullBtn = wrapper.find('.emit-null');
       await nullBtn.trigger('click');
 
-      // Null values should be ignored
-      expect(mockSetBiography).not.toHaveBeenCalled();
+      // Biography should remain unchanged (null values are ignored)
+      expect(mockHero.value!.biography).toBe('');
     });
 
     it('cancels debounced calls on unmount', () => {
       const wrapper = createWrapper();
+      const cancelsBefore = debounceCancelSpies.map((spy) => spy.mock.calls.length);
+
       wrapper.unmount();
 
-      // Component should unmount without errors - the cancel functions are called
-      expect(true).toBe(true);
-    });
-  });
-
-  // ========================================
-  // Form Input Edge Cases
-  // ========================================
-  describe('form input edge cases', () => {
-    it('adds goal with description when both provided', async () => {
-      const wrapper = createWrapper();
-
-      const inputs = wrapper.findAll('.q-input');
-      // Goal Name input
-      await inputs[2]?.setValue('Test Goal');
-      // Goal Description input
-      await inputs[3]?.setValue('Test Description');
-
-      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add'));
-      await addBtns[0]?.trigger('click');
-
-      expect(mockAddGoal).toHaveBeenCalledWith('Test Goal', 'Test Description');
-    });
-
-    it('adds connection with notes when all provided', async () => {
-      const wrapper = createWrapper();
-
-      const inputs = wrapper.findAll('.q-input');
-      // Connection description
-      await inputs[4]?.setValue('Test Connection');
-      // Connection notes
-      await inputs[5]?.setValue('Test Notes');
-
-      const selects = wrapper.findAll('.q-select');
-      await selects[0]?.setValue(1);
-
-      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add'));
-      await addBtns[1]?.trigger('click');
-
-      expect(mockAddConnection).toHaveBeenCalledWith(1, 'Test Connection', 'Test Notes');
-    });
-
-    it('does not add goal when addGoal called with empty name', async () => {
-      const wrapper = createWrapper();
-
-      // Don't set goal name, just click add
-      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add'));
-      // The button should be disabled, but even if clicked nothing should happen
-      await addBtns[0]?.trigger('click');
-
-      // Button is disabled so addGoal won't be called
-      expect(mockAddGoal).not.toHaveBeenCalled();
-    });
-
-    it('does not add connection when addConnection called without type', async () => {
-      const wrapper = createWrapper();
-
-      const inputs = wrapper.findAll('.q-input');
-      // Set connection description but not type
-      await inputs[4]?.setValue('Test Connection');
-
-      const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add'));
-      // The button should be disabled
-      await addBtns[1]?.trigger('click');
-
-      expect(mockAddConnection).not.toHaveBeenCalled();
+      // Each debounced handler (biography, appearance, notes) should have cancel called
+      expect(debounceCancelSpies.length).toBe(3);
+      debounceCancelSpies.forEach((spy, i) => {
+        expect(spy.mock.calls.length).toBeGreaterThan(cancelsBefore[i]!);
+      });
     });
   });
 });
