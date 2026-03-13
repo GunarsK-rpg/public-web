@@ -449,6 +449,21 @@ describe('PersonalDetailsStep', () => {
       expect(mockHero.value!.goals.length).toBe(0);
       expect(mockTrackDeletion).toHaveBeenCalledWith('goals', 1);
     });
+
+    it('does not track deletion for temp-ID goal', async () => {
+      mockHero.value!.goals = [
+        { id: -1, name: 'Temp Goal', value: 0, status: { id: 1, code: 'active', name: 'Active' } },
+      ];
+      const wrapper = createWrapper();
+
+      const removeBtns = wrapper
+        .findAll('.q-btn')
+        .filter((b) => b.attributes('aria-label')?.includes('Remove goal'));
+      await removeBtns[0]!.trigger('click');
+
+      expect(mockHero.value!.goals.length).toBe(0);
+      expect(mockTrackDeletion).not.toHaveBeenCalled();
+    });
   });
 
   // ========================================
@@ -466,6 +481,26 @@ describe('PersonalDetailsStep', () => {
       expect(mockHero.value!.connections.length).toBe(0);
       expect(mockTrackDeletion).toHaveBeenCalledWith('connections', 1);
     });
+
+    it('does not track deletion for temp-ID connection', async () => {
+      mockHero.value!.connections = [
+        {
+          id: -1,
+          heroId: 1,
+          connectionType: { id: 1, code: 'ally', name: 'Ally' },
+          description: 'Temp Connection',
+        },
+      ];
+      const wrapper = createWrapper();
+
+      const removeBtns = wrapper
+        .findAll('.q-btn')
+        .filter((b) => b.attributes('aria-label')?.includes('Remove connection'));
+      await removeBtns[0]!.trigger('click');
+
+      expect(mockHero.value!.connections.length).toBe(0);
+      expect(mockTrackDeletion).not.toHaveBeenCalled();
+    });
   });
 
   // ========================================
@@ -482,6 +517,26 @@ describe('PersonalDetailsStep', () => {
 
       expect(mockHero.value!.companions.length).toBe(0);
       expect(mockTrackDeletion).toHaveBeenCalledWith('companions', 1);
+    });
+
+    it('does not track deletion for temp-ID companion', async () => {
+      mockHero.value!.companions = [
+        {
+          id: -1,
+          heroId: 1,
+          companionType: { id: 1, code: 'pet', name: 'Pet' },
+          description: 'Temp Companion',
+        },
+      ];
+      const wrapper = createWrapper();
+
+      const removeBtns = wrapper
+        .findAll('.q-btn')
+        .filter((b) => b.attributes('aria-label')?.includes('Remove companion'));
+      await removeBtns[0]!.trigger('click');
+
+      expect(mockHero.value!.companions.length).toBe(0);
+      expect(mockTrackDeletion).not.toHaveBeenCalled();
     });
   });
 

@@ -211,8 +211,8 @@ function handleAddGoal(name: string, description: string | null) {
 }
 
 function removeGoal(goalId: number) {
-  if (goalId > 0) deletionTracker?.trackDeletion('goals', goalId);
-  removeById(heroStore.hero?.goals, goalId);
+  const removed = removeById(heroStore.hero?.goals, goalId);
+  if (removed && goalId > 0) deletionTracker?.trackDeletion('goals', goalId);
 }
 
 // Connection actions
@@ -233,8 +233,8 @@ function handleAddConnection(name: string, description: string | null, typeCode:
 }
 
 function removeConnection(connectionId: number) {
-  if (connectionId > 0) deletionTracker?.trackDeletion('connections', connectionId);
-  removeById(heroStore.hero?.connections, connectionId);
+  const removed = removeById(heroStore.hero?.connections, connectionId);
+  if (removed && connectionId > 0) deletionTracker?.trackDeletion('connections', connectionId);
 }
 
 // Companion actions
@@ -255,7 +255,7 @@ function handleAddCompanion(name: string, description: string | null, typeCode: 
 }
 
 function removeCompanion(companionId: number) {
-  if (companionId > 0) deletionTracker?.trackDeletion('companions', companionId);
-  removeById(heroStore.hero?.companions, companionId);
+  const removed = removeById(heroStore.hero?.companions, companionId);
+  if (removed && companionId > 0) deletionTracker?.trackDeletion('companions', companionId);
 }
 </script>

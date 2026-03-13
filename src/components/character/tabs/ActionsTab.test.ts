@@ -621,7 +621,7 @@ describe('ActionsTab', () => {
       expect(panels.length).toBe(5);
     });
 
-    it('toggleFavorite calls addFavoriteAction for unfavorited classifier action', async () => {
+    it('toggleFavorite calls upsertFavoriteAction for unfavorited classifier action', async () => {
       mockFindFavoriteAction.mockReturnValue(undefined);
       const wrapper = createWrapper();
 

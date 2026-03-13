@@ -54,7 +54,7 @@
                   :key="step"
                   :model-value="goal.value >= step"
                   :disable="readonly"
-                  :aria-label="`${goal.name}: progress step ${step} of 3`"
+                  :aria-label="`${goal.name} (${goal.id}): progress step ${step} of 3`"
                   @update:model-value="handleGoalProgress(goal, step)"
                 />
               </div>
@@ -246,9 +246,11 @@ const showConnectionDialog = ref(false);
 const showCompanionDialog = ref(false);
 
 // Biography fields - computed for consistency with other hero data access
-const heroAppearance = computed(() => heroStore.hero?.appearance ?? 'No appearance description');
-const heroBiography = computed(() => heroStore.hero?.biography ?? 'No biography');
-const heroNotes = computed(() => heroStore.hero?.notes ?? 'No notes');
+const heroAppearance = computed(
+  () => heroStore.hero?.appearance?.trim() || 'No appearance description'
+);
+const heroBiography = computed(() => heroStore.hero?.biography?.trim() || 'No biography');
+const heroNotes = computed(() => heroStore.hero?.notes?.trim() || 'No notes');
 
 // Ancestry & Singer Form
 const ancestry = computed(() => findById(classifiers.ancestries, heroStore.hero?.ancestry?.id));
