@@ -856,7 +856,7 @@ describe('useHeroTalentsStore', () => {
       expect(store.isRadiant).toBe(false);
     });
 
-    it('warns when singer ancestry not found in classifiers', () => {
+    it('warns when singer ancestry not found in classifiers', async () => {
       const store = useHeroTalentsStore();
       const classifierStore = useClassifierStore();
 
@@ -865,7 +865,8 @@ describe('useHeroTalentsStore', () => {
       classifierStore.ancestries.length = 0;
       classifierStore.ancestries.push({ id: 1, code: 'human', name: 'Human' });
 
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { logger } = await import('src/utils/logger');
+      const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
 
       store.setAncestry(1);
 
