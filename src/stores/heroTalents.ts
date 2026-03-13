@@ -8,6 +8,7 @@ import { clamp } from 'src/utils/numberUtils';
 import { extractCodes } from 'src/utils/talentGrants';
 import { SPECIAL } from 'src/utils/specialUtils';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
+import { logger } from 'src/utils/logger';
 import type { Talent } from 'src/types';
 
 export const useHeroTalentsStore = defineStore('heroTalents', () => {
@@ -63,7 +64,7 @@ export const useHeroTalentsStore = defineStore('heroTalents', () => {
     if (!heroStore.hero) return;
     const singerAncestry = findByCode(classifierStore.ancestries, 'singer');
     if (!singerAncestry) {
-      console.warn('Singer ancestry not found in classifiers');
+      logger.warn('Singer ancestry not found in classifiers');
     }
 
     // Remove previous ancestry talents if changing ancestry
