@@ -22,7 +22,7 @@ vi.mock('src/stores/hero', () => ({
       return mockFavoriteActions.value;
     },
     findFavoriteAction: mockFindFavoriteAction,
-    addFavoriteAction: mockAddFavoriteAction,
+    upsertFavoriteAction: mockAddFavoriteAction,
     removeFavoriteAction: mockRemoveFavoriteAction,
   }),
 }));
@@ -574,7 +574,7 @@ describe('ActionsTab', () => {
     });
 
     it('renders favorites tab when favorites exist', () => {
-      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      mockFavoriteActions.value = [{ id: 1, heroId: 1, actionId: 1, heroEquipmentId: null }];
       const wrapper = createWrapper();
 
       const tabs = wrapper.findAll('.q-tab');
@@ -582,7 +582,7 @@ describe('ActionsTab', () => {
     });
 
     it('favorites tab appears before other tabs', () => {
-      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      mockFavoriteActions.value = [{ id: 1, heroId: 1, actionId: 1, heroEquipmentId: null }];
       const wrapper = createWrapper();
 
       const tabs = wrapper.findAll('.q-tab');
@@ -590,7 +590,7 @@ describe('ActionsTab', () => {
     });
 
     it('renders favorites tab panel when favorites exist', () => {
-      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      mockFavoriteActions.value = [{ id: 1, heroId: 1, actionId: 1, heroEquipmentId: null }];
       const wrapper = createWrapper();
 
       const panels = wrapper.findAll('.q-tab-panel');
@@ -598,7 +598,7 @@ describe('ActionsTab', () => {
     });
 
     it('has 5 panels (favorites + 4 action types) when favorites exist', () => {
-      mockFavoriteActions.value = [{ id: 1, actionId: 1, heroEquipmentId: null }];
+      mockFavoriteActions.value = [{ id: 1, heroId: 1, actionId: 1, heroEquipmentId: null }];
       const wrapper = createWrapper();
 
       const panels = wrapper.findAll('.q-tab-panel');
@@ -618,7 +618,7 @@ describe('ActionsTab', () => {
     });
 
     it('toggleFavorite calls removeFavoriteAction for favorited classifier action', async () => {
-      const existingFavorite = { id: 42, actionId: 1, heroEquipmentId: null };
+      const existingFavorite = { id: 42, heroId: 1, actionId: 1, heroEquipmentId: null };
       mockFindFavoriteAction.mockReturnValue(existingFavorite);
       const wrapper = createWrapper();
 

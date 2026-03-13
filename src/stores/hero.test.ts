@@ -852,18 +852,24 @@ describe('useHeroStore', () => {
     it('returns the row for a matching classifier action', async () => {
       const store = useHeroStore();
       await store.loadHero(1);
-      store.hero!.favoriteActions = [{ id: 10, actionId: 42, heroEquipmentId: null }];
+      store.hero!.favoriteActions = [{ id: 10, heroId: 1, actionId: 42, heroEquipmentId: null }];
 
-      expect(store.findFavoriteAction(42)).toEqual({ id: 10, actionId: 42, heroEquipmentId: null });
+      expect(store.findFavoriteAction(42)).toEqual({
+        id: 10,
+        heroId: 1,
+        actionId: 42,
+        heroEquipmentId: null,
+      });
     });
 
     it('returns the row for a matching equipment action instance', async () => {
       const store = useHeroStore();
       await store.loadHero(1);
-      store.hero!.favoriteActions = [{ id: 11, actionId: 5, heroEquipmentId: 99 }];
+      store.hero!.favoriteActions = [{ id: 11, heroId: 1, actionId: 5, heroEquipmentId: 99 }];
 
       expect(store.findFavoriteAction(5, 99)).toEqual({
         id: 11,
+        heroId: 1,
         actionId: 5,
         heroEquipmentId: 99,
       });
@@ -872,21 +878,21 @@ describe('useHeroStore', () => {
     it('returns undefined when heroEquipmentId does not match', async () => {
       const store = useHeroStore();
       await store.loadHero(1);
-      store.hero!.favoriteActions = [{ id: 11, actionId: 5, heroEquipmentId: 99 }];
+      store.hero!.favoriteActions = [{ id: 11, heroId: 1, actionId: 5, heroEquipmentId: 99 }];
 
       expect(store.findFavoriteAction(5, 100)).toBeUndefined();
     });
   });
 
-  describe('addFavoriteAction', () => {
+  describe('upsertFavoriteAction', () => {
     it('calls upsertSubResource and pushes result to favoriteActions', async () => {
       mockUpsertSubResource.mockResolvedValueOnce({
-        data: { id: 20, actionId: 7, heroEquipmentId: null },
+        data: { id: 20, heroId: 1, actionId: 7, heroEquipmentId: null },
       });
 
       const store = useHeroStore();
       await store.loadHero(1);
-      await store.addFavoriteAction(7);
+      await store.upsertFavoriteAction({ heroId: 1, actionId: 7, heroEquipmentId: null });
 
       expect(mockUpsertSubResource).toHaveBeenCalledWith(1, 'favorites', {
         heroId: 1,
@@ -895,6 +901,7 @@ describe('useHeroStore', () => {
       });
       expect(store.hero?.favoriteActions).toContainEqual({
         id: 20,
+        heroId: 1,
         actionId: 7,
         heroEquipmentId: null,
       });
@@ -905,7 +912,7 @@ describe('useHeroStore', () => {
 
       const store = useHeroStore();
       await store.loadHero(1);
-      await store.addFavoriteAction(7);
+      await store.upsertFavoriteAction({ heroId: 1, actionId: 7, heroEquipmentId: null });
 
       expect(store.error).toBeTruthy();
     });
@@ -917,7 +924,7 @@ describe('useHeroStore', () => {
 
       const store = useHeroStore();
       await store.loadHero(1);
-      store.hero!.favoriteActions = [{ id: 30, actionId: 8, heroEquipmentId: null }];
+      store.hero!.favoriteActions = [{ id: 30, heroId: 1, actionId: 8, heroEquipmentId: null }];
 
       await store.removeFavoriteAction(30);
 
@@ -930,7 +937,7 @@ describe('useHeroStore', () => {
 
       const store = useHeroStore();
       await store.loadHero(1);
-      store.hero!.favoriteActions = [{ id: 30, actionId: 8, heroEquipmentId: null }];
+      store.hero!.favoriteActions = [{ id: 30, heroId: 1, actionId: 8, heroEquipmentId: null }];
 
       await store.removeFavoriteAction(30);
 
@@ -946,8 +953,8 @@ describe('useHeroStore', () => {
       await store.loadHero(1);
       store.hero!.equipment = [{ id: 55 } as never];
       store.hero!.favoriteActions = [
-        { id: 40, actionId: 3, heroEquipmentId: 55 },
-        { id: 41, actionId: 4, heroEquipmentId: null },
+        { id: 40, heroId: 1, actionId: 3, heroEquipmentId: 55 },
+        { id: 41, heroId: 1, actionId: 4, heroEquipmentId: null },
       ];
 
       await store.removeEquipment(55);

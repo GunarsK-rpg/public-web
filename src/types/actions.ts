@@ -36,11 +36,16 @@ export interface EquipmentActionInstance {
   effectiveSpecial: SpecialEntry[];
 }
 
-/** Hero favorite action (heroes.favorite_actions) */
-export interface HeroFavoriteAction {
-  id: number;
+/** Hero favorite action - upsert payload */
+export interface HeroFavoriteActionBase {
+  heroId: number;
   actionId: number | null;
   heroEquipmentId: number | null;
+}
+
+/** Hero favorite action - API response */
+export interface HeroFavoriteAction extends HeroFavoriteActionBase {
+  id: number;
 }
 
 /** Type guard: check if an action entry is an equipment action instance */

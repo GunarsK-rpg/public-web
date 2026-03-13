@@ -30,115 +30,40 @@
 
     <!-- Goals -->
     <div class="text-subtitle2 q-mb-sm">Goals</div>
-    <q-list v-if="goals.length > 0" bordered separator class="q-mb-sm">
-      <q-item v-for="goal in goals" :key="goal.id">
-        <q-item-section>
-          <q-item-label>{{ goal.name }}</q-item-label>
-          <q-item-label v-if="goal.description" caption>{{ goal.description }}</q-item-label>
-        </q-item-section>
-        <q-item-section side>
-          <q-btn
-            flat
-            round
-            color="negative"
-            size="sm"
-            :aria-label="`Remove goal: ${goal.name}`"
-            @click="removeGoal(goal.id)"
-            ><Trash2 :size="20"
-          /></q-btn>
-        </q-item-section>
-      </q-item>
-    </q-list>
-
-    <div class="row q-col-gutter-sm q-mb-md">
-      <div class="col-12 col-sm-6">
-        <q-input v-model="newGoalName" label="Goal Name" outlined dense maxlength="100" />
-      </div>
-      <div class="col-12 col-sm-4">
-        <q-input
-          v-model="newGoalDescription"
-          label="Description (Optional)"
-          outlined
-          dense
-          maxlength="500"
-        />
-      </div>
-      <div class="col-12 col-sm-2">
-        <q-btn color="primary" :disable="!newGoalName" @click="addGoal"
-          ><Plus :size="20" class="on-left" />Add</q-btn
-        >
-      </div>
-    </div>
+    <EditableItemList
+      :items="goalItems"
+      item-label="goal"
+      add-label="Add Goal"
+      bordered
+      @add="showGoalDialog = true"
+      @remove="removeGoal"
+    />
 
     <q-separator class="q-my-md" />
 
     <!-- Connections -->
     <div class="text-subtitle2 q-mb-sm">Connections</div>
-    <q-list v-if="connections.length > 0" bordered separator class="q-mb-sm">
-      <q-item v-for="conn in connections" :key="conn.id">
-        <q-item-section>
-          <q-item-label>{{ conn.description }}</q-item-label>
-          <q-item-label caption>
-            <q-badge color="grey-7">
-              {{ findById(classifiers.connectionTypes, conn.connectionType.id)?.name ?? 'Unknown' }}
-            </q-badge>
-            <span v-if="conn.notes" class="q-ml-sm">{{ conn.notes }}</span>
-          </q-item-label>
-        </q-item-section>
-        <q-item-section side>
-          <q-btn
-            flat
-            round
-            color="negative"
-            size="sm"
-            :aria-label="`Remove connection: ${conn.description}`"
-            @click="removeConnection(conn.id)"
-            ><Trash2 :size="20"
-          /></q-btn>
-        </q-item-section>
-      </q-item>
-    </q-list>
+    <EditableItemList
+      :items="connectionItems"
+      item-label="connection"
+      add-label="Add Connection"
+      bordered
+      @add="showConnectionDialog = true"
+      @remove="removeConnection"
+    />
 
-    <div class="row q-col-gutter-sm q-mb-md">
-      <div class="col-12 col-sm-4">
-        <q-input
-          v-model="newConnectionDescription"
-          label="Name/Description"
-          outlined
-          dense
-          maxlength="200"
-        />
-      </div>
-      <div class="col-12 col-sm-3">
-        <q-select
-          v-model="newConnectionType"
-          :options="connectionTypeOptions"
-          label="Type"
-          outlined
-          dense
-          emit-value
-          map-options
-          behavior="menu"
-        />
-      </div>
-      <div class="col-12 col-sm-3">
-        <q-input
-          v-model="newConnectionNotes"
-          label="Notes (Optional)"
-          outlined
-          dense
-          maxlength="500"
-        />
-      </div>
-      <div class="col-12 col-sm-2">
-        <q-btn
-          color="primary"
-          :disable="!newConnectionDescription || !newConnectionType"
-          @click="addConnection"
-          ><Plus :size="20" class="on-left" />Add</q-btn
-        >
-      </div>
-    </div>
+    <q-separator class="q-my-md" />
+
+    <!-- Companions -->
+    <div class="text-subtitle2 q-mb-sm">Companions</div>
+    <EditableItemList
+      :items="companionItems"
+      item-label="companion"
+      add-label="Add Companion"
+      bordered
+      @add="showCompanionDialog = true"
+      @remove="removeCompanion"
+    />
 
     <q-separator class="q-my-md" />
 
@@ -152,43 +77,75 @@
       maxlength="5000"
       @update:model-value="setNotes"
     />
+
+    <AddOtherDialog v-model="showGoalDialog" title="Add Goal" @add="handleAddGoal" />
+
+    <AddOtherDialog
+      v-model="showConnectionDialog"
+      title="Add Connection"
+      type-label="Connection type"
+      :types="classifiers.connectionTypes"
+      @add="handleAddConnection"
+    />
+
+    <AddOtherDialog
+      v-model="showCompanionDialog"
+      title="Add Companion"
+      type-label="Companion type"
+      :types="classifiers.companionTypes"
+      @add="handleAddCompanion"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, inject, onUnmounted } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
-import { useHeroDetailsStore } from 'src/stores/heroDetails';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { debounce } from 'src/utils/debounce';
-import { findById } from 'src/utils/arrayUtils';
-import { Trash2, Plus } from 'lucide-vue-next';
+import { findByCode, removeById, toClassifierRef } from 'src/utils/arrayUtils';
+import { trimText, trimName } from 'src/utils/stringUtils';
+import EditableItemList from 'src/components/shared/EditableItemList.vue';
+import AddOtherDialog from 'src/components/character/AddOtherDialog.vue';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 
 const heroStore = useHeroStore();
-const detailsStore = useHeroDetailsStore();
 const classifiers = useClassifierStore();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
-// Goals and connections from hero
-const goals = computed(() => heroStore.goals);
-const connections = computed(() => heroStore.connections);
-
-// New goal form
-const newGoalName = ref('');
-const newGoalDescription = ref('');
-
-// New connection form
-const newConnectionDescription = ref('');
-const newConnectionType = ref<number | null>(null);
-const newConnectionNotes = ref('');
-
-// Connection type options from classifiers
-const connectionTypeOptions = computed(() =>
-  classifiers.connectionTypes.map((t) => ({ value: t.id, label: t.name }))
+// Normalized list items
+const goalItems = computed(() =>
+  heroStore.goals.map((g) => ({
+    id: g.id,
+    name: g.name,
+    description: g.description,
+  }))
 );
 
-// Factory for creating debounced text input handlers
+const connectionItems = computed(() =>
+  heroStore.connections.map((c) => ({
+    id: c.id,
+    name: c.description ?? 'Connection',
+    description: c.notes,
+    typeName: findByCode(classifiers.connectionTypes, c.connectionType.code)?.name ?? 'Unknown',
+  }))
+);
+
+const companionItems = computed(() =>
+  heroStore.companions.map((c) => ({
+    id: c.id,
+    name: c.description ?? 'Companion',
+    description: c.notes,
+    typeName: findByCode(classifiers.companionTypes, c.companionType.code)?.name ?? 'Unknown',
+  }))
+);
+
+// Dialog state
+const showGoalDialog = ref(false);
+const showConnectionDialog = ref(false);
+const showCompanionDialog = ref(false);
+
+// Debounced text setters
 function createDebouncedHandler(setter: (val: string) => void) {
   const debouncedFn = debounce(setter, 300);
   const handler = (val: string | number | null) => {
@@ -199,51 +156,93 @@ function createDebouncedHandler(setter: (val: string) => void) {
   return { handler, cancel: debouncedFn.cancel };
 }
 
-// Create debounced handlers for text inputs
-const biographyHandler = createDebouncedHandler((val) => detailsStore.setBiography(val));
-const appearanceHandler = createDebouncedHandler((val) => detailsStore.setAppearance(val));
-const notesHandler = createDebouncedHandler((val) => detailsStore.setNotes(val));
+const biographyHandler = createDebouncedHandler((val) => {
+  if (!heroStore.hero) return;
+  heroStore.hero.biography = trimText(val);
+});
+const appearanceHandler = createDebouncedHandler((val) => {
+  if (!heroStore.hero) return;
+  heroStore.hero.appearance = trimText(val);
+});
+const notesHandler = createDebouncedHandler((val) => {
+  if (!heroStore.hero) return;
+  heroStore.hero.notes = trimText(val);
+});
 
-// Export handlers for template use
 const setBiography = biographyHandler.handler;
 const setAppearance = appearanceHandler.handler;
 const setNotes = notesHandler.handler;
 
-// Cancel pending debounced calls on unmount to prevent memory leaks
 onUnmounted(() => {
   biographyHandler.cancel();
   appearanceHandler.cancel();
   notesHandler.cancel();
 });
 
-function addGoal() {
-  if (newGoalName.value) {
-    detailsStore.addGoal(newGoalName.value, newGoalDescription.value || undefined);
-    newGoalName.value = '';
-    newGoalDescription.value = '';
-  }
+// Goal actions
+function handleAddGoal(name: string, description: string | null) {
+  if (!heroStore.hero) return;
+  const activeStatus = findByCode(classifiers.goalStatuses, 'active');
+  if (!activeStatus) return;
+  const trimmedName = trimName(name);
+  if (!trimmedName) return;
+  const trimmedDesc = description ? trimText(description) : undefined;
+  heroStore.hero.goals.push({
+    id: heroStore.nextTempId(),
+    heroId: heroStore.hero.id,
+    name: trimmedName,
+    ...(trimmedDesc && { description: trimmedDesc }),
+    value: 0,
+    status: toClassifierRef(activeStatus),
+  });
 }
 
 function removeGoal(goalId: number) {
   deletionTracker?.trackDeletion('goals', goalId);
-  detailsStore.removeGoalById(goalId);
+  removeById(heroStore.hero?.goals, goalId);
 }
 
-function addConnection() {
-  if (newConnectionDescription.value && newConnectionType.value) {
-    detailsStore.addConnection(
-      newConnectionType.value,
-      newConnectionDescription.value,
-      newConnectionNotes.value || undefined
-    );
-    newConnectionDescription.value = '';
-    newConnectionType.value = null;
-    newConnectionNotes.value = '';
-  }
+// Connection actions
+function handleAddConnection(name: string, description: string | null, typeCode: string | null) {
+  if (!heroStore.hero || !typeCode) return;
+  const connType = findByCode(classifiers.connectionTypes, typeCode);
+  if (!connType) return;
+  const trimmedDesc = trimText(name);
+  if (!trimmedDesc) return;
+  const trimmedNotes = description ? trimText(description) : undefined;
+  heroStore.hero.connections.push({
+    id: heroStore.nextTempId(),
+    heroId: heroStore.hero.id,
+    connectionType: toClassifierRef(connType),
+    description: trimmedDesc,
+    ...(trimmedNotes ? { notes: trimmedNotes } : {}),
+  });
 }
 
 function removeConnection(connectionId: number) {
   deletionTracker?.trackDeletion('connections', connectionId);
-  detailsStore.removeConnectionById(connectionId);
+  removeById(heroStore.hero?.connections, connectionId);
+}
+
+// Companion actions
+function handleAddCompanion(name: string, description: string | null, typeCode: string | null) {
+  if (!heroStore.hero || !typeCode) return;
+  const compType = findByCode(classifiers.companionTypes, typeCode);
+  if (!compType) return;
+  const trimmedDesc = trimText(name);
+  if (!trimmedDesc) return;
+  const trimmedNotes = description ? trimText(description) : undefined;
+  heroStore.hero.companions.push({
+    id: heroStore.nextTempId(),
+    heroId: heroStore.hero.id,
+    companionType: toClassifierRef(compType),
+    description: trimmedDesc,
+    ...(trimmedNotes ? { notes: trimmedNotes } : {}),
+  });
+}
+
+function removeCompanion(companionId: number) {
+  deletionTracker?.trackDeletion('companions', companionId);
+  removeById(heroStore.hero?.companions, companionId);
 }
 </script>

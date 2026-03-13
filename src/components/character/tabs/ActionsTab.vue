@@ -169,7 +169,12 @@ async function toggleFavorite(entry: ActionEntry): Promise<void> {
   if (existing) {
     await heroStore.removeFavoriteAction(existing.id);
   } else {
-    await heroStore.addFavoriteAction(actionId, heroEquipmentId);
+    if (!heroStore.hero) return;
+    await heroStore.upsertFavoriteAction({
+      heroId: heroStore.hero.id,
+      actionId,
+      heroEquipmentId,
+    });
   }
 }
 

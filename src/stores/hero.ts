@@ -1,8 +1,16 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { Hero, HeroSheet, HeroEquipment, HeroFavoriteAction, HeroCondition } from 'src/types';
+import type {
+  Hero,
+  HeroSheet,
+  HeroEquipment,
+  HeroFavoriteAction,
+  HeroFavoriteActionBase,
+  HeroCondition,
+} from 'src/types';
 import type { HeroConditionBase, HeroInjury, HeroInjuryBase, Injury } from 'src/types/conditions';
-import type { HeroGoal } from 'src/types/goals';
+import type { HeroGoal, HeroGoalBase, HeroConnectionBase, HeroConnection } from 'src/types/goals';
+import type { HeroCompanion, HeroCompanionBase } from 'src/types/companions';
 import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import heroService from 'src/services/heroService';
@@ -431,91 +439,73 @@ export const useHeroStore = defineStore('hero', () => {
     );
   }
 
-  async function addFavoriteAction(
-    actionId: number | null,
-    heroEquipmentId: number | null = null
-  ): Promise<void> {
-    if (!hero.value) return;
-    const currentHeroId = hero.value.id;
-    savingCount.value++;
-    try {
-      const response = await heroService.upsertSubResource<HeroFavoriteAction>(
-        currentHeroId,
-        'favorites',
-        { heroId: currentHeroId, actionId, heroEquipmentId }
-      );
-      if (!hero.value || hero.value.id !== currentHeroId) return;
-      const idx = hero.value.favoriteActions.findIndex((f) => f.id === response.data.id);
-      if (idx !== -1) {
-        hero.value.favoriteActions[idx] = response.data;
-      } else {
-        hero.value.favoriteActions.push(response.data);
-      }
-    } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to add favorite' });
-    } finally {
-      savingCount.value--;
-    }
-  }
+  const { upsert: upsertFavoriteAction, remove: removeFavoriteAction } = createSubResourceActions<
+    HeroFavoriteActionBase,
+    HeroFavoriteAction
+  >('favorites', 'favoriteActions', 'favorite');
 
-  async function removeFavoriteAction(favoriteId: number): Promise<void> {
-    if (!hero.value) return;
-    const currentHeroId = hero.value.id;
-    savingCount.value++;
-    try {
-      await heroService.deleteSubResource(currentHeroId, 'favorites', favoriteId);
-      if (!hero.value || hero.value.id !== currentHeroId) return;
-      hero.value.favoriteActions = hero.value.favoriteActions.filter((f) => f.id !== favoriteId);
-    } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to remove favorite' });
-    } finally {
-      savingCount.value--;
+  // ===================
+  // SUB-RESOURCE FACTORY
+  // ===================
+  function createSubResourceActions<TPayload, TResponse extends { id: number }>(
+    resource: string,
+    field: keyof HeroSheet,
+    label: string
+  ) {
+    async function upsert(payload: TPayload): Promise<TResponse | null> {
+      if (!hero.value) return null;
+      const currentHeroId = hero.value.id;
+      savingCount.value++;
+      try {
+        const response = await heroService.upsertSubResource<TResponse>(
+          currentHeroId,
+          resource,
+          payload
+        );
+        if (!hero.value || hero.value.id !== currentHeroId) return null;
+        const arr = hero.value[field] as TResponse[];
+        const idx = arr.findIndex((item) => item.id === response.data.id);
+        if (idx !== -1) {
+          arr[idx] = response.data;
+        } else {
+          arr.push(response.data);
+        }
+        return response.data;
+      } catch (err) {
+        handleError(err, { errorRef: error, message: `Failed to save ${label}` });
+        return null;
+      } finally {
+        savingCount.value--;
+      }
     }
+
+    async function remove(itemId: number): Promise<void> {
+      if (!hero.value) return;
+      const currentHeroId = hero.value.id;
+      savingCount.value++;
+      try {
+        await heroService.deleteSubResource(currentHeroId, resource, itemId);
+        if (!hero.value || hero.value.id !== currentHeroId) return;
+        const arr = hero.value[field] as TResponse[];
+        const idx = arr.findIndex((item) => item.id === itemId);
+        if (idx !== -1) arr.splice(idx, 1);
+      } catch (err) {
+        handleError(err, { errorRef: error, message: `Failed to remove ${label}` });
+      } finally {
+        savingCount.value--;
+      }
+    }
+
+    return { upsert, remove };
   }
 
   // ===================
   // CONDITIONS (sheet)
   // ===================
-  async function upsertCondition(payload: HeroConditionBase): Promise<HeroCondition | null> {
-    if (!hero.value) return null;
-    const currentHeroId = hero.value.id;
-    savingCount.value++;
-    try {
-      const response = await heroService.upsertSubResource<HeroCondition>(
-        currentHeroId,
-        'conditions',
-        payload
-      );
-      if (!hero.value || hero.value.id !== currentHeroId) return null;
-      const idx = hero.value.conditions.findIndex((c) => c.id === response.data.id);
-      if (idx !== -1) {
-        hero.value.conditions[idx] = response.data;
-      } else {
-        hero.value.conditions.push(response.data);
-      }
-      return response.data;
-    } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to save condition' });
-      return null;
-    } finally {
-      savingCount.value--;
-    }
-  }
-
-  async function removeCondition(conditionId: number): Promise<void> {
-    if (!hero.value) return;
-    const currentHeroId = hero.value.id;
-    savingCount.value++;
-    try {
-      await heroService.deleteSubResource(currentHeroId, 'conditions', conditionId);
-      if (!hero.value || hero.value.id !== currentHeroId) return;
-      hero.value.conditions = hero.value.conditions.filter((c) => c.id !== conditionId);
-    } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to remove condition' });
-    } finally {
-      savingCount.value--;
-    }
-  }
+  const { upsert: upsertCondition, remove: removeCondition } = createSubResourceActions<
+    HeroConditionBase,
+    HeroCondition
+  >('conditions', 'conditions', 'condition');
 
   // ===================
   // INJURIES (sheet)
@@ -616,6 +606,21 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
+  const { upsert: upsertGoal, remove: removeGoal } = createSubResourceActions<
+    HeroGoalBase,
+    HeroGoal
+  >('goals', 'goals', 'goal');
+
+  const { upsert: upsertConnection, remove: removeConnection } = createSubResourceActions<
+    HeroConnectionBase,
+    HeroConnection
+  >('connections', 'connections', 'connection');
+
+  const { upsert: upsertCompanion, remove: removeCompanion } = createSubResourceActions<
+    HeroCompanionBase,
+    HeroCompanion
+  >('companions', 'companions', 'companion');
+
   async function deleteHero(): Promise<boolean> {
     if (!hero.value || hero.value.id === 0) return false;
     try {
@@ -684,7 +689,7 @@ export const useHeroStore = defineStore('hero', () => {
 
     // Favorite actions
     findFavoriteAction,
-    addFavoriteAction,
+    upsertFavoriteAction,
     removeFavoriteAction,
 
     // Conditions (sheet)
@@ -697,5 +702,15 @@ export const useHeroStore = defineStore('hero', () => {
 
     // Goals (sheet)
     updateGoalValue,
+    upsertGoal,
+    removeGoal,
+
+    // Connections (sheet)
+    upsertConnection,
+    removeConnection,
+
+    // Companions (sheet)
+    upsertCompanion,
+    removeCompanion,
   };
 });
