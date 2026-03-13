@@ -659,7 +659,7 @@ describe('PersonalDetailsStep', () => {
             QBtn: { template: '<button class="q-btn" />' },
             QBadge: { template: '<span class="q-badge"><slot /></span>' },
             QSeparator: { template: '<hr />' },
-            AddOtherDialog: { template: '<div />' },
+            AddOtherDialog: { name: 'AddOtherDialog', template: '<div />', inheritAttrs: true },
           },
           provide: {
             deletionTracker: {
