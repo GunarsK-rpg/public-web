@@ -212,10 +212,12 @@ async function handleUpdateProfile(): Promise<void> {
   profileMessage.value = '';
   profileError.value = false;
 
+  const trimmedEmail = profileEmail.value.trim();
+  const trimmedDisplayName = profileDisplayName.value.trim();
+
   const data: { email?: string; display_name?: string } = {};
-  if (profileEmail.value !== authStore.email) data.email = profileEmail.value;
-  if (profileDisplayName.value !== authStore.displayName)
-    data.display_name = profileDisplayName.value;
+  if (trimmedEmail !== authStore.email) data.email = trimmedEmail;
+  if (trimmedDisplayName !== authStore.displayName) data.display_name = trimmedDisplayName;
 
   if (Object.keys(data).length === 0) {
     profileLoading.value = false;
