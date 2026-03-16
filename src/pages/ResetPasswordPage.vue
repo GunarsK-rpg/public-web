@@ -75,6 +75,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import authService from 'src/services/auth';
+import { extractQueryParam } from 'src/utils/routeUtils';
 import axios from 'axios';
 
 const route = useRoute();
@@ -88,15 +89,8 @@ const tokenMissing = ref(false);
 const error = ref<string | null>(null);
 let resetToken = '';
 
-function extractToken(): string | null {
-  const raw = route.query.token;
-  if (Array.isArray(raw)) return typeof raw[0] === 'string' && raw[0] ? raw[0] : null;
-  if (typeof raw !== 'string' || !raw) return null;
-  return raw;
-}
-
 onMounted(() => {
-  const token = extractToken();
+  const token = extractQueryParam(route.query, 'token');
   if (!token) {
     tokenMissing.value = true;
     return;
