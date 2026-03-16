@@ -229,11 +229,9 @@ async function handleUpdateProfile(): Promise<void> {
       profileMessage.value += ' Email verification has been reset.';
     }
     // Force new JWT with updated claims, then refresh store
-    try {
-      await refreshToken();
+    const refreshed = await refreshToken();
+    if (refreshed) {
       await authStore.checkAuthStatus();
-    } catch {
-      // Token refresh is best-effort; profile was already saved
     }
     profileEmail.value = authStore.email;
     profileDisplayName.value = authStore.displayName;

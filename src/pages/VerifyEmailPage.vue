@@ -7,7 +7,13 @@
       </q-card-section>
 
       <q-card-section class="text-center q-pa-lg">
-        <q-spinner-dots v-if="loading" size="40px" color="primary" />
+        <q-spinner-dots
+          v-if="loading"
+          size="40px"
+          color="primary"
+          role="status"
+          aria-label="Verifying email"
+        />
 
         <div v-else-if="success" class="text-positive">
           <q-icon name="check_circle" size="48px" class="q-mb-sm" />
@@ -75,7 +81,7 @@ onMounted(async () => {
   const remainingQuery = Object.fromEntries(
     Object.entries(route.query).filter(([key]) => key !== 'token')
   );
-  void router.replace({ ...route, query: remainingQuery });
+  void router.replace({ query: remainingQuery });
 
   try {
     await authService.verifyEmail(token);
