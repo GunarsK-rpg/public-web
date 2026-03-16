@@ -22,6 +22,9 @@ export function setRouterInstance(router: Router): void {
 export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false);
   const username = ref('');
+  const email = ref('');
+  const emailVerified = ref(false);
+  const displayName = ref('');
   const scopes = ref<Record<string, string>>({});
   const loading = ref(false);
 
@@ -40,10 +43,23 @@ export const useAuthStore = defineStore('auth', () => {
   const canEdit = (resource: string) => hasPermission(resource, Level.EDIT);
   const canDelete = (resource: string) => hasPermission(resource, Level.DELETE);
 
+  function hydrateProfile(data: {
+    email?: string;
+    email_verified?: boolean;
+    display_name?: string;
+  }): void {
+    email.value = data.email ?? '';
+    emailVerified.value = data.email_verified ?? false;
+    displayName.value = data.display_name ?? '';
+  }
+
   function resetAuthState(): void {
     clearProactiveRefresh();
     isAuthenticated.value = false;
     username.value = '';
+    email.value = '';
+    emailVerified.value = false;
+    displayName.value = '';
     scopes.value = {};
     clearUserContext();
   }
@@ -69,6 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       isAuthenticated.value = true;
       username.value = response.data.username ?? '';
+      hydrateProfile(response.data);
       scopes.value = response.data.scopes ?? {};
       scheduleProactiveRefresh(response.data.ttl_seconds);
       return true;
@@ -96,6 +113,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authService.login(loginUsername, password, rememberMe);
       isAuthenticated.value = true;
       username.value = response.data.username || loginUsername;
+      hydrateProfile(response.data);
       scopes.value = response.data.scopes || {};
 
       logger.info('User logged in', { username: loginUsername });
@@ -147,6 +165,9 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     isAuthenticated,
     username,
+    email,
+    emailVerified,
+    displayName,
     scopes,
     loading,
     hasPermission,

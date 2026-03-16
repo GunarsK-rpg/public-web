@@ -93,6 +93,26 @@ const routes: RouteRecordRaw[] = [
         props: true,
         meta: { title: 'Edit Character' },
       },
+      {
+        path: 'account',
+        name: 'account',
+        component: () => import('pages/AccountPage.vue'),
+        meta: { title: 'Account Settings' },
+      },
+    ],
+  },
+
+  // Verify email (public - uses AuthLayout regardless of login state)
+  {
+    path: '/verify-email',
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'verify-email',
+        component: () => import('pages/VerifyEmailPage.vue'),
+        meta: { title: 'Verify Email', public: true },
+      },
     ],
   },
 

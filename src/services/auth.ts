@@ -5,6 +5,9 @@ export interface LoginResponse {
   expires_in: number;
   user_id?: number;
   username?: string;
+  email?: string;
+  email_verified?: boolean;
+  display_name?: string;
   scopes?: Record<string, string>;
 }
 
@@ -18,7 +21,18 @@ export interface TokenStatusResponse {
   valid: boolean;
   ttl_seconds: number;
   username?: string;
+  email?: string;
+  email_verified?: boolean;
+  display_name?: string;
   scopes?: Record<string, string>;
+}
+
+export interface ProfileResponse {
+  user_id: number;
+  username: string;
+  email: string;
+  email_verified: boolean;
+  display_name: string | null;
 }
 
 export default {
@@ -36,5 +50,20 @@ export default {
   },
   register(data: { username: string; email: string; password: string }) {
     return authApi.post<RegisterResponse>('/register', { ...data, role_code: 'rpg-player' });
+  },
+  sendVerification() {
+    return authApi.post('/send-verification');
+  },
+  verifyEmail(token: string) {
+    return authApi.post('/verify-email', { token });
+  },
+  updateProfile(data: { email?: string; display_name?: string }) {
+    return authApi.patch<ProfileResponse>('/profile', data);
+  },
+  changePassword(currentPassword: string, newPassword: string) {
+    return authApi.post('/change-password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    });
   },
 };
