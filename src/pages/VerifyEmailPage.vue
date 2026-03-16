@@ -23,18 +23,14 @@
       </q-card-section>
 
       <q-card-section v-if="!loading" class="text-center">
-        <q-btn
-          :label="success ? 'Continue' : 'Go to Account'"
-          color="primary"
-          :to="{ name: success ? 'my-characters' : 'account' }"
-        />
+        <q-btn :label="ctaLabel" color="primary" :to="{ name: ctaRoute }" />
       </q-card-section>
     </q-card>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import authService from 'src/services/auth';
 import { refreshToken } from 'src/services/tokenRefresh';
@@ -48,6 +44,16 @@ const authStore = useAuthStore();
 const loading = ref(true);
 const success = ref(false);
 const errorMessage = ref('');
+
+const ctaLabel = computed(() => {
+  if (success.value) return 'Continue';
+  return authStore.isAuthenticated ? 'Go to Account' : 'Go to Login';
+});
+
+const ctaRoute = computed(() => {
+  if (success.value) return 'my-characters';
+  return authStore.isAuthenticated ? 'account' : 'login';
+});
 
 function extractToken(): string | null {
   const raw = route.query.token;
