@@ -16,13 +16,13 @@
         />
 
         <div v-else-if="success" class="text-positive">
-          <q-icon name="check_circle" size="48px" class="q-mb-sm" />
+          <q-icon name="check_circle" size="48px" class="q-mb-sm" aria-hidden="true" />
           <div class="text-h6">Email verified</div>
           <div class="text-body2 q-mt-sm">Your email has been successfully verified.</div>
         </div>
 
         <div v-else class="text-negative">
-          <q-icon name="error" size="48px" class="q-mb-sm" />
+          <q-icon name="error" size="48px" class="q-mb-sm" aria-hidden="true" />
           <div class="text-h6">Verification failed</div>
           <div class="text-body2 q-mt-sm">{{ errorMessage }}</div>
         </div>

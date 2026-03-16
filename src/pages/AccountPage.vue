@@ -83,7 +83,7 @@
               color="primary"
               :loading="profileLoading"
               :disable="
-                profileEmail === authStore.email && profileDisplayName === authStore.displayName
+                trimmedEmail === authStore.email && trimmedDisplayName === authStore.displayName
               "
             />
 
@@ -166,7 +166,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuthStore } from 'stores/auth';
 import authService from 'src/services/auth';
 import { refreshToken } from 'src/services/tokenRefresh';
@@ -203,6 +203,8 @@ async function handleSendVerification(): Promise<void> {
 // Profile update
 const profileEmail = ref(authStore.email);
 const profileDisplayName = ref(authStore.displayName);
+const trimmedEmail = computed(() => profileEmail.value.trim());
+const trimmedDisplayName = computed(() => profileDisplayName.value.trim());
 const profileLoading = ref(false);
 const profileMessage = ref('');
 const profileError = ref(false);
@@ -212,12 +214,10 @@ async function handleUpdateProfile(): Promise<void> {
   profileMessage.value = '';
   profileError.value = false;
 
-  const trimmedEmail = profileEmail.value.trim();
-  const trimmedDisplayName = profileDisplayName.value.trim();
-
   const data: { email?: string; display_name?: string } = {};
-  if (trimmedEmail !== authStore.email) data.email = trimmedEmail;
-  if (trimmedDisplayName !== authStore.displayName) data.display_name = trimmedDisplayName;
+  if (trimmedEmail.value !== authStore.email) data.email = trimmedEmail.value;
+  if (trimmedDisplayName.value !== authStore.displayName)
+    data.display_name = trimmedDisplayName.value;
 
   if (Object.keys(data).length === 0) {
     profileLoading.value = false;
