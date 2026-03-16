@@ -41,7 +41,7 @@ import { useRoute, useRouter } from 'vue-router';
 import authService from 'src/services/auth';
 import { refreshToken } from 'src/services/tokenRefresh';
 import { useAuthStore } from 'stores/auth';
-import { extractQueryParam } from 'src/utils/routeUtils';
+import { extractQueryParam, removeQueryParam } from 'src/utils/routeUtils';
 import axios from 'axios';
 
 const route = useRoute();
@@ -72,10 +72,7 @@ onMounted(async () => {
   }
 
   // Remove token from URL so it doesn't persist in browser history
-  const remainingQuery = Object.fromEntries(
-    Object.entries(route.query).filter(([key]) => key !== 'token')
-  );
-  void router.replace({ query: remainingQuery });
+  void router.replace({ query: removeQueryParam(route.query, 'token') });
 
   try {
     await authService.verifyEmail(token);

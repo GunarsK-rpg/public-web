@@ -75,7 +75,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import authService from 'src/services/auth';
-import { extractQueryParam } from 'src/utils/routeUtils';
+import { extractQueryParam, removeQueryParam } from 'src/utils/routeUtils';
 import axios from 'axios';
 
 const route = useRoute();
@@ -98,13 +98,15 @@ onMounted(() => {
   resetToken = token;
 
   // Remove token from URL so it doesn't persist in browser history
-  const remainingQuery = Object.fromEntries(
-    Object.entries(route.query).filter(([key]) => key !== 'token')
-  );
-  void router.replace({ query: remainingQuery });
+  void router.replace({ query: removeQueryParam(route.query, 'token') });
 });
 
 async function handleSubmit(): Promise<void> {
+  if (!resetToken) {
+    error.value = 'Reset token is missing. Please request a new password reset link.';
+    return;
+  }
+
   loading.value = true;
   error.value = null;
 
