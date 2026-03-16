@@ -35,27 +35,41 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import authService from 'src/services/auth';
 import { refreshToken } from 'src/services/tokenRefresh';
 import { useAuthStore } from 'stores/auth';
 import axios from 'axios';
 
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 
 const loading = ref(true);
 const success = ref(false);
 const errorMessage = ref('');
 
+function extractToken(): string | null {
+  const raw = route.query.token;
+  if (Array.isArray(raw)) return typeof raw[0] === 'string' && raw[0] ? raw[0] : null;
+  if (typeof raw !== 'string' || !raw) return null;
+  return raw;
+}
+
 onMounted(async () => {
-  const token = route.query.token as string;
+  const token = extractToken();
 
   if (!token) {
     loading.value = false;
     errorMessage.value = 'No verification token provided.';
     return;
   }
+
+  // Remove token from URL so it doesn't persist in browser history
+  const remainingQuery = Object.fromEntries(
+    Object.entries(route.query).filter(([key]) => key !== 'token')
+  );
+  void router.replace({ ...route, query: remainingQuery });
 
   try {
     await authService.verifyEmail(token);

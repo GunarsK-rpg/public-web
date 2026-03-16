@@ -150,7 +150,9 @@ const campaignRoutes = new Set([
 ]);
 
 const activeNavTab = computed(() => {
-  return campaignRoutes.has(route.name as string) ? 'campaigns' : 'my-characters';
+  const name = route.name as string;
+  if (name === 'account') return null;
+  return campaignRoutes.has(name) ? 'campaigns' : 'my-characters';
 });
 
 function toggleDarkMode(): void {

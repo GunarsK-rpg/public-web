@@ -36,7 +36,13 @@
               @click="handleSendVerification"
             />
 
-            <div v-if="verifyMessage" :class="verifyError ? 'text-negative' : 'text-positive'">
+            <div
+              v-if="verifyMessage"
+              :class="verifyError ? 'text-negative' : 'text-positive'"
+              :role="verifyError ? 'alert' : 'status'"
+              :aria-live="verifyError ? 'assertive' : 'polite'"
+              aria-atomic="true"
+            >
               {{ verifyMessage }}
             </div>
           </div>
@@ -50,7 +56,7 @@
         </q-card-section>
 
         <q-card-section>
-          <q-form @submit="handleUpdateProfile" class="q-gutter-y-md">
+          <q-form @submit.prevent="handleUpdateProfile" class="q-gutter-y-md">
             <q-input
               v-model="profileEmail"
               label="Email"
@@ -81,7 +87,13 @@
               "
             />
 
-            <div v-if="profileMessage" :class="profileError ? 'text-negative' : 'text-positive'">
+            <div
+              v-if="profileMessage"
+              :class="profileError ? 'text-negative' : 'text-positive'"
+              :role="profileError ? 'alert' : 'status'"
+              :aria-live="profileError ? 'assertive' : 'polite'"
+              aria-atomic="true"
+            >
               {{ profileMessage }}
             </div>
           </q-form>
@@ -95,7 +107,7 @@
         </q-card-section>
 
         <q-card-section>
-          <q-form @submit="handleChangePassword" class="q-gutter-y-md">
+          <q-form @submit.prevent="handleChangePassword" class="q-gutter-y-md">
             <q-input
               v-model="currentPassword"
               label="Current Password"
@@ -137,7 +149,13 @@
               :loading="passwordLoading"
             />
 
-            <div v-if="passwordMessage" :class="passwordError ? 'text-negative' : 'text-positive'">
+            <div
+              v-if="passwordMessage"
+              :class="passwordError ? 'text-negative' : 'text-positive'"
+              :role="passwordError ? 'alert' : 'status'"
+              :aria-live="passwordError ? 'assertive' : 'polite'"
+              aria-atomic="true"
+            >
               {{ passwordMessage }}
             </div>
           </q-form>
@@ -198,6 +216,11 @@ async function handleUpdateProfile(): Promise<void> {
   if (profileEmail.value !== authStore.email) data.email = profileEmail.value;
   if (profileDisplayName.value !== authStore.displayName)
     data.display_name = profileDisplayName.value;
+
+  if (Object.keys(data).length === 0) {
+    profileLoading.value = false;
+    return;
+  }
 
   try {
     await authService.updateProfile(data);

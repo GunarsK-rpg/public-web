@@ -102,7 +102,7 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
-  // Verify email (public - token is the proof, but uses MainLayout if logged in)
+  // Verify email (public - uses AuthLayout regardless of login state)
   {
     path: '/verify-email',
     component: () => import('layouts/AuthLayout.vue'),

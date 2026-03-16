@@ -43,6 +43,16 @@ export const useAuthStore = defineStore('auth', () => {
   const canEdit = (resource: string) => hasPermission(resource, Level.EDIT);
   const canDelete = (resource: string) => hasPermission(resource, Level.DELETE);
 
+  function hydrateProfile(data: {
+    email?: string;
+    email_verified?: boolean;
+    display_name?: string;
+  }): void {
+    email.value = data.email ?? '';
+    emailVerified.value = data.email_verified ?? false;
+    displayName.value = data.display_name ?? '';
+  }
+
   function resetAuthState(): void {
     clearProactiveRefresh();
     isAuthenticated.value = false;
@@ -75,9 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       isAuthenticated.value = true;
       username.value = response.data.username ?? '';
-      email.value = response.data.email ?? '';
-      emailVerified.value = response.data.email_verified ?? false;
-      displayName.value = response.data.display_name ?? '';
+      hydrateProfile(response.data);
       scopes.value = response.data.scopes ?? {};
       scheduleProactiveRefresh(response.data.ttl_seconds);
       return true;
@@ -105,9 +113,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authService.login(loginUsername, password, rememberMe);
       isAuthenticated.value = true;
       username.value = response.data.username || loginUsername;
-      email.value = response.data.email ?? '';
-      emailVerified.value = response.data.email_verified ?? false;
-      displayName.value = response.data.display_name ?? '';
+      hydrateProfile(response.data);
       scopes.value = response.data.scopes || {};
 
       logger.info('User logged in', { username: loginUsername });
