@@ -86,8 +86,10 @@ onMounted(async () => {
   try {
     await authService.verifyEmail(token);
     success.value = true;
-    await refreshToken();
-    await authStore.checkAuthStatus();
+    const refreshed = await refreshToken();
+    if (refreshed) {
+      await authStore.checkAuthStatus();
+    }
   } catch (err) {
     if (axios.isAxiosError(err) && err.response) {
       const msg = (err.response.data as { error?: string })?.error;

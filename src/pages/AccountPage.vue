@@ -232,9 +232,9 @@ async function handleUpdateProfile(): Promise<void> {
     const refreshed = await refreshToken();
     if (refreshed) {
       await authStore.checkAuthStatus();
+      profileEmail.value = authStore.email;
+      profileDisplayName.value = authStore.displayName;
     }
-    profileEmail.value = authStore.email;
-    profileDisplayName.value = authStore.displayName;
   } catch (err) {
     profileError.value = true;
     if (axios.isAxiosError(err) && err.response) {
