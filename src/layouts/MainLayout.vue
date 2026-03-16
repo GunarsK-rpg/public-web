@@ -29,6 +29,12 @@
             <q-list class="account-menu">
               <q-item-label header>{{ username }}</q-item-label>
               <q-separator />
+              <q-item clickable v-close-popup @click="navigateTo('account')">
+                <q-item-section avatar>
+                  <Settings :size="24" aria-hidden="true" />
+                </q-item-section>
+                <q-item-section>Account</q-item-section>
+              </q-item>
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
                   <LogOut :size="24" aria-hidden="true" />
@@ -109,6 +115,7 @@ import {
   SunMoon,
   CircleUserRound,
   LogOut,
+  Settings,
   User,
   Swords,
   PanelLeftOpen,
