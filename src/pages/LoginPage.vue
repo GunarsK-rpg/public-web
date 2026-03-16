@@ -29,6 +29,12 @@
             :rules="[(val) => !!val || 'Password is required']"
           />
 
+          <div class="text-right">
+            <router-link :to="{ name: 'forgot-password' }" class="text-primary text-caption">
+              Forgot password?
+            </router-link>
+          </div>
+
           <q-checkbox v-model="rememberMe" label="Remember me" class="q-mt-sm" />
 
           <q-btn

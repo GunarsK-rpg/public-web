@@ -102,6 +102,32 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
+  {
+    path: '/forgot-password',
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'forgot-password',
+        component: () => import('pages/ForgotPasswordPage.vue'),
+        meta: { title: 'Forgot Password', public: true },
+      },
+    ],
+  },
+
+  {
+    path: '/reset-password',
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'reset-password',
+        component: () => import('pages/ResetPasswordPage.vue'),
+        meta: { title: 'Reset Password', public: true },
+      },
+    ],
+  },
+
   // Verify email (public - uses AuthLayout regardless of login state)
   {
     path: '/verify-email',
