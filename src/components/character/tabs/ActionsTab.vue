@@ -68,7 +68,7 @@ import {
   getInstanceWeaponLabel,
 } from 'src/utils/equipmentActionUtils';
 import ActionItem from './ActionItem.vue';
-import type { Action, EquipmentActionInstance } from 'src/types';
+import type { Action, EquipmentActionInstance, Talent } from 'src/types';
 import { isEquipmentActionInstance } from 'src/types';
 
 type ActionEntry = Action | EquipmentActionInstance;
@@ -190,6 +190,12 @@ const actionLinksMap = computed(() => {
   return map;
 });
 
+const talentLookup = computed((): Map<number, Talent> => {
+  const map = new Map<number, Talent>();
+  for (const t of classifiers.talents) map.set(t.id, t);
+  return map;
+});
+
 // Pre-computed actions grouped by type to avoid repeated filter calls
 const actionsByType = computed((): Record<number, ActionEntry[]> => {
   const result: Record<number, ActionEntry[]> = {};
@@ -201,25 +207,6 @@ const actionsByType = computed((): Record<number, ActionEntry[]> => {
 
 // All action entries across all types (flattened, for favorite lookup)
 const allEntries = computed((): ActionEntry[] => Object.values(actionsByType.value).flat());
-
-// Unified tab list: favorites (when present and not readonly) followed by action type tabs
-const allTabs = computed(() => [
-  ...(!props.readonly && hasFavorites.value
-    ? [{ id: FAVORITES_TAB as string | number, name: 'Favorites' }]
-    : []),
-  ...classifiers.actionTypes.map((t) => ({ id: t.id as string | number, name: t.name })),
-]);
-
-// Default to first available tab; recover if current tab is removed (e.g. favorites cleared)
-watch(
-  allTabs,
-  (tabs) => {
-    if (tabs.length && !tabs.some((t) => t.id === activeTab.value)) {
-      activeTab.value = tabs[0]!.id;
-    }
-  },
-  { immediate: true }
-);
 
 // Entries keyed by tab id — favorites resolved from store, others from actionsByType
 const entriesByTab = computed((): Record<string | number, ActionEntry[]> => {
@@ -247,27 +234,70 @@ const entriesByTab = computed((): Record<string | number, ActionEntry[]> => {
   return result;
 });
 
-// Get action type by code
-function getActionTypeByCode(code: string) {
-  return findByCode(classifiers.actionTypes, code);
-}
+// Unified tab list: favorites (when present and not readonly) followed by action type tabs
+const allTabs = computed(() => [
+  ...(!props.readonly && hasFavorites.value
+    ? [{ id: FAVORITES_TAB as string | number, name: 'Favorites' }]
+    : []),
+  ...classifiers.actionTypes
+    .filter((t) => (entriesByTab.value[t.id]?.length ?? 0) > 0)
+    .map((t) => ({ id: t.id as string | number, name: t.name })),
+]);
+
+// Default to first available tab; recover if current tab is removed (e.g. favorites cleared)
+watch(
+  allTabs,
+  (tabs) => {
+    if (tabs.length && !tabs.some((t) => t.id === activeTab.value)) {
+      activeTab.value = tabs[0]!.id;
+    }
+  },
+  { immediate: true }
+);
 
 // Get hero's object IDs by action type (non-equipment types only)
 function getHeroObjectIds(actionTypeCode: string): Set<number> {
-  if (actionTypeCode === 'talent') {
-    return new Set((heroStore.hero?.talents || []).map((t) => t.talent.id));
+  const ids = new Set<number>();
+  if (actionTypeCode === 'paths') {
+    for (const ht of heroStore.hero?.talents ?? []) {
+      if (talentLookup.value.get(ht.talent.id)?.path != null) ids.add(ht.talent.id);
+    }
+    return ids;
   }
-  if (actionTypeCode === 'surge') {
+  if (actionTypeCode === 'radiant') {
+    for (const ht of heroStore.hero?.talents ?? []) {
+      if (talentLookup.value.get(ht.talent.id)?.radiantOrder != null) ids.add(ht.talent.id);
+    }
+    return ids;
+  }
+  if (actionTypeCode === 'ancestry') {
+    for (const ht of heroStore.hero?.talents ?? []) {
+      const talent = talentLookup.value.get(ht.talent.id);
+      if (talent?.ancestry != null && talent.ancestry.code !== 'singer') ids.add(ht.talent.id);
+    }
+    return ids;
+  }
+  if (actionTypeCode === 'singer_form') {
+    const formId = heroStore.hero?.activeSingerForm?.id;
+    if (formId != null) ids.add(formId);
+    return ids;
+  }
+  // Surge types: surge ID (only if hero's radiant order has that surge) + hero's surge talents
+  const surge = findByCode(classifiers.surges, actionTypeCode);
+  if (surge) {
     const order = heroStore.hero?.radiantOrder;
-    if (!order) return new Set();
-    const fullOrder = findById(classifiers.radiantOrders, order.id);
-    if (!fullOrder) return new Set();
-    const ids: number[] = [];
-    if (fullOrder.surge1?.id != null) ids.push(fullOrder.surge1.id);
-    if (fullOrder.surge2?.id != null) ids.push(fullOrder.surge2.id);
-    return new Set(ids);
+    if (order) {
+      const fullOrder = findById(classifiers.radiantOrders, order.id);
+      if (fullOrder?.surge1?.id === surge.id || fullOrder?.surge2?.id === surge.id) {
+        ids.add(surge.id);
+      }
+    }
+    for (const ht of heroStore.hero?.talents ?? []) {
+      if (talentLookup.value.get(ht.talent.id)?.surge?.code === actionTypeCode)
+        ids.add(ht.talent.id);
+    }
   }
-  return new Set();
+  return ids;
 }
 
 // Build equipment action instances for all equipped items
@@ -313,21 +343,12 @@ function getActionsByTypeId(actionTypeId: number): ActionEntry[] {
   if (!actionType) return [];
 
   // Basic actions - everyone has all of them
-  const basicType = getActionTypeByCode('basic');
-  if (basicType && actionTypeId === basicType.id) {
-    return sortEntries(classifiers.actions.filter((a) => a.actionType.id === actionTypeId));
-  }
-
-  // Stormlight actions - all Radiants have them
-  const stormlightType = getActionTypeByCode('stormlight');
-  if (stormlightType && actionTypeId === stormlightType.id) {
-    if (!heroStore.hero?.radiantOrder) return [];
+  if (actionType.code === 'basic') {
     return sortEntries(classifiers.actions.filter((a) => a.actionType.id === actionTypeId));
   }
 
   // Equipment actions - resolve per equipped item instance
-  const equipmentType = getActionTypeByCode('equipment');
-  if (equipmentType && actionTypeId === equipmentType.id) {
+  if (actionType.code === 'equipment') {
     return getEquipmentActionInstances(actionTypeId);
   }
 
