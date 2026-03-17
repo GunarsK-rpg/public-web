@@ -303,8 +303,10 @@ function setIdealLevel(level: number | null) {
 function trackItemChoiceForDeletion(ht: HeroTalent) {
   const itemSel = (ht.grantSelections ?? []).find((s) => s.type === SPECIAL.ITEM_CHOICE);
   for (const code of itemSel?.codes ?? []) {
-    const heroEquip = heroStore.hero?.equipment.find((e) => e.equipment?.code === code);
-    if (heroEquip && heroEquip.id > 0) deletionTracker?.trackDeletion('equipment', heroEquip.id);
+    const heroEquips = heroStore.hero?.equipment.filter((e) => e.equipment?.code === code) ?? [];
+    for (const equip of heroEquips) {
+      if (equip.id > 0) deletionTracker?.trackDeletion('equipment', equip.id);
+    }
   }
 }
 

@@ -182,7 +182,9 @@ async function toggleFavorite(entry: ActionEntry): Promise<void> {
 const actionLinksMap = computed(() => {
   const map = new Map<string, Set<number>>();
   for (const link of classifiers.actionLinks) {
-    const key = `${link.objectType}:${link.objectId}`;
+    if (link.objectType == null || link.objectId == null || link.action?.id == null) continue;
+    const normalizedObjectType = link.objectType.trim().toLowerCase();
+    const key = `${normalizedObjectType}:${String(link.objectId)}`;
     if (!map.has(key)) {
       map.set(key, new Set());
     }
