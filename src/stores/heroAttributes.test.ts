@@ -157,7 +157,7 @@ describe('useHeroAttributesStore', () => {
           baseValue: 15,
           modifier: 2,
           totalValue: 17,
-          valueDisplay: null,
+          displayValue: null,
         },
       ];
     }
@@ -514,7 +514,7 @@ describe('useHeroAttributesStore', () => {
             baseValue: 15,
             modifier: 0,
             totalValue: 15,
-            valueDisplay: null,
+            displayValue: null,
           },
         ];
       }

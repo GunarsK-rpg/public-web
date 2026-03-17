@@ -49,7 +49,7 @@ const createDerivedStatValue = (overrides: Partial<DerivedStatValue> = {}): Deri
   attrMin: 0,
   attrMax: 2,
   value: 10,
-  valueDisplay: null,
+  displayValue: null,
   ...overrides,
 });
 

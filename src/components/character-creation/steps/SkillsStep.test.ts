@@ -504,8 +504,8 @@ describe('SkillsStep', () => {
     it('has role="status" on value display', () => {
       const wrapper = createWrapper();
 
-      const valueDisplays = wrapper.findAll('[role="status"]');
-      expect(valueDisplays.length).toBeGreaterThan(0);
+      const displayValues = wrapper.findAll('[role="status"]');
+      expect(displayValues.length).toBeGreaterThan(0);
     });
   });
 
