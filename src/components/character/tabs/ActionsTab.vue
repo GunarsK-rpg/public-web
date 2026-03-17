@@ -260,7 +260,8 @@ function getHeroObjectIds(actionTypeCode: string): Set<number> {
   const ids = new Set<number>();
   if (actionTypeCode === 'paths') {
     for (const ht of heroStore.hero?.talents ?? []) {
-      if (talentLookup.value.get(ht.talent.id)?.path != null) ids.add(ht.talent.id);
+      const talent = talentLookup.value.get(ht.talent.id);
+      if (talent?.path != null || (talent?.specialties?.length ?? 0) > 0) ids.add(ht.talent.id);
     }
     return ids;
   }

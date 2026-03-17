@@ -142,6 +142,17 @@ vi.mock('src/stores/classifiers', () => ({
         investitureCost: 0,
       },
       {
+        id: 12,
+        code: 'specialty-action',
+        name: 'Specialty Action',
+        description: 'Specialty talent action',
+        actionType: { id: 3, code: 'paths', name: 'Paths' },
+        activationType: { id: 1, code: 'action', name: 'Action' },
+        damageType: null,
+        focusCost: 0,
+        investitureCost: 0,
+      },
+      {
         id: 6,
         code: 'lashing',
         name: 'Lashing',
@@ -179,6 +190,11 @@ vi.mock('src/stores/classifiers', () => ({
       { id: 1, objectId: 1, action: { id: 3, code: 'sword-slash', name: 'Sword Slash' } }, // Sword -> Sword Slash
       { id: 2, objectId: 2, action: { id: 4, code: 'bow-shot', name: 'Bow Shot' } }, // Bow -> Bow Shot
       { id: 3, objectId: 10, action: { id: 5, code: 'power-strike', name: 'Power Strike' } }, // Talent 10 -> Power Strike
+      {
+        id: 8,
+        objectId: 20,
+        action: { id: 12, code: 'specialty-action', name: 'Specialty Action' },
+      }, // Specialty talent 20 -> Specialty Action
       { id: 4, objectId: 100, action: { id: 6, code: 'lashing', name: 'Lashing' } }, // Adhesion surge ID -> Lashing
       { id: 5, objectId: 200, action: { id: 10, code: 'change_form', name: 'Change Form' } }, // Dullform -> Change Form
       { id: 6, objectId: 201, action: { id: 10, code: 'change_form', name: 'Change Form' } }, // Stormform -> Change Form
@@ -202,6 +218,18 @@ vi.mock('src/stores/classifiers', () => ({
         surge: null,
         ancestry: null,
         specialties: [],
+        isKey: false,
+        special: [],
+      },
+      {
+        id: 20,
+        code: 't20',
+        name: 'Talent20',
+        path: null,
+        radiantOrder: null,
+        surge: null,
+        ancestry: null,
+        specialties: [{ id: 1, code: 'duelist', name: 'Duelist' }],
         isKey: false,
         special: [],
       },
@@ -489,6 +517,20 @@ describe('ActionsTab', () => {
 
       expect(wrapper.text()).toContain('Paths');
       expect(wrapper.text()).toContain('Power Strike');
+    });
+
+    it('renders paths actions for specialty talents (path null, specialties non-empty)', () => {
+      mockHero.value = {
+        id: 1,
+        equipment: [],
+        talents: [{ talent: { id: 20, code: 't20', name: 'Talent20' } }],
+        radiantOrder: null,
+        activeSingerForm: null,
+      };
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Paths');
+      expect(wrapper.text()).toContain('Specialty Action');
     });
 
     it('paths tab hidden when hero has no path talents', () => {
