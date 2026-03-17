@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
@@ -26,6 +26,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { filterSpecial } from 'src/utils/talentGrants';
 import { SPECIAL } from 'src/utils/specialUtils';
 import type { SpecialEntry } from 'src/types';
+import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 
 const props = withDefaults(
   defineProps<{
@@ -44,6 +45,7 @@ const classifierStore = useClassifierStore();
 const attrStore = useHeroAttributesStore();
 const equipStore = useHeroEquipmentStore();
 const heroStore = useHeroStore();
+const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
 const choices = computed(() =>
   filterSpecial(
@@ -156,7 +158,10 @@ function onSelectItem(choiceIndex: number, code: string | null) {
   // Remove previous item
   if (prevCode) {
     const heroEquip = heroStore.hero?.equipment.find((e) => e.equipment?.code === prevCode);
-    if (heroEquip) equipStore.removeEquipment(heroEquip.id);
+    if (heroEquip) {
+      if (heroEquip.id > 0) deletionTracker?.trackDeletion('equipment', heroEquip.id);
+      equipStore.removeEquipment(heroEquip.id);
+    }
   }
 
   // Add new item

@@ -4,6 +4,7 @@ import { useClassifierStore } from './classifiers';
 import { useHeroAttributesStore } from './heroAttributes';
 import { findById } from 'src/utils/arrayUtils';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
+import { SPECIAL } from 'src/utils/specialUtils';
 
 export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
   const heroStore = useHeroStore();
@@ -115,13 +116,28 @@ export const useHeroEquipmentStore = defineStore('heroEquipment', () => {
       }
     }
 
-    // Clear ALL equipment and apply new kit equipment
-    // (during character creation, equipment only comes from kits)
+    // Collect talent-granted item choices before clearing
+    const talentGrantedCodes: string[] = [];
+    for (const heroTalent of heroStore.hero.talents) {
+      for (const sel of heroTalent.grantSelections ?? []) {
+        if (sel.type === SPECIAL.ITEM_CHOICE) {
+          talentGrantedCodes.push(...(sel.codes ?? []));
+        }
+      }
+    }
+
+    // Clear previous kit equipment and apply new kit equipment
     heroStore.hero.equipment = [];
     if (kitData.equipment) {
       for (const item of kitData.equipment) {
         addEquipment(item.id, item.quantity);
       }
+    }
+
+    // Re-add talent-granted items preserved from before the clear
+    for (const code of talentGrantedCodes) {
+      const equip = classifierStore.equipment.find((e) => e.code === code);
+      if (equip) addEquipment(equip.id);
     }
   }
 

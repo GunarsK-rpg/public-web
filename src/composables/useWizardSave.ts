@@ -128,6 +128,13 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
       case STEP_CODES.PATHS:
         await saveHeroCore(hero);
         await syncSubResource(hero.id, 'talents', hero.talents, buildTalentPayload, 'talents');
+        await syncSubResource(
+          hero.id,
+          'equipment',
+          hero.equipment,
+          buildEquipmentPayload,
+          'equipment'
+        );
         // Track previously-saved surge skills that were zeroed out for deletion
         for (const skill of hero.skills) {
           if (skill.id > 0 && skill.rank === 0 && skill.modifier === 0) {

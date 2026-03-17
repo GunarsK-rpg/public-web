@@ -9,6 +9,7 @@ const mockHero = ref<{
   equipment: Partial<HeroEquipment>[];
   talents: Partial<HeroTalent>[];
   radiantOrder: { id: number; code: string; name: string } | null;
+  activeSingerForm: { id: number; code: string; name: string } | null;
 } | null>(null);
 
 const mockFavoriteActions = ref<HeroFavoriteAction[]>([]);
@@ -33,8 +34,11 @@ vi.mock('src/stores/classifiers', () => ({
     actionTypes: [
       { id: 1, code: 'basic', name: 'Basic' },
       { id: 2, code: 'equipment', name: 'Equipment' },
-      { id: 3, code: 'talent', name: 'Talent' },
-      { id: 4, code: 'surge', name: 'Surge' },
+      { id: 3, code: 'paths', name: 'Paths' },
+      { id: 4, code: 'radiant', name: 'Radiant' },
+      { id: 5, code: 'adhesion', name: 'Adhesion' },
+      { id: 6, code: 'gravitation', name: 'Gravitation' },
+      { id: 7, code: 'singer_form', name: 'Singer Form' },
     ],
     activationTypes: [
       { id: 1, code: 'action', name: 'Action', displayOrder: 1, icon: 'action.svg' },
@@ -130,8 +134,19 @@ vi.mock('src/stores/classifiers', () => ({
         id: 5,
         code: 'power-strike',
         name: 'Power Strike',
-        description: 'Talent attack',
-        actionType: { id: 3, code: 'talent', name: 'Talent' },
+        description: 'Path talent attack',
+        actionType: { id: 3, code: 'paths', name: 'Paths' },
+        activationType: { id: 1, code: 'action', name: 'Action' },
+        damageType: null,
+        focusCost: 0,
+        investitureCost: 0,
+      },
+      {
+        id: 12,
+        code: 'specialty-action',
+        name: 'Specialty Action',
+        description: 'Specialty talent action',
+        actionType: { id: 3, code: 'paths', name: 'Paths' },
         activationType: { id: 1, code: 'action', name: 'Action' },
         damageType: null,
         focusCost: 0,
@@ -142,7 +157,40 @@ vi.mock('src/stores/classifiers', () => ({
         code: 'lashing',
         name: 'Lashing',
         description: 'Gravity manipulation',
-        actionType: { id: 4, code: 'surge', name: 'Surge' },
+        actionType: { id: 5, code: 'adhesion', name: 'Adhesion' },
+        activationType: { id: 1, code: 'action', name: 'Action' },
+        damageType: null,
+        focusCost: 0,
+        investitureCost: 0,
+      },
+      {
+        id: 10,
+        code: 'change_form',
+        name: 'Change Form',
+        description: 'Change singer form',
+        actionType: { id: 7, code: 'singer_form', name: 'Singer Form' },
+        activationType: { id: 1, code: 'action', name: 'Action' },
+        damageType: null,
+        focusCost: 0,
+        investitureCost: 0,
+      },
+      {
+        id: 11,
+        code: 'unleash_lightning',
+        name: 'Unleash Lightning',
+        description: 'Stormform attack',
+        actionType: { id: 7, code: 'singer_form', name: 'Singer Form' },
+        activationType: { id: 2, code: 'double_action', name: 'Double Action' },
+        damageType: null,
+        focusCost: 0,
+        investitureCost: 0,
+      },
+      {
+        id: 13,
+        code: 'radiant_action',
+        name: 'Radiant Action',
+        description: 'Radiant talent action',
+        actionType: { id: 4, code: 'radiant', name: 'Radiant' },
         activationType: { id: 1, code: 'action', name: 'Action' },
         damageType: null,
         focusCost: 0,
@@ -150,18 +198,110 @@ vi.mock('src/stores/classifiers', () => ({
       },
     ],
     actionLinks: [
-      { id: 1, objectId: 1, action: { id: 3, code: 'sword-slash', name: 'Sword Slash' } }, // Sword -> Sword Slash
-      { id: 2, objectId: 2, action: { id: 4, code: 'bow-shot', name: 'Bow Shot' } }, // Bow -> Bow Shot
-      { id: 3, objectId: 10, action: { id: 5, code: 'power-strike', name: 'Power Strike' } }, // Talent 10 -> Power Strike
-      { id: 4, objectId: 100, action: { id: 6, code: 'lashing', name: 'Lashing' } }, // Surge 100 -> Lashing
+      {
+        id: 1,
+        objectId: 1,
+        objectType: 'equipment',
+        action: { id: 3, code: 'sword-slash', name: 'Sword Slash' },
+      }, // Sword -> Sword Slash
+      {
+        id: 2,
+        objectId: 2,
+        objectType: 'equipment',
+        action: { id: 4, code: 'bow-shot', name: 'Bow Shot' },
+      }, // Bow -> Bow Shot
+      {
+        id: 3,
+        objectId: 10,
+        objectType: 'talent',
+        action: { id: 5, code: 'power-strike', name: 'Power Strike' },
+      }, // Talent 10 -> Power Strike
+      {
+        id: 8,
+        objectId: 20,
+        objectType: 'talent',
+        action: { id: 12, code: 'specialty-action', name: 'Specialty Action' },
+      }, // Specialty talent 20 -> Specialty Action
+      {
+        id: 4,
+        objectId: 100,
+        objectType: 'surge',
+        action: { id: 6, code: 'lashing', name: 'Lashing' },
+      }, // Adhesion surge ID -> Lashing
+      {
+        id: 5,
+        objectId: 200,
+        objectType: 'singer_form',
+        action: { id: 10, code: 'change_form', name: 'Change Form' },
+      }, // Dullform -> Change Form
+      {
+        id: 6,
+        objectId: 201,
+        objectType: 'singer_form',
+        action: { id: 10, code: 'change_form', name: 'Change Form' },
+      }, // Stormform -> Change Form
+      {
+        id: 7,
+        objectId: 201,
+        objectType: 'singer_form',
+        action: { id: 11, code: 'unleash_lightning', name: 'Unleash Lightning' },
+      }, // Stormform -> Unleash Lightning
+      {
+        id: 9,
+        objectId: 30,
+        objectType: 'talent',
+        action: { id: 13, code: 'radiant_action', name: 'Radiant Action' },
+      }, // Radiant talent 30 -> Radiant Action
+    ],
+    surges: [
+      { id: 100, code: 'adhesion', name: 'Adhesion' },
+      { id: 101, code: 'gravitation', name: 'Gravitation' },
+    ],
+    talents: [
+      {
+        id: 10,
+        code: 't10',
+        name: 'Talent10',
+        path: { id: 1, code: 'warrior', name: 'Warrior' },
+        radiantOrder: null,
+        surge: null,
+        ancestry: null,
+        specialties: [],
+        isKey: false,
+        special: [],
+      },
+      {
+        id: 20,
+        code: 't20',
+        name: 'Talent20',
+        path: null,
+        radiantOrder: null,
+        surge: null,
+        ancestry: null,
+        specialties: [{ id: 1, code: 'duelist', name: 'Duelist' }],
+        isKey: false,
+        special: [],
+      },
+      {
+        id: 30,
+        code: 't30',
+        name: 'Talent30',
+        path: null,
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+        surge: null,
+        ancestry: null,
+        specialties: [],
+        isKey: false,
+        special: [],
+      },
     ],
     radiantOrders: [
       {
         id: 1,
         code: 'windrunner',
         name: 'Windrunner',
-        surge1: { id: 100, code: 'surge1', name: 'Surge 1' },
-        surge2: { id: 101, code: 'surge2', name: 'Surge 2' },
+        surge1: { id: 100, code: 'adhesion', name: 'Adhesion' },
+        surge2: { id: 101, code: 'gravitation', name: 'Gravitation' },
       },
     ],
   }),
@@ -212,6 +352,7 @@ describe('ActionsTab', () => {
       equipment: [],
       talents: [],
       radiantOrder: null,
+      activeSingerForm: null,
     };
   });
 
@@ -219,20 +360,26 @@ describe('ActionsTab', () => {
   // Basic Rendering
   // ========================================
   describe('basic rendering', () => {
-    it('renders all action type tabs', () => {
+    it('renders only non-empty action type tabs', () => {
       const wrapper = createWrapper();
 
+      // Basic tab has actions, so it appears
       expect(wrapper.text()).toContain('Basic');
-      expect(wrapper.text()).toContain('Equipment');
-      expect(wrapper.text()).toContain('Talent');
-      expect(wrapper.text()).toContain('Surge');
+      // Equipment tab has no entries for hero with no equipment — hidden
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Equipment')).toBe(false);
+      // Paths/Radiant/surge tabs hidden when hero has no relevant talents/order
+      expect(tabs.some((t) => t.text() === 'Paths')).toBe(false);
+      expect(tabs.some((t) => t.text() === 'Radiant')).toBe(false);
+      expect(tabs.some((t) => t.text() === 'Adhesion')).toBe(false);
     });
 
-    it('renders tab panels for each action type', () => {
+    it('renders only panels for non-empty tabs', () => {
       const wrapper = createWrapper();
 
+      // Only Basic tab has entries for a hero with no equipment/talents/order
       const panels = wrapper.findAll('.q-tab-panel');
-      expect(panels.length).toBe(4);
+      expect(panels.length).toBe(1);
     });
   });
 
@@ -266,6 +413,7 @@ describe('ActionsTab', () => {
         ],
         talents: [],
         radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
@@ -286,23 +434,14 @@ describe('ActionsTab', () => {
         ],
         talents: [],
         radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('Sword Slash');
-      expect(wrapper.text()).toContain('No equipment available');
-    });
-
-    it('shows empty message when no equipment', () => {
-      mockHero.value = {
-        id: 1,
-        equipment: [],
-        talents: [],
-        radiantOrder: null,
-      };
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('No equipment available');
+      // Equipment tab hidden when no entries
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Equipment')).toBe(false);
     });
 
     it('does not show actions for unowned equipment', () => {
@@ -316,9 +455,10 @@ describe('ActionsTab', () => {
             specialOverrides: [],
             modifications: [],
           },
-        ], // Non-existent equipment
+        ],
         talents: [],
         radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
@@ -336,17 +476,18 @@ describe('ActionsTab', () => {
             special: [],
             specialOverrides: [],
             modifications: [],
-          }, // Sword
+          },
           {
             equipment: { id: 2, code: 'e2', name: 'Equip2' },
             isEquipped: true,
             special: [],
             specialOverrides: [],
             modifications: [],
-          }, // Bow
+          },
         ],
         talents: [],
         radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
@@ -377,10 +518,12 @@ describe('ActionsTab', () => {
         ],
         talents: [],
         radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
-      const equipPanel = wrapper.findAll('.q-tab-panel')[1]!;
+      const panels = wrapper.findAll('.q-tab-panel');
+      const equipPanel = panels.find((p) => p.attributes('data-name') === '2')!;
       const items = equipPanel.findAll('.action-item');
       const names = items.map((item) => item.text());
       expect(names.filter((n) => n === 'Sword Slash')).toHaveLength(2);
@@ -399,17 +542,18 @@ describe('ActionsTab', () => {
             special: [],
             specialOverrides: [],
             modifications: [],
-          }, // Sword - equipped
+          },
           {
             equipment: { id: 2, code: 'e2', name: 'Equip2' },
             isEquipped: false,
             special: [],
             specialOverrides: [],
             modifications: [],
-          }, // Bow - in backpack
+          },
         ],
         talents: [],
         radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
@@ -419,31 +563,83 @@ describe('ActionsTab', () => {
   });
 
   // ========================================
-  // Talent Actions
+  // Paths Actions
   // ========================================
-  describe('talent actions', () => {
-    it('renders talent actions for owned talents', () => {
+  describe('paths actions', () => {
+    it('renders paths tab and actions for hero with path talent', () => {
       mockHero.value = {
         id: 1,
         equipment: [],
         talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }],
         radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
+      expect(wrapper.text()).toContain('Paths');
       expect(wrapper.text()).toContain('Power Strike');
     });
 
-    it('shows empty message when no talent actions', () => {
+    it('renders paths actions for specialty talents (path null, specialties non-empty)', () => {
       mockHero.value = {
         id: 1,
         equipment: [],
-        talents: [{ talent: { id: 999, code: 't999', name: 'Talent999' } }], // Talent without actions
+        talents: [{ talent: { id: 20, code: 't20', name: 'Talent20' } }],
         radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('No talent available');
+      expect(wrapper.text()).toContain('Paths');
+      expect(wrapper.text()).toContain('Specialty Action');
+    });
+
+    it('paths tab hidden when hero has no path talents', () => {
+      mockHero.value = {
+        id: 1,
+        equipment: [],
+        talents: [],
+        radiantOrder: null,
+        activeSingerForm: null,
+      };
+      const wrapper = createWrapper();
+
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Paths')).toBe(false);
+    });
+  });
+
+  // ========================================
+  // Radiant Actions
+  // ========================================
+  describe('radiant actions', () => {
+    it('radiant tab hidden when hero has radiant order but no linked radiant talent', () => {
+      mockHero.value = {
+        id: 1,
+        equipment: [],
+        talents: [],
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+        activeSingerForm: null,
+      };
+      // No radiant action links in mock, so Radiant tab has 0 entries → hidden
+      const wrapper = createWrapper();
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Radiant')).toBe(false);
+    });
+
+    it('renders radiant tab and action for hero with radiant talent linked to action', () => {
+      mockHero.value = {
+        id: 1,
+        equipment: [],
+        talents: [{ talent: { id: 30, code: 't30', name: 'Talent30' } }],
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+        activeSingerForm: null,
+      };
+      const wrapper = createWrapper();
+
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Radiant')).toBe(true);
+      expect(wrapper.text()).toContain('Radiant Action');
     });
   });
 
@@ -451,28 +647,63 @@ describe('ActionsTab', () => {
   // Surge Actions
   // ========================================
   describe('surge actions', () => {
-    it('renders surge actions for radiant orders', () => {
+    it('renders adhesion tab and surge action for Windrunner', () => {
       mockHero.value = {
         id: 1,
         equipment: [],
         talents: [],
-        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' }, // Windrunner with surge1: { id: 100, ... }
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
+      expect(wrapper.text()).toContain('Adhesion');
       expect(wrapper.text()).toContain('Lashing');
     });
 
-    it('shows empty message when not radiant', () => {
+    it('renders gravitation tab for Windrunner (no actions in mock)', () => {
+      mockHero.value = {
+        id: 1,
+        equipment: [],
+        talents: [],
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+        activeSingerForm: null,
+      };
+      const wrapper = createWrapper();
+
+      // Gravitation surge has no action links in mock → tab hidden
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Gravitation')).toBe(false);
+    });
+
+    it('non-radiant hero sees no surge tabs', () => {
       mockHero.value = {
         id: 1,
         equipment: [],
         talents: [],
         radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('No surge available');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Adhesion')).toBe(false);
+      expect(tabs.some((t) => t.text() === 'Gravitation')).toBe(false);
+    });
+
+    it('handles non-existent radiant order — surge tabs do not appear', () => {
+      mockHero.value = {
+        id: 1,
+        equipment: [],
+        talents: [],
+        radiantOrder: { id: 999, code: 'ro999', name: 'RadiantOrder999' },
+        activeSingerForm: null,
+      };
+      const wrapper = createWrapper();
+
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Adhesion')).toBe(false);
+      expect(tabs.some((t) => t.text() === 'Gravitation')).toBe(false);
     });
   });
 
@@ -486,19 +717,9 @@ describe('ActionsTab', () => {
 
       // Should still render basic actions
       expect(wrapper.text()).toContain('Strike');
-      expect(wrapper.text()).toContain('No equipment available');
-    });
-
-    it('handles empty equipment array', () => {
-      mockHero.value = {
-        id: 1,
-        equipment: [],
-        talents: [],
-        radiantOrder: null,
-      };
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('No equipment available');
+      // Equipment tab hidden — no entries
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Equipment')).toBe(false);
     });
 
     it('handles hero with all action types', () => {
@@ -515,25 +736,63 @@ describe('ActionsTab', () => {
         ],
         talents: [{ talent: { id: 10, code: 't10', name: 'Talent10' } }],
         radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Strike'); // Basic
       expect(wrapper.text()).toContain('Sword Slash'); // Equipment
-      expect(wrapper.text()).toContain('Power Strike'); // Talent
-      expect(wrapper.text()).toContain('Lashing'); // Surge
+      expect(wrapper.text()).toContain('Power Strike'); // Paths
+      expect(wrapper.text()).toContain('Lashing'); // Adhesion surge
     });
+  });
 
-    it('handles non-existent radiant order', () => {
+  // ========================================
+  // Singer Form Actions
+  // ========================================
+  describe('singer form actions', () => {
+    it('singer form tab hidden when no active form', () => {
       mockHero.value = {
         id: 1,
         equipment: [],
         talents: [],
-        radiantOrder: { id: 999, code: 'ro999', name: 'RadiantOrder999' }, // Non-existent
+        radiantOrder: null,
+        activeSingerForm: null,
       };
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('No surge available');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Singer Form')).toBe(false);
+    });
+
+    it('shows change_form and form action when active form is stormform', () => {
+      mockHero.value = {
+        id: 1,
+        equipment: [],
+        talents: [],
+        radiantOrder: null,
+        activeSingerForm: { id: 201, code: 'stormform', name: 'Stormform' },
+      };
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Singer Form');
+      expect(wrapper.text()).toContain('Change Form');
+      expect(wrapper.text()).toContain('Unleash Lightning');
+    });
+
+    it('shows only change_form when active form is dullform', () => {
+      mockHero.value = {
+        id: 1,
+        equipment: [],
+        talents: [],
+        radiantOrder: null,
+        activeSingerForm: { id: 200, code: 'dullform', name: 'Dullform' },
+      };
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Singer Form');
+      expect(wrapper.text()).toContain('Change Form');
+      expect(wrapper.text()).not.toContain('Unleash Lightning');
     });
   });
 
@@ -613,12 +872,12 @@ describe('ActionsTab', () => {
       expect(panels.some((p) => p.attributes('data-name') === 'favorites')).toBe(true);
     });
 
-    it('has 5 panels (favorites + 4 action types) when favorites exist', () => {
+    it('has 2 panels (favorites + Basic) for hero with no equipment/talents/order and favorites', () => {
       mockFavoriteActions.value = [{ id: 1, heroId: 1, actionId: 1, heroEquipmentId: null }];
       const wrapper = createWrapper();
 
       const panels = wrapper.findAll('.q-tab-panel');
-      expect(panels.length).toBe(5);
+      expect(panels.length).toBe(2);
     });
 
     it('toggleFavorite calls upsertFavoriteAction for unfavorited classifier action', async () => {

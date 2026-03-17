@@ -27,6 +27,7 @@ export interface ActionLink {
   id: number;
   action: ClassifierRef;
   objectId: number;
+  objectType: string | null;
 }
 
 /** Equipment action resolved to a specific hero equipment instance */
