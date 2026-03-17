@@ -112,6 +112,7 @@ import { useStepValidation } from 'src/composables/useStepValidation';
 import { findById } from 'src/utils/arrayUtils';
 import { Plus, ArrowLeftRight } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import { SPECIAL } from 'src/utils/specialUtils';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 import HeroicPathPanel from '../shared/HeroicPathPanel.vue';
 import SingerAncestryPanel from '../shared/SingerAncestryPanel.vue';
@@ -119,7 +120,7 @@ import RadiantPathPanel from '../shared/RadiantPathPanel.vue';
 import PathSelectionDialog from '../shared/PathSelectionDialog.vue';
 import OrderSelectionDialog from '../shared/OrderSelectionDialog.vue';
 import TalentDetailDialog from '../shared/TalentDetailDialog.vue';
-import type { Talent } from 'src/types';
+import type { Talent, HeroTalent } from 'src/types';
 
 // UI state for tracking selected paths during wizard
 interface PathSelection {
@@ -242,6 +243,7 @@ function removePath(pathId: number) {
   const toRemove = (heroStore.hero?.talents ?? []).filter((ht) => pathTalentIds.has(ht.talent.id));
   for (const ht of toRemove) {
     if (ht.id > 0) deletionTracker?.trackDeletion('talents', ht.id);
+    trackItemChoiceForDeletion(ht);
     talentStore.removeTalent(ht.talent.id);
   }
 }
@@ -298,6 +300,14 @@ function setIdealLevel(level: number | null) {
   }
 }
 
+function trackItemChoiceForDeletion(ht: HeroTalent) {
+  const itemSel = (ht.grantSelections ?? []).find((s) => s.type === SPECIAL.ITEM_CHOICE);
+  for (const code of itemSel?.codes ?? []) {
+    const heroEquip = heroStore.hero?.equipment.find((e) => e.equipment?.code === code);
+    if (heroEquip && heroEquip.id > 0) deletionTracker?.trackDeletion('equipment', heroEquip.id);
+  }
+}
+
 // Talent actions
 function handleToggleTalent(talentId: number, available: boolean) {
   // Track deletion if talent is being removed (already selected)
@@ -305,6 +315,7 @@ function handleToggleTalent(talentId: number, available: boolean) {
   if (heroTalent && heroTalent.id > 0) {
     deletionTracker?.trackDeletion('talents', heroTalent.id);
   }
+  if (heroTalent) trackItemChoiceForDeletion(heroTalent);
   toggleTalent(talentId, available);
 }
 
