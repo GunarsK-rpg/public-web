@@ -613,6 +613,33 @@ describe('useHeroEquipmentStore', () => {
       expect(heroStore.hero!.equipment.length).toBe(0);
     });
 
+    it('preserves talent item_choice equipment when kit is applied', () => {
+      const store = useHeroEquipmentStore();
+      const heroStore = useHeroStore();
+
+      // Simulate Efficient Engineer talent with a fabrial item_choice grant selection
+      heroStore.hero!.talents.push({
+        id: -1,
+        heroId: heroStore.hero!.id,
+        talent: { id: 10, code: 'efficient_engineer', name: 'Efficient Engineer' },
+        special: [],
+        grantSelections: [{ type: 'item_choice', codes: ['pain-fabrial'] }],
+      });
+
+      // Add the fabrial to equipment (as TalentGrantChoice would)
+      store.addEquipment(5);
+
+      // Apply starting kit — previously this wiped all equipment including the fabrial
+      store.setStartingKit(1);
+
+      const hasFabrial = heroStore.hero!.equipment.some(
+        (e) => e.equipment?.code === 'pain-fabrial'
+      );
+      expect(hasFabrial).toBe(true);
+      // Kit equipment should also be present
+      expect(heroStore.hero!.equipment.some((e) => e.equipment?.code === 'sword')).toBe(true);
+    });
+
     it('does nothing in applyStartingKitBonuses when no hero', () => {
       const store = useHeroEquipmentStore();
       const heroStore = useHeroStore();

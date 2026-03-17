@@ -178,14 +178,15 @@ async function toggleFavorite(entry: ActionEntry): Promise<void> {
   }
 }
 
-// Pre-compute action links map for O(1) lookup: objectId → Set<actionId>
+// Pre-compute action links map for O(1) lookup: `${objectType}:${objectId}` → Set<actionId>
 const actionLinksMap = computed(() => {
-  const map = new Map<number, Set<number>>();
+  const map = new Map<string, Set<number>>();
   for (const link of classifiers.actionLinks) {
-    if (!map.has(link.objectId)) {
-      map.set(link.objectId, new Set());
+    const key = `${link.objectType}:${link.objectId}`;
+    if (!map.has(key)) {
+      map.set(key, new Set());
     }
-    map.get(link.objectId)!.add(link.action.id);
+    map.get(key)!.add(link.action.id);
   }
   return map;
 });
@@ -255,32 +256,36 @@ watch(
   { immediate: true }
 );
 
-// Get hero's object IDs by action type (non-equipment types only)
-function getHeroObjectIds(actionTypeCode: string): Set<number> {
-  const ids = new Set<number>();
+// Get hero's object keys by action type (non-equipment types only)
+// Returns composite keys matching actionLinksMap: `${objectType}:${objectId}`
+function getHeroObjectIds(actionTypeCode: string): Set<string> {
+  const ids = new Set<string>();
   if (actionTypeCode === 'paths') {
     for (const ht of heroStore.hero?.talents ?? []) {
       const talent = talentLookup.value.get(ht.talent.id);
-      if (talent?.path != null || (talent?.specialties?.length ?? 0) > 0) ids.add(ht.talent.id);
+      if (talent?.path != null || (talent?.specialties?.length ?? 0) > 0)
+        ids.add(`talent:${ht.talent.id}`);
     }
     return ids;
   }
   if (actionTypeCode === 'radiant') {
     for (const ht of heroStore.hero?.talents ?? []) {
-      if (talentLookup.value.get(ht.talent.id)?.radiantOrder != null) ids.add(ht.talent.id);
+      if (talentLookup.value.get(ht.talent.id)?.radiantOrder != null)
+        ids.add(`talent:${ht.talent.id}`);
     }
     return ids;
   }
   if (actionTypeCode === 'ancestry') {
     for (const ht of heroStore.hero?.talents ?? []) {
       const talent = talentLookup.value.get(ht.talent.id);
-      if (talent?.ancestry != null && talent.ancestry.code !== 'singer') ids.add(ht.talent.id);
+      if (talent?.ancestry != null && talent.ancestry.code !== 'singer')
+        ids.add(`talent:${ht.talent.id}`);
     }
     return ids;
   }
   if (actionTypeCode === 'singer_form') {
     const formId = heroStore.hero?.activeSingerForm?.id;
-    if (formId != null) ids.add(formId);
+    if (formId != null) ids.add(`singer_form:${formId}`);
     return ids;
   }
   // Surge types: surge ID (only if hero's radiant order has that surge) + hero's surge talents
@@ -290,12 +295,12 @@ function getHeroObjectIds(actionTypeCode: string): Set<number> {
     if (order) {
       const fullOrder = findById(classifiers.radiantOrders, order.id);
       if (fullOrder?.surge1?.id === surge.id || fullOrder?.surge2?.id === surge.id) {
-        ids.add(surge.id);
+        ids.add(`surge:${surge.id}`);
       }
     }
     for (const ht of heroStore.hero?.talents ?? []) {
       if (talentLookup.value.get(ht.talent.id)?.surge?.code === actionTypeCode)
-        ids.add(ht.talent.id);
+        ids.add(`talent:${ht.talent.id}`);
     }
   }
   return ids;
@@ -313,7 +318,7 @@ function getEquipmentActionInstances(actionTypeId: number): EquipmentActionInsta
       .flatMap((heroEquip): EquipmentActionInstance[] => {
         const effectiveSpecial = getEffectiveSpecial(heroEquip);
         if (heroEquip.equipment) {
-          return [...(actionLinksMap.value.get(heroEquip.equipment.id) ?? [])]
+          return [...(actionLinksMap.value.get(`equipment:${heroEquip.equipment.id}`) ?? [])]
             .map((id) => findById(classifiers.actions, id))
             .filter((a): a is Action => !!a && a.actionType.id === actionTypeId)
             .map((action) => ({ action, heroEquipment: heroEquip, effectiveSpecial }));

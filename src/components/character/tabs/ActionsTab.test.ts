@@ -185,24 +185,73 @@ vi.mock('src/stores/classifiers', () => ({
         focusCost: 0,
         investitureCost: 0,
       },
+      {
+        id: 13,
+        code: 'radiant_action',
+        name: 'Radiant Action',
+        description: 'Radiant talent action',
+        actionType: { id: 4, code: 'radiant', name: 'Radiant' },
+        activationType: { id: 1, code: 'action', name: 'Action' },
+        damageType: null,
+        focusCost: 0,
+        investitureCost: 0,
+      },
     ],
     actionLinks: [
-      { id: 1, objectId: 1, action: { id: 3, code: 'sword-slash', name: 'Sword Slash' } }, // Sword -> Sword Slash
-      { id: 2, objectId: 2, action: { id: 4, code: 'bow-shot', name: 'Bow Shot' } }, // Bow -> Bow Shot
-      { id: 3, objectId: 10, action: { id: 5, code: 'power-strike', name: 'Power Strike' } }, // Talent 10 -> Power Strike
+      {
+        id: 1,
+        objectId: 1,
+        objectType: 'equipment',
+        action: { id: 3, code: 'sword-slash', name: 'Sword Slash' },
+      }, // Sword -> Sword Slash
+      {
+        id: 2,
+        objectId: 2,
+        objectType: 'equipment',
+        action: { id: 4, code: 'bow-shot', name: 'Bow Shot' },
+      }, // Bow -> Bow Shot
+      {
+        id: 3,
+        objectId: 10,
+        objectType: 'talent',
+        action: { id: 5, code: 'power-strike', name: 'Power Strike' },
+      }, // Talent 10 -> Power Strike
       {
         id: 8,
         objectId: 20,
+        objectType: 'talent',
         action: { id: 12, code: 'specialty-action', name: 'Specialty Action' },
       }, // Specialty talent 20 -> Specialty Action
-      { id: 4, objectId: 100, action: { id: 6, code: 'lashing', name: 'Lashing' } }, // Adhesion surge ID -> Lashing
-      { id: 5, objectId: 200, action: { id: 10, code: 'change_form', name: 'Change Form' } }, // Dullform -> Change Form
-      { id: 6, objectId: 201, action: { id: 10, code: 'change_form', name: 'Change Form' } }, // Stormform -> Change Form
+      {
+        id: 4,
+        objectId: 100,
+        objectType: 'surge',
+        action: { id: 6, code: 'lashing', name: 'Lashing' },
+      }, // Adhesion surge ID -> Lashing
+      {
+        id: 5,
+        objectId: 200,
+        objectType: 'singer_form',
+        action: { id: 10, code: 'change_form', name: 'Change Form' },
+      }, // Dullform -> Change Form
+      {
+        id: 6,
+        objectId: 201,
+        objectType: 'singer_form',
+        action: { id: 10, code: 'change_form', name: 'Change Form' },
+      }, // Stormform -> Change Form
       {
         id: 7,
         objectId: 201,
+        objectType: 'singer_form',
         action: { id: 11, code: 'unleash_lightning', name: 'Unleash Lightning' },
       }, // Stormform -> Unleash Lightning
+      {
+        id: 9,
+        objectId: 30,
+        objectType: 'talent',
+        action: { id: 13, code: 'radiant_action', name: 'Radiant Action' },
+      }, // Radiant talent 30 -> Radiant Action
     ],
     surges: [
       { id: 100, code: 'adhesion', name: 'Adhesion' },
@@ -230,6 +279,18 @@ vi.mock('src/stores/classifiers', () => ({
         surge: null,
         ancestry: null,
         specialties: [{ id: 1, code: 'duelist', name: 'Duelist' }],
+        isKey: false,
+        special: [],
+      },
+      {
+        id: 30,
+        code: 't30',
+        name: 'Talent30',
+        path: null,
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+        surge: null,
+        ancestry: null,
+        specialties: [],
         isKey: false,
         special: [],
       },
@@ -552,7 +613,7 @@ describe('ActionsTab', () => {
   // Radiant Actions
   // ========================================
   describe('radiant actions', () => {
-    it('radiant tab appears for radiant hero', () => {
+    it('radiant tab hidden when hero has radiant order but no linked radiant talent', () => {
       mockHero.value = {
         id: 1,
         equipment: [],
@@ -564,6 +625,21 @@ describe('ActionsTab', () => {
       const wrapper = createWrapper();
       const tabs = wrapper.findAll('.q-tab');
       expect(tabs.some((t) => t.text() === 'Radiant')).toBe(false);
+    });
+
+    it('renders radiant tab and action for hero with radiant talent linked to action', () => {
+      mockHero.value = {
+        id: 1,
+        equipment: [],
+        talents: [{ talent: { id: 30, code: 't30', name: 'Talent30' } }],
+        radiantOrder: { id: 1, code: 'windrunner', name: 'Windrunner' },
+        activeSingerForm: null,
+      };
+      const wrapper = createWrapper();
+
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text() === 'Radiant')).toBe(true);
+      expect(wrapper.text()).toContain('Radiant Action');
     });
   });
 
