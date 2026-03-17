@@ -109,7 +109,7 @@
               <q-card-section>
                 <div class="text-caption">HP: {{ hero.currentHealth }}</div>
                 <div v-if="hero.user" class="text-caption text-muted">
-                  {{ hero.user.username }}
+                  {{ hero.user.displayName }}
                 </div>
               </q-card-section>
             </q-card>

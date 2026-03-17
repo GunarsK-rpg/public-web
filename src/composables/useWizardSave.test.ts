@@ -63,7 +63,7 @@ function makeHero(overrides: Record<string, unknown> = {}): Record<string, unkno
   return {
     id: 0,
     userId: 0,
-    user: { id: 0, username: '' },
+    user: { id: 0, username: '', displayName: '' },
     campaignId: null,
     campaign: { id: 1, code: 'test', name: 'Test' },
     ancestry: { id: 2, code: 'human', name: 'Human' },
@@ -105,10 +105,10 @@ describe('useWizardSave', () => {
     mockCurrentStepCode.value = 'basic-setup';
     mockValidation.value = { isValid: true, errors: [], warnings: [] };
     mockCreate.mockResolvedValue({
-      data: { id: 42, userId: 1, user: { id: 1, username: 'p1' } },
+      data: { id: 42, userId: 1, user: { id: 1, username: 'p1', displayName: 'p1' } },
     });
     mockUpdate.mockResolvedValue({
-      data: { id: 42, userId: 1, user: { id: 1, username: 'p1' } },
+      data: { id: 42, userId: 1, user: { id: 1, username: 'p1', displayName: 'p1' } },
     });
     mockUpsertSubResource.mockResolvedValue({ data: { id: 100 } });
     mockDeleteSubResource.mockResolvedValue({ data: null });

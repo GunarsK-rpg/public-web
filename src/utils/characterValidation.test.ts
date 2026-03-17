@@ -75,7 +75,7 @@ const createCulture = (overrides: Partial<HeroCulture> = {}): HeroCulture => ({
 const createHero = (overrides: Partial<HeroSheet> = {}): HeroSheet => ({
   id: 1,
   userId: 1,
-  user: { id: 1, username: 'test' },
+  user: { id: 1, username: 'test', displayName: 'test' },
   campaignId: null,
   campaign: { id: 0, code: 'none', name: 'None' },
   ancestry: { id: 1, code: 'test', name: 'Test' },

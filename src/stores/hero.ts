@@ -25,7 +25,7 @@ function createEmptyHero(): HeroSheet {
   return {
     id: 0,
     userId: 0,
-    user: { id: 0, username: '' },
+    user: { id: 0, username: '', displayName: '' },
     campaignId: null,
     campaign: null,
     ancestry: { id: 0, code: '', name: '' },

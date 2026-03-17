@@ -628,7 +628,7 @@ describe('useHeroStore', () => {
       store.updateFromResponse({
         id: 42,
         userId: 7,
-        user: { id: 7, username: 'player1' },
+        user: { id: 7, username: 'player1', displayName: 'player1' },
         campaignId: 3,
         campaign: { id: 3, code: 'campaign-x', name: 'Campaign X' },
         ancestry: { id: 2, code: 'human', name: 'Human' },
@@ -646,7 +646,7 @@ describe('useHeroStore', () => {
 
       expect(store.hero?.id).toBe(42);
       expect(store.hero?.userId).toBe(7);
-      expect(store.hero?.user).toEqual({ id: 7, username: 'player1' });
+      expect(store.hero?.user).toEqual({ id: 7, username: 'player1', displayName: 'player1' });
       expect(store.hero?.campaignId).toBe(3);
       expect(store.hero?.campaign).toEqual({ id: 3, code: 'campaign-x', name: 'Campaign X' });
       expect(store.hero?.ancestry).toEqual({ id: 2, code: 'human', name: 'Human' });
@@ -667,7 +667,7 @@ describe('useHeroStore', () => {
       store.updateFromResponse({
         id: 42,
         userId: 7,
-        user: { id: 7, username: 'player1' },
+        user: { id: 7, username: 'player1', displayName: 'player1' },
         campaignId: null,
         campaign: { id: 0, code: '', name: '' },
         ancestry: { id: 2, code: 'human', name: 'Human' },
@@ -695,7 +695,7 @@ describe('useHeroStore', () => {
       store.updateFromResponse({
         id: 42,
         userId: 7,
-        user: { id: 7, username: 'player1' },
+        user: { id: 7, username: 'player1', displayName: 'player1' },
         campaignId: null,
         campaign: { id: 0, code: '', name: '' },
         ancestry: { id: 2, code: 'human', name: 'Human' },
@@ -726,7 +726,7 @@ describe('useHeroStore', () => {
       store.updateFromResponse({
         id: 42,
         userId: 7,
-        user: { id: 7, username: 'player1' },
+        user: { id: 7, username: 'player1', displayName: 'player1' },
         campaignId: null,
         campaign: { id: 0, code: '', name: '' },
         ancestry: { id: 2, code: 'human', name: 'Human' },
@@ -753,7 +753,7 @@ describe('useHeroStore', () => {
       store.updateFromResponse({
         id: 42,
         userId: 7,
-        user: { id: 7, username: 'player1' },
+        user: { id: 7, username: 'player1', displayName: 'player1' },
         campaignId: null,
         campaign: { id: 0, code: '', name: '' },
         ancestry: { id: 2, code: 'human', name: 'Human' },
