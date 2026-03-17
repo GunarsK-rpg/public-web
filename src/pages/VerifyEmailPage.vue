@@ -41,6 +41,7 @@ import { useRoute, useRouter } from 'vue-router';
 import authService from 'src/services/auth';
 import { refreshToken } from 'src/services/tokenRefresh';
 import { useAuthStore } from 'stores/auth';
+import { extractQueryParam, removeQueryParam } from 'src/utils/routeUtils';
 import axios from 'axios';
 
 const route = useRoute();
@@ -61,15 +62,8 @@ const ctaRoute = computed(() => {
   return authStore.isAuthenticated ? 'account' : 'login';
 });
 
-function extractToken(): string | null {
-  const raw = route.query.token;
-  if (Array.isArray(raw)) return typeof raw[0] === 'string' && raw[0] ? raw[0] : null;
-  if (typeof raw !== 'string' || !raw) return null;
-  return raw;
-}
-
 onMounted(async () => {
-  const token = extractToken();
+  const token = extractQueryParam(route.query, 'token');
 
   if (!token) {
     loading.value = false;
@@ -78,10 +72,7 @@ onMounted(async () => {
   }
 
   // Remove token from URL so it doesn't persist in browser history
-  const remainingQuery = Object.fromEntries(
-    Object.entries(route.query).filter(([key]) => key !== 'token')
-  );
-  void router.replace({ query: remainingQuery });
+  void router.replace({ query: removeQueryParam(route.query, 'token') });
 
   try {
     await authService.verifyEmail(token);

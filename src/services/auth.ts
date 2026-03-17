@@ -66,4 +66,10 @@ export default {
       new_password: newPassword,
     });
   },
+  forgotPassword(email: string) {
+    return authApi.post('/forgot-password', { email });
+  },
+  resetPassword(token: string, newPassword: string) {
+    return authApi.post('/reset-password', { token, new_password: newPassword });
+  },
 };
