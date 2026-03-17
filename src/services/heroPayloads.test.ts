@@ -25,7 +25,7 @@ function makeHero(overrides: Partial<HeroSheet> = {}): HeroSheet {
   return {
     id: 0,
     userId: 0,
-    user: { id: 0, username: '' },
+    user: { id: 0, username: '', displayName: '' },
     campaignId: null,
     campaign: { id: 1, code: 'test-campaign', name: 'Test Campaign' },
     ancestry: { id: 2, code: 'human', name: 'Human' },

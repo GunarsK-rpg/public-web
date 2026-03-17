@@ -27,6 +27,7 @@ export interface ClassifierRef extends ClassifierInput {
 export interface UserRef {
   id: number;
   username: string;
+  displayName: string;
 }
 
 /** Campaign reference (same shape as ClassifierRef) */

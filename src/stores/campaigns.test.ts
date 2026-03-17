@@ -16,7 +16,7 @@ const mockCampaigns: Campaign[] = [
     talentsModifier: 0,
     skillsModifier: 0,
     expertisesModifier: 0,
-    user: { id: 10, username: 'owner' },
+    user: { id: 10, username: 'owner', displayName: 'owner' },
   },
   {
     id: 2,
@@ -27,7 +27,7 @@ const mockCampaigns: Campaign[] = [
     talentsModifier: 0,
     skillsModifier: 0,
     expertisesModifier: 0,
-    user: { id: 20, username: 'other' },
+    user: { id: 20, username: 'other', displayName: 'other' },
   },
 ];
 
@@ -296,7 +296,7 @@ describe('useCampaignStore', () => {
       talentsModifier: 0,
       skillsModifier: 0,
       expertisesModifier: 0,
-      user: { id: 10, username: 'owner' },
+      user: { id: 10, username: 'owner', displayName: 'owner' },
     };
 
     it('creates campaign and prepends to list', async () => {
