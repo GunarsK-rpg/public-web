@@ -133,7 +133,7 @@ function onResourceUpdate(code: string, value: number) {
 }
 
 function goBack() {
-  if (window.history.length > 1) {
+  if (window.history.state?.back) {
     void router.back();
   } else {
     void router.push({
