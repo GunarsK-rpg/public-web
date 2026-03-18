@@ -100,4 +100,5 @@ export interface CombatNpcResourcePatch {
 export interface EndRoundPayload {
   combatId: number;
   campaignId: number;
+  round: number;
 }

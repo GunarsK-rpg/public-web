@@ -36,6 +36,6 @@ function onToggle(value: 'fast' | 'slow' | null) {
 
 <style scoped>
 .turn-speed-toggle {
-  max-width: 140px;
+  max-width: 170px;
 }
 </style>

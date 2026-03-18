@@ -30,21 +30,13 @@
 
         <!-- Round tracker + controls -->
         <div class="row items-center q-gutter-sm q-mb-md">
-          <div class="text-subtitle1">Round {{ combat.round }}</div>
-          <template v-if="combat.isActive">
-            <q-btn
-              flat
-              dense
-              round
-              size="sm"
-              :disable="saving"
-              aria-label="End round"
-              @click="confirmEndRound"
-            >
-              <SkipForward :size="20" />
-              <q-tooltip>End round</q-tooltip>
-            </q-btn>
-          </template>
+          <ResourceBox
+            label="Round"
+            :current="combat.round"
+            :saving="saving"
+            :readonly="!combat.isActive"
+            @update="onRoundUpdate"
+          />
           <q-space />
           <q-toggle
             :model-value="combat.isActive"
@@ -71,6 +63,7 @@
 
         <CombatNpcSection
           title="Allies"
+          add-label="Add Ally"
           :npcs="allies"
           :campaign-id="numCampaignId"
           :saving="saving"
@@ -86,6 +79,7 @@
 
         <CombatNpcSection
           title="Enemies"
+          add-label="Add Enemy"
           :npcs="enemies"
           :campaign-id="numCampaignId"
           :saving="saving"
@@ -112,10 +106,10 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
-import { Swords, ArrowLeft, SkipForward } from 'lucide-vue-next';
+import { Swords, ArrowLeft } from 'lucide-vue-next';
 import { useCombatStore } from 'src/stores/combat';
+import ResourceBox from 'src/components/shared/ResourceBox.vue';
 import CombatNpcSection from 'src/components/combat/CombatNpcSection.vue';
 import AddNpcDialog from 'src/components/combat/AddNpcDialog.vue';
 import type { CombatNpc } from 'src/types';
@@ -125,7 +119,6 @@ const props = defineProps<{
   combatId: string;
 }>();
 
-const $q = useQuasar();
 const router = useRouter();
 const combatStore = useCombatStore();
 
@@ -196,17 +189,9 @@ async function onToggleActive(active: boolean) {
   });
 }
 
-// End round with confirmation
-function confirmEndRound() {
-  if (!combat.value) return;
-  $q.dialog({
-    title: 'End Round',
-    message: `End round ${combat.value.round}? This will reset all turn speed selections.`,
-    cancel: true,
-    persistent: false,
-  }).onOk(() => {
-    void combatStore.endRound(numCampaignId.value, numCombatId.value);
-  });
+function onRoundUpdate(value: number) {
+  if (value < 1) return;
+  void combatStore.endRound(numCampaignId.value, numCombatId.value, value);
 }
 
 // Add NPC

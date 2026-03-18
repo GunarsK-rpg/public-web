@@ -39,3 +39,16 @@ export interface TypedValue {
   value: number;
   displayValue?: string | null;
 }
+
+/** Extended stat for UI — adds optional breakdown text for tooltips/display */
+export interface StatValue extends TypedValue {
+  breakdown?: string | null;
+}
+
+/** Current resource values for ResourcesBar */
+export interface ResourceValues {
+  currentHp?: number;
+  currentFocus?: number;
+  currentInvestiture?: number;
+  currency?: number;
+}

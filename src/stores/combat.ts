@@ -284,11 +284,11 @@ export const useCombatStore = defineStore('combat', () => {
   // END ROUND
   // ===================
 
-  async function endRound(campaignId: number, combatId: number): Promise<boolean> {
+  async function endRound(campaignId: number, combatId: number, round: number): Promise<boolean> {
     savingCount.value++;
 
     try {
-      const response = await combatService.endRound({ campaignId, combatId });
+      const response = await combatService.endRound({ campaignId, combatId, round });
       currentCombat.value = response.data;
 
       const idx = combats.value.findIndex((c) => c.id === combatId);

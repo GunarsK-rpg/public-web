@@ -108,6 +108,9 @@ describe('StatsTab', () => {
     shallowMount(StatsTab, {
       global: {
         stubs: {
+          DefensesSection: false,
+          AttributesSection: false,
+          DerivedStatsSection: false,
           QCard: {
             template:
               '<div class="q-card" :tabindex="$attrs.tabindex" :role="$attrs.role" :aria-haspopup="$attrs[\'aria-haspopup\']"><slot /></div>',

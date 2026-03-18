@@ -8,6 +8,12 @@
           <q-badge :label="npc.type" color="grey-5" text-color="dark" />
         </div>
       </div>
+      <TurnSpeedToggle
+        :model-value="npc.turnSpeed ?? null"
+        :saving="saving"
+        class="q-mr-sm"
+        @update:model-value="onTurnSpeedChange"
+      />
       <q-btn
         flat
         dense
@@ -22,14 +28,6 @@
     </q-card-section>
 
     <q-card-section class="q-pt-sm">
-      <TurnSpeedToggle
-        :model-value="npc.turnSpeed ?? null"
-        :saving="saving"
-        @update:model-value="onTurnSpeedChange"
-      />
-    </q-card-section>
-
-    <q-card-section class="q-pt-none">
       <div class="row q-col-gutter-sm">
         <div :class="resourceColClass">
           <ResourceBox
@@ -82,8 +80,8 @@ import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { Trash2 } from 'lucide-vue-next';
 import { RPG_COLORS } from 'src/constants/theme';
-import ResourceBox from 'src/components/character/ResourceBox.vue';
-import HpManagementDialog from 'src/components/character/HpManagementDialog.vue';
+import ResourceBox from 'src/components/shared/ResourceBox.vue';
+import HpManagementDialog from 'src/components/shared/HpManagementDialog.vue';
 import TurnSpeedToggle from './TurnSpeedToggle.vue';
 import type { CombatNpc } from 'src/types';
 
@@ -134,6 +132,10 @@ function goToStatBlock() {
     params: {
       campaignId: String(props.campaignId),
       npcId: String(props.npc.npcId),
+    },
+    query: {
+      combatId: String(props.npc.combatId),
+      instanceId: String(props.npc.id),
     },
   });
 }

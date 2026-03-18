@@ -22,20 +22,28 @@
             <ArrowLeft :size="20" />
           </q-btn>
         </div>
-        <NpcStatBlock :npc="npc" />
+        <NpcStatBlock
+          :npc="npc"
+          :display-name="combatNpc?.displayName"
+          :current-resources="currentResources"
+          :saving="saving"
+          @resource-update="onResourceUpdate"
+        />
       </template>
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { ArrowLeft, UserX } from 'lucide-vue-next';
+import { useClassifierStore } from 'src/stores/classifiers';
+import { useCombatStore } from 'src/stores/combat';
 import combatService from 'src/services/combatService';
 import NpcStatBlock from 'src/components/combat/NpcStatBlock.vue';
 import { handleError } from 'src/utils/errorHandling';
-import type { Npc } from 'src/types';
+import type { Npc, CombatNpc } from 'src/types';
 
 const props = defineProps<{
   campaignId: string;
@@ -43,9 +51,33 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const route = useRoute();
+const combatStore = useCombatStore();
 const loading = ref(true);
 const error = ref<string | null>(null);
 const npc = ref<Npc | null>(null);
+const combatNpc = ref<CombatNpc | null>(null);
+
+const saving = computed(() => combatStore.saving);
+
+const combatId = computed(() => {
+  const v = route.query.combatId;
+  return v ? Number(v) : null;
+});
+
+const instanceId = computed(() => {
+  const v = route.query.instanceId;
+  return v ? Number(v) : null;
+});
+
+const currentResources = computed(() => {
+  if (!combatNpc.value) return null;
+  return {
+    currentHp: combatNpc.value.currentHp,
+    currentFocus: combatNpc.value.currentFocus,
+    currentInvestiture: combatNpc.value.currentInvestiture,
+  };
+});
 
 onMounted(async () => {
   const campaignId = Number(props.campaignId);
@@ -56,14 +88,46 @@ onMounted(async () => {
     return;
   }
   try {
+    const classifiers = useClassifierStore();
+    if (!classifiers.initialized) {
+      await classifiers.initialize();
+    }
     const response = await combatService.getNpc(campaignId, npcId);
     npc.value = response.data;
+
+    // Load combat NPC instance if combat context provided
+    if (combatId.value && instanceId.value) {
+      await combatStore.selectCombat(campaignId, combatId.value);
+      combatNpc.value =
+        combatStore.currentCombat?.npcs.find((n) => n.id === instanceId.value) ?? null;
+    }
   } catch (err: unknown) {
     handleError(err, { errorRef: error, message: 'Failed to load NPC' });
   } finally {
     loading.value = false;
   }
 });
+
+const resourcePatchMap: Record<
+  string,
+  (data: { id: number; combatId: number; campaignId: number; value: number }) => Promise<void>
+> = {
+  max_health: (d) => combatStore.patchHp(d),
+  max_focus: (d) => combatStore.patchFocus(d),
+  max_investiture: (d) => combatStore.patchInvestiture(d),
+};
+
+function onResourceUpdate(code: string, value: number) {
+  if (!combatNpc.value || !combatId.value) return;
+  const patchFn = resourcePatchMap[code];
+  if (!patchFn) return;
+  void patchFn({
+    id: combatNpc.value.id,
+    combatId: combatId.value,
+    campaignId: Number(props.campaignId),
+    value,
+  });
+}
 
 function goBack() {
   if (window.history.length > 1) {

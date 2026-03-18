@@ -4,7 +4,7 @@
       <div class="text-h6">{{ title }}</div>
       <q-space />
       <q-btn v-if="canEdit" flat color="primary" :disable="saving" @click="$emit('add')"
-        ><UserPlus :size="20" class="on-left" />Add {{ title.slice(0, -1) }}</q-btn
+        ><UserPlus :size="20" class="on-left" />{{ addLabel }}</q-btn
       >
     </div>
 
@@ -36,6 +36,7 @@ import type { CombatNpc } from 'src/types';
 
 defineProps<{
   title: string;
+  addLabel: string;
   npcs: CombatNpc[];
   campaignId: number;
   saving: boolean;
