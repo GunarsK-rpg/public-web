@@ -345,8 +345,9 @@ export const useCombatStore = defineStore('combat', () => {
     const bossIds = new Set(
       currentCombat.value.npcs.filter((n) => n.type === 'boss').map((n) => n.id)
     );
-    if ([...turnDoneIds.value].some((id) => bossIds.has(id))) {
-      turnDoneIds.value = new Set([...turnDoneIds.value].filter((id) => !bossIds.has(id)));
+    const current = [...turnDoneIds.value];
+    if (current.some((id) => bossIds.has(id))) {
+      turnDoneIds.value = new Set(current.filter((id) => !bossIds.has(id)));
     }
   }
 

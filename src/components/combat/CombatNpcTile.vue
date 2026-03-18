@@ -34,6 +34,7 @@
           round
           size="sm"
           :color="turnDone ? 'positive' : undefined"
+          :disable="saving"
           aria-label="Toggle turn done"
           @click="$emit('toggle-turn-done')"
           ><CircleCheck v-if="turnDone" :size="16" aria-hidden="true" />
