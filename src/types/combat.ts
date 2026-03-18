@@ -1,11 +1,11 @@
-import type { TypedValue } from './shared';
+import type { ClassifierRef, TypedValue } from './shared';
 
 /** NPC option — lightweight picker list from get_npc_options */
 export interface NpcOption {
   id: number;
   campaignId: number | null;
   name: string;
-  tier: number;
+  tier: ClassifierRef;
   type: string;
 }
 
@@ -21,13 +21,8 @@ export interface NpcAction extends NpcFeature {
 }
 
 /** Full NPC stat block — from get_npc */
-export interface Npc {
-  id: number;
-  campaignId: number | null;
+export interface Npc extends NpcOption {
   createdBy: number | null;
-  name: string;
-  tier: number;
-  type: string;
   size: string;
   languages: string | null;
   description: string | null;
@@ -75,19 +70,17 @@ export interface CombatNpcBase {
   notes?: string | null;
 }
 
-/** Combat NPC — API response */
+/** Combat NPC — API response (NPC identity + combat instance data) */
 export interface CombatNpc extends CombatNpcBase {
   id: number;
   sortOrder: number;
   currentHp: number;
   currentFocus: number;
   currentInvestiture: number;
-  maxHp: number;
-  maxFocus: number;
-  maxInvestiture: number;
-  npcName: string;
-  npcTier: number;
-  npcType: string;
+  name: string;
+  tier: ClassifierRef;
+  type: string;
+  derivedStats: TypedValue[];
 }
 
 /** Combat with NPC instances — from get_combat */
