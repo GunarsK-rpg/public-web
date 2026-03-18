@@ -32,3 +32,10 @@ export interface UserRef {
 
 /** Campaign reference (same shape as ClassifierRef) */
 export type CampaignRef = ClassifierRef;
+
+/** Unified stat entry — classifier type + numeric value + optional display */
+export interface TypedValue {
+  type: ClassifierRef;
+  value: number;
+  displayValue?: string | null;
+}
