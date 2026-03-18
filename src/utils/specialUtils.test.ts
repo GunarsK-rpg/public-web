@@ -48,6 +48,7 @@ function createHeroCondition(code: string, special?: SpecialEntry[]): HeroCondit
     condition: { id: 1, code, name: code },
     notes: null,
     special: special ?? null,
+    sourceInjuryId: null,
   };
 }
 

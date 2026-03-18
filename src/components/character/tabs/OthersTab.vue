@@ -379,20 +379,7 @@ async function handleAddInjury(injuryCode: string, notes: string | null): Promis
 }
 
 async function handleRemoveInjury(injury: HeroInjury): Promise<void> {
-  // Find the linked condition to auto-remove
-  const injuryClassifier = classifiers.injuries.find((i) => i.id === injury.injury?.id);
-  let linkedConditionId: number | undefined;
-
-  if (injuryClassifier?.condition) {
-    // Find the condition instance that was auto-applied for this injury
-    const condCode = injuryClassifier.condition.code;
-    const match = heroStore.conditions.find(
-      (c) => c.condition.code === condCode && c.notes === `From injury: ${injuryClassifier.name}`
-    );
-    linkedConditionId = match?.id;
-  }
-
-  await heroStore.removeInjury(injury.id, linkedConditionId);
+  await heroStore.removeInjury(injury.id);
 }
 </script>
 

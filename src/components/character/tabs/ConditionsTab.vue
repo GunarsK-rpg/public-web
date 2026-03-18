@@ -10,10 +10,11 @@
           'condition-active': isActive(cond.code),
           'condition-positive': cond.isPositive && isActive(cond.code),
           'condition-negative': !cond.isPositive && isActive(cond.code),
-          'condition-interactive': !readonly,
+          'condition-interactive': !readonly && !isInjuryOnly(cond.code),
+          'condition-locked': isInjuryOnly(cond.code),
         }"
         v-bind="
-          readonly
+          readonly || isInjuryOnly(cond.code)
             ? {}
             : {
                 role: 'button',
@@ -22,8 +23,10 @@
                 'aria-pressed': isActive(cond.code),
               }
         "
-        @click="!readonly && toggleCondition(cond)"
-        @keydown.enter.space.prevent="!readonly && toggleCondition(cond)"
+        @click="!readonly && !isInjuryOnly(cond.code) && toggleCondition(cond)"
+        @keydown.enter.space.prevent="
+          !readonly && !isInjuryOnly(cond.code) && toggleCondition(cond)
+        "
       >
         <div class="text-subtitle2">{{ cond.name }}</div>
       </div>
@@ -39,7 +42,7 @@
       >
         <span>{{ getEnhancedLabel(inst) }}</span>
         <q-btn
-          v-if="!readonly"
+          v-if="!readonly && !inst.sourceInjuryId"
           flat
           dense
           round
@@ -85,11 +88,11 @@
     </div>
 
     <!-- Exhausted inline expansion -->
-    <div v-if="exhaustedInstance" class="q-mt-md">
+    <div v-if="exhaustedValue !== 0" class="q-mt-md">
       <div class="text-subtitle2 q-mb-sm">Exhausted Penalty</div>
       <div class="row items-center q-gutter-sm">
         <q-btn
-          v-if="!readonly"
+          v-if="!readonly && manualExhausted"
           flat
           dense
           round
@@ -99,7 +102,7 @@
         />
         <span class="text-h6">{{ exhaustedValue }}</span>
         <q-btn
-          v-if="!readonly"
+          v-if="!readonly && manualExhausted"
           flat
           dense
           round
@@ -120,7 +123,7 @@
       >
         <span>{{ getAfflictedLabel(inst) }}</span>
         <q-btn
-          v-if="!readonly"
+          v-if="!readonly && !inst.sourceInjuryId"
           flat
           dense
           round
@@ -181,15 +184,15 @@ const enhancedInstances = computed(() =>
   heroStore.conditions.filter((c) => c.condition.code === 'enhanced')
 );
 
-const exhaustedInstance = computed(() =>
-  heroStore.conditions.find((c) => c.condition.code === 'exhausted')
+const manualExhausteds = computed(() =>
+  heroStore.conditions.filter((c) => c.condition.code === 'exhausted')
 );
 
-const exhaustedValue = computed(() => {
-  const inst = exhaustedInstance.value;
-  if (!inst?.special?.length) return 0;
-  return inst.special[0]?.value ?? 0;
-});
+const manualExhausted = computed(() => manualExhausteds.value.find((c) => !c.sourceInjuryId));
+
+const exhaustedValue = computed(() =>
+  manualExhausteds.value.reduce((sum, c) => sum + (c.special?.[0]?.value ?? 0), 0)
+);
 
 const afflictedInstances = computed(() =>
   heroStore.conditions.filter((c) => c.condition.code === 'afflicted')
@@ -206,6 +209,11 @@ function isActive(code: string): boolean {
   if (code === 'enhanced' && enhancedExpanded.value) return true;
   if (code === 'afflicted' && afflictedExpanded.value) return true;
   return heroStore.conditions.some((c) => c.condition.code === code);
+}
+
+function isInjuryOnly(code: string): boolean {
+  const instances = heroStore.conditions.filter((c) => c.condition.code === code);
+  return instances.length > 0 && instances.every((c) => c.sourceInjuryId != null);
 }
 
 function getEnhancedLabel(inst: HeroCondition): string {
@@ -235,9 +243,9 @@ async function toggleCondition(cond: Condition): Promise<void> {
   if (cond.isParameterized) {
     if (code === 'enhanced') {
       if (enhancedExpanded.value || enhancedInstances.value.length > 0) {
-        // Collapse and remove all instances
+        // Collapse and remove manual instances only
         for (const inst of enhancedInstances.value) {
-          await heroStore.removeCondition(inst.id);
+          if (!inst.sourceInjuryId) await heroStore.removeCondition(inst.id);
         }
         enhancedExpanded.value = false;
       } else {
@@ -247,8 +255,8 @@ async function toggleCondition(cond: Condition): Promise<void> {
       return;
     }
     if (code === 'exhausted') {
-      if (isActive(code) && exhaustedInstance.value) {
-        await heroStore.removeCondition(exhaustedInstance.value.id);
+      if (manualExhausted.value) {
+        await heroStore.removeCondition(manualExhausted.value.id);
       } else {
         await heroStore.upsertCondition({
           heroId: heroStore.hero.id,
@@ -261,7 +269,7 @@ async function toggleCondition(cond: Condition): Promise<void> {
     if (code === 'afflicted') {
       if (afflictedExpanded.value || afflictedInstances.value.length > 0) {
         for (const inst of afflictedInstances.value) {
-          await heroStore.removeCondition(inst.id);
+          if (!inst.sourceInjuryId) await heroStore.removeCondition(inst.id);
         }
         afflictedExpanded.value = false;
       } else {
@@ -274,7 +282,9 @@ async function toggleCondition(cond: Condition): Promise<void> {
   // Focused: auto-populate special on toggle
   if (code === 'focused') {
     if (isActive(code)) {
-      const inst = heroStore.conditions.find((c) => c.condition.code === 'focused');
+      const inst = heroStore.conditions.find(
+        (c) => c.condition.code === 'focused' && !c.sourceInjuryId
+      );
       if (inst) await heroStore.removeCondition(inst.id);
     } else {
       await heroStore.upsertCondition({
@@ -288,7 +298,7 @@ async function toggleCondition(cond: Condition): Promise<void> {
 
   // Simple toggle conditions
   if (isActive(code)) {
-    const inst = heroStore.conditions.find((c) => c.condition.code === code);
+    const inst = heroStore.conditions.find((c) => c.condition.code === code && !c.sourceInjuryId);
     if (inst) await heroStore.removeCondition(inst.id);
   } else {
     await heroStore.upsertCondition({
@@ -321,14 +331,15 @@ async function addEnhanced(): Promise<void> {
 }
 
 async function adjustExhausted(delta: number): Promise<void> {
-  if (!heroStore.hero || !exhaustedInstance.value) return;
-  const newValue = exhaustedValue.value + delta;
+  if (!heroStore.hero || !manualExhausted.value) return;
+  const currentManual = manualExhausted.value.special?.[0]?.value ?? 0;
+  const newValue = currentManual + delta;
   if (newValue >= 0) {
-    await heroStore.removeCondition(exhaustedInstance.value.id);
+    await heroStore.removeCondition(manualExhausted.value.id);
     return;
   }
   await heroStore.upsertCondition({
-    id: exhaustedInstance.value.id,
+    id: manualExhausted.value.id,
     heroId: heroStore.hero.id,
     condition: { code: 'exhausted' },
     special: exhaustedSpecial(newValue),
@@ -378,5 +389,9 @@ async function addAfflicted(): Promise<void> {
 
 .condition-negative {
   border-color: var(--q-warning);
+}
+
+.condition-locked {
+  cursor: not-allowed;
 }
 </style>

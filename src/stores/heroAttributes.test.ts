@@ -406,6 +406,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 1, code: 'enhanced', name: 'Enhanced' },
             notes: null,
             special: [{ type: 'attribute_str', value: 2, display_value: 'STR +2' }],
+            sourceInjuryId: null,
           },
         ];
       }
@@ -429,6 +430,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 2, code: 'exhausted', name: 'Exhausted' },
             notes: null,
             special: [{ type: 'exhausted_penalty', value: -2, display_value: '-2' }],
+            sourceInjuryId: null,
           },
         ];
       }
@@ -450,6 +452,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 1, code: 'enhanced', name: 'Enhanced' },
             notes: null,
             special: [{ type: 'attribute_str', value: 2, display_value: 'STR +2' }],
+            sourceInjuryId: null,
           },
           {
             id: 101,
@@ -457,6 +460,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 2, code: 'exhausted', name: 'Exhausted' },
             notes: null,
             special: [{ type: 'exhausted_penalty', value: -1, display_value: '-1' }],
+            sourceInjuryId: null,
           },
         ];
       }
@@ -1153,6 +1157,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 1, code: 'immobilized', name: 'Immobilized' },
             notes: null,
             special: [],
+            sourceInjuryId: null,
           },
         ];
       }
@@ -1185,6 +1190,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 1, code: 'immobilized', name: 'Immobilized' },
             notes: null,
             special: [],
+            sourceInjuryId: null,
           },
         ];
       }
@@ -1205,6 +1211,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 1, code: 'restrained', name: 'Restrained' },
             notes: null,
             special: [],
+            sourceInjuryId: null,
           },
         ];
       }
@@ -1225,6 +1232,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 1, code: 'unconscious', name: 'Unconscious' },
             notes: null,
             special: [],
+            sourceInjuryId: null,
           },
         ];
       }
@@ -1245,6 +1253,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 1, code: 'slowed', name: 'Slowed' },
             notes: null,
             special: [],
+            sourceInjuryId: null,
           },
         ];
       }
@@ -1279,6 +1288,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 1, code: 'enhanced', name: 'Enhanced' },
             notes: null,
             special: [{ type: 'attribute_str', value: 2, display_value: 'STR +2' }],
+            sourceInjuryId: null,
           },
         ];
       }
@@ -1301,6 +1311,7 @@ describe('useHeroAttributesStore', () => {
             condition: { id: 1, code: 'enhanced', name: 'Enhanced' },
             notes: null,
             special: [{ type: 'attribute_str', value: 2, display_value: 'STR +2' }],
+            sourceInjuryId: null,
           },
         ];
       }
