@@ -538,6 +538,7 @@ export const useHeroStore = defineStore('hero', () => {
           condition: { code: injuryClassifier.condition.code },
           notes: `From injury: ${injuryClassifier.name}`,
           special: injuryClassifier.special ?? null,
+          sourceInjuryId: response.data.id,
         });
       }
 
@@ -550,7 +551,7 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
-  async function removeInjury(injuryId: number, linkedConditionId?: number): Promise<void> {
+  async function removeInjury(injuryId: number): Promise<void> {
     if (!hero.value) return;
     const currentHeroId = hero.value.id;
     savingCount.value++;
@@ -559,17 +560,8 @@ export const useHeroStore = defineStore('hero', () => {
       if (!hero.value || hero.value.id !== currentHeroId) return;
       hero.value.injuries = hero.value.injuries.filter((i) => i.id !== injuryId);
 
-      // Auto-remove linked condition
-      if (linkedConditionId) {
-        try {
-          await removeCondition(linkedConditionId);
-        } catch (condErr) {
-          handleError(condErr, {
-            errorRef: error,
-            message: 'Failed to remove linked condition after injury deletion',
-          });
-        }
-      }
+      // DB CASCADE removes linked condition — sync local state
+      hero.value.conditions = hero.value.conditions.filter((c) => c.sourceInjuryId !== injuryId);
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to remove injury' });
     } finally {

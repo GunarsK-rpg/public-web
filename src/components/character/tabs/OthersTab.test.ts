@@ -578,7 +578,7 @@ describe('OthersTab', () => {
       const removeBtn = wrapper.find('button[aria-label="Remove injury: Broken Arm"]');
       await removeBtn.trigger('click');
 
-      expect(mockRemoveInjury).toHaveBeenCalledWith(5, undefined);
+      expect(mockRemoveInjury).toHaveBeenCalledWith(5);
     });
 
     it('calls upsertInjury when injury is added via dialog', async () => {

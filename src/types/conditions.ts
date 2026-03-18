@@ -14,12 +14,14 @@ export interface HeroConditionBase {
   condition: ClassifierInput;
   notes?: string | null;
   special?: SpecialEntry[] | null;
+  sourceInjuryId?: number | null;
 }
 
 /** Hero condition - API response */
 export interface HeroCondition extends HeroConditionBase {
   id: number;
   condition: ClassifierRef;
+  sourceInjuryId: number | null;
 }
 
 /** Injury classifier (cl_injuries) */

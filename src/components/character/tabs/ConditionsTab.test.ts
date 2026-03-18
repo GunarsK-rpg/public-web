@@ -183,6 +183,7 @@ describe('ConditionsTab', () => {
           condition: { id: 11, code: 'slowed', name: 'Slowed' },
           notes: null,
           special: null,
+          sourceInjuryId: null,
         },
       ];
       const wrapper = createWrapper();
@@ -200,6 +201,7 @@ describe('ConditionsTab', () => {
           condition: { id: 2, code: 'determined', name: 'Determined' },
           notes: null,
           special: null,
+          sourceInjuryId: null,
         },
       ];
       const wrapper = createWrapper();
@@ -231,6 +233,7 @@ describe('ConditionsTab', () => {
           condition: { id: 11, code: 'slowed', name: 'Slowed' },
           notes: null,
           special: null,
+          sourceInjuryId: null,
         },
       ];
       const wrapper = createWrapper();
@@ -266,6 +269,7 @@ describe('ConditionsTab', () => {
           condition: { id: 7, code: 'focused', name: 'Focused' },
           notes: null,
           special: [{ type: 'focused', value: 1, display_value: 'Focus costs -1' }],
+          sourceInjuryId: null,
         },
       ];
       const wrapper = createWrapper();
@@ -288,6 +292,7 @@ describe('ConditionsTab', () => {
           condition: { id: 5, code: 'enhanced', name: 'Enhanced' },
           notes: null,
           special: [{ type: 'attribute_str', value: 2, display_value: 'STR +2' }],
+          sourceInjuryId: null,
         },
       ];
       const wrapper = createWrapper();
@@ -332,6 +337,7 @@ describe('ConditionsTab', () => {
           condition: { id: 6, code: 'exhausted', name: 'Exhausted' },
           notes: null,
           special: [{ type: 'exhausted_penalty', value: -2, display_value: '-2 to all tests' }],
+          sourceInjuryId: null,
         },
       ];
       const wrapper = createWrapper();
@@ -352,6 +358,7 @@ describe('ConditionsTab', () => {
           condition: { id: 1, code: 'afflicted', name: 'Afflicted' },
           notes: null,
           special: [{ type: 'afflicted_damage', display_value: '1d4 vital' }],
+          sourceInjuryId: null,
         },
       ];
       const wrapper = createWrapper();
