@@ -178,6 +178,15 @@ export const useCombatStore = defineStore('combat', () => {
     if (!currentCombat.value) return null;
     savingCount.value++;
 
+    // Auto-number duplicates if no custom display name
+    if (!data.displayName) {
+      const existing = currentCombat.value.npcs.filter((n) => n.npcId === data.npcId);
+      const first = existing[0];
+      if (first) {
+        data = { ...data, displayName: `${first.name} ${existing.length + 1}` };
+      }
+    }
+
     try {
       const response = await combatService.addCombatNpc(data);
       currentCombat.value.npcs.push(response.data);
@@ -239,6 +248,7 @@ export const useCombatStore = defineStore('combat', () => {
     data: CombatNpcResourcePatch,
     serviceFn: (d: CombatNpcResourcePatch) => Promise<{ data: Record<string, number> }>,
     field: keyof CombatNpc,
+    responseKey: string,
     errorMessage: string
   ): Promise<void> {
     if (!currentCombat.value) return;
@@ -248,8 +258,7 @@ export const useCombatStore = defineStore('combat', () => {
       const response = await serviceFn({ ...data, value: Math.max(0, Math.floor(data.value)) });
       const npc = currentCombat.value.npcs.find((n) => n.id === data.id);
       if (npc) {
-        const key = Object.keys(response.data)[0];
-        const val = key ? response.data[key] : undefined;
+        const val = response.data[responseKey];
         if (val !== undefined) {
           (npc[field] as number) = val;
         }
@@ -262,12 +271,19 @@ export const useCombatStore = defineStore('combat', () => {
   }
 
   const patchHp = (data: CombatNpcResourcePatch) =>
-    patchNpcResource(data, (d) => combatService.patchHp(d), 'currentHp', 'Failed to update HP');
+    patchNpcResource(
+      data,
+      (d) => combatService.patchHp(d),
+      'currentHp',
+      'currentHp',
+      'Failed to update HP'
+    );
 
   const patchFocus = (data: CombatNpcResourcePatch) =>
     patchNpcResource(
       data,
       (d) => combatService.patchFocus(d),
+      'currentFocus',
       'currentFocus',
       'Failed to update focus'
     );
@@ -276,6 +292,7 @@ export const useCombatStore = defineStore('combat', () => {
     patchNpcResource(
       data,
       (d) => combatService.patchInvestiture(d),
+      'currentInvestiture',
       'currentInvestiture',
       'Failed to update investiture'
     );
@@ -333,6 +350,8 @@ export const useCombatStore = defineStore('combat', () => {
     loading.value = false;
     error.value = null;
     savingCount.value = 0;
+    fetchRequestId = 0;
+    selectRequestId = 0;
   }
 
   return {

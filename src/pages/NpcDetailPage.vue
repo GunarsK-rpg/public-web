@@ -27,6 +27,7 @@
           :display-name="combatNpc?.displayName"
           :current-resources="currentResources"
           :saving="saving"
+          :readonly="!combatStore.currentCombat?.isActive"
           @resource-update="onResourceUpdate"
         />
       </template>
@@ -61,13 +62,13 @@ const combatNpc = ref<CombatNpc | null>(null);
 const saving = computed(() => combatStore.saving);
 
 const combatId = computed(() => {
-  const v = route.query.combatId;
-  return v ? Number(v) : null;
+  const n = Number(route.query.combatId);
+  return Number.isFinite(n) && n > 0 ? n : null;
 });
 
 const instanceId = computed(() => {
-  const v = route.query.instanceId;
-  return v ? Number(v) : null;
+  const n = Number(route.query.instanceId);
+  return Number.isFinite(n) && n > 0 ? n : null;
 });
 
 const currentResources = computed(() => {

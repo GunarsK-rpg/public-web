@@ -149,7 +149,7 @@
               >
                 <q-card-section>
                   <div class="text-h6">{{ combat.name }}</div>
-                  <div class="text-subtitle2">Round {{ combat.round }}</div>
+                  <div class="text-subtitle2">Turn {{ combat.round }}</div>
                 </q-card-section>
 
                 <q-card-section>

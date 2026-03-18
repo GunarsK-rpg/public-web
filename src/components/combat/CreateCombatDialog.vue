@@ -72,7 +72,7 @@ watch(
 );
 
 function onSubmit() {
-  if (!name.value.trim()) return;
+  if (!name.value.trim() || props.saving) return;
   emit('create', name.value.trim(), description.value.trim() || null);
 }
 

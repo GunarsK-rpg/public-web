@@ -1,30 +1,45 @@
 <template>
   <q-card class="combat-npc-tile">
     <q-card-section class="row items-center no-wrap q-pb-none">
-      <div class="col cursor-pointer" @click="goToStatBlock">
+      <div
+        class="col cursor-pointer"
+        role="button"
+        tabindex="0"
+        :aria-label="`View ${displayLabel} stat block`"
+        @click="goToStatBlock"
+        @keydown.enter="goToStatBlock"
+        @keydown.space.prevent="goToStatBlock"
+      >
         <div class="text-subtitle1 text-weight-bold">{{ displayLabel }}</div>
         <div class="row items-center q-gutter-xs">
           <q-badge :label="npc.tier.name" color="grey-7" />
-          <q-badge :label="npc.type" color="grey-5" text-color="dark" />
+          <q-badge
+            :label="npc.type"
+            :color="npc.type === 'boss' ? 'negative' : 'grey-5'"
+            :text-color="npc.type === 'boss' ? 'white' : 'dark'"
+          />
         </div>
       </div>
-      <TurnSpeedToggle
-        :model-value="npc.turnSpeed ?? null"
-        :saving="saving"
-        class="q-mr-sm"
-        @update:model-value="onTurnSpeedChange"
-      />
-      <q-btn
-        flat
-        dense
-        round
-        size="sm"
-        color="negative"
-        :disable="saving"
-        aria-label="Remove NPC"
-        @click="confirmRemove"
-        ><Trash2 :size="18" aria-hidden="true"
-      /></q-btn>
+      <template v-if="!readonly">
+        <TurnSpeedToggle
+          v-if="npc.type !== 'boss'"
+          :model-value="npc.turnSpeed ?? null"
+          :saving="saving"
+          class="q-mr-sm"
+          @update:model-value="onTurnSpeedChange"
+        />
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          color="negative"
+          :disable="saving"
+          aria-label="Remove NPC"
+          @click="confirmRemove"
+          ><Trash2 :size="18" aria-hidden="true"
+        /></q-btn>
+      </template>
     </q-card-section>
 
     <q-card-section class="q-pt-sm">
@@ -36,7 +51,8 @@
             :max="maxHp"
             color="negative"
             :saving="saving"
-            use-dialog
+            :readonly="readonly"
+            :use-dialog="!readonly"
             @update="onHpUpdate"
             @open-dialog="showHpDialog = true"
           />
@@ -48,6 +64,7 @@
             :max="maxFocus"
             :color="RPG_COLORS.focus"
             :saving="saving"
+            :readonly="readonly"
             @update="onFocusUpdate"
           />
         </div>
@@ -58,6 +75,7 @@
             :max="maxInvestiture"
             :color="RPG_COLORS.investiture"
             :saving="saving"
+            :readonly="readonly"
             @update="onInvestitureUpdate"
           />
         </div>
@@ -89,6 +107,7 @@ const props = defineProps<{
   npc: CombatNpc;
   campaignId: number;
   saving: boolean;
+  readonly?: boolean;
 }>();
 
 const emit = defineEmits<{

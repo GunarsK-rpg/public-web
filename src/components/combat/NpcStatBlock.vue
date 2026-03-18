@@ -20,7 +20,7 @@
           :derived-stats="npc.derivedStats"
           :current="currentResources"
           :saving="saving"
-          :readonly="!currentResources"
+          :readonly="readonly || !currentResources"
           @update="(code, value) => $emit('resource-update', code, value)"
         />
       </div>
@@ -62,6 +62,7 @@ const props = defineProps<{
   displayName?: string | null | undefined;
   currentResources?: ResourceValues | null | undefined;
   saving?: boolean;
+  readonly?: boolean;
 }>();
 
 defineEmits<{

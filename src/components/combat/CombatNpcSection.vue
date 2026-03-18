@@ -3,7 +3,7 @@
     <div class="row items-center q-mb-md">
       <div class="text-h6">{{ title }}</div>
       <q-space />
-      <q-btn v-if="canEdit" flat color="primary" :disable="saving" @click="$emit('add')"
+      <q-btn v-if="!readonly" flat color="primary" :disable="saving" @click="$emit('add')"
         ><UserPlus :size="20" class="on-left" />{{ addLabel }}</q-btn
       >
     </div>
@@ -18,6 +18,7 @@
           :npc="npc"
           :campaign-id="campaignId"
           :saving="saving"
+          :readonly="readonly"
           @update-turn-speed="(v) => $emit('update-turn-speed', npc, v)"
           @update-hp="(v) => $emit('update-hp', npc, v)"
           @update-focus="(v) => $emit('update-focus', npc, v)"
@@ -40,7 +41,7 @@ defineProps<{
   npcs: CombatNpc[];
   campaignId: number;
   saving: boolean;
-  canEdit: boolean;
+  readonly: boolean;
 }>();
 
 defineEmits<{

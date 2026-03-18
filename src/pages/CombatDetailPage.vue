@@ -28,10 +28,10 @@
           <div class="text-h5">{{ combat.name }}</div>
         </div>
 
-        <!-- Round tracker + controls -->
+        <!-- Turn tracker + controls -->
         <div class="row items-center q-gutter-sm q-mb-md">
           <ResourceBox
-            label="Round"
+            label="Turn"
             :current="combat.round"
             :saving="saving"
             :readonly="!combat.isActive"
@@ -55,6 +55,7 @@
           autogrow
           class="q-mb-lg"
           :disable="saving"
+          @focus="notesEditing = true"
           @blur="saveNotes"
         />
         <div v-else-if="combat.notes" class="text-body2 text-grey q-mb-lg">
@@ -62,14 +63,14 @@
         </div>
 
         <CombatNpcSection
-          title="Allies"
-          add-label="Add Ally"
-          :npcs="allies"
+          title="Enemies"
+          add-label="Add Enemy"
+          :npcs="enemies"
           :campaign-id="numCampaignId"
           :saving="saving"
-          :can-edit="combat.isActive"
+          :readonly="!combat.isActive"
           class="q-mb-lg"
-          @add="openAddNpc('ally')"
+          @add="openAddNpc('enemy')"
           @update-turn-speed="onTurnSpeed"
           @update-hp="onPatchHp"
           @update-focus="onPatchFocus"
@@ -78,13 +79,13 @@
         />
 
         <CombatNpcSection
-          title="Enemies"
-          add-label="Add Enemy"
-          :npcs="enemies"
+          title="Allies"
+          add-label="Add Ally"
+          :npcs="allies"
           :campaign-id="numCampaignId"
           :saving="saving"
-          :can-edit="combat.isActive"
-          @add="openAddNpc('enemy')"
+          :readonly="!combat.isActive"
+          @add="openAddNpc('ally')"
           @update-turn-speed="onTurnSpeed"
           @update-hp="onPatchHp"
           @update-focus="onPatchFocus"
@@ -134,12 +135,13 @@ const numCampaignId = computed(() => Number(props.campaignId));
 const numCombatId = computed(() => Number(props.combatId));
 
 const notesInput = ref('');
+const notesEditing = ref(false);
 const showAddNpc = ref(false);
 const addNpcSide = ref<'ally' | 'enemy'>('enemy');
 
-// Sync notes input when combat loads
+// Sync notes input when combat loads (skip if user is editing)
 watch(combat, (c) => {
-  if (c) notesInput.value = c.notes ?? '';
+  if (c && !notesEditing.value) notesInput.value = c.notes ?? '';
 });
 
 onMounted(async () => {
@@ -167,6 +169,7 @@ function goBack() {
 
 // Notes auto-save on blur
 async function saveNotes() {
+  notesEditing.value = false;
   if (!combat.value) return;
   const trimmed = notesInput.value.trim() || null;
   if (trimmed === combat.value.notes) return;

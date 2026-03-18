@@ -49,7 +49,7 @@ const deflectValue = computed((): StatValue | null => {
   const stat = allDerivedStats.value.find((s) => s.code === 'deflect');
   if (!stat) return null;
   return {
-    type: { id: stat.id, code: 'deflect', name: 'Deflect' },
+    type: { id: stat.id, code: stat.code, name: stat.name },
     value: stat.totalValue,
   };
 });

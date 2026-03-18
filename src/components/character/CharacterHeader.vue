@@ -91,6 +91,7 @@ const classifiers = useClassifierStore();
 const hero = computed(() => heroStore.hero);
 const saving = computed(() => heroStore.saving);
 
+// Synthetic TypedValue array for ResourcesBar — id:0 is a placeholder, matching is by type.code only
 const resourceDerivedStats = computed((): TypedValue[] => {
   const stats: TypedValue[] = [
     {
