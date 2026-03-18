@@ -26,6 +26,7 @@
           :npc="npc"
           :display-name="combatNpc?.displayName"
           :current-resources="currentResources"
+          :notes="combatNpc?.notes"
           :saving="saving"
           :readonly="!combatStore.currentCombat?.isActive"
           @resource-update="onResourceUpdate"
@@ -95,6 +96,7 @@ onMounted(async () => {
     }
     const response = await combatService.getNpc(campaignId, npcId);
     npc.value = response.data;
+    route.meta.title = response.data.name;
 
     // Load combat NPC instance if combat context provided
     if (combatId.value && instanceId.value) {

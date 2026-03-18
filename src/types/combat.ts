@@ -1,4 +1,5 @@
 import type { ClassifierRef, TypedValue } from './shared';
+import type { TurnPhase } from 'src/constants/combat';
 
 /** NPC option — lightweight picker list from get_npc_options */
 export interface NpcOption {
@@ -46,6 +47,7 @@ export interface CombatBase {
   isActive?: boolean;
   round?: number;
   notes?: string | null;
+  turnPhase?: TurnPhase;
 }
 
 /** Combat — API response */
@@ -55,6 +57,7 @@ export interface Combat extends CombatBase {
   isActive: boolean;
   round: number;
   notes: string | null;
+  turnPhase: TurnPhase;
 }
 
 /** Combat NPC — upsert payload */

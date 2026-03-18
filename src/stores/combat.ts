@@ -318,6 +318,7 @@ export const useCombatStore = defineStore('combat', () => {
           isActive: response.data.isActive,
           round: response.data.round,
           notes: response.data.notes,
+          turnPhase: response.data.turnPhase,
         };
       }
 

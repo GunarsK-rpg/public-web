@@ -66,7 +66,7 @@ const attributeValues = computed((): StatValue[] =>
     return {
       type: { id: a.id, code: a.code, name: a.name },
       value: attrStore.attributeValues[a.code] ?? 0,
-      breakdown: bonus > 0 ? `Base ${base} + Enhanced +${bonus}` : null,
+      breakdown: bonus !== 0 ? `Base ${base} + Enhanced ${bonus > 0 ? '+' : ''}${bonus}` : null,
     };
   })
 );

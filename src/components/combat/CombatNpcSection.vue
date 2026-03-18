@@ -19,10 +19,12 @@
           :campaign-id="campaignId"
           :saving="saving"
           :readonly="readonly"
+          :turn-phase="turnPhase"
           @update-turn-speed="(v) => $emit('update-turn-speed', npc, v)"
           @update-hp="(v) => $emit('update-hp', npc, v)"
           @update-focus="(v) => $emit('update-focus', npc, v)"
           @update-investiture="(v) => $emit('update-investiture', npc, v)"
+          @edit="(name, notes) => $emit('edit', npc, name, notes)"
           @remove="$emit('remove', npc)"
         />
       </div>
@@ -42,6 +44,7 @@ defineProps<{
   campaignId: number;
   saving: boolean;
   readonly: boolean;
+  turnPhase?: 'fast' | 'slow' | null;
 }>();
 
 defineEmits<{
@@ -50,6 +53,7 @@ defineEmits<{
   'update-hp': [npc: CombatNpc, value: number];
   'update-focus': [npc: CombatNpc, value: number];
   'update-investiture': [npc: CombatNpc, value: number];
+  edit: [npc: CombatNpc, displayName: string | null, notes: string | null];
   remove: [npc: CombatNpc];
 }>();
 </script>

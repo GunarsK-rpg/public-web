@@ -37,6 +37,17 @@
             :readonly="!combat.isActive"
             @update="onRoundUpdate"
           />
+          <q-btn-toggle
+            v-if="combat.isActive"
+            :model-value="combat.turnPhase"
+            :options="phaseOptions"
+            no-caps
+            dense
+            toggle-color="primary"
+            :disable="saving"
+            class="q-ml-md"
+            @update:model-value="onPhaseChange"
+          />
           <q-space />
           <q-toggle
             :model-value="combat.isActive"
@@ -69,12 +80,14 @@
           :campaign-id="numCampaignId"
           :saving="saving"
           :readonly="!combat.isActive"
+          :turn-phase="combat.turnPhase"
           class="q-mb-lg"
           @add="openAddNpc('enemy')"
           @update-turn-speed="onTurnSpeed"
           @update-hp="onPatchHp"
           @update-focus="onPatchFocus"
           @update-investiture="onPatchInvestiture"
+          @edit="onEditNpc"
           @remove="onRemoveNpc"
         />
 
@@ -85,11 +98,13 @@
           :campaign-id="numCampaignId"
           :saving="saving"
           :readonly="!combat.isActive"
+          :turn-phase="combat.turnPhase"
           @add="openAddNpc('ally')"
           @update-turn-speed="onTurnSpeed"
           @update-hp="onPatchHp"
           @update-focus="onPatchFocus"
           @update-investiture="onPatchInvestiture"
+          @edit="onEditNpc"
           @remove="onRemoveNpc"
         />
 
@@ -110,6 +125,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { Swords, ArrowLeft } from 'lucide-vue-next';
 import { useCombatStore } from 'src/stores/combat';
+import { TURN_PHASES } from 'src/constants/combat';
 import ResourceBox from 'src/components/shared/ResourceBox.vue';
 import CombatNpcSection from 'src/components/combat/CombatNpcSection.vue';
 import AddNpcDialog from 'src/components/combat/AddNpcDialog.vue';
@@ -181,6 +197,21 @@ async function saveNotes() {
   });
 }
 
+// Phase toggle
+const phaseOptions = TURN_PHASES;
+
+function onPhaseChange(phase: 'fast' | 'slow' | null) {
+  if (!combat.value) return;
+  // Click selected to deselect
+  const newPhase = phase === combat.value.turnPhase ? null : phase;
+  void combatStore.updateCombat({
+    id: combat.value.id,
+    campaignId: numCampaignId.value,
+    name: combat.value.name,
+    turnPhase: newPhase,
+  });
+}
+
 // Active toggle
 async function onToggleActive(active: boolean) {
   if (!combat.value) return;
@@ -217,6 +248,18 @@ async function onAddNpc(npcId: number, displayName: string | null) {
 }
 
 // NPC tile event handlers
+function onEditNpc(npc: CombatNpc, displayName: string | null, notes: string | null) {
+  void combatStore.updateCombatNpc({
+    id: npc.id,
+    campaignId: numCampaignId.value,
+    combatId: numCombatId.value,
+    npcId: npc.npcId,
+    side: npc.side,
+    displayName,
+    notes,
+  });
+}
+
 function onTurnSpeed(npc: CombatNpc, value: 'fast' | 'slow' | null) {
   void combatStore.updateCombatNpc({
     id: npc.id,

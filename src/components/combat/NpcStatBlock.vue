@@ -40,6 +40,11 @@
     <ItemListSection title="Actions" :items="actionItems" />
     <ItemListSection title="Opportunities" :items="opportunityItems" :separator="false" />
 
+    <template v-if="notes">
+      <q-separator class="q-my-md" />
+      <TextSection title="DM Notes" :text="notes" />
+    </template>
+
     <q-separator v-if="npc.description || npc.tactics" class="q-my-md" />
     <TextSection title="Description" :text="npc.description" />
     <TextSection title="Tactics" :text="npc.tactics" />
@@ -61,6 +66,7 @@ const props = defineProps<{
   npc: Npc;
   displayName?: string | null | undefined;
   currentResources?: ResourceValues | null | undefined;
+  notes?: string | null | undefined;
   saving?: boolean;
   readonly?: boolean;
 }>();
@@ -95,12 +101,3 @@ const opportunityItems = computed(() =>
 );
 </script>
 
-<style scoped>
-.section-label {
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--q-grey-7, #616161);
-  margin-bottom: 4px;
-}
-</style>

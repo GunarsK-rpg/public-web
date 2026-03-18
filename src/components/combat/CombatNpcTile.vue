@@ -1,5 +1,5 @@
 <template>
-  <q-card class="combat-npc-tile">
+  <q-card class="combat-npc-tile" :class="{ 'npc-dimmed': dimmed }">
     <q-card-section class="row items-center no-wrap q-pb-none">
       <div
         class="col cursor-pointer"
@@ -28,6 +28,16 @@
           class="q-mr-sm"
           @update:model-value="onTurnSpeedChange"
         />
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
+          :disable="saving"
+          aria-label="Edit NPC"
+          @click="showEditDialog = true"
+          ><Pencil :size="16" aria-hidden="true"
+        /></q-btn>
         <q-btn
           flat
           dense
@@ -82,6 +92,14 @@
       </div>
     </q-card-section>
 
+    <!-- Notes -->
+    <q-card-section v-if="npc.notes" class="q-pt-none">
+      <div class="text-caption text-grey-5 ellipsis-2-lines cursor-pointer">
+        {{ npc.notes }}
+        <InfoPopup>{{ npc.notes }}</InfoPopup>
+      </div>
+    </q-card-section>
+
     <HpManagementDialog
       v-model="showHpDialog"
       :current-hp="npc.currentHp"
@@ -89,18 +107,58 @@
       :saving="saving"
       @update="onHpUpdate"
     />
+
+    <!-- Edit dialog -->
+    <q-dialog v-model="showEditDialog" aria-modal="true">
+      <q-card style="min-width: 350px" role="dialog">
+        <q-card-section>
+          <div class="text-h6">Edit NPC</div>
+        </q-card-section>
+        <q-separator />
+        <q-card-section>
+          <q-input
+            v-model="editName"
+            label="Display name"
+            dense
+            :placeholder="npc.name"
+            class="q-mb-sm"
+          />
+          <q-input
+            v-model="editNotes"
+            label="Notes"
+            type="textarea"
+            dense
+            autogrow
+          />
+        </q-card-section>
+        <q-separator />
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" @click="showEditDialog = false" />
+          <q-btn
+            flat
+            color="primary"
+            label="Save"
+            :disable="saving"
+            :loading="saving"
+            @click="saveEdit"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-card>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
-import { Trash2 } from 'lucide-vue-next';
+import { Pencil, Trash2 } from 'lucide-vue-next';
+import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import { RPG_COLORS } from 'src/constants/theme';
 import ResourceBox from 'src/components/shared/ResourceBox.vue';
 import HpManagementDialog from 'src/components/shared/HpManagementDialog.vue';
 import TurnSpeedToggle from './TurnSpeedToggle.vue';
+import type { TurnPhase } from 'src/constants/combat';
 import type { CombatNpc } from 'src/types';
 
 const props = defineProps<{
@@ -108,6 +166,7 @@ const props = defineProps<{
   campaignId: number;
   saving: boolean;
   readonly?: boolean;
+  turnPhase?: TurnPhase | undefined;
 }>();
 
 const emit = defineEmits<{
@@ -115,14 +174,35 @@ const emit = defineEmits<{
   'update-hp': [value: number];
   'update-focus': [value: number];
   'update-investiture': [value: number];
+  edit: [displayName: string | null, notes: string | null];
   remove: [];
 }>();
 
 const $q = useQuasar();
 const router = useRouter();
 const showHpDialog = ref(false);
+const showEditDialog = ref(false);
+const editName = ref('');
+const editNotes = ref('');
+
+watch(showEditDialog, (open) => {
+  if (open) {
+    editName.value = props.npc.displayName ?? '';
+    editNotes.value = props.npc.notes ?? '';
+  }
+});
+
+function saveEdit() {
+  emit('edit', editName.value.trim() || null, editNotes.value.trim() || null);
+  showEditDialog.value = false;
+}
 
 const displayLabel = computed(() => props.npc.displayName ?? props.npc.name);
+
+const dimmed = computed(() => {
+  if (!props.turnPhase || props.npc.type === 'boss') return false;
+  return props.npc.turnSpeed !== props.turnPhase;
+});
 
 function derivedStat(code: string): number {
   return props.npc.derivedStats.find((s) => s.type.code === code)?.value ?? 0;
@@ -188,6 +268,11 @@ function confirmRemove() {
 </script>
 
 <style scoped>
+.npc-dimmed {
+  opacity: 0.4;
+  filter: grayscale(30%);
+}
+
 .combat-npc-tile {
   min-width: 200px;
 }
