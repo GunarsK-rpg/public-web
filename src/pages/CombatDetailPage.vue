@@ -25,8 +25,26 @@
           <q-btn flat dense round size="sm" class="q-mr-sm" aria-label="Back" @click="goBack">
             <ArrowLeft :size="20" />
           </q-btn>
-          <div class="text-h5">{{ combat.name }}</div>
+          <q-input
+            v-model="nameInput"
+            dense
+            borderless
+            input-class="text-h5"
+            :disable="saving"
+            @blur="saveName"
+          />
         </div>
+        <q-input
+          v-model="descriptionInput"
+          dense
+          borderless
+          placeholder="Description (optional)"
+          type="textarea"
+          autogrow
+          class="q-mb-xs text-body2 text-grey"
+          :disable="saving"
+          @blur="saveDescription"
+        />
 
         <!-- Turn tracker + controls -->
         <div class="row items-center q-gutter-sm q-mb-md">
@@ -150,14 +168,19 @@ const enemies = computed(() => combatStore.enemies);
 const numCampaignId = computed(() => Number(props.campaignId));
 const numCombatId = computed(() => Number(props.combatId));
 
+const nameInput = ref('');
+const descriptionInput = ref('');
 const notesInput = ref('');
 const notesEditing = ref(false);
 const showAddNpc = ref(false);
 const addNpcSide = ref<'ally' | 'enemy'>('enemy');
 
-// Sync notes input when combat loads (skip if user is editing)
+// Sync inputs when combat loads (skip notes if user is editing)
 watch(combat, (c) => {
-  if (c && !notesEditing.value) notesInput.value = c.notes ?? '';
+  if (!c) return;
+  nameInput.value = c.name;
+  descriptionInput.value = c.description ?? '';
+  if (!notesEditing.value) notesInput.value = c.notes ?? '';
 });
 
 onMounted(async () => {
@@ -180,6 +203,29 @@ function goBack() {
   void router.push({
     name: 'campaign-detail',
     params: { campaignId: props.campaignId },
+  });
+}
+
+function saveName() {
+  if (!combat.value || !nameInput.value.trim()) return;
+  const trimmed = nameInput.value.trim();
+  if (trimmed === combat.value.name) return;
+  void combatStore.updateCombat({
+    id: combat.value.id,
+    campaignId: numCampaignId.value,
+    name: trimmed,
+  });
+}
+
+function saveDescription() {
+  if (!combat.value) return;
+  const trimmed = descriptionInput.value.trim() || null;
+  if (trimmed === combat.value.description) return;
+  void combatStore.updateCombat({
+    id: combat.value.id,
+    campaignId: numCampaignId.value,
+    name: combat.value.name,
+    description: trimmed,
   });
 }
 
