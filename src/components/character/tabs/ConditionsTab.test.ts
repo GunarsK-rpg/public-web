@@ -245,6 +245,74 @@ describe('ConditionsTab', () => {
   });
 
   // ========================================
+  // Injury-locked conditions
+  // ========================================
+  describe('injury-locked conditions', () => {
+    it('injury-only condition has condition-locked class', () => {
+      mockConditions.value = [
+        {
+          id: 1,
+          heroId: 1,
+          condition: { id: 11, code: 'slowed', name: 'Slowed' },
+          notes: null,
+          special: null,
+          sourceInjuryId: 99,
+        },
+      ];
+      const wrapper = createWrapper();
+      const cards = wrapper.findAll('.condition-card');
+      const slowedCard = cards.find((c) => c.text().includes('Slowed'));
+      expect(slowedCard?.classes()).toContain('condition-locked');
+      expect(slowedCard?.classes()).not.toContain('condition-interactive');
+    });
+
+    it('clicking injury-locked condition does not toggle', async () => {
+      mockConditions.value = [
+        {
+          id: 1,
+          heroId: 1,
+          condition: { id: 11, code: 'slowed', name: 'Slowed' },
+          notes: null,
+          special: null,
+          sourceInjuryId: 99,
+        },
+      ];
+      const wrapper = createWrapper();
+      const cards = wrapper.findAll('.condition-card');
+      const slowedCard = cards.find((c) => c.text().includes('Slowed'));
+      await slowedCard?.trigger('click');
+      expect(mockUpsertCondition).not.toHaveBeenCalled();
+      expect(mockRemoveCondition).not.toHaveBeenCalled();
+    });
+
+    it('condition with both manual and injury instances is interactive', () => {
+      mockConditions.value = [
+        {
+          id: 1,
+          heroId: 1,
+          condition: { id: 11, code: 'slowed', name: 'Slowed' },
+          notes: null,
+          special: null,
+          sourceInjuryId: 99,
+        },
+        {
+          id: 2,
+          heroId: 1,
+          condition: { id: 11, code: 'slowed', name: 'Slowed' },
+          notes: null,
+          special: null,
+          sourceInjuryId: null,
+        },
+      ];
+      const wrapper = createWrapper();
+      const cards = wrapper.findAll('.condition-card');
+      const slowedCard = cards.find((c) => c.text().includes('Slowed'));
+      expect(slowedCard?.classes()).not.toContain('condition-locked');
+      expect(slowedCard?.classes()).toContain('condition-interactive');
+    });
+  });
+
+  // ========================================
   // Focused toggle
   // ========================================
   describe('focused toggle', () => {
