@@ -99,6 +99,7 @@
           :saving="saving"
           :readonly="!combat.isActive"
           :turn-phase="combat.turnPhase"
+          :turn-done-ids="combatStore.turnDoneIds"
           class="q-mb-lg"
           @add="openAddNpc('enemy')"
           @update-turn-speed="onTurnSpeed"
@@ -107,6 +108,7 @@
           @update-investiture="onPatchInvestiture"
           @edit="onEditNpc"
           @remove="onRemoveNpc"
+          @toggle-turn-done="onToggleTurnDone"
         />
 
         <CombatNpcSection
@@ -117,6 +119,7 @@
           :saving="saving"
           :readonly="!combat.isActive"
           :turn-phase="combat.turnPhase"
+          :turn-done-ids="combatStore.turnDoneIds"
           @add="openAddNpc('ally')"
           @update-turn-speed="onTurnSpeed"
           @update-hp="onPatchHp"
@@ -124,6 +127,7 @@
           @update-investiture="onPatchInvestiture"
           @edit="onEditNpc"
           @remove="onRemoveNpc"
+          @toggle-turn-done="onToggleTurnDone"
         />
 
         <!-- Add NPC Dialog -->
@@ -250,6 +254,7 @@ function onPhaseChange(phase: 'fast' | 'slow' | null) {
   if (!combat.value) return;
   // Click selected to deselect
   const newPhase = phase === combat.value.turnPhase ? null : phase;
+  combatStore.clearBossTurnDone();
   void combatStore.updateCombat({
     id: combat.value.id,
     campaignId: numCampaignId.value,
@@ -342,6 +347,10 @@ function onPatchInvestiture(npc: CombatNpc, value: number) {
     campaignId: numCampaignId.value,
     value,
   });
+}
+
+function onToggleTurnDone(npc: CombatNpc) {
+  combatStore.toggleTurnDone(npc.id);
 }
 
 function onRemoveNpc(npc: CombatNpc) {
