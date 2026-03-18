@@ -67,6 +67,20 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Edit Campaign' },
       },
       {
+        path: 'campaigns/:campaignId(\\d+)/combats/:combatId(\\d+)',
+        name: 'combat-detail',
+        component: () => import('pages/CombatDetailPage.vue'),
+        props: true,
+        meta: { title: 'Combat' },
+      },
+      {
+        path: 'campaigns/:campaignId(\\d+)/npcs/:npcId(\\d+)',
+        name: 'npc-detail',
+        component: () => import('pages/NpcDetailPage.vue'),
+        props: true,
+        meta: { title: 'NPC' },
+      },
+      {
         path: 'join/:code',
         name: 'join-campaign',
         component: () => import('pages/JoinCampaignPage.vue'),

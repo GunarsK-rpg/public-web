@@ -94,9 +94,11 @@ describe('CharacterHeader', () => {
       },
       global: {
         stubs: {
+          ResourcesBar: false,
           ResourceBox: {
             template: '<div class="resource-box-stub" :data-label="$attrs.label" />',
           },
+          HpManagementDialog: true,
           QSeparator: {
             template: '<hr class="q-separator" />',
           },

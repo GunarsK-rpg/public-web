@@ -1,111 +1,37 @@
 <template>
   <div class="stats-tab" aria-live="polite" aria-atomic="false">
-    <!-- Defenses Section -->
-    <div class="section-title section-title--lg">Defenses</div>
-    <div class="row q-col-gutter-sm q-mb-md">
-      <div v-for="attrType in classifiers.attributeTypes" :key="attrType.id" class="col-3">
-        <q-card class="defense-card">
-          <q-card-section class="text-center q-pa-sm">
-            <div
-              class="defense-value"
-              :aria-label="`${attrType.name} defense: ${attrStore.getDefenseValue(attrType.code)}`"
-            >
-              {{ attrStore.getDefenseValue(attrType.code) }}
-            </div>
-            <div class="defense-name">{{ attrType.name }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-3">
-        <q-card
-          class="defense-card deflect-card"
-          tabindex="0"
-          role="button"
-          aria-haspopup="dialog"
-          @keydown.enter.prevent="($event.currentTarget as HTMLElement).click()"
-          @keydown.space.prevent="($event.currentTarget as HTMLElement).click()"
-        >
-          <q-card-section class="text-center q-pa-sm">
-            <div class="defense-value" :aria-label="`Deflect: ${deflectValue}`">
-              {{ deflectValue }}
-            </div>
-            <div class="defense-name">
-              Deflect
-              <Info :size="12" class="q-ml-xs" aria-hidden="true" />
-            </div>
-          </q-card-section>
-          <InfoPopup v-if="deflectDescription">{{ deflectDescription }}</InfoPopup>
-        </q-card>
-      </div>
-    </div>
-
-    <!-- Attributes Section -->
-    <div class="section-title section-title--lg">Attributes</div>
-    <div class="row q-col-gutter-sm q-mb-md">
-      <div v-for="attr in classifiers.attributes" :key="attr.id" class="col-6 col-sm-4 col-md-2">
-        <q-card class="attribute-card">
-          <q-card-section class="text-center q-pa-sm">
-            <div class="attribute-abbr">{{ attr.code.toUpperCase() }}</div>
-            <div
-              class="attribute-value"
-              :class="{ 'text-positive': getEnhancedBonus(attr.code) > 0 }"
-              :aria-label="`${attr.name}: ${attrStore.attributeValues[attr.code] ?? 0}`"
-            >
-              {{ attrStore.attributeValues[attr.code] ?? 0 }}
-              <InfoPopup v-if="getEnhancedBonus(attr.code) > 0">
-                Base {{ attrStore.baseAttributeValues[attr.code] ?? 0 }} + Enhanced +{{
-                  getEnhancedBonus(attr.code)
-                }}
-              </InfoPopup>
-            </div>
-            <div class="attribute-name">{{ attr.name }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-    </div>
-
-    <!-- Other Stats -->
-    <div class="section-title section-title--lg">Other Stats</div>
-    <div class="row q-col-gutter-sm">
-      <div v-for="stat in derivedStatsList" :key="stat.id" class="col-6 col-sm-3">
-        <q-card flat bordered>
-          <q-card-section class="q-pa-sm">
-            <div class="text-caption text-muted">{{ stat.name }}</div>
-            <div class="text-body1">
-              {{ stat.totalDisplay }}
-              <span
-                v-if="stat.hasModifier && (stat.modifier !== 0 || stat.bonus !== 0)"
-                class="text-caption"
-                >{{ statBreakdown(stat) }}</span
-              >
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-    </div>
+    <DefensesSection :defenses="defenseValues" :deflect="deflectValue" />
+    <AttributesSection :attributes="attributeValues" />
+    <DerivedStatsSection :stats="derivedStatValues" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Info } from 'lucide-vue-next';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { getConditionBonus } from 'src/utils/specialUtils';
-import InfoPopup from 'src/components/shared/InfoPopup.vue';
+import DefensesSection from 'src/components/shared/DefensesSection.vue';
+import AttributesSection from 'src/components/shared/AttributesSection.vue';
+import DerivedStatsSection from 'src/components/shared/DerivedStatsSection.vue';
+import type { StatValue } from 'src/types/shared';
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 
-function getEnhancedBonus(attrCode: string): number {
-  return getConditionBonus(heroStore.conditions, `attribute_${attrCode}`);
-}
+// Defenses
+const defenseValues = computed((): StatValue[] =>
+  classifiers.attributeTypes.map((at) => ({
+    type: { id: at.id, code: at.code, name: at.name },
+    value: attrStore.getDefenseValue(at.code),
+  }))
+);
 
-const allDerivedStats = computed(() => {
-  return buildDerivedStatsList(
+const allDerivedStats = computed(() =>
+  buildDerivedStatsList(
     classifiers.derivedStats,
     classifiers.derivedStatValues,
     classifiers.attributes,
@@ -116,64 +42,51 @@ const allDerivedStats = computed(() => {
     (statCode) => attrStore.getStatBonus(statCode),
     (statCode, value) =>
       statCode === 'movement' ? attrStore.applyMovementConditions(value) : value
-  );
+  )
+);
+
+const deflectValue = computed((): StatValue | null => {
+  const stat = allDerivedStats.value.find((s) => s.code === 'deflect');
+  if (!stat) return null;
+  return {
+    type: { id: stat.id, code: stat.code, name: stat.name },
+    value: stat.totalValue,
+  };
 });
 
-const deflectStat = computed(() => classifiers.derivedStats.find((s) => s.code === 'deflect'));
+// Attributes
+function getEnhancedBonus(attrCode: string): number {
+  return getConditionBonus(heroStore.conditions, `attribute_${attrCode}`);
+}
 
-const deflectValue = computed(() => {
-  const deflect = allDerivedStats.value.find((s) => s.code === 'deflect');
-  return deflect?.totalValue ?? 0;
-});
+const attributeValues = computed((): StatValue[] =>
+  classifiers.attributes.map((a) => {
+    const bonus = getEnhancedBonus(a.code);
+    const base = attrStore.baseAttributeValues[a.code] ?? 0;
+    return {
+      type: { id: a.id, code: a.code, name: a.name },
+      value: attrStore.attributeValues[a.code] ?? 0,
+      breakdown: bonus !== 0 ? `Base ${base} + Enhanced ${bonus > 0 ? '+' : ''}${bonus}` : null,
+    };
+  })
+);
 
-const deflectDescription = computed(() => deflectStat.value?.description ?? '');
-
-const derivedStatsList = computed(() => {
-  return allDerivedStats.value.filter((s) => s.code !== 'deflect');
-});
-
+// Derived Stats
 function statBreakdown(stat: { baseDisplay: string; modifier: number; bonus: number }): string {
   let result = `(${stat.baseDisplay}`;
   if (stat.modifier !== 0) result += ` ${stat.modifier >= 0 ? '+' : ''}${stat.modifier}`;
   if (stat.bonus !== 0) result += ` ${stat.bonus >= 0 ? '+' : ''}${stat.bonus}`;
   return result + ')';
 }
+
+const derivedStatValues = computed((): StatValue[] =>
+  allDerivedStats.value
+    .filter((s) => s.code !== 'deflect')
+    .map((s) => ({
+      type: { id: s.id, code: s.code, name: s.name },
+      value: s.totalValue,
+      displayValue: s.totalDisplay,
+      breakdown: s.hasModifier && (s.modifier !== 0 || s.bonus !== 0) ? statBreakdown(s) : null,
+    }))
+);
 </script>
-
-<style scoped>
-.attribute-card {
-  height: 100%;
-}
-
-.attribute-abbr {
-  font-size: var(--font-size-sm);
-  opacity: 0.6;
-  text-transform: uppercase;
-}
-
-.attribute-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.attribute-name {
-  font-size: var(--font-size-sm);
-  opacity: 0.7;
-}
-
-.defense-card {
-  height: 100%;
-}
-
-.defense-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.defense-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-</style>

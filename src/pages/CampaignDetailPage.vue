@@ -115,6 +115,59 @@
             </q-card>
           </div>
         </div>
+
+        <template v-if="isOwner">
+          <div class="row items-center q-mb-md q-mt-lg">
+            <div class="text-h6">Combats</div>
+            <q-space />
+            <q-btn color="primary" :disable="saving" @click="showCreateCombat = true"
+              ><Swords :size="20" class="on-left" />New Combat</q-btn
+            >
+          </div>
+
+          <div v-if="combatStore.combats.length === 0" class="text-center q-pa-xl">
+            <Swords :size="64" class="text-grey-5" aria-hidden="true" />
+            <div class="text-h6 text-grey-7 q-mt-md">No combats yet</div>
+            <div class="text-body2 text-grey-6">Create a combat to start tracking encounters.</div>
+          </div>
+
+          <div v-else class="row q-col-gutter-md">
+            <div
+              v-for="combat in combatStore.combats"
+              :key="combat.id"
+              class="col-12 col-sm-6 col-md-4"
+            >
+              <q-card
+                class="card-interactive cursor-pointer"
+                :class="{ 'combat-inactive': !combat.isActive }"
+                tabindex="0"
+                role="button"
+                :aria-label="`View combat: ${combat.name}`"
+                @click="selectCombat(combat.id)"
+                @keydown.enter="selectCombat(combat.id)"
+                @keydown.space.prevent="selectCombat(combat.id)"
+              >
+                <q-card-section>
+                  <div class="text-h6">{{ combat.name }}</div>
+                  <div class="text-subtitle2">Turn {{ combat.round }}</div>
+                </q-card-section>
+
+                <q-card-section>
+                  <q-badge
+                    :color="combat.isActive ? 'positive' : 'grey'"
+                    :label="combat.isActive ? 'Active' : 'Finished'"
+                  />
+                </q-card-section>
+              </q-card>
+            </div>
+          </div>
+
+          <CreateCombatDialog
+            v-model="showCreateCombat"
+            :saving="combatStore.saving"
+            @create="onCreateCombat"
+          />
+        </template>
       </template>
     </div>
   </q-page>
@@ -122,13 +175,15 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { FolderX, Pencil, Trash2, Copy, UserPlus, UserX } from 'lucide-vue-next';
+import { FolderX, Pencil, Trash2, Copy, UserPlus, UserX, Swords } from 'lucide-vue-next';
 import { useQuasar, copyToClipboard } from 'quasar';
 import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'src/stores/campaigns';
+import { useCombatStore } from 'src/stores/combat';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { logger } from 'src/utils/logger';
+import CreateCombatDialog from 'src/components/combat/CreateCombatDialog.vue';
 
 const props = defineProps<{
   campaignId: string;
@@ -137,8 +192,11 @@ const props = defineProps<{
 const $q = useQuasar();
 const router = useRouter();
 const campaignStore = useCampaignStore();
+const combatStore = useCombatStore();
 const classifiers = useClassifierStore();
 const { showWarning } = useErrorHandler();
+
+const showCreateCombat = ref(false);
 
 const initializing = ref(true);
 const campaign = computed(() => campaignStore.currentCampaign);
@@ -167,6 +225,9 @@ onMounted(async () => {
       }
     }
     await campaignStore.selectCampaign(campaignId);
+    if (campaignStore.isOwner) {
+      void combatStore.fetchCombats(campaignId);
+    }
   } finally {
     initializing.value = false;
   }
@@ -215,6 +276,29 @@ function confirmDeleteCampaign(): void {
   });
 }
 
+async function onCreateCombat(name: string, description: string | null): Promise<void> {
+  if (!campaign.value) return;
+  const combat = await combatStore.createCombat({
+    campaignId: campaign.value.id,
+    name,
+    description,
+  });
+  if (combat) {
+    showCreateCombat.value = false;
+    void router.push({
+      name: 'combat-detail',
+      params: { campaignId: props.campaignId, combatId: String(combat.id) },
+    });
+  }
+}
+
+function selectCombat(combatId: number): void {
+  void router.push({
+    name: 'combat-detail',
+    params: { campaignId: props.campaignId, combatId: String(combatId) },
+  });
+}
+
 const inviteUrl = computed(() => {
   if (!campaign.value) return '';
   const resolved = router.resolve({
@@ -235,3 +319,10 @@ function copyInviteLink(): void {
     });
 }
 </script>
+
+<style scoped>
+.combat-inactive {
+  opacity: 0.6;
+  filter: grayscale(40%);
+}
+</style>

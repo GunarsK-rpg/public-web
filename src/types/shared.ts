@@ -32,3 +32,23 @@ export interface UserRef {
 
 /** Campaign reference (same shape as ClassifierRef) */
 export type CampaignRef = ClassifierRef;
+
+/** Unified stat entry — classifier type + numeric value + optional display */
+export interface TypedValue {
+  type: ClassifierRef;
+  value: number;
+  displayValue?: string | null;
+}
+
+/** Extended stat for UI — adds optional breakdown text for tooltips/display */
+export interface StatValue extends TypedValue {
+  breakdown?: string | null;
+}
+
+/** Current resource values for ResourcesBar */
+export interface ResourceValues {
+  currentHp?: number;
+  currentFocus?: number;
+  currentInvestiture?: number;
+  currency?: number;
+}

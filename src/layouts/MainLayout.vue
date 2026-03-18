@@ -147,6 +147,8 @@ const campaignRoutes = new Set([
   'campaign-create',
   'campaign-edit',
   'join-campaign',
+  'combat-detail',
+  'npc-detail',
 ]);
 
 const activeNavTab = computed(() => {

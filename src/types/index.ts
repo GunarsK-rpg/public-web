@@ -36,6 +36,9 @@ export * from './goals';
 export * from './companions';
 export * from './campaign';
 
+// Combat
+export * from './combat';
+
 // Wizard
 export * from './wizard';
 

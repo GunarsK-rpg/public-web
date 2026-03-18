@@ -48,6 +48,15 @@ vi.mock('src/stores/campaigns', () => ({
   }),
 }));
 
+vi.mock('src/stores/combat', () => ({
+  useCombatStore: () => ({
+    combats: [],
+    saving: false,
+    fetchCombats: vi.fn().mockResolvedValue(undefined),
+    createCombat: vi.fn().mockResolvedValue(null),
+  }),
+}));
+
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
     initialized: true,
@@ -116,6 +125,9 @@ describe('CampaignDetailPage', () => {
           },
           QSpace: {
             template: '<span class="q-space" />',
+          },
+          CreateCombatDialog: {
+            template: '<div class="create-combat-dialog-stub" />',
           },
         },
       },

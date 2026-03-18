@@ -52,69 +52,21 @@
 
       <!-- Resources -->
       <div class="col-12 col-sm-6">
-        <div class="row q-col-gutter-sm">
-          <div :class="isRadiant ? 'col-3' : 'col-4'">
-            <ResourceBox
-              label="HP"
-              :current="hero?.currentHealth ?? 0"
-              :max="maxHealth"
-              color="negative"
-              :saving="saving"
-              :readonly="readonly"
-              :use-dialog="!readonly"
-              @update="heroStore.patchHealth($event)"
-              @open-dialog="showHpDialog = true"
-            />
-          </div>
-          <div :class="isRadiant ? 'col-3' : 'col-4'">
-            <ResourceBox
-              label="Focus"
-              :current="hero?.currentFocus ?? 0"
-              :max="maxFocus"
-              :color="RPG_COLORS.focus"
-              :saving="saving"
-              :readonly="readonly"
-              @update="heroStore.patchFocus($event)"
-            />
-          </div>
-          <div v-if="isRadiant" class="col-3">
-            <ResourceBox
-              label="Investiture"
-              :current="hero?.currentInvestiture ?? 0"
-              :max="maxInvestiture"
-              :color="RPG_COLORS.investiture"
-              :saving="saving"
-              :readonly="readonly"
-              @update="heroStore.patchInvestiture($event)"
-            />
-          </div>
-          <div :class="isRadiant ? 'col-3' : 'col-4'">
-            <ResourceBox
-              label="Marks"
-              :current="hero?.currency ?? 0"
-              suffix="mk"
-              :saving="saving"
-              :readonly="readonly"
-              @update="heroStore.patchCurrency($event)"
-            />
-          </div>
-        </div>
+        <ResourcesBar
+          :derived-stats="resourceDerivedStats"
+          :current="resourceCurrent"
+          :saving="saving"
+          :readonly="readonly"
+          @update="onResourceUpdate"
+        />
       </div>
     </div>
     <q-separator />
-    <HpManagementDialog
-      v-if="!readonly"
-      v-model="showHpDialog"
-      :current-hp="hero?.currentHealth ?? 0"
-      :max-hp="maxHealth"
-      :saving="saving"
-      @update="heroStore.patchHealth($event)"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
@@ -122,9 +74,9 @@ import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { RPG_COLORS } from 'src/constants/theme';
 import { Pencil } from 'lucide-vue-next';
-import ResourceBox from './ResourceBox.vue';
-import HpManagementDialog from './HpManagementDialog.vue';
+import ResourcesBar from 'src/components/shared/ResourcesBar.vue';
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
+import type { TypedValue, ResourceValues } from 'src/types/shared';
 
 const props = defineProps<{
   characterId: string;
@@ -137,12 +89,48 @@ const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const hero = computed(() => heroStore.hero);
-const showHpDialog = ref(false);
 const saving = computed(() => heroStore.saving);
-const maxHealth = computed(() => attrStore.getDerivedStatTotal('max_health'));
-const maxFocus = computed(() => attrStore.getDerivedStatTotal('max_focus'));
-const maxInvestiture = computed(() => attrStore.getDerivedStatTotal('max_investiture'));
-const isRadiant = computed(() => talentStore.isRadiant);
+
+// Synthetic TypedValue array for ResourcesBar — id:0 is a placeholder, matching is by type.code only
+const resourceDerivedStats = computed((): TypedValue[] => {
+  const stats: TypedValue[] = [
+    {
+      type: { id: 0, code: 'max_health', name: 'HP' },
+      value: attrStore.getDerivedStatTotal('max_health'),
+    },
+    {
+      type: { id: 0, code: 'max_focus', name: 'Focus' },
+      value: attrStore.getDerivedStatTotal('max_focus'),
+    },
+  ];
+  if (talentStore.isRadiant) {
+    stats.push({
+      type: { id: 0, code: 'max_investiture', name: 'Investiture' },
+      value: attrStore.getDerivedStatTotal('max_investiture'),
+    });
+  }
+  return stats;
+});
+
+const resourceCurrent = computed(
+  (): ResourceValues => ({
+    currentHp: hero.value?.currentHealth ?? 0,
+    currentFocus: hero.value?.currentFocus ?? 0,
+    currentInvestiture: hero.value?.currentInvestiture ?? 0,
+    currency: hero.value?.currency ?? 0,
+  })
+);
+
+const patchMap: Record<string, (value: number) => void> = {
+  max_health: (v) => void heroStore.patchHealth(v),
+  max_focus: (v) => void heroStore.patchFocus(v),
+  max_investiture: (v) => void heroStore.patchInvestiture(v),
+  currency: (v) => void heroStore.patchCurrency(v),
+};
+
+function onResourceUpdate(code: string, value: number) {
+  patchMap[code]?.(value);
+}
 
 const isDead = computed(() => heroStore.injuries.some((i) => i.injury?.code === 'death'));
 
