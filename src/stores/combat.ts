@@ -20,6 +20,7 @@ export const useCombatStore = defineStore('combat', () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   const savingCount = ref(0);
+  const turnDoneIds = ref(new Set<number>());
 
   let fetchRequestId = 0;
   let selectRequestId = 0;
@@ -68,7 +69,9 @@ export const useCombatStore = defineStore('combat', () => {
     try {
       const response = await combatService.getCombat(campaignId, combatId);
       if (requestId !== selectRequestId) return;
+      const changed = currentCombat.value?.id !== response.data.id;
       currentCombat.value = response.data;
+      if (changed) turnDoneIds.value = new Set();
       logger.info('Combat selected', { id: combatId });
     } catch (err: unknown) {
       if (requestId === selectRequestId) {
@@ -307,6 +310,7 @@ export const useCombatStore = defineStore('combat', () => {
     try {
       const response = await combatService.endRound({ campaignId, combatId, round });
       currentCombat.value = response.data;
+      turnDoneIds.value = new Set();
 
       const idx = combats.value.findIndex((c) => c.id === combatId);
       if (idx !== -1) {
@@ -336,6 +340,27 @@ export const useCombatStore = defineStore('combat', () => {
   // CLEANUP
   // ===================
 
+  function clearBossTurnDone(): void {
+    if (!currentCombat.value) return;
+    const bossIds = new Set(
+      currentCombat.value.npcs.filter((n) => n.type === 'boss').map((n) => n.id)
+    );
+    const current = [...turnDoneIds.value];
+    if (current.some((id) => bossIds.has(id))) {
+      turnDoneIds.value = new Set(current.filter((id) => !bossIds.has(id)));
+    }
+  }
+
+  function toggleTurnDone(instanceId: number): void {
+    const next = new Set(turnDoneIds.value);
+    if (next.has(instanceId)) {
+      next.delete(instanceId);
+    } else {
+      next.add(instanceId);
+    }
+    turnDoneIds.value = next;
+  }
+
   function clearCurrentCombat(): void {
     currentCombat.value = null;
   }
@@ -351,6 +376,7 @@ export const useCombatStore = defineStore('combat', () => {
     loading.value = false;
     error.value = null;
     savingCount.value = 0;
+    turnDoneIds.value = new Set();
     fetchRequestId = 0;
     selectRequestId = 0;
   }
@@ -365,6 +391,7 @@ export const useCombatStore = defineStore('combat', () => {
     hasCombats,
     allies,
     enemies,
+    turnDoneIds,
     fetchCombats,
     selectCombat,
     createCombat,
@@ -378,6 +405,8 @@ export const useCombatStore = defineStore('combat', () => {
     patchFocus,
     patchInvestiture,
     endRound,
+    toggleTurnDone,
+    clearBossTurnDone,
     clearCurrentCombat,
     setError,
     reset,

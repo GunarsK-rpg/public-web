@@ -20,12 +20,14 @@
           :saving="saving"
           :readonly="readonly"
           :turn-phase="turnPhase"
+          :turn-done="turnDoneIds.has(npc.id)"
           @update-turn-speed="(v) => $emit('update-turn-speed', npc, v)"
           @update-hp="(v) => $emit('update-hp', npc, v)"
           @update-focus="(v) => $emit('update-focus', npc, v)"
           @update-investiture="(v) => $emit('update-investiture', npc, v)"
           @edit="(name, notes) => $emit('edit', npc, name, notes)"
           @remove="$emit('remove', npc)"
+          @toggle-turn-done="$emit('toggle-turn-done', npc)"
         />
       </div>
     </div>
@@ -45,6 +47,7 @@ defineProps<{
   saving: boolean;
   readonly: boolean;
   turnPhase?: 'fast' | 'slow' | null;
+  turnDoneIds: Set<number>;
 }>();
 
 defineEmits<{
@@ -55,5 +58,6 @@ defineEmits<{
   'update-investiture': [npc: CombatNpc, value: number];
   edit: [npc: CombatNpc, displayName: string | null, notes: string | null];
   remove: [npc: CombatNpc];
+  'toggle-turn-done': [npc: CombatNpc];
 }>();
 </script>

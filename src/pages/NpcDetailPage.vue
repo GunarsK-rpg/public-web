@@ -39,6 +39,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { usePageTitle } from 'src/composables/usePageTitle';
 import { ArrowLeft, UserX } from 'lucide-vue-next';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useCombatStore } from 'src/stores/combat';
@@ -55,6 +56,7 @@ const props = defineProps<{
 const router = useRouter();
 const route = useRoute();
 const combatStore = useCombatStore();
+const { setPageTitle } = usePageTitle();
 const loading = ref(true);
 const error = ref<string | null>(null);
 const npc = ref<Npc | null>(null);
@@ -96,7 +98,7 @@ onMounted(async () => {
     }
     const response = await combatService.getNpc(campaignId, npcId);
     npc.value = response.data;
-    route.meta.title = response.data.name;
+    setPageTitle(response.data.name);
 
     // Load combat NPC instance if combat context provided
     if (combatId.value && instanceId.value) {

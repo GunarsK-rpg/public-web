@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   SunMoon,
   CircleUserRound,
@@ -126,6 +126,7 @@ import { useQuasar } from 'quasar';
 import { useAuthStore } from 'stores/auth';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
+import { usePageTitle } from 'src/composables/usePageTitle';
 
 const router = useRouter();
 const route = useRoute();
@@ -137,8 +138,12 @@ const username = computed(() => authStore.username || 'User');
 const drawerMini = ref(false);
 const isDesktop = computed(() => $q.screen.gt.sm);
 
+const { dynamicTitle, clearPageTitle } = usePageTitle();
+
+watch(route, () => clearPageTitle());
+
 const pageTitle = computed(() => {
-  return (route.meta?.title as string) || 'Cosmere RPG';
+  return dynamicTitle.value || (route.meta?.title as string) || 'Cosmere RPG';
 });
 
 const campaignRoutes = new Set([

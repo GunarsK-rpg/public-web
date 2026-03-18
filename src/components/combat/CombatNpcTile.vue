@@ -33,6 +33,18 @@
           dense
           round
           size="sm"
+          :color="turnDone ? 'positive' : undefined"
+          :disable="saving"
+          aria-label="Toggle turn done"
+          @click="$emit('toggle-turn-done')"
+          ><CircleCheck v-if="turnDone" :size="16" aria-hidden="true" />
+          <Circle v-else :size="16" aria-hidden="true"
+        /></q-btn>
+        <q-btn
+          flat
+          dense
+          round
+          size="sm"
           :disable="saving"
           aria-label="Edit NPC"
           @click="showEditDialog = true"
@@ -146,7 +158,7 @@
 import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
-import { Pencil, Trash2 } from 'lucide-vue-next';
+import { Circle, CircleCheck, Pencil, Trash2 } from 'lucide-vue-next';
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import { RPG_COLORS } from 'src/constants/theme';
 import ResourceBox from 'src/components/shared/ResourceBox.vue';
@@ -161,6 +173,7 @@ const props = defineProps<{
   saving: boolean;
   readonly?: boolean;
   turnPhase?: TurnPhase | undefined;
+  turnDone?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -170,6 +183,7 @@ const emit = defineEmits<{
   'update-investiture': [value: number];
   edit: [displayName: string | null, notes: string | null];
   remove: [];
+  'toggle-turn-done': [];
 }>();
 
 const $q = useQuasar();
@@ -194,6 +208,7 @@ function saveEdit() {
 const displayLabel = computed(() => props.npc.displayName ?? props.npc.name);
 
 const dimmed = computed(() => {
+  if (props.turnDone) return true;
   if (!props.turnPhase || props.npc.type === 'boss') return false;
   return props.npc.turnSpeed !== props.turnPhase;
 });
