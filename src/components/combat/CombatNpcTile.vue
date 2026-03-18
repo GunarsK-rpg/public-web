@@ -123,13 +123,7 @@
             :placeholder="npc.name"
             class="q-mb-sm"
           />
-          <q-input
-            v-model="editNotes"
-            label="Notes"
-            type="textarea"
-            dense
-            autogrow
-          />
+          <q-input v-model="editNotes" label="Notes" type="textarea" dense autogrow />
         </q-card-section>
         <q-separator />
         <q-card-actions align="right">

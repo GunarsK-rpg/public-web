@@ -100,4 +100,3 @@ const opportunityItems = computed(() =>
   props.npc.opportunities.map((o) => ({ name: o.name, displayValue: o.display_value }))
 );
 </script>
-
