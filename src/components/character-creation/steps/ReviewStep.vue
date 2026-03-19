@@ -406,7 +406,9 @@ const talentsBySource = computed(() => {
     const entry = { id: t.talent.id, name };
 
     if (!talent) {
-      groups.push({ source: 'Other', talents: [entry] });
+      const other = groups.find((g) => g.source === 'Other');
+      if (other) other.talents.push(entry);
+      else groups.push({ source: 'Other', talents: [entry] });
       continue;
     }
 

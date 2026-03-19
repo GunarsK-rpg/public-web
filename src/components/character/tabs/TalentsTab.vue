@@ -33,7 +33,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
-import { buildSpecialtyPathMap, talentBelongsToPath } from 'src/utils/talentUtils';
+import { buildSpecialtyPathMap, getTalentPathId, talentBelongsToPath } from 'src/utils/talentUtils';
 import type { Talent } from 'src/types';
 import TalentItem from './TalentItem.vue';
 
@@ -60,11 +60,11 @@ const specialtyPathMap = computed(() => buildSpecialtyPathMap(classifiers.specia
 const talentTabs = computed((): TalentTab[] => {
   const tabs: TalentTab[] = [];
 
-  // Path tabs - driven by key talents
+  // Path tabs - collect all path IDs (direct and specialty-derived)
   const seenPaths = new Set<number>();
-  for (const keyTalent of heroTalents.value.filter((t) => t.isKey && t.path)) {
-    const pathId = keyTalent.path!.id;
-    if (seenPaths.has(pathId)) continue;
+  for (const talent of heroTalents.value) {
+    const pathId = getTalentPathId(talent, specialtyPathMap.value);
+    if (!pathId || seenPaths.has(pathId)) continue;
     seenPaths.add(pathId);
     const path = findById(classifiers.paths, pathId);
     if (!path) continue;

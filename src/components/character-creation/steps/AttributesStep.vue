@@ -83,10 +83,7 @@
                 :prefix="stat.modifier > 0 ? '+' : ''"
                 @update:model-value="setStatModifier(stat.id, $event)"
               />
-              <div
-                v-if="stat.hasModifier && (stat.modifier !== 0 || stat.bonus !== 0)"
-                class="text-caption q-ml-sm"
-              >
+              <div v-if="stat.modifier !== 0 || stat.bonus !== 0" class="text-caption q-ml-sm">
                 <span v-if="stat.bonus !== 0">
                   {{ stat.bonus >= 0 ? '+' : '' }}{{ stat.bonus }}
                 </span>
