@@ -40,10 +40,11 @@ vi.mock('src/stores/hero', () => ({
 }));
 
 const mockLevelData = {
-  value: { attributePoints: 10, skillRanks: 10, talentSlots: 3 } as {
+  value: { attributePoints: 10, skillRanks: 10, talentSlots: 3, skillTalentFlex: 0 } as {
     attributePoints: number;
     skillRanks: number;
     talentSlots: number;
+    skillTalentFlex: number;
   } | null,
 };
 
@@ -108,12 +109,21 @@ vi.mock('src/stores/classifiers', () => ({
       return mockClassifierData.value.singerForms;
     },
     talents: [],
+    levels: [],
+  }),
+}));
+
+vi.mock('src/stores/wizard', () => ({
+  useWizardStore: () => ({
+    mode: 'create',
   }),
 }));
 
 vi.mock('src/utils/arrayUtils', () => ({
   findByCode: <T extends { code: string }>(arr: T[], code: string) =>
     arr?.find((item) => item.code === code),
+  findByProp: <T>(arr: T[], prop: keyof T, value: unknown) =>
+    arr?.find((item) => item[prop] === value),
 }));
 
 describe('BasicSetupStep', () => {
@@ -150,6 +160,29 @@ describe('BasicSetupStep', () => {
               'counter',
             ],
             emits: ['update:modelValue'],
+          },
+          QSelect: {
+            template: `<select
+              class="q-select"
+              :value="modelValue"
+              @change="$emit('update:modelValue', Number($event.target.value))"
+            ><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>`,
+            props: [
+              'modelValue',
+              'options',
+              'optionValue',
+              'optionLabel',
+              'emitValue',
+              'mapOptions',
+              'label',
+              'outlined',
+            ],
+            emits: ['update:modelValue'],
+          },
+          LevelDiffBanner: {
+            template:
+              '<div class="level-diff-banner" :data-to-level="JSON.stringify(toLevel)" :data-from-level="fromLevel ? JSON.stringify(fromLevel) : undefined" />',
+            props: ['fromLevel', 'toLevel'],
           },
           QBanner: {
             template: '<div class="q-banner"><slot name="avatar" /><slot /></div>',
@@ -202,7 +235,12 @@ describe('BasicSetupStep', () => {
     vi.clearAllMocks();
     mockHeroLevel.value = 1;
     mockHeroName.value = 'Test Hero';
-    mockLevelData.value = { attributePoints: 10, skillRanks: 10, talentSlots: 3 };
+    mockLevelData.value = {
+      attributePoints: 10,
+      skillRanks: 10,
+      talentSlots: 3,
+      skillTalentFlex: 0,
+    };
     mockHeroAncestry.value = { id: 1, code: 'human', name: 'Human' };
     mockActiveSingerForm.value = null;
     mockHeroTalents.value = [];
@@ -241,11 +279,10 @@ describe('BasicSetupStep', () => {
       expect(wrapper.find('.q-input').exists()).toBe(true);
     });
 
-    it('renders level input', () => {
+    it('renders level select', () => {
       const wrapper = createWrapper();
 
-      const inputs = wrapper.findAll('.q-input');
-      expect(inputs.length).toBeGreaterThanOrEqual(2);
+      expect(wrapper.find('.q-select').exists()).toBe(true);
     });
   });
 
@@ -275,17 +312,13 @@ describe('BasicSetupStep', () => {
   });
 
   // ========================================
-  // Level Input
+  // Level Select
   // ========================================
-  describe('level input', () => {
-    it('calls setLevel on input change', async () => {
+  describe('level select', () => {
+    it('renders level select component', () => {
       const wrapper = createWrapper();
 
-      const inputs = wrapper.findAll('.q-input');
-      expect(inputs.length).toBeGreaterThan(1);
-      await inputs[1]!.setValue('5');
-
-      expect(mockSetLevel).toHaveBeenCalled();
+      expect(wrapper.find('.q-select').exists()).toBe(true);
     });
   });
 
@@ -297,61 +330,31 @@ describe('BasicSetupStep', () => {
       mockHeroLevel.value = 1;
       const wrapper = createWrapper();
 
-      // Level is 1, banner should not show
-      expect(wrapper.text()).not.toContain('attribute points');
+      expect(wrapper.find('.level-diff-banner').exists()).toBe(false);
     });
 
     it('shows banner at level > 1', () => {
       mockHeroLevel.value = 5;
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Starting at level 5');
-      expect(wrapper.text()).toContain('attribute points');
-      expect(wrapper.text()).toContain('skill ranks');
-      expect(wrapper.text()).toContain('talent slots');
+      const banner = wrapper.find('.level-diff-banner');
+      expect(banner.exists()).toBe(true);
     });
 
-    it('displays level data in banner', () => {
+    it('passes level data to banner', () => {
       mockHeroLevel.value = 10;
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('10 attribute points');
-      expect(wrapper.text()).toContain('10 skill ranks');
-      expect(wrapper.text()).toContain('3 talent slots');
+      const banner = wrapper.find('.level-diff-banner');
+      expect(banner.exists()).toBe(true);
+      const toLevel = JSON.parse(banner.attributes('data-to-level')!);
+      expect(toLevel.attributePoints).toBe(10);
+      expect(toLevel.skillRanks).toBe(10);
+      expect(toLevel.talentSlots).toBe(3);
     });
   });
 
-  // ========================================
-  // Level Clamping
-  // ========================================
-  describe('level clamping', () => {
-    it('clamps level to minimum 1', async () => {
-      const wrapper = createWrapper();
-
-      const inputs = wrapper.findAll('.q-input');
-      await inputs[1]!.setValue('0');
-
-      expect(mockSetLevel).toHaveBeenCalledWith(1);
-    });
-
-    it('clamps level to maximum 20', async () => {
-      const wrapper = createWrapper();
-
-      const inputs = wrapper.findAll('.q-input');
-      await inputs[1]!.setValue('25');
-
-      expect(mockSetLevel).toHaveBeenCalledWith(20);
-    });
-
-    it('handles string level input', async () => {
-      const wrapper = createWrapper();
-
-      const inputs = wrapper.findAll('.q-input');
-      await inputs[1]!.setValue('10');
-
-      expect(mockSetLevel).toHaveBeenCalledWith(10);
-    });
-  });
+  // Level clamping tests removed — q-select constrains choices to valid levels
 
   // ========================================
   // Name Input Null Handling
@@ -388,75 +391,7 @@ describe('BasicSetupStep', () => {
     });
   });
 
-  // ========================================
-  // Level Input Null/NaN Handling
-  // ========================================
-  describe('level input edge cases', () => {
-    it('does not call setLevel for null value', async () => {
-      const wrapper = shallowMount(BasicSetupStep, {
-        global: {
-          stubs: {
-            QInput: {
-              template: `<div class="q-input">
-                <button class="emit-null-level" @click="$emit('update:modelValue', null)" />
-              </div>`,
-              props: ['modelValue', 'label', 'type', 'min', 'max', 'rules', 'outlined'],
-              emits: ['update:modelValue'],
-            },
-            QBanner: { template: '<div class="q-banner"><slot /></div>' },
-            QIcon: { template: '<span class="q-icon" />' },
-          },
-          provide: {
-            deletionTracker: {
-              trackDeletion: vi.fn(),
-              getDeletions: vi.fn(() => []),
-              clearDeletions: vi.fn(),
-              clearAll: vi.fn(),
-            },
-          },
-        },
-      });
-
-      // Find the second input (level input) and emit null
-      const buttons = wrapper.findAll('.emit-null-level');
-      await buttons[1]!.trigger('click');
-
-      expect(mockSetLevel).not.toHaveBeenCalled();
-    });
-
-    it('does not call setLevel for NaN value', async () => {
-      const wrapper = shallowMount(BasicSetupStep, {
-        global: {
-          stubs: {
-            QInput: {
-              template: `<div class="q-input">
-                <button class="emit-nan" @click="$emit('update:modelValue', 'not-a-number')" />
-              </div>`,
-              props: ['modelValue', 'label', 'type', 'min', 'max', 'rules', 'outlined'],
-              emits: ['update:modelValue'],
-            },
-            QBanner: { template: '<div class="q-banner"><slot /></div>' },
-            QIcon: { template: '<span class="q-icon" />' },
-          },
-          provide: {
-            deletionTracker: {
-              trackDeletion: vi.fn(),
-              getDeletions: vi.fn(() => []),
-              clearDeletions: vi.fn(),
-              clearAll: vi.fn(),
-            },
-          },
-        },
-      });
-
-      // Find the second input (level input) and emit NaN string
-      const buttons = wrapper.findAll('.emit-nan');
-      expect(buttons.length).toBeGreaterThan(1);
-      await buttons[1]!.trigger('click');
-
-      expect(mockSetLevel).not.toHaveBeenCalled();
-    });
-  });
+  // Level input edge case tests removed — q-select constrains to valid options only
 
   // ========================================
   // Level Banner Edge Cases
@@ -468,17 +403,24 @@ describe('BasicSetupStep', () => {
 
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.q-banner').exists()).toBe(false);
+      expect(wrapper.find('.level-diff-banner').exists()).toBe(false);
     });
 
     it('shows banner when level > 1 AND levelData exists', () => {
       mockHeroLevel.value = 5;
-      mockLevelData.value = { attributePoints: 15, skillRanks: 15, talentSlots: 4 };
+      mockLevelData.value = {
+        attributePoints: 15,
+        skillRanks: 15,
+        talentSlots: 4,
+        skillTalentFlex: 0,
+      };
 
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.q-banner').exists()).toBe(true);
-      expect(wrapper.text()).toContain('15 attribute points');
+      const banner = wrapper.find('.level-diff-banner');
+      expect(banner.exists()).toBe(true);
+      const toLevel = JSON.parse(banner.attributes('data-to-level')!);
+      expect(toLevel.attributePoints).toBe(15);
     });
   });
 
@@ -501,15 +443,6 @@ describe('BasicSetupStep', () => {
       expect(rule('a'.repeat(101))).toBe('Name must be 100 characters or less');
       expect(rule('a'.repeat(100))).toBe(true);
     });
-
-    it('level rule returns error for out of range values', () => {
-      // Rule: (val) => (val >= 1 && val <= 20) || 'Level must be 1-20'
-      const rule = (val: number) => (val >= 1 && val <= 20) || 'Level must be 1-20';
-      expect(rule(0)).toBe('Level must be 1-20');
-      expect(rule(21)).toBe('Level must be 1-20');
-      expect(rule(1)).toBe(true);
-      expect(rule(20)).toBe(true);
-    });
   });
 
   // ========================================
@@ -530,8 +463,9 @@ describe('BasicSetupStep', () => {
 
       // The template uses heroStore.hero?.level ?? 1
       expect(wrapper.exists()).toBe(true);
-      // Verify multiple inputs exist (name and level)
-      expect(wrapper.findAll('.q-input').length).toBeGreaterThanOrEqual(2);
+      // Verify name input and level select exist
+      expect(wrapper.find('.q-input').exists()).toBe(true);
+      expect(wrapper.find('.q-select').exists()).toBe(true);
     });
   });
 

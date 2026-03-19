@@ -10,4 +10,5 @@ export interface Level {
   maxSkillRank: number;
   skillRanks: number;
   talentSlots: number;
+  skillTalentFlex: number;
 }

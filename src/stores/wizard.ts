@@ -15,8 +15,10 @@ export const useWizardStore = defineStore('wizard', () => {
   const currentStep = ref(1);
   // Use Set for O(1) lookup performance instead of Array.includes()
   const completedStepsSet = ref<Set<number>>(new Set());
+  const visitedStepsSet = ref<Set<number>>(new Set());
   const mode = ref<WizardMode>('create');
   const isActive = ref(false);
+  const originalLevel = ref<number | null>(null);
 
   // Expose as array for backwards compatibility with existing consumers
   const completedSteps = computed(() => Array.from(completedStepsSet.value));
@@ -41,6 +43,7 @@ export const useWizardStore = defineStore('wizard', () => {
   function goToStep(step: number) {
     if (step >= 1 && step <= WIZARD_STEPS.length) {
       currentStep.value = step;
+      visitedStepsSet.value.add(step);
     }
   }
 
@@ -48,12 +51,14 @@ export const useWizardStore = defineStore('wizard', () => {
     if (currentStep.value < WIZARD_STEPS.length) {
       markStepCompleted(currentStep.value);
       currentStep.value++;
+      visitedStepsSet.value.add(currentStep.value);
     }
   }
 
   function previousStep() {
     if (currentStep.value > 1) {
       currentStep.value--;
+      visitedStepsSet.value.add(currentStep.value);
     }
   }
 
@@ -69,6 +74,10 @@ export const useWizardStore = defineStore('wizard', () => {
     return completedStepsSet.value.has(step);
   }
 
+  function isStepVisited(step: number): boolean {
+    return visitedStepsSet.value.has(step);
+  }
+
   // ===================
   // WIZARD LIFECYCLE
   // ===================
@@ -78,6 +87,8 @@ export const useWizardStore = defineStore('wizard', () => {
     mode.value = 'create';
     currentStep.value = 1;
     completedStepsSet.value = new Set();
+    visitedStepsSet.value = new Set([1]);
+    originalLevel.value = null;
     isActive.value = true;
   }
 
@@ -93,8 +104,10 @@ export const useWizardStore = defineStore('wizard', () => {
       }
       mode.value = 'edit';
       currentStep.value = 1;
-      // In edit mode, consider all steps completed initially
+      // In edit mode, consider all steps completed and visited initially
       completedStepsSet.value = new Set(WIZARD_STEPS.map((s) => s.id));
+      visitedStepsSet.value = new Set(WIZARD_STEPS.map((s) => s.id));
+      originalLevel.value = heroStore.hero.level;
       isActive.value = true;
       return true;
     } catch (error) {
@@ -113,6 +126,8 @@ export const useWizardStore = defineStore('wizard', () => {
   function reset() {
     currentStep.value = 1;
     completedStepsSet.value = new Set();
+    visitedStepsSet.value = new Set();
+    originalLevel.value = null;
     mode.value = 'create';
     isActive.value = false;
   }
@@ -123,6 +138,7 @@ export const useWizardStore = defineStore('wizard', () => {
     completedSteps,
     mode,
     isActive,
+    originalLevel,
 
     // Computed
     currentStepConfig,
@@ -137,6 +153,7 @@ export const useWizardStore = defineStore('wizard', () => {
     markStepCompleted,
     markStepIncomplete,
     isStepCompleted,
+    isStepVisited,
 
     // Lifecycle
     startCreate,

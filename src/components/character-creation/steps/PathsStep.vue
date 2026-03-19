@@ -3,9 +3,19 @@
     <div class="text-subtitle1 q-mb-sm">Choose your heroic paths and talents</div>
     <BudgetDisplay
       label="Talent slots remaining"
-      :remaining="talentsBudget.remaining"
+      :remaining="
+        flexPool.budget > 0 ? Math.max(0, talentsBudget.remaining) : talentsBudget.remaining
+      "
       :total="talentsBudget.budget"
       :show-total="true"
+    />
+    <BudgetDisplay
+      v-if="flexPool.budget > 0"
+      label="Flex points"
+      :remaining="flexPool.remaining"
+      :total="flexPool.budget"
+      :show-total="true"
+      suffix="shared with skills"
     />
 
     <!-- Tab Navigation -->
@@ -133,9 +143,10 @@ const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
 const { getSpecialtiesByPath, toggleTalent } = useTalentPrerequisites();
-const { budget } = useStepValidation();
+const { budget, flexBudget } = useStepValidation();
 
 const talentsBudget = computed(() => budget('paths'));
+const flexPool = computed(() => flexBudget.value.flex);
 
 // Collect all classifier talent IDs belonging to a path (key + path-level + all specialties)
 function getAllPathTalentIds(pathId: number): Set<number> {

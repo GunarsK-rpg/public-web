@@ -3,9 +3,17 @@
     <div class="text-subtitle1 q-mb-sm">Allocate skill ranks</div>
     <BudgetDisplay
       label="Points remaining"
-      :remaining="pointsRemaining"
+      :remaining="flexPool.budget > 0 ? Math.max(0, pointsRemaining) : pointsRemaining"
       :total="pointsBudget"
       :show-total="true"
+    />
+    <BudgetDisplay
+      v-if="flexPool.budget > 0"
+      label="Flex points"
+      :remaining="flexPool.remaining"
+      :total="flexPool.budget"
+      :show-total="true"
+      suffix="shared with talents"
     />
 
     <!-- Skill Groups by Attribute Type -->
@@ -43,7 +51,7 @@
                 flat
                 size="sm"
                 :aria-label="`Increase ${skill.name} rank`"
-                :disable="getSkillRank(skill.id) >= maxSkillRank || pointsRemaining <= 0"
+                :disable="getSkillRank(skill.id) >= maxSkillRank || !canAddSkill"
                 @click="incrementSkill(skill.id)"
                 ><Plus :size="20"
               /></q-btn>
@@ -84,12 +92,14 @@ const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
 const talentStore = useHeroTalentsStore();
-const { budget } = useStepValidation();
+const { budget, flexBudget } = useStepValidation();
+const flexPool = computed(() => flexBudget.value.flex);
 
 const skillsBudget = computed(() => budget('skills'));
 const pointsRemaining = computed(() => skillsBudget.value.remaining);
 const pointsBudget = computed(() => skillsBudget.value.budget);
 const maxSkillRank = computed(() => skillsBudget.value.maxRank);
+const canAddSkill = computed(() => pointsRemaining.value > 0 || flexPool.value.remaining > 0);
 
 // Base skills + hero's active surge skills
 const visibleSkills = computed(() => {
@@ -146,7 +156,7 @@ function setSkillModifier(skillId: number, value: string | number | null) {
 
 function incrementSkill(skillId: number) {
   const current = getSkillRank(skillId);
-  if (current < maxSkillRank.value && pointsRemaining.value > 0) {
+  if (current < maxSkillRank.value && canAddSkill.value) {
     attrStore.setSkillRank(skillId, current + 1);
   }
 }

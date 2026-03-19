@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
+import { ref } from 'vue';
 import { createPinia, setActivePinia } from 'pinia';
 import SkillsStep from './SkillsStep.vue';
 
@@ -126,9 +127,18 @@ vi.mock('src/stores/classifiers', () => ({
   }),
 }));
 
+const emptyPool = { budget: 0, spent: 0, remaining: 0 };
+const mockFlexBudget = ref({
+  skills: emptyPool,
+  talents: emptyPool,
+  flex: emptyPool,
+  isOverBudget: false,
+});
+
 vi.mock('src/composables/useStepValidation', () => ({
   useStepValidation: () => ({
     budget: () => mockBudgetData.value,
+    flexBudget: mockFlexBudget,
   }),
 }));
 

@@ -3,16 +3,26 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useWizardStore } from 'src/stores/wizard';
 import { useCampaignStore } from 'src/stores/campaigns';
+import { useClassifierStore } from 'src/stores/classifiers';
 import { STEP_CODES } from 'src/types/wizard';
 import {
   getStepValidation,
   getBudgetValidation,
+  calculateFlexBudget,
   type StepCode,
   type StepValidation,
   type BudgetValidation,
   type SkillsBudgetValidation,
+  type FlexBudgetValidation,
   type HeroValidationData,
 } from 'src/utils/characterValidation';
+
+const DEFAULT_FLEX: FlexBudgetValidation = {
+  skills: { budget: 0, spent: 0, remaining: 0 },
+  talents: { budget: 0, spent: 0, remaining: 0 },
+  flex: { budget: 0, spent: 0, remaining: 0 },
+  isOverBudget: false,
+};
 
 export function useStepValidation() {
   const heroStore = useHeroStore();
@@ -20,19 +30,33 @@ export function useStepValidation() {
   const wizardStore = useWizardStore();
   const campaignStore = useCampaignStore();
 
+  const classifierStore = useClassifierStore();
+
   const validationData = computed<HeroValidationData | null>(() => {
     if (!heroStore.hero) return null;
 
     const campaignId = heroStore.hero.campaignId;
     const campaign = campaignId ? campaignStore.campaigns.find((c) => c.id === campaignId) : null;
+    const levels = classifierStore.levels;
+    const maxLevel = levels.length > 0 ? Math.max(...levels.map((l) => l.level)) : 40;
+    const skillsMod = (campaign?.skillsModifier ?? 0) + (heroStore.hero.radiantOrder ? 2 : 0);
+    const talentsMod = campaign?.talentsModifier ?? 0;
 
     return {
       hero: heroStore.hero,
       levelData: attrStore.levelData,
       intellectValue: attrStore.getAttributeValue('int'),
-      talentsModifier: campaign?.talentsModifier ?? 0,
-      skillsModifier: (campaign?.skillsModifier ?? 0) + (heroStore.hero.radiantOrder ? 2 : 0),
+      talentsModifier: talentsMod,
+      skillsModifier: skillsMod,
       expertisesModifier: campaign?.expertisesModifier ?? 0,
+      maxLevel,
+      flexBudget: calculateFlexBudget(
+        attrStore.levelData,
+        heroStore.hero.skills,
+        heroStore.hero.talents,
+        skillsMod,
+        talentsMod
+      ),
     };
   });
 
@@ -64,6 +88,10 @@ export function useStepValidation() {
     return getBudgetValidation(stepCode, validationData.value);
   }
 
+  const flexBudget = computed<FlexBudgetValidation>(
+    () => validationData.value?.flexBudget ?? DEFAULT_FLEX
+  );
+
   const currentStepCode = computed((): StepCode => {
     return wizardStore.currentStepConfig?.code ?? STEP_CODES.BASIC_SETUP;
   });
@@ -73,6 +101,7 @@ export function useStepValidation() {
   return {
     validate,
     budget,
+    flexBudget,
     currentStepCode,
     currentValidation,
     allStepsValidation,
