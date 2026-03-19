@@ -72,13 +72,21 @@ const mockValidationData = {
 };
 
 const mockDerivedStats = {
-  value: [{ id: 1, name: 'Health', baseDisplay: '15', modifier: 0, totalDisplay: '15' }] as Array<{
-    id: number;
-    name: string;
-    baseDisplay: string;
-    modifier: number;
-    totalDisplay: string;
-  }>,
+  value: [
+    {
+      id: 1,
+      code: 'max_health',
+      name: 'Health',
+      baseValue: 15,
+      baseDisplay: '15',
+      modifier: 0,
+      bonus: 0,
+      totalValue: 15,
+      totalDisplay: '15',
+      hasModifier: true,
+      displayValue: null,
+    },
+  ],
 };
 
 vi.mock('vue-router', () => ({
@@ -123,6 +131,9 @@ vi.mock('src/stores/heroAttributes', () => ({
   useHeroAttributesStore: () => ({
     getAttributeValue: vi.fn().mockReturnValue(3),
     getDerivedStatModifier: vi.fn().mockReturnValue(0),
+    getDefenseValue: vi.fn().mockReturnValue(13),
+    getStatBonus: vi.fn().mockReturnValue(0),
+    baseAttributeValues: { str: 3, dex: 3 },
     levelData: { level: 3 },
     tierData: { tier: 1 },
   }),
@@ -142,6 +153,11 @@ vi.mock('src/stores/classifiers', () => ({
     cultures: [{ id: 1, code: 'vorin', name: 'Vorin' }],
     startingKits: [{ id: 1, code: 'adventurer', name: 'Adventurer' }],
     radiantOrders: [{ id: 1, code: 'windrunner', name: 'Windrunner' }],
+    attributeTypes: [
+      { id: 1, code: 'physical', name: 'Physical' },
+      { id: 2, code: 'cognitive', name: 'Cognitive' },
+      { id: 3, code: 'spiritual', name: 'Spiritual' },
+    ],
     attributes: [
       { id: 1, code: 'str', name: 'Strength' },
       { id: 2, code: 'dex', name: 'Dexterity' },
@@ -150,7 +166,20 @@ vi.mock('src/stores/classifiers', () => ({
     derivedStatValues: [],
     skills: [{ id: 1, code: 'athletics', name: 'Athletics' }],
     expertises: [{ id: 1, code: 'lockpicking', name: 'Lockpicking' }],
-    talents: [{ id: 1, code: 'power-attack', name: 'Power Attack' }],
+    talents: [
+      {
+        id: 1,
+        code: 'power-attack',
+        name: 'Power Attack',
+        path: { id: 1, code: 'warrior', name: 'Warrior' },
+        specialties: [],
+        radiantOrder: null,
+        surge: null,
+        ancestry: null,
+        isKey: false,
+        special: [],
+      },
+    ],
     equipment: [
       {
         id: 1,
@@ -160,6 +189,8 @@ vi.mock('src/stores/classifiers', () => ({
       },
       { id: 2, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
     ],
+    paths: [{ id: 1, code: 'warrior', name: 'Warrior' }],
+    specialties: [],
     equipmentTypes: [
       { id: 1, code: 'weapons', name: 'Weapons' },
       { id: 2, code: 'gear', name: 'Gear' },
@@ -224,6 +255,21 @@ describe('ReviewStep', () => {
             props: ['label', 'color', 'flat'],
             emits: ['click'],
           },
+          DefensesSection: {
+            template: '<div class="defenses-section-stub" />',
+            name: 'DefensesSection',
+            props: ['defenses', 'deflect'],
+          },
+          AttributesSection: {
+            template: '<div class="attributes-section-stub" />',
+            name: 'AttributesSection',
+            props: ['attributes'],
+          },
+          DerivedStatsSection: {
+            template: '<div class="derived-stats-section-stub" />',
+            name: 'DerivedStatsSection',
+            props: ['title', 'stats'],
+          },
           DeleteHeroDialog: {
             template: '<div class="delete-hero-dialog-stub" />',
             name: 'DeleteHeroDialog',
@@ -259,7 +305,19 @@ describe('ReviewStep', () => {
     mockTalentStoreData.value = { isRadiant: false };
     mockValidationData.value = { isValid: true, errors: [], warnings: [] };
     mockDerivedStats.value = [
-      { id: 1, name: 'Health', baseDisplay: '15', modifier: 0, totalDisplay: '15' },
+      {
+        id: 1,
+        code: 'max_health',
+        name: 'Health',
+        baseValue: 15,
+        baseDisplay: '15',
+        modifier: 0,
+        bonus: 0,
+        totalValue: 15,
+        totalDisplay: '15',
+        hasModifier: true,
+        displayValue: null,
+      },
     ];
   });
 
@@ -397,68 +455,46 @@ describe('ReviewStep', () => {
   });
 
   // ========================================
-  // Attributes
+  // Attributes & Stats (shared components)
   // ========================================
-  describe('attributes', () => {
-    it('renders attributes section', () => {
+  describe('attributes and stats sections', () => {
+    it('renders DefensesSection component', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Attributes');
+      expect(wrapper.findComponent({ name: 'DefensesSection' }).exists()).toBe(true);
     });
 
-    it('shows attribute abbreviations', () => {
+    it('renders AttributesSection component', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('STR');
-      expect(wrapper.text()).toContain('DEX');
-    });
-  });
-
-  // ========================================
-  // Derived Stats
-  // ========================================
-  describe('derived stats', () => {
-    it('renders derived stats section', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Derived Stats');
+      expect(wrapper.findComponent({ name: 'AttributesSection' }).exists()).toBe(true);
     });
 
-    it('displays derived stat values', () => {
+    it('renders DerivedStatsSection component', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Health');
+      expect(wrapper.findComponent({ name: 'DerivedStatsSection' }).exists()).toBe(true);
     });
 
-    it('shows modifier when modifier is positive', () => {
-      mockDerivedStats.value = [
-        { id: 1, name: 'Health', baseDisplay: '15', modifier: 5, totalDisplay: '20' },
-      ];
+    it('passes defense values to DefensesSection', () => {
       const wrapper = createWrapper();
+      const defenses = wrapper.findComponent({ name: 'DefensesSection' });
 
-      expect(wrapper.text()).toContain('+5');
-      expect(wrapper.text()).toContain('= 20');
+      expect(defenses.props('defenses')).toEqual([
+        { type: { id: 1, code: 'physical', name: 'Physical' }, value: 13 },
+        { type: { id: 2, code: 'cognitive', name: 'Cognitive' }, value: 13 },
+        { type: { id: 3, code: 'spiritual', name: 'Spiritual' }, value: 13 },
+      ]);
     });
 
-    it('shows modifier when modifier is negative', () => {
-      mockDerivedStats.value = [
-        { id: 1, name: 'Health', baseDisplay: '15', modifier: -3, totalDisplay: '12' },
-      ];
+    it('passes attribute values to AttributesSection', () => {
       const wrapper = createWrapper();
+      const attrs = wrapper.findComponent({ name: 'AttributesSection' });
 
-      expect(wrapper.text()).toContain('-3');
-      expect(wrapper.text()).toContain('= 12');
-    });
-
-    it('does not show modifier when modifier is 0', () => {
-      mockDerivedStats.value = [
-        { id: 1, name: 'Health', baseDisplay: '15', modifier: 0, totalDisplay: '15' },
-      ];
-      const wrapper = createWrapper();
-
-      // Should show base but not modifier notation
-      expect(wrapper.text()).toContain('15');
-      expect(wrapper.text()).not.toContain('+0');
+      expect(attrs.props('attributes')).toEqual([
+        { type: { id: 1, code: 'str', name: 'Strength' }, value: 3 },
+        { type: { id: 2, code: 'dex', name: 'Dexterity' }, value: 3 },
+      ]);
     });
   });
 
@@ -466,45 +502,61 @@ describe('ReviewStep', () => {
   // Skills
   // ========================================
   describe('skills', () => {
-    it('renders skills section', () => {
-      const wrapper = createWrapper();
+    function getSkillsSection(wrapper: ReturnType<typeof createWrapper>) {
+      // Second DerivedStatsSection is the skills section (first is derived stats)
+      const sections = wrapper.findAllComponents({ name: 'DerivedStatsSection' });
+      return sections.length > 1 ? sections[1] : undefined;
+    }
 
-      expect(wrapper.text()).toContain('Skills');
+    it('renders skills DerivedStatsSection when skills exist', () => {
+      const wrapper = createWrapper();
+      const section = getSkillsSection(wrapper);
+
+      expect(section?.exists()).toBe(true);
     });
 
-    it('displays skills with ranks', () => {
+    it('passes skill data to DerivedStatsSection', () => {
       const wrapper = createWrapper();
+      const section = getSkillsSection(wrapper);
 
-      expect(wrapper.text()).toContain('Athletics');
+      expect(section?.exists()).toBe(true);
+      const stats = section!.props('stats');
+      expect(stats).toEqual([
+        { type: { id: 1, code: '1', name: 'Athletics' }, value: 2, displayValue: '2 (+1)' },
+      ]);
     });
 
-    it('shows skill modifier when positive', () => {
+    it('formats positive modifier in display value', () => {
       mockHeroData.value.skills = [
         { skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 2, modifier: 3 },
       ];
       const wrapper = createWrapper();
+      const section = getSkillsSection(wrapper);
+      const stats = section!.props('stats');
 
-      expect(wrapper.text()).toContain('+3');
+      expect(stats[0].displayValue).toBe('2 (+3)');
     });
 
-    it('shows skill modifier when negative', () => {
+    it('formats negative modifier in display value', () => {
       mockHeroData.value.skills = [
         { skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 2, modifier: -2 },
       ];
       const wrapper = createWrapper();
+      const section = getSkillsSection(wrapper);
+      const stats = section!.props('stats');
 
-      expect(wrapper.text()).toContain('-2');
+      expect(stats[0].displayValue).toBe('2 (-2)');
     });
 
-    it('does not show skill modifier when modifier is 0', () => {
+    it('omits modifier from display when zero', () => {
       mockHeroData.value.skills = [
         { skill: { id: 1, code: 'athletics', name: 'Athletics' }, rank: 2, modifier: 0 },
       ];
       const wrapper = createWrapper();
+      const section = getSkillsSection(wrapper);
+      const stats = section!.props('stats');
 
-      expect(wrapper.text()).toContain('Athletics');
-      expect(wrapper.text()).not.toContain('+0');
-      expect(wrapper.text()).not.toContain('(0)');
+      expect(stats[0].displayValue).toBe('2');
     });
 
     it('shows "No skills allocated" when no skills', () => {
@@ -512,6 +564,7 @@ describe('ReviewStep', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('No skills allocated');
+      expect(getSkillsSection(wrapper)).toBeUndefined();
     });
 
     it('filters out skills with rank 0', () => {
@@ -520,8 +573,8 @@ describe('ReviewStep', () => {
       ];
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).not.toContain('Athletics:');
       expect(wrapper.text()).toContain('No skills allocated');
+      expect(getSkillsSection(wrapper)).toBeUndefined();
     });
 
     it('shows "Unknown" for skill with invalid skillId', () => {
@@ -529,8 +582,10 @@ describe('ReviewStep', () => {
         { skill: { id: 999, code: 'unknown', name: 'Unknown' }, rank: 2, modifier: 0 },
       ];
       const wrapper = createWrapper();
+      const section = getSkillsSection(wrapper);
+      const stats = section!.props('stats');
 
-      expect(wrapper.text()).toContain('Unknown');
+      expect(stats[0].type.name).toBe('Unknown');
     });
   });
 

@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div class="section-title section-title--lg">Attributes</div>
+    <slot name="header">
+      <div class="section-title section-title--lg">Attributes</div>
+    </slot>
     <div class="row q-col-gutter-sm q-mb-md">
       <div v-for="attr in attributes" :key="attr.type.code" class="col-6 col-sm-4 col-md-2">
         <q-card class="attribute-card">

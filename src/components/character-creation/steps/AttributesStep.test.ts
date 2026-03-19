@@ -52,6 +52,7 @@ const mockDerivedStatsListResult = {
     baseDisplay: string;
     hasModifier: boolean;
     modifier: number;
+    bonus: number;
     totalDisplay: string;
   }[],
 };
@@ -287,7 +288,7 @@ describe('AttributesStep', () => {
     it('renders derived stats section', () => {
       const wrapper = createWrapper();
 
-      expect(wrapper.text()).toContain('Derived Stats');
+      expect(wrapper.text()).toContain('Other Stats');
     });
   });
 
@@ -603,6 +604,7 @@ describe('AttributesStep', () => {
           baseDisplay: '10',
           hasModifier: true,
           modifier: 0,
+          bonus: 0,
           totalDisplay: '10',
         },
       ];
@@ -621,6 +623,7 @@ describe('AttributesStep', () => {
           baseDisplay: '10',
           hasModifier: true,
           modifier: 5,
+          bonus: 0,
           totalDisplay: '15',
         },
       ];
@@ -630,7 +633,7 @@ describe('AttributesStep', () => {
       expect(wrapper.text()).toContain('= 15');
     });
 
-    it('does not show total display when modifier is zero', () => {
+    it('does not show total display when modifier and bonus are zero', () => {
       mockDerivedStatsListResult.value = [
         {
           id: 1,
@@ -638,6 +641,7 @@ describe('AttributesStep', () => {
           baseDisplay: '10',
           hasModifier: true,
           modifier: 0,
+          bonus: 0,
           totalDisplay: '10',
         },
       ];
@@ -645,6 +649,25 @@ describe('AttributesStep', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).not.toContain('= 10');
+    });
+
+    it('shows total display when bonus is non-zero and modifier is zero', () => {
+      mockDerivedStatsListResult.value = [
+        {
+          id: 1,
+          name: 'Movement',
+          baseDisplay: '30 ft',
+          hasModifier: true,
+          modifier: 0,
+          bonus: 10,
+          totalDisplay: '40 ft',
+        },
+      ];
+
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('+10');
+      expect(wrapper.text()).toContain('= 40 ft');
     });
 
     it('does not render modifier input when hasModifier is false', () => {
@@ -655,6 +678,7 @@ describe('AttributesStep', () => {
           baseDisplay: '5',
           hasModifier: false,
           modifier: 0,
+          bonus: 0,
           totalDisplay: '5',
         },
       ];
@@ -673,6 +697,7 @@ describe('AttributesStep', () => {
           baseDisplay: '10',
           hasModifier: true,
           modifier: 3,
+          bonus: 0,
           totalDisplay: '13',
         },
       ];
@@ -692,6 +717,7 @@ describe('AttributesStep', () => {
           baseDisplay: '10',
           hasModifier: true,
           modifier: -2,
+          bonus: 0,
           totalDisplay: '8',
         },
       ];
@@ -718,6 +744,7 @@ describe('AttributesStep', () => {
           baseDisplay: '10',
           hasModifier: true,
           modifier: 0,
+          bonus: 0,
           totalDisplay: '10',
         },
       ];
@@ -764,6 +791,7 @@ describe('AttributesStep', () => {
           baseDisplay: '10',
           hasModifier: true,
           modifier: 0,
+          bonus: 0,
           totalDisplay: '10',
         },
       ];

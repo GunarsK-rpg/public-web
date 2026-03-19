@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div class="section-title section-title--lg">{{ title }}</div>
+    <slot name="header">
+      <div class="section-title section-title--lg">{{ title }}</div>
+    </slot>
     <div class="row q-col-gutter-sm q-mb-md">
       <div v-for="stat in stats" :key="stat.type.code" class="col-6 col-sm-3">
         <q-card flat bordered>
