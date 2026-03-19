@@ -376,7 +376,7 @@ const skillStatValues = computed((): StatValue[] =>
           ? `${s.rank} (${s.modifier >= 0 ? '+' : ''}${s.modifier})`
           : String(s.rank);
       return {
-        type: { id: s.skill.id, code: String(s.skill.id), name },
+        type: { id: s.skill.id, code: s.skill.code, name },
         value: s.rank,
         displayValue,
       };

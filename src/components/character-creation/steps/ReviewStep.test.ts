@@ -522,7 +522,7 @@ describe('ReviewStep', () => {
       expect(section?.exists()).toBe(true);
       const stats = section!.props('stats');
       expect(stats).toEqual([
-        { type: { id: 1, code: '1', name: 'Athletics' }, value: 2, displayValue: '2 (+1)' },
+        { type: { id: 1, code: 'athletics', name: 'Athletics' }, value: 2, displayValue: '2 (+1)' },
       ]);
     });
 
