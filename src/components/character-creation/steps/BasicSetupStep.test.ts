@@ -443,11 +443,6 @@ describe('BasicSetupStep', () => {
       expect(rule('a'.repeat(101))).toBe('Name must be 100 characters or less');
       expect(rule('a'.repeat(100))).toBe(true);
     });
-
-    it('level validation handled by q-select options', () => {
-      // Level is now a q-select — validation is implicit via options constraint
-      expect(true).toBe(true);
-    });
   });
 
   // ========================================

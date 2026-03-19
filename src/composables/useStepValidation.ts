@@ -13,10 +13,16 @@ import {
   type StepValidation,
   type BudgetValidation,
   type SkillsBudgetValidation,
-  type BudgetPool,
   type FlexBudgetValidation,
   type HeroValidationData,
 } from 'src/utils/characterValidation';
+
+const DEFAULT_FLEX: FlexBudgetValidation = {
+  skills: { budget: 0, spent: 0, remaining: 0 },
+  talents: { budget: 0, spent: 0, remaining: 0 },
+  flex: { budget: 0, spent: 0, remaining: 0 },
+  isOverBudget: false,
+};
 
 export function useStepValidation() {
   const heroStore = useHeroStore();
@@ -81,14 +87,6 @@ export function useStepValidation() {
     }
     return getBudgetValidation(stepCode, validationData.value);
   }
-
-  const EMPTY_POOL: BudgetPool = { budget: 0, spent: 0, remaining: 0 };
-  const DEFAULT_FLEX: FlexBudgetValidation = {
-    skills: EMPTY_POOL,
-    talents: EMPTY_POOL,
-    flex: EMPTY_POOL,
-    isOverBudget: false,
-  };
 
   const flexBudget = computed<FlexBudgetValidation>(
     () => validationData.value?.flexBudget ?? DEFAULT_FLEX

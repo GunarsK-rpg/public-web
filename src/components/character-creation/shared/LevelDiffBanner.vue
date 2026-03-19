@@ -49,10 +49,8 @@ const deltas = computed(() => {
     { label: 'Skill Ranks', value: to.skillRanks - from.skillRanks },
     { label: 'Talent Slots', value: to.talentSlots - from.talentSlots },
     { label: 'Max Skill Rank', value: to.maxSkillRank - from.maxSkillRank },
+    { label: 'Flex Points', value: to.skillTalentFlex - from.skillTalentFlex },
   ];
-  if (to.skillTalentFlex > 0 || from.skillTalentFlex > 0) {
-    items.push({ label: 'Flex Points', value: to.skillTalentFlex - from.skillTalentFlex });
-  }
   return items.filter((d) => d.value !== 0);
 });
 </script>
