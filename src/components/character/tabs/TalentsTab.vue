@@ -33,6 +33,7 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
+import { buildSpecialtyPathMap, getTalentPathId, talentBelongsToPath } from 'src/utils/talentUtils';
 import type { Talent } from 'src/types';
 import TalentItem from './TalentItem.vue';
 
@@ -53,34 +54,23 @@ const heroTalents = computed((): Talent[] =>
     .filter((t): t is Talent => t !== undefined)
 );
 
-// Specialty ID → Path ID lookup
-const specialtyPathMap = computed(() => {
-  const map = new Map<number, number>();
-  for (const s of classifiers.specialties) {
-    map.set(s.id, s.path.id);
-  }
-  return map;
-});
-
-// Check if a talent belongs to a given path (via direct path or specialty)
-function talentBelongsToPath(talent: Talent, pathId: number): boolean {
-  if (talent.path?.id === pathId) return true;
-  return talent.specialties.some((s) => specialtyPathMap.value.get(s.id) === pathId);
-}
+const specialtyPathMap = computed(() => buildSpecialtyPathMap(classifiers.specialties));
 
 // Build tabs dynamically from hero's talent sources
 const talentTabs = computed((): TalentTab[] => {
   const tabs: TalentTab[] = [];
 
-  // Path tabs - driven by key talents
+  // Path tabs - collect all path IDs (direct and specialty-derived)
   const seenPaths = new Set<number>();
-  for (const keyTalent of heroTalents.value.filter((t) => t.isKey && t.path)) {
-    const pathId = keyTalent.path!.id;
-    if (seenPaths.has(pathId)) continue;
+  for (const talent of heroTalents.value) {
+    const pathId = getTalentPathId(talent, specialtyPathMap.value);
+    if (!pathId || seenPaths.has(pathId)) continue;
     seenPaths.add(pathId);
     const path = findById(classifiers.paths, pathId);
     if (!path) continue;
-    const pathTalents = heroTalents.value.filter((t) => talentBelongsToPath(t, pathId));
+    const pathTalents = heroTalents.value.filter((t) =>
+      talentBelongsToPath(t, pathId, specialtyPathMap.value)
+    );
     // Key talent first
     pathTalents.sort((a, b) => (a.isKey === b.isKey ? 0 : a.isKey ? -1 : 1));
     tabs.push({

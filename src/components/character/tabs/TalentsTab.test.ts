@@ -263,10 +263,11 @@ describe('TalentsTab', () => {
       expect(tabs.some((t) => t.text().includes('Scholar'))).toBe(true);
     });
 
-    it('does not create path tab for specialty-only talents without key talent', () => {
+    it('creates path tab for specialty-only talents via specialty path resolution', () => {
       mockHeroTalents.value = [createHeroTalent({ talent: { id: 2, code: 't2', name: 'T2' } })];
       const wrapper = createWrapper();
-      expect(wrapper.text()).toContain('No talents acquired');
+      const tabs = wrapper.findAll('.q-tab');
+      expect(tabs.some((t) => t.text().includes('Warrior'))).toBe(true);
     });
 
     it('creates bond tab for radiant order', () => {

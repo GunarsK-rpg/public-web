@@ -63,15 +63,15 @@
 
     <q-separator class="q-my-md" />
 
-    <!-- Derived Stats -->
-    <div class="text-subtitle1 q-mb-md">Derived Stats</div>
-    <div class="row q-col-gutter-sm">
-      <div v-for="stat in derivedStatsList" :key="stat.id" class="col-6 col-sm-4 col-md-3">
+    <!-- Other Stats -->
+    <div class="section-title section-title--lg">Other Stats</div>
+    <div class="row q-col-gutter-sm q-mb-md">
+      <div v-for="stat in derivedStatsList" :key="stat.id" class="col-6 col-sm-3">
         <q-card flat bordered>
           <q-card-section class="q-pa-sm">
-            <div class="text-caption q-mb-xs">{{ stat.name }}</div>
+            <div class="text-caption text-muted">{{ stat.name }}</div>
             <div class="row items-center no-wrap">
-              <div class="text-h6 q-mr-sm">{{ stat.baseDisplay }}</div>
+              <div class="text-body1 q-mr-sm">{{ stat.baseDisplay }}</div>
               <q-input
                 v-if="stat.hasModifier"
                 :model-value="stat.modifier"
@@ -83,7 +83,10 @@
                 :prefix="stat.modifier > 0 ? '+' : ''"
                 @update:model-value="setStatModifier(stat.id, $event)"
               />
-              <div v-if="stat.hasModifier && stat.modifier !== 0" class="text-subtitle2 q-ml-sm">
+              <div v-if="stat.modifier !== 0 || stat.bonus !== 0" class="text-caption q-ml-sm">
+                <span v-if="stat.bonus !== 0">
+                  {{ stat.bonus >= 0 ? '+' : '' }}{{ stat.bonus }}
+                </span>
                 = {{ stat.totalDisplay }}
               </div>
             </div>
@@ -136,22 +139,18 @@ const attributeList = computed(() =>
 );
 
 // Derived stats list built from classifiers with calculated base values
-const derivedStatsList = computed(() => {
-  // Dynamically build attribute values from classifiers instead of hardcoding codes
-  const attrs = Object.fromEntries(
-    classifiers.attributes.map((attr) => [attr.code, attrStore.getAttributeValue(attr.code)])
-  );
-
-  return buildDerivedStatsList(
+const derivedStatsList = computed(() =>
+  buildDerivedStatsList(
     classifiers.derivedStats,
     classifiers.derivedStatValues,
     classifiers.attributes,
-    attrs,
+    attrStore.baseAttributeValues,
     attrStore.levelData,
     attrStore.tierData,
-    attrStore.getDerivedStatModifier
-  );
-});
+    (statId) => attrStore.getDerivedStatModifier(statId),
+    (statCode) => attrStore.getStatBonus(statCode)
+  )
+);
 
 function setStatModifier(statId: number, value: string | number | null) {
   const normalized = normalizeModifierInput(value);

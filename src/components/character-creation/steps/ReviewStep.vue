@@ -40,7 +40,7 @@
     <!-- Character Summary -->
     <div class="row q-col-gutter-md">
       <!-- Basic Info -->
-      <div class="col-12 col-md-6">
+      <div class="col-12">
         <q-card flat bordered>
           <q-card-section>
             <div class="text-h6">{{ heroStore.hero?.name || 'Unnamed Character' }}</div>
@@ -51,23 +51,23 @@
 
           <q-card-section>
             <div class="row q-col-gutter-sm">
-              <div class="col-6">
+              <div class="col-6 col-md-3">
                 <div class="text-caption">Ancestry</div>
                 <div>{{ ancestryName }}</div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-md-3">
                 <div class="text-caption">Culture</div>
                 <div>{{ cultureName }}</div>
               </div>
-              <div v-if="campaignName" class="col-6">
+              <div v-if="campaignName" class="col-6 col-md-3">
                 <div class="text-caption">Campaign</div>
                 <div>{{ campaignName }}</div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-md-3">
                 <div class="text-caption">Starting Kit</div>
                 <div>{{ startingKitName }}</div>
               </div>
-              <div v-if="talentStore.isRadiant" class="col-6">
+              <div v-if="talentStore.isRadiant" class="col-6 col-md-3">
                 <div class="text-caption">Radiant Order</div>
                 <div>{{ radiantOrderName }}</div>
               </div>
@@ -76,12 +76,13 @@
         </q-card>
       </div>
 
-      <!-- Attributes -->
-      <div class="col-12 col-md-6">
-        <q-card flat bordered>
-          <q-card-section>
-            <div class="row items-center q-mb-sm">
-              <div class="text-subtitle2">Attributes</div>
+      <!-- Attributes & Stats -->
+      <div class="col-12">
+        <DefensesSection :defenses="defenseValues" :deflect="deflectValue" />
+        <AttributesSection :attributes="attributeValues">
+          <template #header>
+            <div class="row items-center">
+              <div class="section-title section-title--lg q-mb-none">Attributes</div>
               <q-space />
               <BudgetDisplay
                 label="Remaining"
@@ -90,39 +91,17 @@
                 :show-total="true"
               />
             </div>
-            <div class="row">
-              <div v-for="attr in attributeDisplay" :key="attr.code" class="col-2">
-                <div class="text-center">
-                  <div class="text-h5">{{ attr.value }}</div>
-                  <div class="text-caption">{{ attr.abbr }}</div>
-                </div>
-              </div>
-            </div>
-          </q-card-section>
-
-          <q-separator />
-
-          <q-card-section>
-            <div class="text-subtitle2 q-mb-sm">Derived Stats</div>
-            <div class="row">
-              <div v-for="stat in derivedStatsList" :key="stat.id" class="col-6">
-                <span class="text-weight-medium">{{ stat.name }}:</span>
-                {{ stat.baseDisplay }}
-                <span v-if="stat.modifier !== 0" class="text-muted">
-                  ({{ stat.modifier >= 0 ? '+' : '' }}{{ stat.modifier }} = {{ stat.totalDisplay }})
-                </span>
-              </div>
-            </div>
-          </q-card-section>
-        </q-card>
+          </template>
+        </AttributesSection>
+        <DerivedStatsSection :stats="derivedStatValues" />
       </div>
 
       <!-- Skills -->
-      <div class="col-12 col-md-6">
-        <q-card flat bordered>
-          <q-card-section>
-            <div class="row items-center q-mb-sm">
-              <div class="text-subtitle2">Skills</div>
+      <div class="col-12">
+        <DerivedStatsSection v-if="skillStatValues.length" :stats="skillStatValues">
+          <template #header>
+            <div class="row items-center">
+              <div class="section-title section-title--lg q-mb-none">Skills</div>
               <q-space />
               <BudgetDisplay
                 label="Remaining"
@@ -131,23 +110,25 @@
                 :show-total="true"
               />
             </div>
-            <div class="row">
-              <div v-for="skill in skillDisplay" :key="skill.id" class="col-6">
-                <span class="text-weight-medium">{{ skill.name }}:</span> {{ skill.rank }}
-                <span v-if="skill.modifier !== 0" class="text-muted"
-                  >({{ skill.modifier >= 0 ? '+' : '' }}{{ skill.modifier }})</span
-                >
-              </div>
-            </div>
-            <div v-if="skillDisplay.length === 0" class="text-caption text-muted">
-              No skills allocated
-            </div>
-          </q-card-section>
-        </q-card>
+          </template>
+        </DerivedStatsSection>
+        <template v-else>
+          <div class="row items-center q-mb-sm">
+            <div class="section-title section-title--lg q-mb-none">Skills</div>
+            <q-space />
+            <BudgetDisplay
+              label="Remaining"
+              :remaining="skillsBudget.remaining"
+              :total="skillsBudget.budget"
+              :show-total="true"
+            />
+          </div>
+          <div class="text-caption text-muted q-mb-md">No skills allocated</div>
+        </template>
       </div>
 
       <!-- Expertises -->
-      <div class="col-12 col-md-6">
+      <div class="col-12">
         <q-card flat bordered>
           <q-card-section>
             <div class="row items-center q-mb-sm">
@@ -191,12 +172,13 @@
                 :show-total="true"
               />
             </div>
-            <div>
-              <q-chip v-for="talent in talentDisplay" :key="talent.id" outline>
+            <div v-for="group in talentsBySource" :key="group.source" class="q-mb-sm">
+              <div class="text-caption text-weight-medium">{{ group.source }}</div>
+              <q-chip v-for="talent in group.talents" :key="talent.id" outline>
                 {{ talent.name }}
               </q-chip>
             </div>
-            <div v-if="talentDisplay.length === 0" class="text-caption text-muted">
+            <div v-if="talentsBySource.length === 0" class="text-caption text-muted">
               No talents selected
             </div>
           </q-card-section>
@@ -273,7 +255,12 @@ import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { buildDerivedStatsList } from 'src/utils/derivedStats';
 import { findById } from 'src/utils/arrayUtils';
+import { buildSpecialtyPathMap, getTalentPathId } from 'src/utils/talentUtils';
 import { CircleAlert, CircleCheck, LogOut, Trash2, TriangleAlert } from 'lucide-vue-next';
+import DefensesSection from 'src/components/shared/DefensesSection.vue';
+import AttributesSection from 'src/components/shared/AttributesSection.vue';
+import DerivedStatsSection from 'src/components/shared/DerivedStatsSection.vue';
+import type { StatValue } from 'src/types/shared';
 import heroService from 'src/services/heroService';
 import { buildHeroCorePayload } from 'src/services/heroPayloads';
 import { logger } from 'src/utils/logger';
@@ -320,44 +307,80 @@ const radiantOrderName = computed(
   () => findById(classifiers.radiantOrders, heroStore.hero?.radiantOrder?.id)?.name
 );
 
-// Attributes display - abbr derived from code (e.g., 'str' -> 'STR')
-const attributeDisplay = computed(() =>
-  classifiers.attributes.map((attr) => ({
-    code: attr.code,
-    abbr: attr.code.slice(0, 3).toUpperCase(),
-    value: attrStore.getAttributeValue(attr.code),
+// Defenses
+const defenseValues = computed((): StatValue[] =>
+  classifiers.attributeTypes.map((at) => ({
+    type: { id: at.id, code: at.code, name: at.name },
+    value: attrStore.getDefenseValue(at.code),
   }))
 );
 
-// Derived stats calculated from attributes
-const derivedStatsList = computed(() => {
-  // Build attrs dynamically from classifier codes
-  const attrs: Record<string, number> = {};
-  for (const attr of classifiers.attributes) {
-    attrs[attr.code] = attrStore.getAttributeValue(attr.code);
-  }
-
-  return buildDerivedStatsList(
+// Derived stats calculated from attributes (with bonuses from talents/equipment/singer form)
+const allDerivedStats = computed(() =>
+  buildDerivedStatsList(
     classifiers.derivedStats,
     classifiers.derivedStatValues,
     classifiers.attributes,
-    attrs,
+    attrStore.baseAttributeValues,
     attrStore.levelData,
     attrStore.tierData,
-    attrStore.getDerivedStatModifier
-  );
+    (statId) => attrStore.getDerivedStatModifier(statId),
+    (statCode) => attrStore.getStatBonus(statCode)
+  )
+);
+
+const deflectValue = computed((): StatValue | null => {
+  const stat = allDerivedStats.value.find((s) => s.code === 'deflect');
+  if (!stat) return null;
+  return {
+    type: { id: stat.id, code: stat.code, name: stat.name },
+    value: stat.totalValue,
+  };
 });
 
+// Attributes
+const attributeValues = computed((): StatValue[] =>
+  classifiers.attributes.map((a) => ({
+    type: { id: a.id, code: a.code, name: a.name },
+    value: attrStore.baseAttributeValues[a.code] ?? 0,
+  }))
+);
+
+// Derived stats display
+function statBreakdown(stat: { baseDisplay: string; modifier: number; bonus: number }): string {
+  let result = `(${stat.baseDisplay}`;
+  if (stat.modifier !== 0) result += ` ${stat.modifier >= 0 ? '+' : ''}${stat.modifier}`;
+  if (stat.bonus !== 0) result += ` ${stat.bonus >= 0 ? '+' : ''}${stat.bonus}`;
+  return result + ')';
+}
+
+const derivedStatValues = computed((): StatValue[] =>
+  allDerivedStats.value
+    .filter((s) => s.code !== 'deflect')
+    .map((s) => ({
+      type: { id: s.id, code: s.code, name: s.name },
+      value: s.totalValue,
+      displayValue: s.totalDisplay,
+      breakdown: s.hasModifier && (s.modifier !== 0 || s.bonus !== 0) ? statBreakdown(s) : null,
+    }))
+);
+
 // Skills with ranks > 0
-const skillDisplay = computed(() =>
+const skillStatValues = computed((): StatValue[] =>
   heroStore.skills
     .filter((s) => s.rank > 0)
-    .map((s) => ({
-      id: s.skill.id,
-      name: findById(classifiers.skills, s.skill.id)?.name || 'Unknown',
-      rank: s.rank,
-      modifier: s.modifier,
-    }))
+    .map((s) => {
+      const name = findById(classifiers.skills, s.skill.id)?.name || 'Unknown';
+      const displayValue =
+        s.modifier !== 0
+          ? `${s.rank} (${s.modifier >= 0 ? '+' : ''}${s.modifier})`
+          : String(s.rank);
+      return {
+        type: { id: s.skill.id, code: s.skill.code, name },
+        value: s.rank,
+        displayValue,
+      };
+    })
 );
 
 // Expertises
@@ -370,13 +393,46 @@ const expertiseDisplay = computed(() =>
   }))
 );
 
-// Talents
-const talentDisplay = computed(() =>
-  heroStore.talents.map((t) => ({
-    id: t.talent.id,
-    name: findById(classifiers.talents, t.talent.id)?.name || 'Unknown',
-  }))
-);
+const specialtyPathMap = computed(() => buildSpecialtyPathMap(classifiers.specialties));
+
+// Talents grouped by source (path / radiant order / surge / ancestry)
+const talentsBySource = computed(() => {
+  const groups: { source: string; talents: { id: number; name: string }[] }[] = [];
+  const pathGroups = new Map<number, { id: number; name: string }[]>();
+
+  for (const t of heroStore.talents) {
+    const talent = findById(classifiers.talents, t.talent.id);
+    const name = talent?.name || 'Unknown';
+    const entry = { id: t.talent.id, name };
+
+    if (!talent) {
+      const other = groups.find((g) => g.source === 'Other');
+      if (other) other.talents.push(entry);
+      else groups.push({ source: 'Other', talents: [entry] });
+      continue;
+    }
+
+    const pathId = getTalentPathId(talent, specialtyPathMap.value);
+    if (pathId) {
+      if (!pathGroups.has(pathId)) pathGroups.set(pathId, []);
+      pathGroups.get(pathId)!.push(entry);
+      continue;
+    }
+
+    const source =
+      talent.radiantOrder?.name ?? talent.surge?.name ?? talent.ancestry?.name ?? 'Other';
+    const existing = groups.find((g) => g.source === source);
+    if (existing) existing.talents.push(entry);
+    else groups.push({ source, talents: [entry] });
+  }
+
+  const pathTabs = [...pathGroups.entries()].map(([pathId, talents]) => ({
+    source: findById(classifiers.paths, pathId)?.name ?? 'Unknown Path',
+    talents,
+  }));
+
+  return [...pathTabs, ...groups];
+});
 
 // Equipment
 const equipmentDisplay = computed(() =>
