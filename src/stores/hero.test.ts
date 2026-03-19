@@ -356,12 +356,12 @@ describe('useHeroStore', () => {
       expect(store.hero?.level).toBe(1); // unchanged
     });
 
-    it('rejects level above 20', () => {
+    it('accepts level 21 and above', () => {
       const store = useHeroStore();
       store.initNewHero();
       store.setLevel(21);
 
-      expect(store.hero?.level).toBe(1); // unchanged
+      expect(store.hero?.level).toBe(21);
     });
 
     it('rejects non-integer level', () => {

@@ -15,6 +15,7 @@ const createLevel = (overrides: Partial<Level> = {}): Level => ({
   maxSkillRank: 2,
   skillRanks: 8,
   talentSlots: 3,
+  skillTalentFlex: 0,
   ...overrides,
 });
 

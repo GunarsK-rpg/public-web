@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getStepValidation,
   getBudgetValidation,
+  calculateFlexBudget,
   type HeroValidationData,
 } from './characterValidation';
 import { STEP_CODES } from 'src/types/wizard';
@@ -28,6 +29,7 @@ const createLevel = (overrides: Partial<Level> = {}): Level => ({
   maxSkillRank: 2,
   skillRanks: 8,
   talentSlots: 3,
+  skillTalentFlex: 0,
   ...overrides,
 });
 
@@ -106,15 +108,29 @@ const createHero = (overrides: Partial<HeroSheet> = {}): HeroSheet => ({
   ...overrides,
 });
 
-const createValidationData = (overrides: Partial<HeroValidationData> = {}): HeroValidationData => ({
-  hero: createHero(),
-  levelData: createLevel(),
-  intellectValue: 2,
-  talentsModifier: 0,
-  skillsModifier: 0,
-  expertisesModifier: 0,
-  ...overrides,
-});
+const createValidationData = (overrides: Partial<HeroValidationData> = {}): HeroValidationData => {
+  const hero = overrides.hero ?? createHero();
+  const levelData = overrides.levelData !== undefined ? overrides.levelData : createLevel();
+  const skillsModifier = overrides.skillsModifier ?? 0;
+  const talentsModifier = overrides.talentsModifier ?? 0;
+  return {
+    hero,
+    levelData,
+    intellectValue: 2,
+    talentsModifier,
+    skillsModifier,
+    expertisesModifier: 0,
+    maxLevel: 40,
+    flexBudget: calculateFlexBudget(
+      levelData,
+      hero.skills,
+      hero.talents,
+      skillsModifier,
+      talentsModifier
+    ),
+    ...overrides,
+  };
+};
 
 // =============================================================================
 // getStepValidation - Wizard Step Validation
@@ -162,17 +178,17 @@ describe('getStepValidation', () => {
       const result = getStepValidation(STEP_CODES.BASIC_SETUP, data);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Level must be between 1 and 20');
+      expect(result.errors).toContain('Level must be between 1 and 40');
     });
 
-    it('fails with level above 20', () => {
+    it('fails with level above max', () => {
       const data = createValidationData({
-        hero: createHero({ name: 'Test', level: 21 }),
+        hero: createHero({ name: 'Test', level: 41 }),
       });
       const result = getStepValidation(STEP_CODES.BASIC_SETUP, data);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Level must be between 1 and 20');
+      expect(result.errors).toContain('Level must be between 1 and 40');
     });
   });
 
@@ -653,7 +669,7 @@ describe('getStepValidation', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Name is required');
-      expect(result.errors).toContain('Level must be between 1 and 20');
+      expect(result.errors).toContain('Level must be between 1 and 40');
       expect(result.errors).toContain('Ancestry is required');
       expect(result.errors).toContain('At least one culture is required');
     });

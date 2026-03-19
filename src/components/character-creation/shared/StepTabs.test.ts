@@ -18,6 +18,7 @@ vi.mock('src/stores/wizard', () => ({
       return mockMode.value;
     },
     isStepCompleted: mockIsStepCompleted,
+    isStepVisited: () => false,
   }),
 }));
 
@@ -27,10 +28,37 @@ const mockValidate = vi.fn();
 vi.mock('src/composables/useStepValidation', () => ({
   useStepValidation: () => ({
     validate: mockValidate,
+    budget: () => ({ budget: 0, spent: 0, remaining: 0 }),
+    flexBudget: {
+      value: {
+        skills: { budget: 0, spent: 0, remaining: 0 },
+        talents: { budget: 0, spent: 0, remaining: 0 },
+        flex: { budget: 0, spent: 0, remaining: 0 },
+        isOverBudget: false,
+      },
+    },
   }),
 }));
 
 // Mock WIZARD_STEPS
+vi.mock('src/types/wizard', () => ({
+  WIZARD_STEPS: [
+    { id: 1, code: 'basic-setup', name: 'Basics' },
+    { id: 2, code: 'attributes', name: 'Attributes' },
+    { id: 3, code: 'skills', name: 'Skills' },
+    { id: 4, code: 'talents', name: 'Talents' },
+    { id: 5, code: 'review', name: 'Review' },
+  ],
+  STEP_CODES: {
+    BASIC_SETUP: 'basic-setup',
+    ATTRIBUTES: 'attributes',
+    SKILLS: 'skills',
+    PATHS: 'paths',
+    EXPERTISES: 'expertises',
+    REVIEW: 'review',
+  },
+}));
+
 vi.mock('src/types', () => ({
   WIZARD_STEPS: [
     { id: 1, code: 'basic-setup', name: 'Basics' },

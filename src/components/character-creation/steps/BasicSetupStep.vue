@@ -16,25 +16,25 @@
       @update:model-value="setName"
     />
 
-    <q-input
+    <q-select
       :model-value="heroStore.hero?.level ?? 1"
-      type="number"
+      :options="levelOptions"
+      option-value="value"
+      option-label="label"
+      emit-value
+      map-options
       label="Starting Level"
       outlined
-      :min="1"
-      :max="20"
-      style="max-width: 200px"
-      :rules="[(val) => (val >= 1 && val <= 20) || 'Level must be 1-20']"
+      style="max-width: 280px"
       @update:model-value="setLevel"
     />
 
-    <q-banner v-if="currentLevel > 1 && levelData" class="banner-info q-mt-md">
-      <template v-slot:avatar>
-        <Info aria-hidden="true" />
-      </template>
-      Starting at level {{ currentLevel }} gives you {{ levelData.attributePoints }} attribute
-      points, {{ levelData.skillRanks }} skill ranks, and {{ levelData.talentSlots }} talent slots.
-    </q-banner>
+    <LevelDiffBanner
+      v-if="showDiff && originalLevelData && levelData"
+      :from-level="originalLevelData"
+      :to-level="levelData"
+    />
+    <LevelDiffBanner v-else-if="currentLevel > 1 && levelData" :to-level="levelData" />
 
     <!-- Campaign -->
     <template v-if="campaignName">
@@ -114,9 +114,10 @@ import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { findByCode } from 'src/utils/arrayUtils';
-import { ArrowLeftRight, Info, Plus } from 'lucide-vue-next';
-import { clamp } from 'src/utils/numberUtils';
+import { useWizardStore } from 'src/stores/wizard';
+import { findByCode, findByProp } from 'src/utils/arrayUtils';
+import { ArrowLeftRight, Plus } from 'lucide-vue-next';
+import LevelDiffBanner from '../shared/LevelDiffBanner.vue';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import { filterSpecial } from 'src/utils/talentGrants';
 import { SPECIAL } from 'src/utils/specialUtils';
@@ -128,11 +129,32 @@ const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
+const wizardStore = useWizardStore();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
 
+const isEditMode = computed(() => wizardStore.mode === 'edit');
 const currentLevel = computed(() => heroStore.hero?.level ?? 1);
 const levelData = computed(() => attrStore.levelData);
 const campaignName = computed(() => heroStore.hero?.campaign?.name);
+
+const originalLevelData = computed(() =>
+  wizardStore.originalLevel
+    ? findByProp(classifiers.levels, 'level', wizardStore.originalLevel)
+    : undefined
+);
+const showDiff = computed(
+  () =>
+    isEditMode.value &&
+    wizardStore.originalLevel !== null &&
+    currentLevel.value !== wizardStore.originalLevel
+);
+
+const levelOptions = computed(() =>
+  classifiers.levels.map((l) => ({
+    value: l.level,
+    label: `Level ${l.level} — ${l.tier.name}`,
+  }))
+);
 
 // Ancestry
 const ancestries = computed(() => classifiers.ancestries);
@@ -169,13 +191,9 @@ function setName(val: string | number | null) {
   }
 }
 
-function setLevel(val: string | number | null) {
+function setLevel(val: number | null) {
   if (val !== null) {
-    const numVal = typeof val === 'string' ? Number(val) : val;
-    if (!Number.isNaN(numVal)) {
-      // Clamp level between 1 and 20
-      heroStore.setLevel(clamp(numVal, 1, 20));
-    }
+    heroStore.setLevel(val);
   }
 }
 

@@ -15,9 +15,12 @@
         :name="step.id"
         :label="step.name"
         :disable="!canNavigateTo(step.id)"
-        :alert="hasStepErrors(step.code) ? 'negative' : false"
-        :alert-icon="hasStepErrors(step.code) ? 'error' : undefined"
-        :class="{ 'text-negative': hasStepErrors(step.code) }"
+        :alert="stepAlert(step)"
+        :alert-icon="stepAlertIcon(step)"
+        :class="{
+          'text-negative': hasStepErrors(step.code),
+          'text-warning': !hasStepErrors(step.code) && hasStepWarning(step.code),
+        }"
       />
     </q-tabs>
   </div>
@@ -27,18 +30,26 @@
 import { computed } from 'vue';
 import { useWizardStore } from 'src/stores/wizard';
 import { useStepValidation } from 'src/composables/useStepValidation';
-import { WIZARD_STEPS } from 'src/types';
+import { WIZARD_STEPS, STEP_CODES, type WizardStep } from 'src/types/wizard';
 
 const emit = defineEmits<{
   navigate: [step: number];
 }>();
 
 const wizardStore = useWizardStore();
-const { validate } = useStepValidation();
+const { validate, budget, flexBudget } = useStepValidation();
 
 const steps = WIZARD_STEPS;
 
 const currentStep = computed(() => wizardStore.currentStep);
+
+type BudgetStepCode = 'attributes' | 'skills' | 'expertises' | 'paths';
+const BUDGET_STEP_CODES: Set<string> = new Set([
+  STEP_CODES.ATTRIBUTES,
+  STEP_CODES.SKILLS,
+  STEP_CODES.PATHS,
+  STEP_CODES.EXPERTISES,
+]);
 
 // Cache step errors to avoid repeated validation calls during render
 const stepErrors = computed(() => {
@@ -53,8 +64,42 @@ const stepErrors = computed(() => {
   return errors;
 });
 
+const FLEX_STEP_CODES: Set<string> = new Set([STEP_CODES.SKILLS, STEP_CODES.PATHS]);
+
+// Cache step warnings (unspent budget on visited tabs)
+const stepWarnings = computed(() => {
+  const warnings: Record<string, boolean> = {};
+  const hasUnspentFlex = flexBudget.value.flex.remaining > 0;
+  for (const step of steps) {
+    if (wizardStore.isStepVisited(step.id) && BUDGET_STEP_CODES.has(step.code)) {
+      const b = budget(step.code as BudgetStepCode);
+      const flexWarning = FLEX_STEP_CODES.has(step.code) && hasUnspentFlex;
+      warnings[step.code] = b.remaining > 0 || flexWarning;
+    } else {
+      warnings[step.code] = false;
+    }
+  }
+  return warnings;
+});
+
 function hasStepErrors(stepCode: string): boolean {
   return stepErrors.value[stepCode] ?? false;
+}
+
+function hasStepWarning(stepCode: string): boolean {
+  return stepWarnings.value[stepCode] ?? false;
+}
+
+function stepAlert(step: WizardStep): string | false {
+  if (hasStepErrors(step.code)) return 'negative';
+  if (hasStepWarning(step.code)) return 'warning';
+  return false;
+}
+
+function stepAlertIcon(step: WizardStep): string | undefined {
+  if (hasStepErrors(step.code)) return 'error';
+  if (hasStepWarning(step.code)) return 'info';
+  return undefined;
 }
 
 function canNavigateTo(step: number): boolean {
@@ -71,3 +116,18 @@ function handleTabClick(step: number) {
   emit('navigate', step);
 }
 </script>
+
+<style scoped>
+/* Place alert icon inline after tab label on the same row */
+.step-tabs-container :deep(.q-tab__content) {
+  flex-direction: row;
+  gap: 4px;
+}
+
+.step-tabs-container :deep(.q-tab__alert-icon) {
+  position: relative;
+  top: auto;
+  right: auto;
+  font-size: 16px;
+}
+</style>

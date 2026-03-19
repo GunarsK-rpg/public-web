@@ -17,14 +17,54 @@ export interface StepValidation {
   warnings: string[];
 }
 
-export interface BudgetValidation extends StepValidation {
+export interface BudgetPool {
   budget: number;
   spent: number;
   remaining: number;
 }
 
+export interface BudgetValidation extends StepValidation, BudgetPool {}
+
 export interface SkillsBudgetValidation extends BudgetValidation {
   maxRank: number;
+}
+
+export interface FlexBudgetValidation {
+  skills: BudgetPool;
+  talents: BudgetPool;
+  flex: BudgetPool;
+  isOverBudget: boolean;
+}
+
+export function calculateFlexBudget(
+  levelData: Level | undefined,
+  skills: HeroSkill[],
+  talents: HeroTalent[],
+  skillsModifier: number,
+  talentsModifier: number
+): FlexBudgetValidation {
+  const skillsBudget = (levelData?.skillRanks ?? 0) + skillsModifier;
+  const skillsSpent = skills.reduce((sum, s) => sum + s.rank, 0);
+  const skillsOver = Math.max(0, skillsSpent - skillsBudget);
+
+  const talentsBudget = (levelData?.talentSlots ?? 0) + talentsModifier;
+  const talentsSpent = talents.length;
+  const talentsOver = Math.max(0, talentsSpent - talentsBudget);
+
+  const flexBudget = levelData?.skillTalentFlex ?? 0;
+  const flexUsed = skillsOver + talentsOver;
+  const flexRemaining = flexBudget - flexUsed;
+
+  return {
+    skills: { budget: skillsBudget, spent: skillsSpent, remaining: skillsBudget - skillsSpent },
+    talents: {
+      budget: talentsBudget,
+      spent: talentsSpent,
+      remaining: talentsBudget - talentsSpent,
+    },
+    flex: { budget: flexBudget, spent: flexUsed, remaining: flexRemaining },
+    isOverBudget: flexRemaining < 0,
+  };
 }
 
 // Base expertise slots before Intellect bonus (from game rules)
@@ -60,7 +100,8 @@ function validateAttributes(
 function validateSkills(
   levelData: Level | undefined,
   skills: HeroSkill[],
-  skillsModifier: number
+  skillsModifier: number,
+  flex: FlexBudgetValidation
 ): SkillsBudgetValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -70,10 +111,11 @@ function validateSkills(
   const spent = skills.reduce((sum, s) => sum + s.rank, 0);
   const remaining = budget - spent;
 
-  if (remaining < 0) {
+  if (remaining < 0 && flex.flex.budget > 0 && !flex.isOverBudget) {
+    // Over guaranteed budget but covered by flex — not a warning
+  } else if (remaining < 0) {
     warnings.push('Skill ranks exceeded');
-  }
-  if (remaining > 0) {
+  } else if (remaining > 0) {
     warnings.push(`${remaining} skill ranks remaining`);
   }
 
@@ -113,7 +155,8 @@ function validateExpertises(
 function validateTalents(
   levelData: Level | undefined,
   talents: HeroTalent[],
-  talentsModifier: number
+  talentsModifier: number,
+  flex: FlexBudgetValidation
 ): BudgetValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -122,7 +165,9 @@ function validateTalents(
   const spent = talents.length;
   const remaining = budget - spent;
 
-  if (remaining < 0) {
+  if (remaining < 0 && flex.flex.budget > 0 && !flex.isOverBudget) {
+    // Over guaranteed budget but covered by flex — not a warning
+  } else if (remaining < 0) {
     warnings.push('Talent slots exceeded');
   }
 
@@ -132,7 +177,8 @@ function validateTalents(
 function validateBasicSetup(
   name: string,
   level: number,
-  ancestryId: number | null | undefined
+  ancestryId: number | null | undefined,
+  maxLevel: number
 ): StepValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -140,8 +186,8 @@ function validateBasicSetup(
   if (!name.trim()) {
     errors.push('Name is required');
   }
-  if (level < 1 || level > 20) {
-    errors.push('Level must be between 1 and 20');
+  if (level < 1 || level > maxLevel) {
+    errors.push(`Level must be between 1 and ${maxLevel}`);
   }
   if (!ancestryId) {
     errors.push('Ancestry is required');
@@ -164,9 +210,10 @@ function validateCulture(cultures: HeroCulture[]): StepValidation {
 function validatePaths(
   levelData: Level | undefined,
   talents: HeroTalent[],
-  talentsModifier: number
+  talentsModifier: number,
+  flex: FlexBudgetValidation
 ): StepValidation {
-  const talentValidation = validateTalents(levelData, talents, talentsModifier);
+  const talentValidation = validateTalents(levelData, talents, talentsModifier, flex);
 
   if (talents.length === 0) {
     talentValidation.warnings.push('No talents selected');
@@ -195,25 +242,34 @@ export interface HeroValidationData {
   talentsModifier: number;
   skillsModifier: number;
   expertisesModifier: number;
+  maxLevel: number;
+  flexBudget: FlexBudgetValidation;
 }
 
 export function getStepValidation(stepCode: StepCode, data: HeroValidationData): StepValidation {
-  const { hero, levelData, intellectValue, talentsModifier, skillsModifier, expertisesModifier } =
-    data;
+  const {
+    hero,
+    levelData,
+    intellectValue,
+    talentsModifier,
+    skillsModifier,
+    expertisesModifier,
+    flexBudget,
+  } = data;
 
   switch (stepCode) {
     case STEP_CODES.BASIC_SETUP:
-      return validateBasicSetup(hero.name, hero.level, hero.ancestry?.id);
+      return validateBasicSetup(hero.name, hero.level, hero.ancestry?.id, data.maxLevel);
     case STEP_CODES.CULTURE:
       return validateCulture(hero.cultures);
     case STEP_CODES.ATTRIBUTES:
       return validateAttributes(levelData, hero.attributes);
     case STEP_CODES.SKILLS:
-      return validateSkills(levelData, hero.skills, skillsModifier);
+      return validateSkills(levelData, hero.skills, skillsModifier, flexBudget);
     case STEP_CODES.EXPERTISES:
       return validateExpertises(intellectValue, hero.expertises, expertisesModifier);
     case STEP_CODES.PATHS:
-      return validatePaths(levelData, hero.talents, talentsModifier);
+      return validatePaths(levelData, hero.talents, talentsModifier, flexBudget);
     case STEP_CODES.STARTING_KIT:
       return validateStartingKit(hero.startingKit?.id);
     case STEP_CODES.EQUIPMENT:
@@ -262,18 +318,25 @@ export function getBudgetValidation(
   stepCode: StepCode,
   data: HeroValidationData
 ): BudgetValidation | SkillsBudgetValidation {
-  const { hero, levelData, intellectValue, talentsModifier, skillsModifier, expertisesModifier } =
-    data;
+  const {
+    hero,
+    levelData,
+    intellectValue,
+    talentsModifier,
+    skillsModifier,
+    expertisesModifier,
+    flexBudget,
+  } = data;
 
   switch (stepCode) {
     case STEP_CODES.ATTRIBUTES:
       return validateAttributes(levelData, hero.attributes);
     case STEP_CODES.SKILLS:
-      return validateSkills(levelData, hero.skills, skillsModifier);
+      return validateSkills(levelData, hero.skills, skillsModifier, flexBudget);
     case STEP_CODES.EXPERTISES:
       return validateExpertises(intellectValue, hero.expertises, expertisesModifier);
     case STEP_CODES.PATHS:
-      return validateTalents(levelData, hero.talents, talentsModifier);
+      return validateTalents(levelData, hero.talents, talentsModifier, flexBudget);
     default:
       return DEFAULT_BUDGET;
   }

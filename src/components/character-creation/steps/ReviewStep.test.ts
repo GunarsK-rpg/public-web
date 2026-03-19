@@ -212,6 +212,14 @@ vi.mock('src/composables/useStepValidation', () => ({
       return { value: mockValidationData.value };
     },
     budget: () => ({ budget: 0, spent: 0, remaining: 0 }),
+    flexBudget: {
+      value: {
+        skills: { budget: 0, spent: 0, remaining: 0 },
+        talents: { budget: 0, spent: 0, remaining: 0 },
+        flex: { budget: 0, spent: 0, remaining: 0 },
+        isOverBudget: false,
+      },
+    },
   }),
 }));
 

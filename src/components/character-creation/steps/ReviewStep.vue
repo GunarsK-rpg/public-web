@@ -172,6 +172,14 @@
                 :show-total="true"
               />
             </div>
+            <BudgetDisplay
+              v-if="flexPool.budget > 0"
+              label="Flex points"
+              :remaining="flexPool.remaining"
+              :total="flexPool.budget"
+              :show-total="true"
+              suffix="shared between skills and talents"
+            />
             <div v-for="group in talentsBySource" :key="group.source" class="q-mb-sm">
               <div class="text-caption text-weight-medium">{{ group.source }}</div>
               <q-chip v-for="talent in group.talents" :key="talent.id" outline>
@@ -274,7 +282,8 @@ const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const wizardStore = useWizardStore();
-const { allStepsValidation, budget } = useStepValidation();
+const { allStepsValidation, budget, flexBudget } = useStepValidation();
+const flexPool = computed(() => flexBudget.value.flex);
 
 const attrBudget = computed(() => budget('attributes'));
 const skillsBudget = computed(() => budget('skills'));

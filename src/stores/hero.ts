@@ -168,7 +168,7 @@ export const useHeroStore = defineStore('hero', () => {
 
   function setLevel(level: number) {
     if (!hero.value) return;
-    if (!Number.isInteger(level) || level < 1 || level > 20) {
+    if (!Number.isInteger(level) || level < 1) {
       logger.warn('Invalid level value', { level });
       return;
     }
