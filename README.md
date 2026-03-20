@@ -28,7 +28,7 @@ Character sheet manager for the Cosmere RPG tabletop game built with Vue.js.
 ## Prerequisites
 
 - Node.js 22+ (LTS)
-- npm 10+
+- npm 11+
 - [Task](https://taskfile.dev/) (recommended for running commands)
 
 ## Project Structure
@@ -41,7 +41,9 @@ public-web/
 │   ├── components/       # Vue components
 │   │   ├── character/    # Character sheet components
 │   │   │   └── tabs/     # Tab components (Stats, Skills, etc.)
+│   │   ├── shared/       # Shared UI components
 │   │   └── wizard/       # Character creation wizard components
+│   ├── composables/      # Vue composables (hooks)
 │   ├── css/              # Global styles
 │   ├── i18n/             # Internationalization
 │   ├── layouts/          # Layout components
@@ -60,17 +62,15 @@ public-web/
 
 **Stores** (`src/stores/`):
 
-- `classifiers` - Game data (ancestries, cultures, skills, talents, etc.)
-- `heroes` - Character data management
+- `auth` - User authentication state
 - `campaigns` - Campaign management
-- `user` - User authentication state
-
-**Utils** (`src/utils/`):
-
-- `arrayUtils` - Array search, filter, grouping, map-building
-- `characterValidation` - Wizard step validation and budget calculations
-- `derivedStats` - Formula and lookup-based stat calculations
-- `talentUtils` - Prerequisite formatting for talent display
+- `classifiers` - Game data (ancestries, cultures, skills, talents, etc.)
+- `combat` - DM combat tracker state
+- `hero` - Character data management
+- `heroAttributes` - Attribute and skill rank management
+- `heroEquipment` - Equipment inventory management
+- `heroTalents` - Talent and path management
+- `wizard` - Character creation/edit wizard state
 
 ## Quick Start
 
@@ -165,10 +165,14 @@ docker run -p 7100:8080 cosmere-rpg
 
 The app connects to backend services via axios:
 
-- **auth-service**: Authentication (login, refresh, logout)
+- **[auth-service](https://github.com/GunarsK-portfolio/auth-service)**: Authentication (login, refresh, logout)
 - **rpg-api**: Game data and character management
 
 API configuration is in `src/boot/axios.ts` and `src/services/`.
+
+## Environment Variables
+
+See [.env.example](.env.example) for all required variables.
 
 ## CI/CD
 
