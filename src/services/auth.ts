@@ -35,6 +35,15 @@ export interface ProfileResponse {
   display_name: string | null;
 }
 
+export interface GoogleLoginResponse {
+  url: string;
+}
+
+export interface AuthMethodsResponse {
+  has_password: boolean;
+  providers: string[];
+}
+
 export default {
   login(username: string, password: string, rememberMe: boolean) {
     return authApi.post<LoginResponse>('/login', { username, password, remember_me: rememberMe });
@@ -71,5 +80,17 @@ export default {
   },
   resetPassword(token: string, newPassword: string) {
     return authApi.post('/reset-password', { token, new_password: newPassword });
+  },
+  googleLogin() {
+    return authApi.get<GoogleLoginResponse>('/oauth/google/login');
+  },
+  googleCallback(code: string, state: string) {
+    return authApi.post<LoginResponse>('/oauth/google/callback', { code, state });
+  },
+  getAuthMethods() {
+    return authApi.get<AuthMethodsResponse>('/auth-methods');
+  },
+  setPassword(password: string, confirmPassword: string) {
+    return authApi.post('/set-password', { password, confirm_password: confirmPassword });
   },
 };
