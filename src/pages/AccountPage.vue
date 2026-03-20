@@ -135,7 +135,7 @@
 
       <!-- Change Password Section (users with password) -->
       <PasswordForm
-        v-if="!authMethodsLoaded || authMethodsError || hasPassword"
+        v-if="authMethodsLoaded && (authMethodsError || hasPassword)"
         ref="changePasswordForm"
         title="Change Password"
         submit-label="Change Password"

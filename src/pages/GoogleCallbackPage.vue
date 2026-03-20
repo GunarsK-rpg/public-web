@@ -33,7 +33,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from 'stores/auth';
-import { extractQueryParam } from 'src/utils/routeUtils';
+import { extractQueryParam, isValidRedirect } from 'src/utils/routeUtils';
 import { OAUTH_REMEMBER_ME_KEY, OAUTH_REDIRECT_KEY } from 'src/services/auth';
 
 const route = useRoute();
@@ -61,7 +61,8 @@ onMounted(async () => {
   const success = await authStore.googleCallback(code, state, rememberMe);
 
   if (success) {
-    void router.push(redirect || '/');
+    const safeRedirect = redirect && isValidRedirect(redirect) ? redirect : '/';
+    void router.push(safeRedirect);
   } else {
     loading.value = false;
     errorMessage.value = 'Unable to sign in with Google. Please try again.';
