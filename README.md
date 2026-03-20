@@ -165,7 +165,7 @@ docker run -p 7100:8080 cosmere-rpg
 
 The app connects to backend services via axios:
 
-- **[auth-service](https://github.com/GunarsK-portfolio)**: Authentication (login, refresh, logout)
+- **[auth-service](https://github.com/GunarsK-portfolio/auth-service)**: Authentication (login, refresh, logout)
 - **rpg-api**: Game data and character management
 
 API configuration is in `src/boot/axios.ts` and `src/services/`.

@@ -17,9 +17,7 @@ task test:coverage     # Run tests with coverage
 
 ## Test Files
 
-85 test files, 2050 tests
-
-### Utility Tests (12 files, 263 tests)
+### Utility Tests
 
 | File                          | Tests | Coverage                                                                 |
 | ----------------------------- | ----- | ------------------------------------------------------------------------ |
@@ -36,7 +34,7 @@ task test:coverage     # Run tests with coverage
 | `talentGrants.test.ts`        | 8     | talent grant resolution and formatting                                   |
 | `talentUtils.test.ts`         | 14    | formatPrerequisite (all types), createPrerequisiteFormatter              |
 
-### Store Tests (8 files, 426 tests)
+### Store Tests
 
 | File                     | Tests | Coverage                                                                 |
 | ------------------------ | ----- | ------------------------------------------------------------------------ |
@@ -49,7 +47,7 @@ task test:coverage     # Run tests with coverage
 | `heroTalents.test.ts`    | 54    | addCulture, removeCulture, addTalent, removeTalent, radiant, null guards |
 | `wizard.test.ts`         | 41    | startCreate, startEdit, startLevelUp, navigation, step completion        |
 
-### Composable Tests (8 files, 245 tests)
+### Composable Tests
 
 | File                             | Tests | Coverage                                                          |
 | -------------------------------- | ----- | ----------------------------------------------------------------- |
@@ -62,9 +60,9 @@ task test:coverage     # Run tests with coverage
 | `useTalentPrerequisites.test.ts` | 39    | prerequisite checking, talent lookups, formatPrereq, toggleTalent |
 | `useWizardSave.test.ts`          | 24    | save orchestration, dirty detection, error handling               |
 
-### Component Tests (48 files, 957 tests)
+### Component Tests
 
-#### Character-Creation Shared Components (16 files, 198 tests)
+#### Character-Creation Shared Components
 
 | File                                 | Tests | Coverage                                                         |
 | ------------------------------------ | ----- | ---------------------------------------------------------------- |
@@ -85,7 +83,7 @@ task test:coverage     # Run tests with coverage
 | `TalentListItem.test.ts`             | 15    | Item rendering, action buttons, type badges                      |
 | `TalentListPanel.test.ts`            | 11    | List display, filtering, empty state                             |
 
-#### Step Components (10 files, 341 tests)
+#### Step Components
 
 | File                          | Tests | Coverage                                                        |
 | ----------------------------- | ----- | --------------------------------------------------------------- |
@@ -100,7 +98,7 @@ task test:coverage     # Run tests with coverage
 | `PersonalDetailsStep.test.ts` | 37    | Biography, goals, connections, debounced handlers, edge cases   |
 | `ReviewStep.test.ts`          | 56    | Validation indicators, all sections display                     |
 
-#### Character Sheet Components (13 files, 265 tests)
+#### Character Sheet Components
 
 | File                         | Tests | Coverage                                                       |
 | ---------------------------- | ----- | -------------------------------------------------------------- |
@@ -117,8 +115,9 @@ task test:coverage     # Run tests with coverage
 | `SkillsTab.test.ts`          | 25    | Skill list, rank display, attribute bonuses                    |
 | `StatsTab.test.ts`           | 25    | Derived stats, formulas, stat groups                           |
 | `TalentItem.test.ts`         | 14    | Talent card, prerequisites, type badge                         |
+| `TalentsTab.test.ts`         | 19    | Talent list, path/radiant/surge talents, edge cases            |
 
-#### Shared Components (5 files, 52 tests)
+#### Shared Components
 
 | File                         | Tests | Coverage                       |
 | ---------------------------- | ----- | ------------------------------ |
@@ -128,13 +127,13 @@ task test:coverage     # Run tests with coverage
 | `ResourceBox.test.ts`        | 23    | Resource display, bar states   |
 | `SpecialBadges.test.ts`      | 10    | Special attribute badges       |
 
-#### Layout Tests (1 file, 15 tests)
+#### Layout Tests
 
 | File                 | Tests | Coverage                                          |
 | -------------------- | ----- | ------------------------------------------------- |
 | `MainLayout.test.ts` | 15    | Layout rendering, navigation, responsive behavior |
 
-#### Page Components (9 files, 101 tests)
+#### Page Components
 
 | File                            | Tests | Coverage                                        |
 | ------------------------------- | ----- | ----------------------------------------------- |
@@ -148,7 +147,7 @@ task test:coverage     # Run tests with coverage
 | `CharacterSheetPage.test.ts`    | 14    | Tab navigation, loading/error states            |
 | `CharacterCreationPage.test.ts` | 15    | Step display, reset dialog, accessibility       |
 
-### Service Tests (2 files, 36 tests)
+### Service Tests
 
 | File                   | Tests | Coverage                                      |
 | ---------------------- | ----- | --------------------------------------------- |
