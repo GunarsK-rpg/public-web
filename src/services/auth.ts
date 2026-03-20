@@ -1,5 +1,7 @@
 import { authApi } from './authApi';
 
+export const OAUTH_REMEMBER_ME_KEY = 'oauth_remember_me';
+
 export interface LoginResponse {
   success: boolean;
   expires_in: number;
@@ -84,8 +86,12 @@ export default {
   googleLogin() {
     return authApi.get<GoogleLoginResponse>('/oauth/google/login');
   },
-  googleCallback(code: string, state: string) {
-    return authApi.post<LoginResponse>('/oauth/google/callback', { code, state });
+  googleCallback(code: string, state: string, rememberMe: boolean) {
+    return authApi.post<LoginResponse>('/oauth/google/callback', {
+      code,
+      state,
+      remember_me: rememberMe,
+    });
   },
   getAuthMethods() {
     return authApi.get<AuthMethodsResponse>('/auth-methods');

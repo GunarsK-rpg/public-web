@@ -30,7 +30,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import authService from 'src/services/auth';
+import authService, { OAUTH_REMEMBER_ME_KEY } from 'src/services/auth';
+
+const props = defineProps<{
+  rememberMe?: boolean;
+}>();
 
 const loading = ref(false);
 const emit = defineEmits<{
@@ -40,9 +44,11 @@ const emit = defineEmits<{
 async function handleGoogleLogin(): Promise<void> {
   loading.value = true;
   try {
+    sessionStorage.setItem(OAUTH_REMEMBER_ME_KEY, String(!!props.rememberMe));
     const response = await authService.googleLogin();
     window.location.href = response.data.url;
   } catch {
+    sessionStorage.removeItem(OAUTH_REMEMBER_ME_KEY);
     emit('error', 'Unable to connect to Google. Please try again.');
     loading.value = false;
   }

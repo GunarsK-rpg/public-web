@@ -136,10 +136,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function googleCallback(code: string, state: string): Promise<boolean> {
+  async function googleCallback(
+    code: string,
+    state: string,
+    rememberMe: boolean
+  ): Promise<boolean> {
     loading.value = true;
     try {
-      const response = await authService.googleCallback(code, state);
+      const response = await authService.googleCallback(code, state, rememberMe);
       hydrateLoginResponse(response.data);
       return true;
     } catch (error) {

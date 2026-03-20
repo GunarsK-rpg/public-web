@@ -34,6 +34,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from 'stores/auth';
 import { extractQueryParam } from 'src/utils/routeUtils';
+import { OAUTH_REMEMBER_ME_KEY } from 'src/services/auth';
 
 const route = useRoute();
 const router = useRouter();
@@ -52,7 +53,10 @@ onMounted(async () => {
     return;
   }
 
-  const success = await authStore.googleCallback(code, state);
+  const rememberMe = sessionStorage.getItem(OAUTH_REMEMBER_ME_KEY) === 'true';
+  sessionStorage.removeItem(OAUTH_REMEMBER_ME_KEY);
+
+  const success = await authStore.googleCallback(code, state, rememberMe);
 
   if (success) {
     void router.push('/');
