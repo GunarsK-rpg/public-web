@@ -45,7 +45,7 @@
           </li>
           <li>
             <strong>Amazon Web Services (AWS)</strong> &mdash; our infrastructure runs on AWS in the
-            the EU (Ireland). AWS processes data on our behalf under their
+            EU (Ireland). AWS processes data on our behalf under their
             <a
               href="https://aws.amazon.com/compliance/data-privacy-faq/"
               target="_blank"
@@ -103,13 +103,25 @@
       </q-card-section>
 
       <q-card-section class="text-center">
-        <router-link :to="{ name: 'login' }" class="text-primary">Back to Login</router-link>
+        <q-btn flat no-caps color="primary" @click="goBack">Back</q-btn>
       </q-card-section>
     </q-card>
   </q-page>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+function goBack(): void {
+  if (window.history.length > 1) {
+    router.back();
+  } else {
+    void router.push({ name: 'login' });
+  }
+}
+</script>
 
 <style scoped>
 .privacy-card {
