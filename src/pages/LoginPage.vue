@@ -64,6 +64,12 @@
         Don't have an account?
         <router-link :to="{ name: 'register' }" class="text-primary">Register</router-link>
       </q-card-section>
+
+      <q-card-section class="text-center q-pt-none">
+        <router-link :to="{ name: 'privacy-policy' }" class="text-grey-6 text-caption">
+          Privacy Policy
+        </router-link>
+      </q-card-section>
     </q-card>
   </q-page>
 </template>
