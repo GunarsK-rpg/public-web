@@ -77,7 +77,7 @@
         <q-card-section>
           <q-form @submit.prevent="handleUpdateProfile" class="q-gutter-y-md">
             <q-input
-              v-if="hasPassword"
+              v-if="authMethodsLoaded && hasPassword"
               v-model="profileEmail"
               label="Email"
               type="email"
@@ -88,7 +88,7 @@
               ]"
             />
 
-            <div v-if="!hasPassword" class="text-caption text-grey">
+            <div v-if="authMethodsLoaded && !hasPassword" class="text-caption text-grey">
               Email cannot be changed for accounts without a password.
             </div>
 

@@ -29,6 +29,6 @@ export function isValidRedirect(url: string): boolean {
   const slashIndex = normalized.indexOf('/', 1);
   if (colonIndex !== -1 && (slashIndex === -1 || colonIndex < slashIndex)) return false;
   if (normalized.includes('@')) return false;
-  if (/%[0-9a-fA-F]{2}/.test(url)) return false;
+  if (/%[0-9a-fA-F]{2}/.test(normalized)) return false;
   return true;
 }

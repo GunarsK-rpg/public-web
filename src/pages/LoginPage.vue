@@ -51,7 +51,7 @@
         <q-separator class="q-mb-md" />
         <GoogleSignInButton
           :remember-me="rememberMe"
-          v-bind="route.query.redirect ? { redirect: route.query.redirect as string } : {}"
+          v-bind="redirectParam ? { redirect: redirectParam } : {}"
           @error="(msg) => (error = msg)"
         />
       </q-card-section>
@@ -73,7 +73,7 @@ import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from 'stores/auth';
 import GoogleSignInButton from 'src/components/auth/GoogleSignInButton.vue';
-import { isValidRedirect } from 'src/utils/routeUtils';
+import { extractQueryParam, isValidRedirect } from 'src/utils/routeUtils';
 
 const router = useRouter();
 const route = useRoute();
@@ -85,6 +85,7 @@ const rememberMe = ref(false);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const registered = computed(() => route.query.registered === '1');
+const redirectParam = computed(() => extractQueryParam(route.query, 'redirect'));
 
 async function handleLogin(): Promise<void> {
   loading.value = true;
@@ -94,8 +95,8 @@ async function handleLogin(): Promise<void> {
     const success = await authStore.login(username.value, password.value, rememberMe.value);
 
     if (success) {
-      const redirect = route.query.redirect as string;
-      const safeRedirect = redirect && isValidRedirect(redirect) ? redirect : '/';
+      const safeRedirect =
+        redirectParam.value && isValidRedirect(redirectParam.value) ? redirectParam.value : '/';
       void router.push(safeRedirect);
     } else {
       error.value = 'Invalid username or password';
