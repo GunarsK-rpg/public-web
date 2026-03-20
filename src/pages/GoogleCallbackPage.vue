@@ -15,7 +15,7 @@
           aria-label="Completing sign in"
         />
 
-        <div v-else class="text-negative">
+        <div v-else class="text-negative" role="alert" aria-live="assertive">
           <q-icon name="error" size="48px" class="q-mb-sm" aria-hidden="true" />
           <div class="text-h6">Sign in failed</div>
           <div class="text-body2 q-mt-sm">{{ errorMessage }}</div>
@@ -34,7 +34,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from 'stores/auth';
 import { extractQueryParam } from 'src/utils/routeUtils';
-import { OAUTH_REMEMBER_ME_KEY } from 'src/services/auth';
+import { OAUTH_REMEMBER_ME_KEY, OAUTH_REDIRECT_KEY } from 'src/services/auth';
 
 const route = useRoute();
 const router = useRouter();
@@ -54,12 +54,14 @@ onMounted(async () => {
   }
 
   const rememberMe = sessionStorage.getItem(OAUTH_REMEMBER_ME_KEY) === 'true';
+  const redirect = sessionStorage.getItem(OAUTH_REDIRECT_KEY);
   sessionStorage.removeItem(OAUTH_REMEMBER_ME_KEY);
+  sessionStorage.removeItem(OAUTH_REDIRECT_KEY);
 
   const success = await authStore.googleCallback(code, state, rememberMe);
 
   if (success) {
-    void router.push('/');
+    void router.push(redirect || '/');
   } else {
     loading.value = false;
     errorMessage.value = 'Unable to sign in with Google. Please try again.';

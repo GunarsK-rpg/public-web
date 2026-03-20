@@ -44,7 +44,13 @@
           ]"
         />
 
-        <q-btn type="submit" :label="submitLabel" color="primary" :loading="loading" />
+        <q-btn
+          type="submit"
+          :label="submitLabel"
+          color="primary"
+          :loading="loading"
+          :disable="loading"
+        />
 
         <div
           v-if="message"
@@ -97,6 +103,7 @@ function clearFields(): void {
 }
 
 function handleSubmit(): void {
+  if (loading.value) return;
   emit('submit', {
     currentPassword: currentPassword.value,
     newPassword: newPassword.value,

@@ -50,7 +50,7 @@
       </q-card>
 
       <!-- Linked Accounts Section -->
-      <q-card v-if="authMethodsLoaded" class="q-mb-md">
+      <q-card v-if="authMethodsLoaded && !authMethodsError" class="q-mb-md">
         <q-card-section>
           <div class="text-h6">Linked Accounts</div>
         </q-card-section>
@@ -124,7 +124,7 @@
 
       <!-- Set Password Section (OAuth-only users) -->
       <PasswordForm
-        v-if="authMethodsLoaded && !hasPassword"
+        v-if="authMethodsLoaded && !authMethodsError && !hasPassword"
         ref="setPasswordForm"
         title="Set Password"
         subtitle="Add a password to enable email/password login and email changes."
@@ -135,7 +135,7 @@
 
       <!-- Change Password Section (users with password) -->
       <PasswordForm
-        v-if="!authMethodsLoaded || hasPassword"
+        v-if="!authMethodsLoaded || authMethodsError || hasPassword"
         ref="changePasswordForm"
         title="Change Password"
         submit-label="Change Password"
@@ -158,6 +158,7 @@ const authStore = useAuthStore();
 
 // Auth methods
 const authMethodsLoaded = ref(false);
+const authMethodsError = ref(false);
 const hasPassword = ref(true);
 const providers = ref<string[]>([]);
 const hasGoogle = computed(() => providers.value.includes('google'));
@@ -167,6 +168,8 @@ onMounted(async () => {
     const response = await authService.getAuthMethods();
     hasPassword.value = response.data.has_password;
     providers.value = response.data.providers;
+  } catch {
+    authMethodsError.value = true;
   } finally {
     authMethodsLoaded.value = true;
   }
@@ -303,7 +306,9 @@ async function handleSetPassword(payload: {
     await authService.setPassword(payload.newPassword, payload.newPassword);
     form.setResult('Password set. You can now log in with email and password.', false);
     form.clearFields();
-    hasPassword.value = true;
+    setTimeout(() => {
+      hasPassword.value = true;
+    }, 3000);
   } catch (err) {
     if (axios.isAxiosError(err) && err.response) {
       const msg = (err.response.data as { error?: string })?.error;

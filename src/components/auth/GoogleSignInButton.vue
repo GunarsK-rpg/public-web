@@ -30,10 +30,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import authService, { OAUTH_REMEMBER_ME_KEY } from 'src/services/auth';
+import authService, { OAUTH_REMEMBER_ME_KEY, OAUTH_REDIRECT_KEY } from 'src/services/auth';
 
 const props = defineProps<{
   rememberMe?: boolean;
+  redirect?: string;
 }>();
 
 const loading = ref(false);
@@ -45,10 +46,19 @@ async function handleGoogleLogin(): Promise<void> {
   loading.value = true;
   try {
     sessionStorage.setItem(OAUTH_REMEMBER_ME_KEY, String(!!props.rememberMe));
+    if (props.redirect) {
+      sessionStorage.setItem(OAUTH_REDIRECT_KEY, props.redirect);
+    }
     const response = await authService.googleLogin();
+    const url = new URL(response.data.url);
+    const allowedHosts = ['accounts.google.com', 'oauth2.googleapis.com'];
+    if (url.protocol !== 'https:' || !allowedHosts.includes(url.hostname)) {
+      throw new Error('Invalid OAuth URL');
+    }
     window.location.href = response.data.url;
   } catch {
     sessionStorage.removeItem(OAUTH_REMEMBER_ME_KEY);
+    sessionStorage.removeItem(OAUTH_REDIRECT_KEY);
     emit('error', 'Unable to connect to Google. Please try again.');
     loading.value = false;
   }

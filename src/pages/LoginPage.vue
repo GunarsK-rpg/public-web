@@ -49,7 +49,11 @@
 
       <q-card-section class="text-center q-pt-none">
         <q-separator class="q-mb-md" />
-        <GoogleSignInButton :remember-me="rememberMe" @error="(msg) => (error = msg)" />
+        <GoogleSignInButton
+          :remember-me="rememberMe"
+          v-bind="route.query.redirect ? { redirect: route.query.redirect as string } : {}"
+          @error="(msg) => (error = msg)"
+        />
       </q-card-section>
 
       <q-card-section v-if="error" class="text-negative" role="alert" aria-live="polite">

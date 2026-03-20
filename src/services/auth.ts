@@ -1,6 +1,7 @@
 import { authApi } from './authApi';
 
 export const OAUTH_REMEMBER_ME_KEY = 'oauth_remember_me';
+export const OAUTH_REDIRECT_KEY = 'oauth_redirect';
 
 export interface LoginResponse {
   success: boolean;
