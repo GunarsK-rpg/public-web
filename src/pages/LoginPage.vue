@@ -47,6 +47,15 @@
         </q-form>
       </q-card-section>
 
+      <q-card-section class="text-center q-pt-none">
+        <q-separator class="q-mb-md" />
+        <GoogleSignInButton
+          :remember-me="rememberMe"
+          v-bind="redirectParam ? { redirect: redirectParam } : {}"
+          @error="(msg) => (error = msg)"
+        />
+      </q-card-section>
+
       <q-card-section v-if="error" class="text-negative" role="alert" aria-live="polite">
         {{ error }}
       </q-card-section>
@@ -63,6 +72,8 @@
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from 'stores/auth';
+import GoogleSignInButton from 'src/components/auth/GoogleSignInButton.vue';
+import { extractQueryParam, isValidRedirect } from 'src/utils/routeUtils';
 
 const router = useRouter();
 const route = useRoute();
@@ -74,33 +85,7 @@ const rememberMe = ref(false);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const registered = computed(() => route.query.registered === '1');
-
-/**
- * Validates that redirect URL is safe (relative path only)
- */
-function isValidRedirect(url: string): boolean {
-  // Normalize backslashes to forward slashes (browsers may interpret \ as /)
-  const normalized = url.replace(/\\/g, '/');
-
-  // Only allow relative paths starting with single /
-  if (!normalized.startsWith('/')) return false;
-
-  // Reject protocol-relative URLs (//example.com)
-  if (normalized.startsWith('//')) return false;
-
-  // Reject any URL containing : before / (protocol schemes like javascript:, data:, etc.)
-  const colonIndex = normalized.indexOf(':');
-  const slashIndex = normalized.indexOf('/', 1);
-  if (colonIndex !== -1 && (slashIndex === -1 || colonIndex < slashIndex)) return false;
-
-  // Reject URLs with @ which could be used for credential injection (http://evil.com@target.com)
-  if (normalized.includes('@')) return false;
-
-  // Reject encoded characters that could bypass validation (%2F, %3A, etc.)
-  if (/%[0-9a-fA-F]{2}/.test(url)) return false;
-
-  return true;
-}
+const redirectParam = computed(() => extractQueryParam(route.query, 'redirect'));
 
 async function handleLogin(): Promise<void> {
   loading.value = true;
@@ -110,8 +95,8 @@ async function handleLogin(): Promise<void> {
     const success = await authStore.login(username.value, password.value, rememberMe.value);
 
     if (success) {
-      const redirect = route.query.redirect as string;
-      const safeRedirect = redirect && isValidRedirect(redirect) ? redirect : '/';
+      const safeRedirect =
+        redirectParam.value && isValidRedirect(redirectParam.value) ? redirectParam.value : '/';
       void router.push(safeRedirect);
     } else {
       error.value = 'Invalid username or password';

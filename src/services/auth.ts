@@ -1,5 +1,8 @@
 import { authApi } from './authApi';
 
+export const OAUTH_REMEMBER_ME_KEY = 'oauth_remember_me';
+export const OAUTH_REDIRECT_KEY = 'oauth_redirect';
+
 export interface LoginResponse {
   success: boolean;
   expires_in: number;
@@ -33,6 +36,15 @@ export interface ProfileResponse {
   email: string;
   email_verified: boolean;
   display_name: string | null;
+}
+
+export interface GoogleLoginResponse {
+  url: string;
+}
+
+export interface AuthMethodsResponse {
+  has_password: boolean;
+  providers: string[];
 }
 
 export default {
@@ -71,5 +83,21 @@ export default {
   },
   resetPassword(token: string, newPassword: string) {
     return authApi.post('/reset-password', { token, new_password: newPassword });
+  },
+  googleLogin() {
+    return authApi.get<GoogleLoginResponse>('/oauth/google/login');
+  },
+  googleCallback(code: string, state: string, rememberMe: boolean) {
+    return authApi.post<LoginResponse>('/oauth/google/callback', {
+      code,
+      state,
+      remember_me: rememberMe,
+    });
+  },
+  getAuthMethods() {
+    return authApi.get<AuthMethodsResponse>('/auth-methods');
+  },
+  setPassword(password: string, confirmPassword: string) {
+    return authApi.post('/set-password', { password, confirm_password: confirmPassword });
   },
 };

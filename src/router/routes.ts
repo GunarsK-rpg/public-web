@@ -142,6 +142,20 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
+  // Google OAuth callback
+  {
+    path: '/oauth/google/callback',
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'google-callback',
+        component: () => import('pages/GoogleCallbackPage.vue'),
+        meta: { title: 'Google Sign In', public: true },
+      },
+    ],
+  },
+
   // Verify email (public - uses AuthLayout regardless of login state)
   {
     path: '/verify-email',

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { Router } from 'vue-router';
-import authService from 'src/services/auth';
+import authService, { type LoginResponse } from 'src/services/auth';
 import { broadcastLogin, broadcastLogout, type AuthMessage } from 'src/services/authChannel';
 import {
   scheduleProactiveRefresh,
@@ -103,6 +103,20 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function hydrateLoginResponse(data: LoginResponse, fallbackUsername = ''): void {
+    isAuthenticated.value = true;
+    username.value = data.username || fallbackUsername;
+    hydrateProfile(data);
+    scopes.value = data.scopes || {};
+
+    if (data.user_id) {
+      setUserContext({ id: data.user_id });
+    }
+
+    scheduleProactiveRefresh(data.expires_in);
+    broadcastLogin();
+  }
+
   async function login(
     loginUsername: string,
     password: string,
@@ -111,22 +125,29 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true;
     try {
       const response = await authService.login(loginUsername, password, rememberMe);
-      isAuthenticated.value = true;
-      username.value = response.data.username || loginUsername;
-      hydrateProfile(response.data);
-      scopes.value = response.data.scopes || {};
-
+      hydrateLoginResponse(response.data, loginUsername);
       logger.info('User logged in', { username: loginUsername });
-
-      if (response.data.user_id) {
-        setUserContext({ id: response.data.user_id });
-      }
-
-      scheduleProactiveRefresh(response.data.expires_in);
-      broadcastLogin();
       return true;
     } catch (error) {
       logger.error('Login failed', toError(error));
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function googleCallback(
+    code: string,
+    state: string,
+    rememberMe: boolean
+  ): Promise<boolean> {
+    loading.value = true;
+    try {
+      const response = await authService.googleCallback(code, state, rememberMe);
+      hydrateLoginResponse(response.data);
+      return true;
+    } catch (error) {
+      logger.error('Google OAuth callback failed', toError(error));
       return false;
     } finally {
       loading.value = false;
@@ -176,6 +197,7 @@ export const useAuthStore = defineStore('auth', () => {
     canDelete,
     checkAuthStatus,
     login,
+    googleCallback,
     logout,
     handleAuthBroadcast,
   };

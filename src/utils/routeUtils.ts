@@ -17,3 +17,18 @@ export function extractQueryParam(query: LocationQuery, key: string): string | n
 export function removeQueryParam(query: LocationQuery, key: string): LocationQuery {
   return Object.fromEntries(Object.entries(query).filter(([k]) => k !== key));
 }
+
+/**
+ * Validates that a redirect URL is safe (relative path only).
+ */
+export function isValidRedirect(url: string): boolean {
+  const normalized = url.replace(/\\/g, '/');
+  if (!normalized.startsWith('/')) return false;
+  if (normalized.startsWith('//')) return false;
+  const colonIndex = normalized.indexOf(':');
+  const slashIndex = normalized.indexOf('/', 1);
+  if (colonIndex !== -1 && (slashIndex === -1 || colonIndex < slashIndex)) return false;
+  if (normalized.includes('@')) return false;
+  if (/%[0-9a-fA-F]{2}/.test(normalized)) return false;
+  return true;
+}

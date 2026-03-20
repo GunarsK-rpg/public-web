@@ -68,6 +68,11 @@
         </q-form>
       </q-card-section>
 
+      <q-card-section class="text-center q-pt-none">
+        <q-separator class="q-mb-md" />
+        <GoogleSignInButton @error="(msg) => (error = msg)" />
+      </q-card-section>
+
       <q-card-section v-if="error" class="text-negative" role="alert" aria-live="polite">
         {{ error }}
       </q-card-section>
@@ -85,6 +90,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import authService from 'src/services/auth';
+import GoogleSignInButton from 'src/components/auth/GoogleSignInButton.vue';
 
 const router = useRouter();
 

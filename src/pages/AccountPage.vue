@@ -49,6 +49,25 @@
         </q-card-section>
       </q-card>
 
+      <!-- Linked Accounts Section -->
+      <q-card v-if="authMethodsLoaded && !authMethodsError" class="q-mb-md">
+        <q-card-section>
+          <div class="text-h6">Linked Accounts</div>
+        </q-card-section>
+
+        <q-card-section>
+          <div class="q-gutter-y-sm">
+            <div class="row items-center q-gutter-x-sm">
+              <span class="text-body1">Google</span>
+              <q-badge
+                :color="hasGoogle ? 'positive' : 'grey'"
+                :label="hasGoogle ? 'Linked' : 'Not linked'"
+              />
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+
       <!-- Edit Profile Section -->
       <q-card class="q-mb-md">
         <q-card-section>
@@ -58,6 +77,7 @@
         <q-card-section>
           <q-form @submit.prevent="handleUpdateProfile" class="q-gutter-y-md">
             <q-input
+              v-if="authMethodsLoaded && hasPassword"
               v-model="profileEmail"
               label="Email"
               type="email"
@@ -67,6 +87,10 @@
                 (val) => !val || val.length <= 100 || 'Email must be at most 100 characters',
               ]"
             />
+
+            <div v-if="authMethodsLoaded && !hasPassword" class="text-caption text-grey">
+              Email cannot be changed for accounts without a password.
+            </div>
 
             <q-input
               v-model="profileDisplayName"
@@ -82,9 +106,7 @@
               label="Save Changes"
               color="primary"
               :loading="profileLoading"
-              :disable="
-                trimmedEmail === authStore.email && trimmedDisplayName === authStore.displayName
-              "
+              :disable="!profileHasChanges"
             />
 
             <div
@@ -100,79 +122,58 @@
         </q-card-section>
       </q-card>
 
-      <!-- Security Section -->
-      <q-card>
-        <q-card-section>
-          <div class="text-h6">Change Password</div>
-        </q-card-section>
+      <!-- Set Password Section (OAuth-only users) -->
+      <PasswordForm
+        v-if="authMethodsLoaded && !authMethodsError && !hasPassword"
+        ref="setPasswordForm"
+        title="Set Password"
+        subtitle="Add a password to enable email/password login and email changes."
+        submit-label="Set Password"
+        :require-current-password="false"
+        @submit="handleSetPassword"
+      />
 
-        <q-card-section>
-          <q-form @submit.prevent="handleChangePassword" class="q-gutter-y-md">
-            <q-input
-              v-model="currentPassword"
-              label="Current Password"
-              type="password"
-              outlined
-              autocomplete="current-password"
-              :rules="[(val) => !!val || 'Current password is required']"
-            />
-
-            <q-input
-              v-model="newPassword"
-              label="New Password"
-              type="password"
-              outlined
-              autocomplete="new-password"
-              :rules="[
-                (val) => !!val || 'New password is required',
-                (val) => val.length >= 8 || 'Password must be at least 8 characters',
-                (val) => val.length <= 72 || 'Password must be at most 72 characters',
-              ]"
-            />
-
-            <q-input
-              v-model="confirmNewPassword"
-              label="Confirm New Password"
-              type="password"
-              outlined
-              autocomplete="new-password"
-              :rules="[
-                (val) => !!val || 'Please confirm your password',
-                (val) => val === newPassword || 'Passwords do not match',
-              ]"
-            />
-
-            <q-btn
-              type="submit"
-              label="Change Password"
-              color="primary"
-              :loading="passwordLoading"
-            />
-
-            <div
-              v-if="passwordMessage"
-              :class="passwordError ? 'text-negative' : 'text-positive'"
-              :role="passwordError ? 'alert' : 'status'"
-              :aria-live="passwordError ? 'assertive' : 'polite'"
-              aria-atomic="true"
-            >
-              {{ passwordMessage }}
-            </div>
-          </q-form>
-        </q-card-section>
-      </q-card>
+      <!-- Change Password Section (users with password) -->
+      <PasswordForm
+        v-if="authMethodsLoaded && (authMethodsError || hasPassword)"
+        ref="changePasswordForm"
+        title="Change Password"
+        submit-label="Change Password"
+        :require-current-password="true"
+        @submit="handleChangePassword"
+      />
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from 'stores/auth';
 import authService from 'src/services/auth';
 import { refreshToken } from 'src/services/tokenRefresh';
 import axios from 'axios';
+import PasswordForm from 'src/components/auth/PasswordForm.vue';
 
 const authStore = useAuthStore();
+
+// Auth methods
+const authMethodsLoaded = ref(false);
+const authMethodsError = ref(false);
+const hasPassword = ref(true);
+const providers = ref<string[]>([]);
+const hasGoogle = computed(() => providers.value.includes('google'));
+
+onMounted(async () => {
+  try {
+    const response = await authService.getAuthMethods();
+    hasPassword.value = response.data.has_password;
+    providers.value = response.data.providers;
+  } catch {
+    authMethodsError.value = true;
+  } finally {
+    authMethodsLoaded.value = true;
+  }
+});
 
 // Verification
 const verifyLoading = ref(false);
@@ -205,6 +206,10 @@ const profileEmail = ref(authStore.email);
 const profileDisplayName = ref(authStore.displayName);
 const trimmedEmail = computed(() => profileEmail.value.trim());
 const trimmedDisplayName = computed(() => profileDisplayName.value.trim());
+const profileHasChanges = computed(() => {
+  if (hasPassword.value && trimmedEmail.value !== authStore.email) return true;
+  return trimmedDisplayName.value !== authStore.displayName;
+});
 const profileLoading = ref(false);
 const profileMessage = ref('');
 const profileError = ref(false);
@@ -215,7 +220,7 @@ async function handleUpdateProfile(): Promise<void> {
   profileError.value = false;
 
   const data: { email?: string; display_name?: string } = {};
-  if (trimmedEmail.value !== authStore.email) data.email = trimmedEmail.value;
+  if (hasPassword.value && trimmedEmail.value !== authStore.email) data.email = trimmedEmail.value;
   if (trimmedDisplayName.value !== authStore.displayName)
     data.display_name = trimmedDisplayName.value;
 
@@ -255,42 +260,64 @@ async function handleUpdateProfile(): Promise<void> {
   }
 }
 
-// Change password
-const currentPassword = ref('');
-const newPassword = ref('');
-const confirmNewPassword = ref('');
-const passwordLoading = ref(false);
-const passwordMessage = ref('');
-const passwordError = ref(false);
+// Password forms
+const setPasswordForm = ref<InstanceType<typeof PasswordForm>>();
+const changePasswordForm = ref<InstanceType<typeof PasswordForm>>();
 
-async function handleChangePassword(): Promise<void> {
-  passwordLoading.value = true;
-  passwordMessage.value = '';
-  passwordError.value = false;
+async function handleChangePassword(payload: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  const form = changePasswordForm.value;
+  if (!form) return;
+  form.setLoading(true);
 
   try {
-    await authService.changePassword(currentPassword.value, newPassword.value);
-    passwordMessage.value = 'Password changed. You will be logged out.';
-    currentPassword.value = '';
-    newPassword.value = '';
-    confirmNewPassword.value = '';
-    // Sessions are invalidated server-side, logout locally
+    await authService.changePassword(payload.currentPassword, payload.newPassword);
+    form.setResult('Password changed. You will be logged out.', false);
+    form.clearFields();
     setTimeout(() => void authStore.logout(), 2000);
   } catch (err) {
-    passwordError.value = true;
     if (axios.isAxiosError(err) && err.response) {
       const status = err.response.status;
       const msg = (err.response.data as { error?: string })?.error;
       if (status === 401) {
-        passwordMessage.value = 'Current password is incorrect.';
+        form.setResult('Current password is incorrect.', true);
       } else {
-        passwordMessage.value = msg || 'Failed to change password.';
+        form.setResult(msg || 'Failed to change password.', true);
       }
     } else {
-      passwordMessage.value = 'Unable to connect. Please try again.';
+      form.setResult('Unable to connect. Please try again.', true);
     }
   } finally {
-    passwordLoading.value = false;
+    form.setLoading(false);
+  }
+}
+
+async function handleSetPassword(payload: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  const form = setPasswordForm.value;
+  if (!form) return;
+  form.setLoading(true);
+
+  try {
+    await authService.setPassword(payload.newPassword, payload.newPassword);
+    form.setResult('Password set. You can now log in with email and password.', false);
+    form.clearFields();
+    setTimeout(() => {
+      hasPassword.value = true;
+    }, 3000);
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response) {
+      const msg = (err.response.data as { error?: string })?.error;
+      form.setResult(msg || 'Failed to set password.', true);
+    } else {
+      form.setResult('Unable to connect. Please try again.', true);
+    }
+  } finally {
+    form.setLoading(false);
   }
 }
 </script>
