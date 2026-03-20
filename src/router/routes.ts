@@ -170,6 +170,20 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
+  // Privacy policy (public, no auth)
+  {
+    path: '/privacy',
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'privacy-policy',
+        component: () => import('pages/PrivacyPolicyPage.vue'),
+        meta: { title: 'Privacy Policy', public: true },
+      },
+    ],
+  },
+
   // Error pages
   {
     path: '/forbidden',
