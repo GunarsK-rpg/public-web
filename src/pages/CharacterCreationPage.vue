@@ -175,6 +175,7 @@ async function navigateWithSave(targetStep: number): Promise<void> {
     wizardStore.markStepCompleted(currentStep.value);
   }
   wizardStore.goToStep(targetStep);
+  stepContentRef.value?.scrollTo?.({ top: 0 });
 }
 
 function closeWizardAndNavigate(): void {
