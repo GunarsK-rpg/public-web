@@ -183,14 +183,20 @@ export const useAuthStore = defineStore('auth', () => {
       return;
     }
     if (message.type === 'refresh') {
-      scheduleProactiveRefresh(message.expires_in);
+      const ttl = message.expires_in;
+      if (typeof ttl === 'number' && Number.isFinite(ttl) && ttl > 0) {
+        scheduleProactiveRefresh(ttl);
+      }
     }
   }
 
   let hiddenAt: number | null = null;
+  let visibilityHandlerAttached = false;
   const VISIBILITY_DEBOUNCE_MS = 5000;
 
   function initVisibilityHandler(): void {
+    if (typeof document === 'undefined' || visibilityHandlerAttached) return;
+    visibilityHandlerAttached = true;
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         hiddenAt = Date.now();
