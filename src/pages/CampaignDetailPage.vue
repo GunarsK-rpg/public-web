@@ -167,11 +167,23 @@
                       <div class="text-subtitle2">Turn {{ combat.round }}</div>
                     </q-card-section>
 
-                    <q-card-section>
+                    <q-card-section class="row items-center no-wrap">
                       <q-badge
                         :color="combat.isActive ? 'positive' : 'grey'"
                         :label="combat.isActive ? 'Active' : 'Finished'"
                       />
+                      <q-space />
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        size="sm"
+                        color="negative"
+                        :disable="saving"
+                        aria-label="Delete combat"
+                        @click.prevent.stop="confirmDeleteCombat(combat)"
+                        ><Trash2 :size="16" aria-hidden="true"
+                      /></q-btn>
                     </q-card-section>
                   </q-card>
                 </a>
@@ -201,6 +213,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { logger } from 'src/utils/logger';
 import CreateCombatDialog from 'src/components/combat/CreateCombatDialog.vue';
+import type { Combat } from 'src/types';
 
 const props = defineProps<{
   campaignId: string;
@@ -264,6 +277,17 @@ function confirmDeleteCampaign(): void {
         void router.push({ name: 'campaigns' });
       }
     });
+  });
+}
+
+function confirmDeleteCombat(combat: Combat): void {
+  $q.dialog({
+    title: 'Delete Combat',
+    message: `Delete "${combat.name}"? This cannot be undone.`,
+    cancel: true,
+    persistent: false,
+  }).onOk(() => {
+    void combatStore.deleteCombat(Number(props.campaignId), combat.id);
   });
 }
 
