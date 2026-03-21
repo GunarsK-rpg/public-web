@@ -77,14 +77,6 @@ vi.mock('src/constants/theme', () => ({
   },
 }));
 
-const mockRouterPush = vi.fn();
-
-vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mockRouterPush,
-  }),
-}));
-
 describe('CharacterHeader', () => {
   const createWrapper = (props = {}) =>
     shallowMount(CharacterHeader, {
@@ -104,7 +96,8 @@ describe('CharacterHeader', () => {
           },
           QBtn: {
             template:
-              '<button class="q-btn-stub" :aria-label="$attrs[\'aria-label\']"><slot /></button>',
+              '<button class="q-btn-stub" :aria-label="$attrs[\'aria-label\']" :data-to="to ? JSON.stringify(to) : undefined"><slot /></button>',
+            props: ['to'],
           },
           QBadge: {
             template: '<span class="q-badge"><slot /></span>',
@@ -216,13 +209,13 @@ describe('CharacterHeader', () => {
   });
 
   describe('edit button', () => {
-    it('navigates to edit route when edit button is clicked', async () => {
+    it('edit button links to edit route', () => {
       const wrapper = createWrapper();
       const editBtn = wrapper.find('button[aria-label="Edit character"]');
       expect(editBtn.exists()).toBe(true);
-      await editBtn.trigger('click');
 
-      expect(mockRouterPush).toHaveBeenCalledWith({
+      const to = JSON.parse(editBtn.attributes('data-to')!);
+      expect(to).toEqual({
         name: 'character-edit',
         params: { characterId: '42' },
       });

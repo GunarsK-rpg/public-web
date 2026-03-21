@@ -3,8 +3,6 @@ import { shallowMount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import CampaignDetailPage from './CampaignDetailPage.vue';
 
-const mockPush = vi.fn();
-
 // Use refs for reactive mock values
 const mockCampaign = ref({
   id: 1,
@@ -25,12 +23,6 @@ const mockCampaign = ref({
 });
 const mockLoading = ref(false);
 const mockError = ref<string | null>(null);
-
-vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
 
 vi.mock('src/stores/campaigns', () => ({
   useCampaignStore: () => ({
@@ -93,8 +85,8 @@ describe('CampaignDetailPage', () => {
           },
           QBtn: {
             template:
-              '<button class="q-btn" @click="$emit(\'click\')"><slot />{{ label }}</button>',
-            props: ['color', 'icon', 'label', 'flat'],
+              '<button class="q-btn" :data-to="to ? JSON.stringify(to) : undefined" @click="$emit(\'click\')"><slot />{{ label }}</button>',
+            props: ['color', 'icon', 'label', 'flat', 'to'],
             emits: ['click'],
           },
           QSpinnerDots: {
@@ -128,6 +120,11 @@ describe('CampaignDetailPage', () => {
           },
           CreateCombatDialog: {
             template: '<div class="create-combat-dialog-stub" />',
+          },
+          RouterLink: {
+            template:
+              '<a class="router-link-stub" :href="to"><slot v-bind="{ href: to, navigate: () => {} }" /></a>',
+            props: ['to', 'custom'],
           },
         },
       },
@@ -269,29 +266,23 @@ describe('CampaignDetailPage', () => {
   // Navigation
   // ========================================
   describe('navigation', () => {
-    it('navigates to character sheet on card click', async () => {
+    it('renders character card links', async () => {
       const wrapper = createWrapper();
       await flushPromises();
 
-      const cards = wrapper.findAll('.q-card[role="button"]');
-      expect(cards.length).toBeGreaterThan(0);
-      await cards[0]!.trigger('click');
-
-      expect(mockPush).toHaveBeenCalledWith({
-        name: 'character-sheet',
-        params: { characterId: '1' },
-      });
+      const links = wrapper.findAll('.card-link');
+      expect(links.length).toBe(2);
     });
 
-    it('navigates to join page on add character button click', async () => {
+    it('add character button links to join page', async () => {
       const wrapper = createWrapper();
       await flushPromises();
 
       const addBtns = wrapper.findAll('.q-btn').filter((b) => b.text().includes('Add Character'));
       expect(addBtns.length).toBeGreaterThan(0);
-      await addBtns[0]!.trigger('click');
 
-      expect(mockPush).toHaveBeenCalledWith({
+      const to = JSON.parse(addBtns[0]!.attributes('data-to')!);
+      expect(to).toEqual({
         name: 'join-campaign',
         params: { code: 'test-code' },
       });

@@ -29,7 +29,7 @@
             <q-list class="account-menu">
               <q-item-label header>{{ username }}</q-item-label>
               <q-separator />
-              <q-item clickable v-close-popup @click="navigateTo('account')">
+              <q-item clickable v-close-popup :to="{ name: 'account' }">
                 <q-item-section avatar>
                   <Settings :size="24" aria-hidden="true" />
                 </q-item-section>
@@ -61,8 +61,8 @@
       <q-list>
         <q-item
           clickable
+          :to="{ name: 'my-characters' }"
           :class="{ 'nav-item--active': activeNavTab === 'my-characters' }"
-          @click="navigateTo('my-characters')"
         >
           <q-item-section avatar>
             <User :size="20" aria-hidden="true" />
@@ -71,8 +71,8 @@
         </q-item>
         <q-item
           clickable
+          :to="{ name: 'campaigns' }"
           :class="{ 'nav-item--active': activeNavTab === 'campaigns' }"
-          @click="navigateTo('campaigns')"
         >
           <q-item-section avatar>
             <Swords :size="20" aria-hidden="true" />
@@ -96,11 +96,11 @@
         indicator-color="primary"
         class="bottom-nav"
       >
-        <q-tab name="my-characters" @click="navigateTo('my-characters')">
+        <q-tab name="my-characters" :to="{ name: 'my-characters' }">
           <User :size="20" class="q-tab__icon" aria-hidden="true" />
           <div class="q-tab__label">Characters</div>
         </q-tab>
-        <q-tab name="campaigns" @click="navigateTo('campaigns')">
+        <q-tab name="campaigns" :to="{ name: 'campaigns' }">
           <Swords :size="20" class="q-tab__icon" aria-hidden="true" />
           <div class="q-tab__label">Campaigns</div>
         </q-tab>
@@ -121,14 +121,11 @@ import {
   PanelLeftOpen,
   PanelLeftClose,
 } from 'lucide-vue-next';
-import { useRouter, useRoute, isNavigationFailure, NavigationFailureType } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useAuthStore } from 'stores/auth';
-import { logger } from 'src/utils/logger';
-import { toError } from 'src/utils/errorHandling';
 import { usePageTitle } from 'src/composables/usePageTitle';
 
-const router = useRouter();
 const route = useRoute();
 const $q = useQuasar();
 const authStore = useAuthStore();
@@ -168,18 +165,6 @@ function toggleDarkMode(): void {
     localStorage.setItem('darkMode', $q.dark.isActive ? 'true' : 'false');
   } catch {
     // localStorage may be unavailable (SSR, private browsing, etc.)
-  }
-}
-
-async function navigateTo(routeName: string): Promise<void> {
-  try {
-    await router.push({ name: routeName });
-  } catch (err) {
-    if (
-      !isNavigationFailure(err, NavigationFailureType.duplicated | NavigationFailureType.cancelled)
-    ) {
-      logger.warn('Navigation failed', { error: toError(err).message });
-    }
   }
 }
 

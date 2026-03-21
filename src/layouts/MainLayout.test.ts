@@ -3,7 +3,6 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import MainLayout from './MainLayout.vue';
 
-const mockPush = vi.fn();
 const mockRouteName = ref<string>('my-characters');
 const mockIsAuthenticated = ref(true);
 const mockUsername = ref('testuser');
@@ -13,15 +12,10 @@ const mockDarkIsActive = ref(false);
 const mockIsDesktop = ref(true);
 
 vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
   useRoute: () => ({
     name: mockRouteName.value,
     meta: { title: 'Test Page' },
   }),
-  isNavigationFailure: () => false,
-  NavigationFailureType: { duplicated: 1, cancelled: 2 },
 }));
 
 vi.mock('quasar', () => ({
@@ -56,14 +50,6 @@ vi.mock('stores/auth', () => ({
   }),
 }));
 
-vi.mock('src/utils/logger', () => ({
-  logger: { warn: vi.fn() },
-}));
-
-vi.mock('src/utils/errorHandling', () => ({
-  toError: (e: unknown) => (e instanceof Error ? e : new Error(String(e))),
-}));
-
 describe('MainLayout', () => {
   const createWrapper = () =>
     shallowMount(MainLayout, {
@@ -93,7 +79,9 @@ describe('MainLayout', () => {
             template: '<div class="q-list"><slot /></div>',
           },
           QItem: {
-            template: '<div class="q-item" @click="$emit(\'click\')"><slot /></div>',
+            template:
+              '<div class="q-item" :data-to="to ? JSON.stringify(to) : undefined" @click="$emit(\'click\')"><slot /></div>',
+            props: ['to', 'clickable'],
             emits: ['click'],
           },
           QItemSection: {
@@ -114,7 +102,7 @@ describe('MainLayout', () => {
           },
           QTab: {
             template: '<div class="q-tab" @click="$emit(\'click\')"><slot /></div>',
-            props: ['name'],
+            props: ['name', 'to'],
             emits: ['click'],
           },
           QDrawer: {
@@ -166,38 +154,26 @@ describe('MainLayout', () => {
       expect(wrapper.find('.q-drawer').exists()).toBe(false);
     });
 
-    it('renders Characters nav item in drawer', () => {
+    it('renders Characters nav item with correct route', () => {
       const wrapper = createWrapper();
-      const drawer = wrapper.find('.q-drawer');
+      const items = wrapper.find('.q-drawer').findAll('.q-item');
+      const charactersItem = items.find((i) => i.text().includes('Characters'));
 
-      expect(drawer.text()).toContain('Characters');
+      expect(charactersItem).toBeDefined();
+      expect(JSON.parse(charactersItem!.attributes('data-to')!)).toEqual({
+        name: 'my-characters',
+      });
     });
 
-    it('renders Campaigns nav item in drawer', () => {
+    it('renders Campaigns nav item with correct route', () => {
       const wrapper = createWrapper();
-      const drawer = wrapper.find('.q-drawer');
+      const items = wrapper.find('.q-drawer').findAll('.q-item');
+      const campaignsItem = items.find((i) => i.text().includes('Campaigns'));
 
-      expect(drawer.text()).toContain('Campaigns');
-    });
-
-    it('navigates to my-characters when Characters item is clicked', async () => {
-      const wrapper = createWrapper();
-      const drawerItems = wrapper.find('.q-drawer').findAll('.q-item');
-      const charactersItem = drawerItems.find((item) => item.text().includes('Characters'));
-
-      await charactersItem!.trigger('click');
-
-      expect(mockPush).toHaveBeenCalledWith({ name: 'my-characters' });
-    });
-
-    it('navigates to campaigns when Campaigns item is clicked', async () => {
-      const wrapper = createWrapper();
-      const drawerItems = wrapper.find('.q-drawer').findAll('.q-item');
-      const campaignsItem = drawerItems.find((item) => item.text().includes('Campaigns'));
-
-      await campaignsItem!.trigger('click');
-
-      expect(mockPush).toHaveBeenCalledWith({ name: 'campaigns' });
+      expect(campaignsItem).toBeDefined();
+      expect(JSON.parse(campaignsItem!.attributes('data-to')!)).toEqual({
+        name: 'campaigns',
+      });
     });
 
     it('highlights Characters item when on character route', () => {

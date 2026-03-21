@@ -13,7 +13,7 @@
             size="sm"
             class="q-ml-sm"
             aria-label="Edit character"
-            @click="goToEdit"
+            :to="{ name: 'character-edit', params: { characterId } }"
             ><Pencil :size="20"
           /></q-btn>
         </div>
@@ -67,7 +67,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
@@ -78,12 +77,11 @@ import ResourcesBar from 'src/components/shared/ResourcesBar.vue';
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import type { TypedValue, ResourceValues } from 'src/types/shared';
 
-const props = defineProps<{
+defineProps<{
   characterId: string;
   readonly?: boolean;
 }>();
 
-const router = useRouter();
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
 const talentStore = useHeroTalentsStore();
@@ -155,13 +153,6 @@ const activeConditionBadges = computed(() => {
     };
   });
 });
-
-function goToEdit(): void {
-  void router.push({
-    name: 'character-edit',
-    params: { characterId: props.characterId },
-  });
-}
 </script>
 
 <style scoped>
