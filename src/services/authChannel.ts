@@ -1,4 +1,7 @@
-export type AuthMessage = { type: 'login' } | { type: 'logout' };
+export type AuthMessage =
+  | { type: 'login' }
+  | { type: 'logout' }
+  | { type: 'refresh'; expires_in: number };
 
 let channel: BroadcastChannel | null = null;
 
@@ -20,6 +23,10 @@ export function broadcastLogin(): void {
 
 export function broadcastLogout(): void {
   channel?.postMessage({ type: 'logout' } satisfies AuthMessage);
+}
+
+export function broadcastRefresh(expiresIn: number): void {
+  channel?.postMessage({ type: 'refresh', expires_in: expiresIn } satisfies AuthMessage);
 }
 
 export function closeAuthChannel(): void {

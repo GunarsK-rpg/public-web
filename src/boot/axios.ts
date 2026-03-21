@@ -22,6 +22,7 @@ export default defineBoot(({ app, router }) => {
   const authStore = useAuthStore();
   setAuthFailureCallback(() => void authStore.logout());
   initAuthChannel((msg) => authStore.handleAuthBroadcast(msg));
+  authStore.initVisibilityHandler();
 });
 
 export { api };

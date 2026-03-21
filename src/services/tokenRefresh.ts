@@ -1,6 +1,7 @@
 import type { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { authApi } from './authApi';
 import type { LoginResponse } from './auth';
+import { broadcastRefresh } from './authChannel';
 
 interface QueueItem {
   resolve: (value: boolean) => void;
@@ -11,6 +12,7 @@ interface RetryableConfig extends InternalAxiosRequestConfig {
 }
 
 const REFRESH_BUFFER_SECONDS = 60;
+const REFRESH_JITTER_SECONDS = 15;
 const MIN_REFRESH_DELAY_SECONDS = 10;
 const MAX_TIMEOUT_MS = 2_147_483_647;
 
@@ -33,7 +35,11 @@ export function setAuthFailureCallback(callback: () => void): void {
 
 export function scheduleProactiveRefresh(ttlSeconds: number): void {
   clearProactiveRefresh();
-  const delaySec = Math.max(ttlSeconds - REFRESH_BUFFER_SECONDS, MIN_REFRESH_DELAY_SECONDS);
+  const jitter = Math.floor(Math.random() * REFRESH_JITTER_SECONDS);
+  const delaySec = Math.max(
+    ttlSeconds - REFRESH_BUFFER_SECONDS + jitter,
+    MIN_REFRESH_DELAY_SECONDS
+  );
   const delayMs = Math.min(delaySec * 1000, MAX_TIMEOUT_MS);
   refreshTimerId = setTimeout(() => {
     void refreshToken();
@@ -61,6 +67,7 @@ export async function refreshToken(): Promise<boolean> {
     processQueue(true);
     if (response.data.expires_in > 0) {
       scheduleProactiveRefresh(response.data.expires_in);
+      broadcastRefresh(response.data.expires_in);
     }
     return true;
   } catch {
