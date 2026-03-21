@@ -180,7 +180,27 @@ export const useAuthStore = defineStore('auth', () => {
     }
     if (message.type === 'login') {
       void checkAuthStatus();
+      return;
     }
+    if (message.type === 'refresh') {
+      scheduleProactiveRefresh(message.expires_in);
+    }
+  }
+
+  let hiddenAt: number | null = null;
+  const VISIBILITY_DEBOUNCE_MS = 5000;
+
+  function initVisibilityHandler(): void {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+        return;
+      }
+      if (hiddenAt && Date.now() - hiddenAt > VISIBILITY_DEBOUNCE_MS && isAuthenticated.value) {
+        hiddenAt = null;
+        void checkAuthStatus();
+      }
+    });
   }
 
   return {
@@ -200,5 +220,6 @@ export const useAuthStore = defineStore('auth', () => {
     googleCallback,
     logout,
     handleAuthBroadcast,
+    initVisibilityHandler,
   };
 });
