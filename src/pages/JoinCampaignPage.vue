@@ -37,18 +37,14 @@
           <q-card-actions>
             <q-btn
               color="primary"
-              :to="
-                campaign
-                  ? {
-                      name: 'character-create',
-                      query: {
-                        campaignId: String(campaign.id),
-                        campaignCode: campaign.code,
-                        campaignName: campaign.name,
-                      },
-                    }
-                  : undefined
-              "
+              :to="{
+                name: 'character-create',
+                query: {
+                  campaignId: String(campaign.id),
+                  campaignCode: campaign.code,
+                  campaignName: campaign.name,
+                },
+              }"
               ><Plus :size="20" class="on-left" />Create Character</q-btn
             >
           </q-card-actions>

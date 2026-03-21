@@ -77,14 +77,6 @@ vi.mock('src/constants/theme', () => ({
   },
 }));
 
-const mockRouterPush = vi.fn();
-
-vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mockRouterPush,
-  }),
-}));
-
 describe('CharacterHeader', () => {
   const createWrapper = (props = {}) =>
     shallowMount(CharacterHeader, {

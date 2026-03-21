@@ -6,7 +6,7 @@
           :href="href"
           class="col cursor-pointer card-link"
           :aria-label="`View ${displayLabel} stat block`"
-          @click="navigate"
+          @click="navigate($event)"
         >
           <div class="text-subtitle1 text-weight-bold">{{ displayLabel }}</div>
           <div class="row items-center q-gutter-xs">
@@ -205,6 +205,7 @@ function saveEdit() {
 const displayLabel = computed(() => props.npc.displayName ?? props.npc.name);
 
 const dimmed = computed(() => {
+  if (props.npc.currentHp <= 0) return true;
   if (props.turnDone) return true;
   if (!props.turnPhase || props.npc.type === 'boss') return false;
   return props.npc.turnSpeed !== props.turnPhase;

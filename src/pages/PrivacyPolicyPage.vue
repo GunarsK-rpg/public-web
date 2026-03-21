@@ -109,8 +109,6 @@
   </q-page>
 </template>
 
-<script setup lang="ts"></script>
-
 <style scoped>
 .privacy-card {
   width: 100%;

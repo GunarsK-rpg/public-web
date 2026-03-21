@@ -3,8 +3,6 @@ import { shallowMount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import CampaignDetailPage from './CampaignDetailPage.vue';
 
-const mockPush = vi.fn();
-
 // Use refs for reactive mock values
 const mockCampaign = ref({
   id: 1,
@@ -25,12 +23,6 @@ const mockCampaign = ref({
 });
 const mockLoading = ref(false);
 const mockError = ref<string | null>(null);
-
-vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
 
 vi.mock('src/stores/campaigns', () => ({
   useCampaignStore: () => ({

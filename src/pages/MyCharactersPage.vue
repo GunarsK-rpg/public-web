@@ -32,7 +32,7 @@
               :href="href"
               class="card-link"
               :aria-label="`View character: ${hero.name}`"
-              @click="navigate"
+              @click="navigate($event)"
             >
               <q-card class="card-interactive cursor-pointer">
                 <q-card-section>

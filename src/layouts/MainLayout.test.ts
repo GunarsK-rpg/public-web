@@ -167,14 +167,6 @@ describe('MainLayout', () => {
       expect(drawer.text()).toContain('Campaigns');
     });
 
-    it('renders characters and campaigns nav items', () => {
-      const wrapper = createWrapper();
-      const drawer = wrapper.find('.q-drawer');
-
-      expect(drawer.text()).toContain('Characters');
-      expect(drawer.text()).toContain('Campaigns');
-    });
-
     it('highlights Characters item when on character route', () => {
       mockRouteName.value = 'my-characters';
       const wrapper = createWrapper();

@@ -3,7 +3,6 @@ import { shallowMount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import CampaignsPage from './CampaignsPage.vue';
 
-const mockPush = vi.fn();
 const mockFetchCampaigns = vi.fn().mockResolvedValue(undefined);
 
 // Use refs for reactive mock values
@@ -13,12 +12,6 @@ const mockCampaigns = ref([
 ]);
 const mockLoading = ref(false);
 const mockError = ref<string | null>(null);
-
-vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
 
 vi.mock('stores/campaigns', () => ({
   useCampaignStore: () => ({

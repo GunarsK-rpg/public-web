@@ -13,7 +13,7 @@
             size="sm"
             class="q-ml-sm"
             aria-label="Edit character"
-            :to="{ name: 'character-edit', params: { characterId: characterId } }"
+            :to="{ name: 'character-edit', params: { characterId } }"
             ><Pencil :size="20"
           /></q-btn>
         </div>

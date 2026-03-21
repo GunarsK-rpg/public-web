@@ -31,7 +31,7 @@
               class="q-ml-sm"
               :disable="saving"
               aria-label="Edit campaign"
-              :to="{ name: 'campaign-edit', params: { campaignId: campaignId } }"
+              :to="{ name: 'campaign-edit', params: { campaignId } }"
               ><Pencil :size="20"
             /></q-btn>
             <q-btn
@@ -100,7 +100,7 @@
                 :href="href"
                 class="card-link"
                 :aria-label="`View character: ${hero.name}`"
-                @click="navigate"
+                @click="navigate($event)"
               >
                 <q-card class="card-interactive cursor-pointer">
                   <q-card-section>
@@ -147,7 +147,7 @@
               <RouterLink
                 :to="{
                   name: 'combat-detail',
-                  params: { campaignId: campaignId, combatId: String(combat.id) },
+                  params: { campaignId, combatId: String(combat.id) },
                 }"
                 custom
                 v-slot="{ href, navigate }"
@@ -156,7 +156,7 @@
                   :href="href"
                   class="card-link"
                   :aria-label="`View combat: ${combat.name}`"
-                  @click="navigate"
+                  @click="navigate($event)"
                 >
                   <q-card
                     class="card-interactive cursor-pointer"

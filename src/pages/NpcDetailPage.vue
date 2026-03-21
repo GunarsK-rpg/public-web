@@ -6,35 +6,19 @@
       <q-banner v-else-if="error" class="bg-negative text-white q-mb-md">
         {{ error }}
         <template v-slot:action>
-          <q-btn
-            flat
-            label="Go Back"
-            :to="{ name: 'campaign-detail', params: { campaignId: campaignId } }"
-          />
+          <q-btn flat label="Go Back" :to="backRoute" />
         </template>
       </q-banner>
 
       <div v-else-if="!npc" class="text-center q-pa-xl">
         <UserX :size="64" class="text-grey-5" aria-hidden="true" />
         <div class="text-h6 text-grey-7 q-mt-md">NPC not found</div>
-        <q-btn
-          color="primary"
-          label="Go Back"
-          class="q-mt-md"
-          :to="{ name: 'campaign-detail', params: { campaignId: campaignId } }"
-        />
+        <q-btn color="primary" label="Go Back" class="q-mt-md" :to="backRoute" />
       </div>
 
       <template v-else>
         <div class="q-mb-md">
-          <q-btn
-            flat
-            dense
-            round
-            size="sm"
-            aria-label="Back"
-            :to="{ name: 'campaign-detail', params: { campaignId: campaignId } }"
-          >
+          <q-btn flat dense round size="sm" aria-label="Back" :to="backRoute">
             <ArrowLeft :size="20" />
           </q-btn>
         </div>
@@ -87,6 +71,16 @@ const combatId = computed(() => {
 const instanceId = computed(() => {
   const n = Number(route.query.instanceId);
   return Number.isFinite(n) && n > 0 ? n : null;
+});
+
+const backRoute = computed(() => {
+  if (combatId.value) {
+    return {
+      name: 'combat-detail',
+      params: { campaignId: props.campaignId, combatId: String(combatId.value) },
+    };
+  }
+  return { name: 'campaign-detail', params: { campaignId: props.campaignId } };
 });
 
 const currentResources = computed(() => {
