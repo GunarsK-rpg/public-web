@@ -6,7 +6,7 @@
       <q-banner v-else-if="error" class="bg-negative text-white q-mb-md">
         {{ error }}
         <template v-slot:action>
-          <q-btn flat label="Go Back" @click="goBack" />
+          <q-btn flat label="Go Back" :to="{ name: 'campaigns' }" />
         </template>
       </q-banner>
 
@@ -16,7 +16,7 @@
         <div class="text-body2 text-grey-6 q-mb-md">
           This campaign doesn't exist or you don't have access to it.
         </div>
-        <q-btn color="primary" label="Back to Campaigns" @click="goBack" />
+        <q-btn color="primary" label="Back to Campaigns" :to="{ name: 'campaigns' }" />
       </div>
 
       <template v-else>
@@ -31,7 +31,7 @@
               class="q-ml-sm"
               :disable="saving"
               aria-label="Edit campaign"
-              @click="editCampaign"
+              :to="{ name: 'campaign-edit', params: { campaignId: campaignId } }"
               ><Pencil :size="20"
             /></q-btn>
             <q-btn
@@ -76,7 +76,9 @@
         <div class="row items-center q-mb-md">
           <div class="text-h6">Characters</div>
           <q-space />
-          <q-btn color="primary" @click="goToJoinPage"
+          <q-btn
+            color="primary"
+            :to="campaign ? { name: 'join-campaign', params: { code: campaign.code } } : undefined"
             ><UserPlus :size="20" class="on-left" />Add Character</q-btn
           >
         </div>
@@ -89,30 +91,35 @@
 
         <div v-else class="row q-col-gutter-md">
           <div v-for="hero in campaign.heroes" :key="hero.id" class="col-12 col-sm-6 col-md-4">
-            <q-card
-              class="card-interactive cursor-pointer"
-              tabindex="0"
-              role="button"
-              :aria-label="`View character: ${hero.name}`"
-              @click="selectCharacter(hero.id)"
-              @keydown.enter="selectCharacter(hero.id)"
-              @keydown.space.prevent="selectCharacter(hero.id)"
+            <RouterLink
+              :to="{ name: 'character-sheet', params: { characterId: String(hero.id) } }"
+              custom
+              v-slot="{ href, navigate }"
             >
-              <q-card-section>
-                <div class="text-h6">{{ hero.name }}</div>
-                <div class="text-subtitle2">
-                  Level {{ hero.level }}
-                  <span v-if="hero.radiantOrder"> · {{ hero.radiantOrder.name }} </span>
-                </div>
-              </q-card-section>
+              <a
+                :href="href"
+                class="card-link"
+                :aria-label="`View character: ${hero.name}`"
+                @click="navigate"
+              >
+                <q-card class="card-interactive cursor-pointer">
+                  <q-card-section>
+                    <div class="text-h6">{{ hero.name }}</div>
+                    <div class="text-subtitle2">
+                      Level {{ hero.level }}
+                      <span v-if="hero.radiantOrder"> · {{ hero.radiantOrder.name }} </span>
+                    </div>
+                  </q-card-section>
 
-              <q-card-section>
-                <div class="text-caption">HP: {{ hero.currentHealth }}</div>
-                <div v-if="hero.user" class="text-caption text-muted">
-                  {{ hero.user.displayName }}
-                </div>
-              </q-card-section>
-            </q-card>
+                  <q-card-section>
+                    <div class="text-caption">HP: {{ hero.currentHealth }}</div>
+                    <div v-if="hero.user" class="text-caption text-muted">
+                      {{ hero.user.displayName }}
+                    </div>
+                  </q-card-section>
+                </q-card>
+              </a>
+            </RouterLink>
           </div>
         </div>
 
@@ -137,28 +144,38 @@
               :key="combat.id"
               class="col-12 col-sm-6 col-md-4"
             >
-              <q-card
-                class="card-interactive cursor-pointer"
-                :class="{ 'combat-inactive': !combat.isActive }"
-                tabindex="0"
-                role="button"
-                :aria-label="`View combat: ${combat.name}`"
-                @click="selectCombat(combat.id)"
-                @keydown.enter="selectCombat(combat.id)"
-                @keydown.space.prevent="selectCombat(combat.id)"
+              <RouterLink
+                :to="{
+                  name: 'combat-detail',
+                  params: { campaignId: campaignId, combatId: String(combat.id) },
+                }"
+                custom
+                v-slot="{ href, navigate }"
               >
-                <q-card-section>
-                  <div class="text-h6">{{ combat.name }}</div>
-                  <div class="text-subtitle2">Turn {{ combat.round }}</div>
-                </q-card-section>
+                <a
+                  :href="href"
+                  class="card-link"
+                  :aria-label="`View combat: ${combat.name}`"
+                  @click="navigate"
+                >
+                  <q-card
+                    class="card-interactive cursor-pointer"
+                    :class="{ 'combat-inactive': !combat.isActive }"
+                  >
+                    <q-card-section>
+                      <div class="text-h6">{{ combat.name }}</div>
+                      <div class="text-subtitle2">Turn {{ combat.round }}</div>
+                    </q-card-section>
 
-                <q-card-section>
-                  <q-badge
-                    :color="combat.isActive ? 'positive' : 'grey'"
-                    :label="combat.isActive ? 'Active' : 'Finished'"
-                  />
-                </q-card-section>
-              </q-card>
+                    <q-card-section>
+                      <q-badge
+                        :color="combat.isActive ? 'positive' : 'grey'"
+                        :label="combat.isActive ? 'Active' : 'Finished'"
+                      />
+                    </q-card-section>
+                  </q-card>
+                </a>
+              </RouterLink>
             </div>
           </div>
 
@@ -233,32 +250,6 @@ onMounted(async () => {
   }
 });
 
-function selectCharacter(characterId: number): void {
-  void router.push({
-    name: 'character-sheet',
-    params: { characterId: String(characterId) },
-  });
-}
-
-function goBack(): void {
-  void router.push({ name: 'campaigns' });
-}
-
-function goToJoinPage(): void {
-  if (!campaign.value) return;
-  void router.push({
-    name: 'join-campaign',
-    params: { code: campaign.value.code },
-  });
-}
-
-function editCampaign(): void {
-  void router.push({
-    name: 'campaign-edit',
-    params: { campaignId: props.campaignId },
-  });
-}
-
 function confirmDeleteCampaign(): void {
   if (!campaign.value) return;
   $q.dialog({
@@ -290,13 +281,6 @@ async function onCreateCombat(name: string, description: string | null): Promise
       params: { campaignId: props.campaignId, combatId: String(combat.id) },
     });
   }
-}
-
-function selectCombat(combatId: number): void {
-  void router.push({
-    name: 'combat-detail',
-    params: { campaignId: props.campaignId, combatId: String(combatId) },
-  });
 }
 
 const inviteUrl = computed(() => {

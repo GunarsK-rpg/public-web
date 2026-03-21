@@ -1,25 +1,24 @@
 <template>
   <q-card class="combat-npc-tile" :class="{ 'npc-dimmed': dimmed }">
     <q-card-section class="row items-center no-wrap q-pb-none">
-      <div
-        class="col cursor-pointer"
-        role="button"
-        tabindex="0"
-        :aria-label="`View ${displayLabel} stat block`"
-        @click="goToStatBlock"
-        @keydown.enter="goToStatBlock"
-        @keydown.space.prevent="goToStatBlock"
-      >
-        <div class="text-subtitle1 text-weight-bold">{{ displayLabel }}</div>
-        <div class="row items-center q-gutter-xs">
-          <q-badge :label="npc.tier.name" color="grey-7" />
-          <q-badge
-            :label="npc.type"
-            :color="npc.type === 'boss' ? 'negative' : 'grey-5'"
-            :text-color="npc.type === 'boss' ? 'white' : 'dark'"
-          />
-        </div>
-      </div>
+      <RouterLink :to="statBlockRoute" custom v-slot="{ href, navigate }">
+        <a
+          :href="href"
+          class="col cursor-pointer card-link"
+          :aria-label="`View ${displayLabel} stat block`"
+          @click="navigate"
+        >
+          <div class="text-subtitle1 text-weight-bold">{{ displayLabel }}</div>
+          <div class="row items-center q-gutter-xs">
+            <q-badge :label="npc.tier.name" color="grey-7" />
+            <q-badge
+              :label="npc.type"
+              :color="npc.type === 'boss' ? 'negative' : 'grey-5'"
+              :text-color="npc.type === 'boss' ? 'white' : 'dark'"
+            />
+          </div>
+        </a>
+      </RouterLink>
       <template v-if="!readonly">
         <TurnSpeedToggle
           v-if="npc.type !== 'boss'"
@@ -157,7 +156,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
-import { useRouter } from 'vue-router';
 import { Circle, CircleCheck, Pencil, Trash2 } from 'lucide-vue-next';
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import { RPG_COLORS } from 'src/constants/theme';
@@ -187,7 +185,6 @@ const emit = defineEmits<{
 }>();
 
 const $q = useQuasar();
-const router = useRouter();
 const showHpDialog = ref(false);
 const showEditDialog = ref(false);
 const editName = ref('');
@@ -234,19 +231,17 @@ const resourceColClass = computed(() => {
   return 'col-4';
 });
 
-function goToStatBlock() {
-  void router.push({
-    name: 'npc-detail',
-    params: {
-      campaignId: String(props.campaignId),
-      npcId: String(props.npc.npcId),
-    },
-    query: {
-      combatId: String(props.npc.combatId),
-      instanceId: String(props.npc.id),
-    },
-  });
-}
+const statBlockRoute = computed(() => ({
+  name: 'npc-detail',
+  params: {
+    campaignId: String(props.campaignId),
+    npcId: String(props.npc.npcId),
+  },
+  query: {
+    combatId: String(props.npc.combatId),
+    instanceId: String(props.npc.id),
+  },
+}));
 
 function onTurnSpeedChange(value: 'fast' | 'slow' | null) {
   emit('update-turn-speed', value);

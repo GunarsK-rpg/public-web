@@ -6,19 +6,35 @@
       <q-banner v-else-if="error" class="bg-negative text-white q-mb-md">
         {{ error }}
         <template v-slot:action>
-          <q-btn flat label="Go Back" @click="goBack" />
+          <q-btn
+            flat
+            label="Go Back"
+            :to="{ name: 'campaign-detail', params: { campaignId: campaignId } }"
+          />
         </template>
       </q-banner>
 
       <div v-else-if="!npc" class="text-center q-pa-xl">
         <UserX :size="64" class="text-grey-5" aria-hidden="true" />
         <div class="text-h6 text-grey-7 q-mt-md">NPC not found</div>
-        <q-btn color="primary" label="Go Back" class="q-mt-md" @click="goBack" />
+        <q-btn
+          color="primary"
+          label="Go Back"
+          class="q-mt-md"
+          :to="{ name: 'campaign-detail', params: { campaignId: campaignId } }"
+        />
       </div>
 
       <template v-else>
         <div class="q-mb-md">
-          <q-btn flat dense round size="sm" aria-label="Back" @click="goBack">
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            aria-label="Back"
+            :to="{ name: 'campaign-detail', params: { campaignId: campaignId } }"
+          >
             <ArrowLeft :size="20" />
           </q-btn>
         </div>
@@ -38,7 +54,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { usePageTitle } from 'src/composables/usePageTitle';
 import { ArrowLeft, UserX } from 'lucide-vue-next';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -53,7 +69,6 @@ const props = defineProps<{
   npcId: string;
 }>();
 
-const router = useRouter();
 const route = useRoute();
 const combatStore = useCombatStore();
 const { setPageTitle } = usePageTitle();
@@ -132,16 +147,5 @@ function onResourceUpdate(code: string, value: number) {
     campaignId: Number(props.campaignId),
     value,
   });
-}
-
-function goBack() {
-  if (window.history.state?.back) {
-    void router.back();
-  } else {
-    void router.push({
-      name: 'campaign-detail',
-      params: { campaignId: props.campaignId },
-    });
-  }
 }
 </script>

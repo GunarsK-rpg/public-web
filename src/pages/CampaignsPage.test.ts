@@ -81,6 +81,11 @@ describe('CampaignsPage', () => {
           QSpace: {
             template: '<span class="q-space" />',
           },
+          RouterLink: {
+            template:
+              '<a class="router-link-stub" :href="to"><slot v-bind="{ href: to, navigate: () => {} }" /></a>',
+            props: ['to', 'custom'],
+          },
         },
       },
     });
@@ -159,18 +164,12 @@ describe('CampaignsPage', () => {
   // Navigation
   // ========================================
   describe('navigation', () => {
-    it('navigates to campaign detail on card click', async () => {
+    it('renders campaign card links', async () => {
       const wrapper = createWrapper();
       await flushPromises();
 
-      const cards = wrapper.findAll('.q-card');
-      expect(cards.length).toBeGreaterThan(0);
-      await cards[0]!.trigger('click');
-
-      expect(mockPush).toHaveBeenCalledWith({
-        name: 'campaign-detail',
-        params: { campaignId: '1' },
-      });
+      const links = wrapper.findAll('.card-link');
+      expect(links.length).toBe(mockCampaigns.value.length);
     });
 
     it('fetches campaigns on mount', () => {
@@ -184,23 +183,13 @@ describe('CampaignsPage', () => {
   // Accessibility
   // ========================================
   describe('accessibility', () => {
-    it('campaign cards have button role', async () => {
+    it('campaign cards are wrapped in links with aria-labels', async () => {
       const wrapper = createWrapper();
       await flushPromises();
 
-      const cards = wrapper.findAll('.q-card[role="button"]');
-      // Should match number of campaigns in mock data
-      expect(cards.length).toBe(mockCampaigns.value.length);
-    });
-
-    it('campaign cards are keyboard accessible', async () => {
-      const wrapper = createWrapper();
-      await flushPromises();
-
-      const cards = wrapper.findAll('.q-card[role="button"]');
-      expect(cards.length).toBeGreaterThan(0);
-      // Verify tabindex is set for keyboard navigation
-      expect(cards[0]!.attributes('tabindex')).toBe('0');
+      const links = wrapper.findAll('.card-link');
+      expect(links.length).toBe(mockCampaigns.value.length);
+      expect(links[0]!.attributes('aria-label')).toContain('Campaign 1');
     });
   });
 });

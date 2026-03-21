@@ -4,7 +4,7 @@
       <div class="row items-center q-mb-md">
         <div class="text-h5">My Campaigns</div>
         <q-space />
-        <q-btn color="primary" @click="createCampaign"
+        <q-btn color="primary" :to="{ name: 'campaign-create' }"
           ><Plus :size="20" class="on-left" />Create Campaign</q-btn
         >
       </div>
@@ -23,22 +23,27 @@
 
       <div v-else class="row q-col-gutter-md">
         <div v-for="campaign in campaigns" :key="campaign.id" class="col-12 col-sm-6 col-md-4">
-          <q-card
-            class="card-interactive cursor-pointer"
-            tabindex="0"
-            role="button"
-            :aria-label="`View campaign: ${campaign.name}`"
-            @click="selectCampaign(campaign.id)"
-            @keydown.enter="selectCampaign(campaign.id)"
-            @keydown.space.prevent="selectCampaign(campaign.id)"
+          <RouterLink
+            :to="{ name: 'campaign-detail', params: { campaignId: String(campaign.id) } }"
+            custom
+            v-slot="{ href, navigate }"
           >
-            <q-card-section>
-              <div class="text-h6">{{ campaign.name }}</div>
-              <div class="text-subtitle2 text-grey">
-                {{ campaign.description }}
-              </div>
-            </q-card-section>
-          </q-card>
+            <a
+              :href="href"
+              class="card-link"
+              :aria-label="`View campaign: ${campaign.name}`"
+              @click="navigate"
+            >
+              <q-card class="card-interactive cursor-pointer">
+                <q-card-section>
+                  <div class="text-h6">{{ campaign.name }}</div>
+                  <div class="text-subtitle2 text-grey">
+                    {{ campaign.description }}
+                  </div>
+                </q-card-section>
+              </q-card>
+            </a>
+          </RouterLink>
         </div>
       </div>
     </div>
@@ -48,10 +53,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { Plus, FolderX } from 'lucide-vue-next';
-import { useRouter } from 'vue-router';
 import { useCampaignStore } from 'stores/campaigns';
 
-const router = useRouter();
 const campaignStore = useCampaignStore();
 
 const initializing = ref(true);
@@ -66,12 +69,4 @@ onMounted(async () => {
     initializing.value = false;
   }
 });
-
-function selectCampaign(id: number): void {
-  void router.push({ name: 'campaign-detail', params: { campaignId: String(id) } });
-}
-
-function createCampaign(): void {
-  void router.push({ name: 'campaign-create' });
-}
 </script>

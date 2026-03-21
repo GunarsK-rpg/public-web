@@ -6,7 +6,11 @@
       <q-banner v-else-if="error" class="bg-negative text-white q-mb-md">
         {{ error }}
         <template v-slot:action>
-          <q-btn flat label="Go Back" @click="goBack" />
+          <q-btn
+            flat
+            label="Go Back"
+            :to="{ name: 'campaign-detail', params: { campaignId: campaignId } }"
+          />
         </template>
       </q-banner>
 
@@ -16,13 +20,25 @@
         <div class="text-body2 text-grey-6 q-mb-md">
           This combat doesn't exist or you don't have access to it.
         </div>
-        <q-btn color="primary" label="Back to Campaign" @click="goBack" />
+        <q-btn
+          color="primary"
+          label="Back to Campaign"
+          :to="{ name: 'campaign-detail', params: { campaignId: campaignId } }"
+        />
       </div>
 
       <template v-else>
         <!-- Header -->
         <div class="row items-center q-mb-xs">
-          <q-btn flat dense round size="sm" class="q-mr-sm" aria-label="Back" @click="goBack">
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            class="q-mr-sm"
+            aria-label="Back"
+            :to="{ name: 'campaign-detail', params: { campaignId: campaignId } }"
+          >
             <ArrowLeft :size="20" />
           </q-btn>
           <q-input
@@ -144,7 +160,6 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { Swords, ArrowLeft } from 'lucide-vue-next';
 import { useCombatStore } from 'src/stores/combat';
 import { TURN_PHASES } from 'src/constants/combat';
@@ -158,7 +173,6 @@ const props = defineProps<{
   combatId: string;
 }>();
 
-const router = useRouter();
 const combatStore = useCombatStore();
 
 const initializing = ref(true);
@@ -202,13 +216,6 @@ onMounted(async () => {
     initializing.value = false;
   }
 });
-
-function goBack() {
-  void router.push({
-    name: 'campaign-detail',
-    params: { campaignId: props.campaignId },
-  });
-}
 
 function saveName() {
   if (!combat.value || !nameInput.value.trim()) return;

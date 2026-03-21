@@ -10,7 +10,7 @@
     <q-banner v-else-if="error || classifierError" class="bg-negative text-white">
       {{ error || classifierError }}
       <template v-slot:action>
-        <q-btn flat label="Go Back" @click="goBack" />
+        <q-btn flat label="Go Back" :to="backRoute" />
       </template>
     </q-banner>
 
@@ -49,7 +49,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, type Component } from 'vue';
-import { useRouter } from 'vue-router';
 import { useHeroStore } from 'stores/hero';
 import { useAuthStore } from 'stores/auth';
 import { useClassifierStore } from 'stores/classifiers';
@@ -103,7 +102,6 @@ const props = defineProps<{
   characterId: string;
 }>();
 
-const router = useRouter();
 const heroStore = useHeroStore();
 const authStore = useAuthStore();
 const classifierStore = useClassifierStore();
@@ -146,15 +144,11 @@ onUnmounted(() => {
   heroStore.clearHero();
 });
 
-function goBack(): void {
+const backRoute = computed(() => {
   const campaignId = heroStore.hero?.campaignId;
   if (campaignId) {
-    void router.push({
-      name: 'campaign-detail',
-      params: { campaignId: String(campaignId) },
-    });
-  } else {
-    void router.push({ name: 'my-characters' });
+    return { name: 'campaign-detail', params: { campaignId: String(campaignId) } };
   }
-}
+  return { name: 'my-characters' };
+});
 </script>

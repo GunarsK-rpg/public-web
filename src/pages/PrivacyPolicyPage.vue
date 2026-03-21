@@ -103,25 +103,13 @@
       </q-card-section>
 
       <q-card-section class="text-center">
-        <q-btn flat no-caps color="primary" @click="goBack">Back</q-btn>
+        <q-btn flat no-caps color="primary" :to="{ name: 'login' }">Back</q-btn>
       </q-card-section>
     </q-card>
   </q-page>
 </template>
 
-<script setup lang="ts">
-import { useRouter } from 'vue-router';
-
-const router = useRouter();
-
-function goBack(): void {
-  if (window.history.length > 1) {
-    router.back();
-  } else {
-    void router.push({ name: 'login' });
-  }
-}
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 .privacy-card {

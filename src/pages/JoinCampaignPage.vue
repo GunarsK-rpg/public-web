@@ -6,7 +6,7 @@
       <q-banner v-else-if="error" class="bg-negative text-white q-mb-md">
         {{ error }}
         <template v-slot:action>
-          <q-btn flat label="Go Back" @click="goBack" />
+          <q-btn flat label="Go Back" :to="{ name: 'campaigns' }" />
         </template>
       </q-banner>
 
@@ -16,7 +16,7 @@
         <div class="text-body2 text-grey-6 q-mb-md">
           This invite link is invalid or the campaign no longer exists.
         </div>
-        <q-btn color="primary" label="Back to Campaigns" @click="goBack" />
+        <q-btn color="primary" label="Back to Campaigns" :to="{ name: 'campaigns' }" />
       </div>
 
       <template v-else>
@@ -35,7 +35,20 @@
           </q-card-section>
 
           <q-card-actions>
-            <q-btn color="primary" @click="createCharacter"
+            <q-btn
+              color="primary"
+              :to="
+                campaign
+                  ? {
+                      name: 'character-create',
+                      query: {
+                        campaignId: String(campaign.id),
+                        campaignCode: campaign.code,
+                        campaignName: campaign.name,
+                      },
+                    }
+                  : undefined
+              "
               ><Plus :size="20" class="on-left" />Create Character</q-btn
             >
           </q-card-actions>
@@ -126,18 +139,6 @@ onMounted(async () => {
   }
 });
 
-function createCharacter(): void {
-  if (!campaign.value) return;
-  void router.push({
-    name: 'character-create',
-    query: {
-      campaignId: String(campaign.value.id),
-      campaignCode: campaign.value.code,
-      campaignName: campaign.value.name,
-    },
-  });
-}
-
 async function doAssignHero(hero: Hero, campaignCode: string): Promise<void> {
   try {
     const payload = buildHeroCorePayload({
@@ -167,9 +168,5 @@ function assignHero(hero: Hero): void {
     if (!campaign.value) return;
     void doAssignHero(hero, campaign.value.code);
   });
-}
-
-function goBack(): void {
-  void router.push({ name: 'campaigns' });
 }
 </script>
