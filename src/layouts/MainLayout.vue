@@ -96,14 +96,14 @@
         indicator-color="primary"
         class="bottom-nav"
       >
-        <q-tab name="my-characters" :to="{ name: 'my-characters' }">
+        <q-route-tab name="my-characters" :to="{ name: 'my-characters' }">
           <User :size="20" class="q-tab__icon" aria-hidden="true" />
           <div class="q-tab__label">Characters</div>
-        </q-tab>
-        <q-tab name="campaigns" :to="{ name: 'campaigns' }">
+        </q-route-tab>
+        <q-route-tab name="campaigns" :to="{ name: 'campaigns' }">
           <Swords :size="20" class="q-tab__icon" aria-hidden="true" />
           <div class="q-tab__label">Campaigns</div>
-        </q-tab>
+        </q-route-tab>
       </q-tabs>
     </q-footer>
   </q-layout>
