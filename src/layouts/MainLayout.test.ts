@@ -79,7 +79,8 @@ describe('MainLayout', () => {
             template: '<div class="q-list"><slot /></div>',
           },
           QItem: {
-            template: '<div class="q-item" @click="$emit(\'click\')"><slot /></div>',
+            template:
+              '<div class="q-item" :data-to="to ? JSON.stringify(to) : undefined" @click="$emit(\'click\')"><slot /></div>',
             props: ['to', 'clickable'],
             emits: ['click'],
           },
@@ -153,18 +154,26 @@ describe('MainLayout', () => {
       expect(wrapper.find('.q-drawer').exists()).toBe(false);
     });
 
-    it('renders Characters nav item in drawer', () => {
+    it('renders Characters nav item with correct route', () => {
       const wrapper = createWrapper();
-      const drawer = wrapper.find('.q-drawer');
+      const items = wrapper.find('.q-drawer').findAll('.q-item');
+      const charactersItem = items.find((i) => i.text().includes('Characters'));
 
-      expect(drawer.text()).toContain('Characters');
+      expect(charactersItem).toBeDefined();
+      expect(JSON.parse(charactersItem!.attributes('data-to')!)).toEqual({
+        name: 'my-characters',
+      });
     });
 
-    it('renders Campaigns nav item in drawer', () => {
+    it('renders Campaigns nav item with correct route', () => {
       const wrapper = createWrapper();
-      const drawer = wrapper.find('.q-drawer');
+      const items = wrapper.find('.q-drawer').findAll('.q-item');
+      const campaignsItem = items.find((i) => i.text().includes('Campaigns'));
 
-      expect(drawer.text()).toContain('Campaigns');
+      expect(campaignsItem).toBeDefined();
+      expect(JSON.parse(campaignsItem!.attributes('data-to')!)).toEqual({
+        name: 'campaigns',
+      });
     });
 
     it('highlights Characters item when on character route', () => {

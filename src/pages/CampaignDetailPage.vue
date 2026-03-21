@@ -287,7 +287,11 @@ function confirmDeleteCombat(combat: Combat): void {
     cancel: true,
     persistent: false,
   }).onOk(() => {
-    void combatStore.deleteCombat(Number(props.campaignId), combat.id);
+    void combatStore.deleteCombat(Number(props.campaignId), combat.id).then((deleted) => {
+      if (!deleted) {
+        $q.notify({ message: 'Failed to delete combat', type: 'negative', timeout: 2000 });
+      }
+    });
   });
 }
 
