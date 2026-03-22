@@ -58,6 +58,7 @@ jobs:
           docker build \
             --build-arg "VITE_API_URL=${{ vars.VITE_API_URL }}" \
             --build-arg "VITE_AUTH_URL=${{ vars.VITE_AUTH_URL }}" \
+            --build-arg "VITE_FILES_API_URL=${{ vars.VITE_FILES_API_URL }}" \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             .
 

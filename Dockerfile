@@ -18,6 +18,7 @@ COPY . .
 # Accept build-time environment variables for Vite
 ARG VITE_API_URL
 ARG VITE_AUTH_URL
+ARG VITE_FILES_API_URL
 
 # Build for production (Quasar PWA)
 RUN npm run build

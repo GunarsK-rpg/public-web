@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [vue()],
   test: {
     environment: 'jsdom',
+    env: {
+      VITE_FILES_API_URL: 'http://localhost:8085/api/v1',
+    },
     include: ['src/**/*.test.ts'],
     setupFiles: ['src/__tests__/setup.ts'],
     coverage: {

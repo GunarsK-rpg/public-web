@@ -42,6 +42,7 @@ export interface Hero extends HeroBase {
   startingKit: ClassifierRef | null;
   activeSingerForm: ClassifierRef | null;
   radiantOrder: ClassifierRef | null;
+  avatarKey: string | null;
 }
 
 /** Hero sheet - API response from get_hero_sheet (includes sub-resource arrays) */

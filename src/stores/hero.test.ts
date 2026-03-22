@@ -33,6 +33,7 @@ const mockHero = {
   companions: [],
   cultures: [],
   favoriteActions: [],
+  avatarKey: null,
 };
 
 const {
@@ -642,6 +643,7 @@ describe('useHeroStore', () => {
         currentFocus: 15,
         currentInvestiture: 10,
         currency: 200,
+        avatarKey: null,
       });
 
       expect(store.hero?.id).toBe(42);
@@ -681,6 +683,7 @@ describe('useHeroStore', () => {
         currentFocus: 0,
         currentInvestiture: 0,
         currency: 0,
+        avatarKey: null,
       });
 
       // Sub-resource arrays should be untouched
@@ -709,6 +712,7 @@ describe('useHeroStore', () => {
         currentFocus: 0,
         currentInvestiture: 0,
         currency: 0,
+        avatarKey: null,
       });
 
       expect(store.hero?.startingKit).toEqual({ id: 5, code: 'warrior-kit', name: 'Warrior Kit' });
@@ -740,6 +744,7 @@ describe('useHeroStore', () => {
         currentFocus: 0,
         currentInvestiture: 0,
         currency: 0,
+        avatarKey: null,
       });
 
       expect(store.hero).toBeNull();
@@ -767,6 +772,7 @@ describe('useHeroStore', () => {
         currentFocus: 0,
         currentInvestiture: 0,
         currency: 0,
+        avatarKey: null,
       });
 
       expect(store.isNew).toBe(false);
