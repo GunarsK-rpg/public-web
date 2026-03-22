@@ -72,8 +72,9 @@ async function openAddDialog() {
 }
 
 async function onAddCompanion(npcId: number, displayName: string | null) {
+  if (!heroStore.hero) return;
   await heroStore.upsertCompanion({
-    heroId: heroStore.hero!.id,
+    heroId: heroStore.hero.id,
     companionType: { code: 'animal' },
     npcId,
     displayName,
@@ -86,9 +87,10 @@ async function onEditCompanion(
   displayName: string | null,
   notes: string | null
 ) {
+  if (!heroStore.hero) return;
   await heroStore.upsertCompanion({
     id: comp.id,
-    heroId: heroStore.hero!.id,
+    heroId: heroStore.hero.id,
     companionType: { code: comp.companionType.code },
     npcId: comp.npcId,
     displayName,

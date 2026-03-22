@@ -9,6 +9,7 @@
       autogrow
       dense
       :rows="2"
+      :aria-label="`Edit ${title}`"
       @update:model-value="$emit('update', $event == null ? '' : String($event))"
     />
     <div v-else class="text-body2">{{ text }}</div>
