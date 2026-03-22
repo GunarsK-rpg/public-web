@@ -1,4 +1,4 @@
-import type { ClassifierRef, TypedValue } from './shared';
+import type { ClassifierInput, ClassifierRef, ClassifierValue, TypedValue } from './shared';
 import type { TurnPhase } from 'src/constants/combat';
 
 /** NPC identity from template — name, tier, type, stats */
@@ -28,6 +28,7 @@ export interface NpcTileData extends NpcIdentity, NpcResources {
 export interface NpcOption {
   id: number;
   campaignId: number | null;
+  heroId: number | null;
   name: string;
   tier: ClassifierRef;
   type: string;
@@ -48,6 +49,7 @@ export interface NpcAction extends NpcFeature {
 /** Full NPC stat block — from get_npc */
 export interface Npc extends NpcOption {
   createdBy: number | null;
+  isCompanion: boolean;
   size: string;
   languages: string | null;
   description: string | null;
@@ -123,4 +125,27 @@ export interface EndRoundPayload {
   combatId: number;
   campaignId: number;
   round: number;
+}
+
+/** NPC upsert payload — create/update custom NPC */
+export interface NpcUpsert {
+  id?: number;
+  campaignId: number;
+  heroId?: number | null;
+  name: string;
+  tier: ClassifierInput;
+  type: string;
+  size: string;
+  languages?: string | null;
+  description?: string | null;
+  tactics?: string | null;
+  immunities?: string | null;
+  isCompanion?: boolean;
+  features: NpcFeature[];
+  actions: NpcAction[];
+  opportunities: NpcFeature[];
+  attributes: ClassifierValue[];
+  defenses: ClassifierValue[];
+  skills: ClassifierValue[];
+  derivedStats: (ClassifierValue & { displayValue?: string | null })[];
 }

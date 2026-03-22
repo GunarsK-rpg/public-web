@@ -8,14 +8,27 @@
         <q-card class="attribute-card">
           <q-card-section class="text-center q-pa-sm">
             <div class="attribute-abbr">{{ attr.type.code.toUpperCase() }}</div>
-            <div
-              class="attribute-value"
-              :class="{ 'text-positive': !!attr.breakdown }"
-              :aria-label="`${attr.type.name}: ${attr.value}`"
-            >
-              {{ attr.value }}
-              <InfoPopup v-if="attr.breakdown">{{ attr.breakdown }}</InfoPopup>
-            </div>
+            <template v-if="editable">
+              <q-input
+                :model-value="attr.value"
+                type="number"
+                dense
+                borderless
+                input-class="text-center attribute-value"
+                :min="0"
+                @update:model-value="$emit('update', attr.type.code, Number($event) || 0)"
+              />
+            </template>
+            <template v-else>
+              <div
+                class="attribute-value"
+                :class="{ 'text-positive': !!attr.breakdown }"
+                :aria-label="`${attr.type.name}: ${attr.value}`"
+              >
+                {{ attr.value }}
+                <InfoPopup v-if="attr.breakdown">{{ attr.breakdown }}</InfoPopup>
+              </div>
+            </template>
             <div class="attribute-name">{{ attr.type.name }}</div>
           </q-card-section>
         </q-card>
@@ -28,8 +41,16 @@
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import type { StatValue } from 'src/types/shared';
 
-defineProps<{
-  attributes: StatValue[];
+withDefaults(
+  defineProps<{
+    attributes: StatValue[];
+    editable?: boolean;
+  }>(),
+  { editable: false }
+);
+
+defineEmits<{
+  update: [code: string, value: number];
 }>();
 </script>
 

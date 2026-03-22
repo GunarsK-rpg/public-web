@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import axios from 'axios';
 import type {
   Combat,
   CombatBase,
@@ -7,7 +8,9 @@ import type {
   CombatNpc,
   CombatNpcBase,
   CombatNpcResourcePatch,
+  Npc,
   NpcOption,
+  NpcUpsert,
 } from 'src/types';
 import { logger } from 'src/utils/logger';
 import combatService from 'src/services/combatService';
@@ -17,6 +20,7 @@ export const useCombatStore = defineStore('combat', () => {
   const combats = ref<Combat[]>([]);
   const currentCombat = ref<CombatDetail | null>(null);
   const npcOptions = ref<NpcOption[]>([]);
+  const currentNpc = ref<Npc | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
   const savingCount = ref(0);
@@ -170,6 +174,79 @@ export const useCombatStore = defineStore('combat', () => {
       npcOptions.value = response.data;
     } catch (err: unknown) {
       handleError(err, { errorRef: error, message: 'Failed to load NPC options' });
+    }
+  }
+
+  // ===================
+  // NPC CRUD
+  // ===================
+
+  async function fetchNpc(campaignId: number, npcId: number): Promise<Npc | null> {
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await combatService.getNpc(campaignId, npcId);
+      currentNpc.value = response.data;
+      return response.data;
+    } catch (err: unknown) {
+      handleError(err, { errorRef: error, message: 'Failed to load NPC' });
+      return null;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function createNpc(data: NpcUpsert): Promise<Npc | null> {
+    savingCount.value++;
+    error.value = null;
+    try {
+      const response = await combatService.createNpc(data);
+      npcOptions.value = [];
+      logger.info('NPC created', { id: response.data.id, name: response.data.name });
+      return response.data;
+    } catch (err: unknown) {
+      handleError(err, { errorRef: error, message: 'Failed to create NPC' });
+      return null;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function updateNpc(data: NpcUpsert & { id: number }): Promise<Npc | null> {
+    savingCount.value++;
+    error.value = null;
+    try {
+      const response = await combatService.updateNpc(data);
+      npcOptions.value = [];
+      currentNpc.value = response.data;
+      logger.info('NPC updated', { id: data.id });
+      return response.data;
+    } catch (err: unknown) {
+      handleError(err, { errorRef: error, message: 'Failed to update NPC' });
+      return null;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function deleteNpc(campaignId: number, npcId: number): Promise<boolean> {
+    savingCount.value++;
+    error.value = null;
+    try {
+      await combatService.deleteNpc(campaignId, npcId);
+      npcOptions.value = npcOptions.value.filter((n) => n.id !== npcId);
+      if (currentNpc.value?.id === npcId) currentNpc.value = null;
+      logger.info('NPC deleted', { id: npcId });
+      return true;
+    } catch (err: unknown) {
+      const apiMessage =
+        axios.isAxiosError(err) && typeof err.response?.data?.error === 'string'
+          ? err.response.data.error
+          : 'Failed to delete NPC';
+      handleError(err, { errorRef: error, message: apiMessage });
+      return false;
+    } finally {
+      savingCount.value--;
     }
   }
 
@@ -372,6 +449,7 @@ export const useCombatStore = defineStore('combat', () => {
   function reset(): void {
     combats.value = [];
     currentCombat.value = null;
+    currentNpc.value = null;
     npcOptions.value = [];
     loading.value = false;
     error.value = null;
@@ -384,6 +462,7 @@ export const useCombatStore = defineStore('combat', () => {
   return {
     combats,
     currentCombat,
+    currentNpc,
     npcOptions,
     loading,
     error,
@@ -398,6 +477,10 @@ export const useCombatStore = defineStore('combat', () => {
     updateCombat,
     deleteCombat,
     fetchNpcOptions,
+    fetchNpc,
+    createNpc,
+    updateNpc,
+    deleteNpc,
     addCombatNpc,
     updateCombatNpc,
     removeCombatNpc,

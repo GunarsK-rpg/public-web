@@ -2,6 +2,18 @@
   <div>
     <div class="row items-center q-mb-md">
       <q-space />
+      <q-btn
+        v-if="!readonly"
+        flat
+        color="primary"
+        :to="{
+          name: 'npc-create',
+          params: { campaignId: String(campaignId) },
+          query: { heroId: String(heroStore.hero!.id) },
+        }"
+      >
+        <Plus :size="20" class="on-left" />Create Companion
+      </q-btn>
       <q-btn v-if="!readonly" flat color="primary" @click="openAddDialog">
         <UserPlus :size="20" class="on-left" />Add Companion
       </q-btn>
@@ -38,7 +50,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { UserPlus } from 'lucide-vue-next';
+import { Plus, UserPlus } from 'lucide-vue-next';
 import { useHeroStore } from 'src/stores/hero';
 import CombatNpcTile from 'src/components/combat/CombatNpcTile.vue';
 import AddNpcDialog from 'src/components/combat/AddNpcDialog.vue';

@@ -2,6 +2,7 @@ import type { AxiosResponse } from 'axios';
 import type {
   NpcOption,
   Npc,
+  NpcUpsert,
   Combat,
   CombatBase,
   CombatDetail,
@@ -19,6 +20,15 @@ export default {
   },
   getNpc(campaignId: number, npcId: number): Promise<AxiosResponse<Npc>> {
     return api.get(`/campaigns/${campaignId}/npcs/${npcId}`);
+  },
+  createNpc(data: NpcUpsert): Promise<AxiosResponse<Npc>> {
+    return api.post(`/campaigns/${data.campaignId}/npcs`, data);
+  },
+  updateNpc(data: NpcUpsert & { id: number }): Promise<AxiosResponse<Npc>> {
+    return api.put(`/campaigns/${data.campaignId}/npcs/${data.id}`, data);
+  },
+  deleteNpc(campaignId: number, npcId: number): Promise<AxiosResponse<void>> {
+    return api.delete(`/campaigns/${campaignId}/npcs/${npcId}`);
   },
 
   // Combats

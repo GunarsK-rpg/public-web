@@ -156,11 +156,15 @@ const campaignRoutes = new Set([
   'join-campaign',
   'combat-detail',
   'npc-detail',
+  'npc-create',
+  'npc-edit',
 ]);
 
 const activeNavTab = computed(() => {
   const name = route.name as string;
   if (name === 'account') return null;
+  // NPC pages from hero context belong to Characters
+  if (route.query?.heroId) return 'my-characters';
   return campaignRoutes.has(name) ? 'campaigns' : 'my-characters';
 });
 

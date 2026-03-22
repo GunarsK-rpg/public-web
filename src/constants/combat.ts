@@ -5,3 +5,12 @@ export const TURN_PHASES = [
 ];
 
 export type TurnPhase = 'fast' | 'slow' | null;
+
+/** NPC size options */
+export const NPC_SIZES = [
+  { label: 'Small', value: 'Small' },
+  { label: 'Medium', value: 'Medium' },
+  { label: 'Large', value: 'Large' },
+  { label: 'Huge', value: 'Huge' },
+  { label: 'Gargantuan', value: 'Gargantuan' },
+];

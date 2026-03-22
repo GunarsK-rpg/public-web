@@ -83,6 +83,13 @@
             @update:model-value="onPhaseChange"
           />
           <q-space />
+          <q-btn
+            flat
+            dense
+            label="Create NPC"
+            color="primary"
+            :to="{ name: 'npc-create', params: { campaignId } }"
+          />
           <q-toggle
             :model-value="combat.isActive"
             label="Active"
