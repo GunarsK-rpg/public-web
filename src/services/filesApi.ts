@@ -26,9 +26,7 @@ export default {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('fileType', fileType);
-    return filesApi.post('/files', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return filesApi.post('/files', formData);
   },
 
   buildUrl(fileType: string, key: string): string {

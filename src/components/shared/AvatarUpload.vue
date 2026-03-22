@@ -1,7 +1,10 @@
 <template>
   <div
     class="avatar-upload relative-position"
-    :class="{ 'cursor-pointer': !readonly && !disabled && !loading }"
+    :class="{
+      'cursor-pointer': !readonly && !disabled && !loading,
+      'avatar-inactive': readonly || disabled || loading,
+    }"
   >
     <AvatarDisplay :src="avatarSrc" size="80px" alt="Hero avatar" @click="onAvatarClick" />
     <q-btn
@@ -104,6 +107,11 @@ function onCropConfirm(croppedFile: File): void {
   position: absolute;
   top: -4px;
   right: -4px;
+}
+
+.avatar-inactive {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .avatar-loading {

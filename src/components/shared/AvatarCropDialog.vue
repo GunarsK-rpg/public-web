@@ -21,8 +21,11 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onBeforeUnmount } from 'vue';
+import { useQuasar } from 'quasar';
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
+
+const $q = useQuasar();
 
 const CROP_SIZE = 256;
 
@@ -104,7 +107,10 @@ async function onConfirm(): Promise<void> {
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, 'image/webp', 0.85)
     );
-    if (!blob) return;
+    if (!blob) {
+      $q.notify({ message: 'Failed to create avatar image', type: 'negative', timeout: 2000 });
+      return;
+    }
     const file = new File([blob], 'avatar.webp', { type: 'image/webp' });
     emit('confirm', file);
     emit('update:modelValue', false);
