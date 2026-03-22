@@ -48,8 +48,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, type Component } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed, watch, onMounted, onUnmounted, type Component } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useHeroStore } from 'stores/hero';
 import { useAuthStore } from 'stores/auth';
 import { useClassifierStore } from 'stores/classifiers';
@@ -111,10 +111,27 @@ const heroStore = useHeroStore();
 const authStore = useAuthStore();
 const classifierStore = useClassifierStore();
 
-const route = useRoute();
 const tabIds = new Set(tabs.map((t) => t.id));
-const queryTab = typeof route.query.tab === 'string' ? route.query.tab : '';
-const activeTab = ref(tabIds.has(queryTab) ? queryTab : 'stats');
+
+const router = useRouter();
+const route = useRoute();
+
+function resolveInitialTab(): string {
+  const queryTab = typeof route.query.tab === 'string' ? route.query.tab : '';
+  if (tabIds.has(queryTab)) {
+    void router.replace({ query: { ...route.query, tab: undefined } });
+    return queryTab;
+  }
+  const stored = sessionStorage.getItem(`hero-tab-${props.characterId}`);
+  if (stored && tabIds.has(stored)) return stored;
+  return 'stats';
+}
+
+const activeTab = ref(resolveInitialTab());
+
+watch(activeTab, (tab) => {
+  sessionStorage.setItem(`hero-tab-${props.characterId}`, tab);
+});
 
 const initializing = ref(true);
 const isLoaded = computed(() => heroStore.isLoaded);
