@@ -50,6 +50,7 @@ describe('getModifierDelta', () => {
         modification: { id: 10, code: 'greater_damage', name: 'Greater Damage' },
         special: [{ type: 'die_modifier', value: 1 }],
         customText: null,
+        tier: 'basic',
       },
       {
         id: 2,
@@ -57,6 +58,7 @@ describe('getModifierDelta', () => {
         modification: { id: 11, code: 'lesser_damage', name: 'Lesser Damage' },
         special: [{ type: 'die_modifier', value: -1 }],
         customText: null,
+        tier: 'basic',
       },
     ];
 
@@ -71,6 +73,7 @@ describe('getModifierDelta', () => {
         modification: { id: 10, code: 'higher_capacity', name: 'Higher Capacity' },
         special: [{ type: 'charges_modifier', value: 1 }],
         customText: null,
+        tier: 'basic',
       },
     ];
 
@@ -85,6 +88,7 @@ describe('getModifierDelta', () => {
         modification: null,
         special: [],
         customText: 'GM cursed this item',
+        tier: null,
       },
     ];
 
@@ -187,6 +191,7 @@ describe('recalculateSpecialFromMods', () => {
         modification: { id: 10, code: 'greater_damage', name: 'Greater Damage' },
         special: [{ type: 'die_modifier', value: 1 }],
         customText: null,
+        tier: 'basic',
       },
     ];
 
@@ -206,6 +211,7 @@ describe('recalculateSpecialFromMods', () => {
         modification: { id: 10, code: 'lesser_damage', name: 'Lesser Damage' },
         special: [{ type: 'die_modifier', value: -1 }],
         customText: null,
+        tier: 'basic',
       },
     ];
 
@@ -225,6 +231,7 @@ describe('recalculateSpecialFromMods', () => {
         modification: { id: 10, code: 'greater_damage', name: 'Greater Damage' },
         special: [{ type: 'die_modifier', value: 5 }],
         customText: null,
+        tier: 'basic',
       },
     ];
 
@@ -244,6 +251,7 @@ describe('recalculateSpecialFromMods', () => {
         modification: { id: 10, code: 'sturdy', name: 'Sturdy' },
         special: [{ type: 'narrative', display_value: 'Ignores Complication damage' }],
         customText: null,
+        tier: 'basic',
       },
     ];
 
@@ -264,6 +272,7 @@ describe('recalculateSpecialFromMods', () => {
         modification: { id: 10, code: 'amplified', name: 'Amplified' },
         special: [{ type: 'roll_modifier', display_value: 'Advantage' }],
         customText: null,
+        tier: 'basic',
       },
     ];
 
@@ -281,6 +290,7 @@ describe('recalculateSpecialFromMods', () => {
         modification: null,
         special: [],
         customText: 'GM cursed this item',
+        tier: null,
       },
     ];
 
@@ -301,6 +311,7 @@ describe('recalculateSpecialFromMods', () => {
         modification: { id: 10, code: 'greater_damage', name: 'Greater Damage' },
         special: [{ type: 'die_modifier', value: 1 }],
         customText: null,
+        tier: 'basic',
       },
     ];
 

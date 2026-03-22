@@ -213,6 +213,7 @@ describe('EquipmentAddDialog', () => {
           modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
           special: [{ type: 'roll_modifier', display_value: 'Advantage' }],
           customText: null,
+          tier: 'basic',
         },
       ];
       const wrapper = await mountInEditMode(createHeroEquipment({ modifications: mods }));
@@ -229,6 +230,7 @@ describe('EquipmentAddDialog', () => {
           modification: null,
           special: [],
           customText: 'GM cursed this item',
+          tier: null,
         },
       ];
       const wrapper = await mountInEditMode(createHeroEquipment({ modifications: mods }));
@@ -245,6 +247,7 @@ describe('EquipmentAddDialog', () => {
           modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
           special: [],
           customText: null,
+          tier: 'basic',
         },
         {
           id: 2,
@@ -252,6 +255,7 @@ describe('EquipmentAddDialog', () => {
           modification: null,
           special: [],
           customText: 'Slightly damaged',
+          tier: null,
         },
       ];
       const wrapper = await mountInEditMode(createHeroEquipment({ modifications: mods }));
@@ -279,6 +283,7 @@ describe('EquipmentAddDialog', () => {
             modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
             special: [{ type: 'roll_modifier', display_value: 'Advantage' }],
             customText: null,
+            tier: 'basic',
           },
         ],
       });
@@ -309,6 +314,7 @@ describe('EquipmentAddDialog', () => {
           modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
           special: [],
           customText: null,
+          tier: 'basic',
         },
       ];
       const wrapper = await mountInEditMode(createHeroEquipment({ modifications: mods }));
@@ -330,6 +336,7 @@ describe('EquipmentAddDialog', () => {
             modification: null,
             special: [],
             customText: 'Cursed by GM',
+            tier: null,
           },
         ],
       });
@@ -365,6 +372,7 @@ describe('EquipmentAddDialog', () => {
           modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
           special: [],
           customText: null,
+          tier: 'basic',
         },
       ];
       const wrapper = await mountInEditMode(createHeroEquipment({ modifications: mods }));
@@ -463,6 +471,7 @@ describe('EquipmentAddDialog', () => {
           modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
           special: [{ type: 'roll_modifier', display_value: 'Advantage' }],
           customText: null,
+          tier: 'basic',
         },
       ];
       const wrapper = await mountInEditMode(createHeroEquipment({ modifications: mods }));

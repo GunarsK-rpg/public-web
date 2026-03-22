@@ -34,6 +34,7 @@ export interface Equipment extends Classifier {
 export interface AppliedModification {
   id: number;
   modType: 'upgrade' | 'drawback';
+  tier: 'basic' | 'advanced' | null;
   modification: ClassifierRef | null;
   special: SpecialEntry[];
   customText: string | null;

@@ -792,6 +792,7 @@ describe('EquipmentItem', () => {
             modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
             special: [],
             customText: null,
+            tier: 'basic',
           },
         ],
       });
@@ -809,6 +810,7 @@ describe('EquipmentItem', () => {
             modification: { id: 11, code: 'heavy', name: 'Heavy' },
             special: [],
             customText: null,
+            tier: 'basic',
           },
         ],
       });
@@ -826,6 +828,7 @@ describe('EquipmentItem', () => {
             modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
             special: [],
             customText: null,
+            tier: 'basic',
           },
           {
             id: 2,
@@ -833,6 +836,7 @@ describe('EquipmentItem', () => {
             modification: { id: 11, code: 'heavy', name: 'Heavy' },
             special: [],
             customText: null,
+            tier: 'basic',
           },
         ],
       });
@@ -861,6 +865,7 @@ describe('EquipmentItem', () => {
             modification: null,
             special: [],
             customText: 'GM cursed this item',
+            tier: null,
           },
         ],
       });
@@ -878,6 +883,7 @@ describe('EquipmentItem', () => {
             modification: { id: 10, code: 'keen_edge', name: 'Keen Edge' },
             special: [],
             customText: null,
+            tier: 'basic',
           },
         ],
       });
