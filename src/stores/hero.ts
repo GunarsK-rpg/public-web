@@ -688,7 +688,8 @@ export const useHeroStore = defineStore('hero', () => {
         value: Math.max(0, Math.floor(value)),
       });
       const comp = hero.value.companions.find((c) => c.id === companionId);
-      if (comp) comp[field] = response.data[field]!;
+      const newValue = response.data[field];
+      if (comp && typeof newValue === 'number') comp[field] = newValue;
     } catch (err) {
       handleError(err, { errorRef: error, message: errorMessage });
     } finally {

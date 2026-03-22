@@ -75,10 +75,15 @@ async function onEditCompanion(
   notes: string | null
 ) {
   await heroStore.upsertCompanion({
-    ...comp,
+    id: comp.id,
+    heroId: heroStore.hero!.id,
     companionType: { code: comp.companionType.code },
+    npcId: comp.npcId,
     displayName,
     notes,
+    currentHp: comp.currentHp,
+    currentFocus: comp.currentFocus,
+    currentInvestiture: comp.currentInvestiture,
   });
 }
 </script>
