@@ -116,6 +116,21 @@
       />
     </SectionPanel>
 
+    <!-- Notes Section -->
+    <SectionPanel label="Notes">
+      <template #icon><StickyNote /></template>
+
+      <EditableItemList
+        :items="noteItems"
+        item-label="note"
+        add-label="Add Note"
+        empty-message="No notes"
+        :readonly="readonly"
+        @add="showNoteDialog = true"
+        @remove="handleRemoveNote"
+      />
+    </SectionPanel>
+
     <!-- Biography Section -->
     <SectionPanel label="Biography">
       <template #icon><User /></template>
@@ -205,6 +220,16 @@
       @add="handleAddCompanion"
     />
 
+    <AddOtherDialog
+      v-if="!readonly"
+      v-model="showNoteDialog"
+      title="Add Note"
+      name-label="Note"
+      hide-description
+      multiline
+      @add="handleAddNote"
+    />
+
     <AddInjuryDialog
       v-if="!readonly"
       v-model="showInjuryDialog"
@@ -221,7 +246,7 @@ import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
-import { Globe, Flag, Users, PawPrint, User, TriangleAlert } from 'lucide-vue-next';
+import { Globe, Flag, Users, PawPrint, User, StickyNote, TriangleAlert } from 'lucide-vue-next';
 import SectionPanel from 'src/components/shared/SectionPanel.vue';
 import EditableItemList from 'src/components/shared/EditableItemList.vue';
 import AddInjuryDialog from 'src/components/character/AddInjuryDialog.vue';
@@ -244,6 +269,7 @@ const showInjuryDialog = ref(false);
 const showGoalDialog = ref(false);
 const showConnectionDialog = ref(false);
 const showCompanionDialog = ref(false);
+const showNoteDialog = ref(false);
 
 // Biography fields - computed for consistency with other hero data access
 const heroAppearance = computed(
@@ -285,6 +311,13 @@ const companionItems = computed(() =>
       findByCode(classifiers.companionTypes, c.companionType.code)?.name ??
       c.companionType.name ??
       'Unknown',
+  }))
+);
+
+const noteItems = computed(() =>
+  heroStore.heroNotes.map((n) => ({
+    id: n.id,
+    name: n.content,
   }))
 );
 
@@ -358,6 +391,21 @@ async function handleAddCompanion(
 
 async function handleRemoveCompanion(id: number): Promise<void> {
   await heroStore.removeCompanion(id);
+}
+
+// ===================
+// NOTE ACTIONS
+// ===================
+async function handleAddNote(name: string): Promise<void> {
+  if (!heroStore.hero) return;
+  await heroStore.upsertNote({
+    heroId: heroStore.hero.id,
+    content: name,
+  });
+}
+
+async function handleRemoveNote(id: number): Promise<void> {
+  await heroStore.removeNote(id);
 }
 
 // ===================

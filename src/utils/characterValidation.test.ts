@@ -103,6 +103,7 @@ const createHero = (overrides: Partial<HeroSheet> = {}): HeroSheet => ({
   goals: [],
   connections: [],
   companions: [],
+  heroNotes: [],
   cultures: [],
   favoriteActions: [],
   avatarKey: null,

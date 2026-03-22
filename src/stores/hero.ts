@@ -11,6 +11,7 @@ import type {
 import type { HeroConditionBase, HeroInjury, HeroInjuryBase, Injury } from 'src/types/conditions';
 import type { HeroGoal, HeroGoalBase, HeroConnectionBase, HeroConnection } from 'src/types/goals';
 import type { HeroCompanion, HeroCompanionBase } from 'src/types/companions';
+import type { HeroNote, HeroNoteBase } from 'src/types/notes';
 import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
 import filesApi, { FILE_TYPE_HERO_AVATAR } from 'src/services/filesApi';
@@ -52,6 +53,7 @@ function createEmptyHero(): HeroSheet {
     goals: [],
     connections: [],
     companions: [],
+    heroNotes: [],
     cultures: [],
     favoriteActions: [],
     avatarKey: null,
@@ -88,6 +90,7 @@ export const useHeroStore = defineStore('hero', () => {
   const goals = computed(() => hero.value?.goals ?? []);
   const connections = computed(() => hero.value?.connections ?? []);
   const companions = computed(() => hero.value?.companions ?? []);
+  const heroNotes = computed(() => hero.value?.heroNotes ?? []);
   const conditions = computed(() => hero.value?.conditions ?? []);
   const injuries = computed(() => hero.value?.injuries ?? []);
   const cultures = computed(() => hero.value?.cultures ?? []);
@@ -652,6 +655,11 @@ export const useHeroStore = defineStore('hero', () => {
     HeroCompanion
   >('companions', 'companions', 'companion');
 
+  const { upsert: upsertNote, remove: removeNote } = createSubResourceActions<
+    HeroNoteBase,
+    HeroNote
+  >('notes', 'heroNotes', 'note');
+
   async function deleteHero(): Promise<boolean> {
     if (!hero.value || hero.value.id === 0) return false;
     try {
@@ -747,5 +755,10 @@ export const useHeroStore = defineStore('hero', () => {
     // Companions (sheet)
     upsertCompanion,
     removeCompanion,
+
+    // Notes (sheet)
+    heroNotes,
+    upsertNote,
+    removeNote,
   };
 });

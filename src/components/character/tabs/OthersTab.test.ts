@@ -3,7 +3,14 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import OthersTab from './OthersTab.vue';
 import EditableItemList from 'src/components/shared/EditableItemList.vue';
-import type { HeroCulture, HeroGoal, HeroConnection, HeroCompanion, HeroInjury } from 'src/types';
+import type {
+  HeroCulture,
+  HeroGoal,
+  HeroConnection,
+  HeroCompanion,
+  HeroInjury,
+  HeroNote,
+} from 'src/types';
 
 const mockHero = ref<{
   id: number;
@@ -18,12 +25,15 @@ const mockCultures = ref<HeroCulture[]>([]);
 const mockGoals = ref<HeroGoal[]>([]);
 const mockConnections = ref<HeroConnection[]>([]);
 const mockCompanions = ref<HeroCompanion[]>([]);
+const mockHeroNotes = ref<HeroNote[]>([]);
 const mockInjuries = ref<HeroInjury[]>([]);
 const mockIsSinger = ref(false);
 
 const mockConditions = ref<
   { id: number; condition: { code: string; name: string }; notes?: string }[]
 >([]);
+const mockUpsertNote = vi.fn();
+const mockRemoveNote = vi.fn();
 const mockUpsertInjury = vi.fn();
 const mockRemoveInjury = vi.fn();
 const mockUpdateGoalValue = vi.fn();
@@ -45,12 +55,17 @@ vi.mock('src/stores/hero', () => ({
     get companions() {
       return mockCompanions.value;
     },
+    get heroNotes() {
+      return mockHeroNotes.value;
+    },
     get injuries() {
       return mockInjuries.value;
     },
     get conditions() {
       return mockConditions.value;
     },
+    upsertNote: mockUpsertNote,
+    removeNote: mockRemoveNote,
     upsertInjury: mockUpsertInjury,
     removeInjury: mockRemoveInjury,
     updateGoalValue: mockUpdateGoalValue,
@@ -175,6 +190,7 @@ describe('OthersTab', () => {
     mockGoals.value = [];
     mockConnections.value = [];
     mockCompanions.value = [];
+    mockHeroNotes.value = [];
     mockInjuries.value = [];
     mockConditions.value = [];
     mockIsSinger.value = false;
@@ -206,6 +222,12 @@ describe('OthersTab', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.find('[aria-label="Companions section"]').exists()).toBe(true);
+    });
+
+    it('renders Notes section', () => {
+      const wrapper = createWrapper();
+
+      expect(wrapper.find('[aria-label="Notes section"]').exists()).toBe(true);
     });
 
     it('renders Biography section', () => {
@@ -464,6 +486,36 @@ describe('OthersTab', () => {
       const wrapper = createWrapper();
 
       expect(wrapper.text()).toContain('Companion');
+    });
+  });
+
+  // ========================================
+  // Notes
+  // ========================================
+  describe('notes', () => {
+    it('renders notes with content', () => {
+      mockHeroNotes.value = [{ id: 1, heroId: 1, content: 'Buy rations' }];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('Buy rations');
+    });
+
+    it('shows empty message when no notes', () => {
+      mockHeroNotes.value = [];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('No notes');
+    });
+
+    it('renders multiple notes', () => {
+      mockHeroNotes.value = [
+        { id: 1, heroId: 1, content: 'First note' },
+        { id: 2, heroId: 1, content: 'Second note' },
+      ];
+      const wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('First note');
+      expect(wrapper.text()).toContain('Second note');
     });
   });
 
