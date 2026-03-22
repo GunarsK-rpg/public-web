@@ -4,6 +4,8 @@ import { ref } from 'vue';
 import CharacterSheetPage from './CharacterSheetPage.vue';
 
 const mockPush = vi.fn();
+const mockReplace = vi.fn();
+const mockRouteQuery = ref<Record<string, string>>({});
 
 // Use refs for reactive mock values
 const mockIsLoaded = ref(true);
@@ -19,6 +21,11 @@ const mockClassifierError = ref<string | null>(null);
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mockPush,
+    replace: mockReplace,
+  }),
+  useRoute: () => ({
+    query: mockRouteQuery.value,
+    params: {},
   }),
 }));
 
@@ -96,6 +103,7 @@ describe('CharacterSheetPage', () => {
             props: ['characterId', 'readonly'],
           },
           QTabs: {
+            name: 'QTabs',
             template: '<div class="q-tabs"><slot /></div>',
             props: [
               'modelValue',
@@ -105,6 +113,7 @@ describe('CharacterSheetPage', () => {
               'align',
               'narrowIndicator',
             ],
+            emits: ['update:modelValue'],
           },
           QTab: {
             template: '<button class="q-tab"><slot />{{ label }}</button>',
@@ -114,7 +123,7 @@ describe('CharacterSheetPage', () => {
             template: '<hr class="q-separator" />',
           },
           QTabPanels: {
-            template: '<div class="q-tab-panels"><slot /></div>',
+            template: '<div class="q-tab-panels" :data-active-tab="modelValue"><slot /></div>',
             props: ['modelValue', 'animated'],
           },
           QTabPanel: {
@@ -141,6 +150,8 @@ describe('CharacterSheetPage', () => {
     mockClassifierInitialized.value = true;
     mockClassifierLoading.value = false;
     mockClassifierError.value = null;
+    mockRouteQuery.value = {};
+    sessionStorage.clear();
   });
 
   // ========================================
@@ -166,7 +177,7 @@ describe('CharacterSheetPage', () => {
       await flushPromises();
 
       const tabs = wrapper.findAll('.q-tab');
-      expect(tabs.length).toBe(8);
+      expect(tabs.length).toBe(9);
     });
   });
 
@@ -280,6 +291,68 @@ describe('CharacterSheetPage', () => {
       await flushPromises();
 
       expect(wrapper.find('.character-header').attributes('data-readonly')).toBe('true');
+    });
+  });
+
+  // ========================================
+  // Tab Resolution
+  // ========================================
+  describe('tab resolution', () => {
+    it('initializes to query tab when valid', async () => {
+      mockRouteQuery.value = { tab: 'equipment' };
+
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      expect(wrapper.find('.q-tab-panels').attributes('data-active-tab')).toBe('equipment');
+    });
+
+    it('clears query param after using it', async () => {
+      mockRouteQuery.value = { tab: 'skills' };
+
+      createWrapper();
+      await flushPromises();
+
+      expect(mockReplace).toHaveBeenCalledWith(
+        expect.objectContaining({ query: expect.objectContaining({ tab: undefined }) })
+      );
+    });
+
+    it('falls back to sessionStorage when query tab is missing', async () => {
+      sessionStorage.setItem('hero-tab-1', 'talents');
+
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      expect(wrapper.find('.q-tab-panels').attributes('data-active-tab')).toBe('talents');
+    });
+
+    it('falls back to sessionStorage when query tab is invalid', async () => {
+      mockRouteQuery.value = { tab: 'nonexistent' };
+      sessionStorage.setItem('hero-tab-1', 'actions');
+
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      expect(wrapper.find('.q-tab-panels').attributes('data-active-tab')).toBe('actions');
+    });
+
+    it('defaults to stats when no query tab and no sessionStorage', async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      expect(wrapper.find('.q-tab-panels').attributes('data-active-tab')).toBe('stats');
+    });
+
+    it('persists tab change to sessionStorage', async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      const tabs = wrapper.findComponent({ name: 'QTabs' });
+      tabs.vm.$emit('update:modelValue', 'companions');
+      await flushPromises();
+
+      expect(sessionStorage.getItem('hero-tab-1')).toBe('companions');
     });
   });
 });

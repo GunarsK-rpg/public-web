@@ -218,12 +218,6 @@ describe('OthersTab', () => {
       expect(wrapper.find('[aria-label="Connections section"]').exists()).toBe(true);
     });
 
-    it('renders Companions section', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.find('[aria-label="Companions section"]').exists()).toBe(true);
-    });
-
     it('renders Notes section', () => {
       const wrapper = createWrapper();
 
@@ -436,59 +430,6 @@ describe('OthersTab', () => {
   });
 
   // ========================================
-  // Companions
-  // ========================================
-  describe('companions', () => {
-    it('renders companions with description', () => {
-      mockCompanions.value = [
-        {
-          id: 1,
-          heroId: 1,
-          description: 'Syl',
-          companionType: { id: 2, code: 'cpt2', name: 'CompType2' },
-        },
-      ] as HeroCompanion[];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Syl');
-    });
-
-    it('renders companion type badge', () => {
-      mockCompanions.value = [
-        {
-          id: 1,
-          heroId: 1,
-          description: 'Syl',
-          companionType: { id: 2, code: 'spren', name: 'Spren' },
-        },
-      ] as HeroCompanion[];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Spren');
-    });
-
-    it('shows empty message when no companions', () => {
-      mockCompanions.value = [];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('No companions');
-    });
-
-    it('shows fallback for companion without description', () => {
-      mockCompanions.value = [
-        {
-          id: 1,
-          heroId: 1,
-          description: null,
-          companionType: { id: 1, code: 'cpt1', name: 'CompType1' },
-        },
-      ] as HeroCompanion[];
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Companion');
-    });
-  });
-
   // ========================================
   // Notes
   // ========================================

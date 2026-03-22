@@ -73,11 +73,23 @@ const instanceId = computed(() => {
   return Number.isFinite(n) && n > 0 ? n : null;
 });
 
+const heroId = computed(() => {
+  const n = Number(route.query.heroId);
+  return Number.isFinite(n) && n > 0 ? n : null;
+});
+
 const backRoute = computed(() => {
   if (combatId.value) {
     return {
       name: 'combat-detail',
       params: { campaignId: props.campaignId, combatId: String(combatId.value) },
+    };
+  }
+  if (heroId.value) {
+    return {
+      name: 'character-sheet',
+      params: { characterId: String(heroId.value) },
+      query: { tab: 'companions' },
     };
   }
   return { name: 'campaign-detail', params: { campaignId: props.campaignId } };

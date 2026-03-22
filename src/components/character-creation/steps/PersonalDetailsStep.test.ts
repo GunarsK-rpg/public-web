@@ -314,32 +314,6 @@ describe('PersonalDetailsStep', () => {
   });
 
   // ========================================
-  // Companions
-  // ========================================
-  describe('companions', () => {
-    it('displays existing companions', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Companion 1');
-    });
-
-    it('displays companion type badge', () => {
-      const wrapper = createWrapper();
-
-      expect(wrapper.text()).toContain('Pet');
-    });
-
-    it('has remove companion button', () => {
-      const wrapper = createWrapper();
-
-      const removeBtns = wrapper
-        .findAll('.q-btn')
-        .filter((b) => b.attributes('aria-label')?.includes('Remove companion'));
-      expect(removeBtns.length).toBe(1);
-    });
-  });
-
-  // ========================================
   // Notes
   // ========================================
   describe('notes', () => {
@@ -408,33 +382,6 @@ describe('PersonalDetailsStep', () => {
   });
 
   // ========================================
-  // Adding Companions via Dialog
-  // ========================================
-  describe('adding companions', () => {
-    it('pushes companion to hero when dialog emits add', () => {
-      const wrapper = createWrapper();
-
-      const companionDialog = findDialogByTestId(wrapper, 'add-other-companion');
-      companionDialog.vm.$emit('add', 'Syl', 'Honorspren', 'spren');
-
-      expect(mockHero.value!.companions.length).toBe(2);
-      const added = mockHero.value!.companions[1]!;
-      expect(added.description).toBe('Syl');
-      expect(added.notes).toBe('Honorspren');
-      expect(added.companionType.code).toBe('spren');
-    });
-
-    it('does not add companion when typeCode is null', () => {
-      const wrapper = createWrapper();
-
-      const companionDialog = findDialogByTestId(wrapper, 'add-other-companion');
-      companionDialog.vm.$emit('add', 'Syl', null, null);
-
-      expect(mockHero.value!.companions.length).toBe(1);
-    });
-  });
-
-  // ========================================
   // Removing Goals
   // ========================================
   describe('removing goals', () => {
@@ -499,43 +446,6 @@ describe('PersonalDetailsStep', () => {
       await removeBtns[0]!.trigger('click');
 
       expect(mockHero.value!.connections.length).toBe(0);
-      expect(mockTrackDeletion).not.toHaveBeenCalled();
-    });
-  });
-
-  // ========================================
-  // Removing Companions
-  // ========================================
-  describe('removing companions', () => {
-    it('removes companion from hero and tracks deletion', async () => {
-      const wrapper = createWrapper();
-
-      const removeBtns = wrapper
-        .findAll('.q-btn')
-        .filter((b) => b.attributes('aria-label')?.includes('Remove companion'));
-      await removeBtns[0]!.trigger('click');
-
-      expect(mockHero.value!.companions.length).toBe(0);
-      expect(mockTrackDeletion).toHaveBeenCalledWith('companions', 1);
-    });
-
-    it('does not track deletion for temp-ID companion', async () => {
-      mockHero.value!.companions = [
-        {
-          id: -1,
-          heroId: 1,
-          companionType: { id: 1, code: 'pet', name: 'Pet' },
-          description: 'Temp Companion',
-        },
-      ];
-      const wrapper = createWrapper();
-
-      const removeBtns = wrapper
-        .findAll('.q-btn')
-        .filter((b) => b.attributes('aria-label')?.includes('Remove companion'));
-      await removeBtns[0]!.trigger('click');
-
-      expect(mockHero.value!.companions.length).toBe(0);
       expect(mockTrackDeletion).not.toHaveBeenCalled();
     });
   });

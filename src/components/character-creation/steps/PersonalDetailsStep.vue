@@ -69,19 +69,6 @@
 
     <q-separator class="q-my-md" />
 
-    <!-- Companions -->
-    <div class="text-subtitle2 q-mb-sm">Companions</div>
-    <EditableItemList
-      :items="companionItems"
-      item-label="companion"
-      add-label="Add Companion"
-      bordered
-      @add="showCompanionDialog = true"
-      @remove="removeCompanion"
-    />
-
-    <q-separator class="q-my-md" />
-
     <!-- Notes -->
     <q-input
       :model-value="heroStore.hero?.notes ?? ''"
@@ -107,15 +94,6 @@
       :types="classifiers.connectionTypes"
       data-testid="add-other-connection"
       @add="handleAddConnection"
-    />
-
-    <AddOtherDialog
-      v-model="showCompanionDialog"
-      title="Add Companion"
-      type-label="Companion type"
-      :types="classifiers.companionTypes"
-      data-testid="add-other-companion"
-      @add="handleAddCompanion"
     />
   </div>
 </template>
@@ -157,22 +135,9 @@ const connectionItems = computed(() =>
   }))
 );
 
-const companionItems = computed(() =>
-  heroStore.companions.map((c) => ({
-    id: c.id,
-    name: c.description ?? 'Companion',
-    description: c.notes,
-    typeName:
-      findByCode(classifiers.companionTypes, c.companionType.code)?.name ??
-      c.companionType.name ??
-      'Unknown',
-  }))
-);
-
 // Dialog state
 const showGoalDialog = ref(false);
 const showConnectionDialog = ref(false);
-const showCompanionDialog = ref(false);
 
 // Debounced text setters
 function createDebouncedHandler(setter: (val: string) => void) {
@@ -260,27 +225,5 @@ function handleAddConnection(name: string, description: string | null, typeCode:
 function removeConnection(connectionId: number) {
   const removed = removeById(heroStore.hero?.connections, connectionId);
   if (removed && connectionId > 0) deletionTracker?.trackDeletion('connections', connectionId);
-}
-
-// Companion actions
-function handleAddCompanion(name: string, description: string | null, typeCode: string | null) {
-  if (!heroStore.hero || !typeCode) return;
-  const compType = findByCode(classifiers.companionTypes, typeCode);
-  if (!compType) return;
-  const trimmedName = trimName(name);
-  if (!trimmedName) return;
-  const trimmedNotes = description ? trimText(description) : undefined;
-  heroStore.hero.companions.push({
-    id: heroStore.nextTempId(),
-    heroId: heroStore.hero.id,
-    companionType: toClassifierRef(compType),
-    description: trimmedName,
-    ...(trimmedNotes ? { notes: trimmedNotes } : {}),
-  });
-}
-
-function removeCompanion(companionId: number) {
-  const removed = removeById(heroStore.hero?.companions, companionId);
-  if (removed && companionId > 0) deletionTracker?.trackDeletion('companions', companionId);
 }
 </script>

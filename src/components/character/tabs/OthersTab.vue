@@ -100,22 +100,6 @@
       />
     </SectionPanel>
 
-    <!-- Companions Section -->
-    <SectionPanel label="Companions">
-      <template #icon><PawPrint /></template>
-
-      <EditableItemList
-        :items="companionItems"
-        item-label="companion"
-        add-label="Add Companion"
-        empty-message="No companions"
-        :readonly="readonly"
-        :badge-color="RPG_COLORS.badgeMuted"
-        @add="showCompanionDialog = true"
-        @remove="handleRemoveCompanion"
-      />
-    </SectionPanel>
-
     <!-- Notes Section -->
     <SectionPanel label="Notes">
       <template #icon><StickyNote /></template>
@@ -213,15 +197,6 @@
 
     <AddOtherDialog
       v-if="!readonly"
-      v-model="showCompanionDialog"
-      title="Add Companion"
-      type-label="Companion type"
-      :types="classifiers.companionTypes"
-      @add="handleAddCompanion"
-    />
-
-    <AddOtherDialog
-      v-if="!readonly"
       v-model="showNoteDialog"
       title="Add Note"
       name-label="Note"
@@ -246,7 +221,7 @@ import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById, findByCode, buildIdNameMap, makeNameGetter } from 'src/utils/arrayUtils';
 import { RPG_COLORS } from 'src/constants/theme';
-import { Globe, Flag, Users, PawPrint, User, StickyNote, TriangleAlert } from 'lucide-vue-next';
+import { Globe, Flag, Users, User, StickyNote, TriangleAlert } from 'lucide-vue-next';
 import SectionPanel from 'src/components/shared/SectionPanel.vue';
 import EditableItemList from 'src/components/shared/EditableItemList.vue';
 import AddInjuryDialog from 'src/components/character/AddInjuryDialog.vue';
@@ -268,7 +243,6 @@ const classifiers = useClassifierStore();
 const showInjuryDialog = ref(false);
 const showGoalDialog = ref(false);
 const showConnectionDialog = ref(false);
-const showCompanionDialog = ref(false);
 const showNoteDialog = ref(false);
 
 // Biography fields - computed for consistency with other hero data access
@@ -298,18 +272,6 @@ const connectionItems = computed(() =>
     typeName:
       findByCode(classifiers.connectionTypes, c.connectionType.code)?.name ??
       c.connectionType.name ??
-      'Unknown',
-  }))
-);
-
-const companionItems = computed(() =>
-  heroStore.companions.map((c) => ({
-    id: c.id,
-    name: c.description ?? 'Companion',
-    description: c.notes,
-    typeName:
-      findByCode(classifiers.companionTypes, c.companionType.code)?.name ??
-      c.companionType.name ??
       'Unknown',
   }))
 );
@@ -370,27 +332,6 @@ async function handleAddConnection(
 
 async function handleRemoveConnection(id: number): Promise<void> {
   await heroStore.removeConnection(id);
-}
-
-// ===================
-// COMPANION ACTIONS
-// ===================
-async function handleAddCompanion(
-  name: string,
-  description: string | null,
-  typeCode: string | null
-): Promise<void> {
-  if (!heroStore.hero || !typeCode) return;
-  await heroStore.upsertCompanion({
-    heroId: heroStore.hero.id,
-    companionType: { code: typeCode },
-    description: name,
-    notes: description,
-  });
-}
-
-async function handleRemoveCompanion(id: number): Promise<void> {
-  await heroStore.removeCompanion(id);
 }
 
 // ===================

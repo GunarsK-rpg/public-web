@@ -1,5 +1,6 @@
 import type { AxiosResponse } from 'axios';
-import type { Hero, HeroBase, HeroSheet, PaginatedResponse } from 'src/types';
+import type { Hero, HeroBase, HeroSheet, PaginatedResponse, NpcOption } from 'src/types';
+import type { CompanionResourcePatch } from 'src/types/companions';
 import { api } from './api';
 
 export default {
@@ -52,6 +53,26 @@ export default {
   },
   patchCurrency(heroId: number, value: number): Promise<AxiosResponse<{ currency: number }>> {
     return api.patch(`/heroes/${heroId}/currency`, { heroId, value });
+  },
+
+  // Companion NPC options
+  getCompanionNpcOptions(campaignId: number): Promise<AxiosResponse<NpcOption[]>> {
+    return api.get(`/campaigns/${campaignId}/companion-npcs`);
+  },
+
+  // Companion resource patches
+  patchCompanionHp(data: CompanionResourcePatch): Promise<AxiosResponse<{ currentHp: number }>> {
+    return api.patch(`/heroes/${data.heroId}/companions/${data.id}/hp`, data);
+  },
+  patchCompanionFocus(
+    data: CompanionResourcePatch
+  ): Promise<AxiosResponse<{ currentFocus: number }>> {
+    return api.patch(`/heroes/${data.heroId}/companions/${data.id}/focus`, data);
+  },
+  patchCompanionInvestiture(
+    data: CompanionResourcePatch
+  ): Promise<AxiosResponse<{ currentInvestiture: number }>> {
+    return api.patch(`/heroes/${data.heroId}/companions/${data.id}/investiture`, data);
   },
 
   // Avatar
