@@ -34,6 +34,7 @@ export * from './classifiers';
 export * from './heroes';
 export * from './goals';
 export * from './companions';
+export * from './notes';
 export * from './campaign';
 
 // Combat

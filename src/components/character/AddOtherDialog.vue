@@ -27,8 +27,23 @@
           behavior="menu"
           class="q-mb-sm"
         />
-        <q-input v-model="name" label="Name" dense outlined maxlength="200" class="q-mb-sm" />
-        <q-input v-model="description" label="Description" dense outlined maxlength="500" />
+        <q-input
+          v-model="name"
+          :label="nameLabel ?? 'Name'"
+          :type="multiline ? 'textarea' : 'text'"
+          dense
+          outlined
+          :maxlength="multiline ? 500 : 200"
+          :class="{ 'q-mb-sm': !hideDescription }"
+        />
+        <q-input
+          v-if="!hideDescription"
+          v-model="description"
+          label="Description"
+          dense
+          outlined
+          maxlength="500"
+        />
       </q-card-section>
 
       <q-separator />
@@ -48,8 +63,11 @@ import type { Classifier } from 'src/types/classifier';
 const props = defineProps<{
   modelValue: boolean;
   title: string;
+  nameLabel?: string;
   typeLabel?: string;
   types?: Classifier[];
+  hideDescription?: boolean;
+  multiline?: boolean;
 }>();
 
 const emit = defineEmits<{
