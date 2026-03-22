@@ -112,8 +112,9 @@ const authStore = useAuthStore();
 const classifierStore = useClassifierStore();
 
 const route = useRoute();
-const initialTab = typeof route.query.tab === 'string' ? route.query.tab : 'stats';
-const activeTab = ref(initialTab);
+const tabIds = new Set(tabs.map((t) => t.id));
+const queryTab = typeof route.query.tab === 'string' ? route.query.tab : '';
+const activeTab = ref(tabIds.has(queryTab) ? queryTab : 'stats');
 
 const initializing = ref(true);
 const isLoaded = computed(() => heroStore.isLoaded);

@@ -14,6 +14,7 @@
           :campaign-id="campaignId"
           :hero-id="heroStore.hero!.id"
           :saving="saving"
+          :readonly="readonly"
           @update-hp="heroStore.patchCompanionHp(comp.id, $event)"
           @update-focus="heroStore.patchCompanionFocus(comp.id, $event)"
           @update-investiture="heroStore.patchCompanionInvestiture(comp.id, $event)"

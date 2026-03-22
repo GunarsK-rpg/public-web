@@ -20,6 +20,10 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
+  useRoute: () => ({
+    query: {},
+    params: {},
+  }),
 }));
 
 vi.mock('stores/hero', () => ({
