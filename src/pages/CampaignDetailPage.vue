@@ -111,11 +111,26 @@
                     </div>
                   </q-card-section>
 
-                  <q-card-section>
-                    <div class="text-caption">HP: {{ hero.currentHealth }}</div>
-                    <div v-if="hero.user" class="text-caption text-muted">
-                      {{ hero.user.displayName }}
+                  <q-card-section class="row items-center no-wrap">
+                    <div>
+                      <div class="text-caption">HP: {{ hero.currentHealth }}</div>
+                      <div v-if="hero.user" class="text-caption text-muted">
+                        {{ hero.user.displayName }}
+                      </div>
                     </div>
+                    <q-space />
+                    <q-btn
+                      v-if="isOwner"
+                      flat
+                      dense
+                      round
+                      size="sm"
+                      color="negative"
+                      :disable="saving"
+                      :aria-label="`Remove ${hero.name} from campaign`"
+                      @click.prevent.stop="confirmRemoveHero(hero)"
+                      ><Trash2 :size="16" aria-hidden="true"
+                    /></q-btn>
                   </q-card-section>
                 </q-card>
               </a>
@@ -213,7 +228,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { logger } from 'src/utils/logger';
 import CreateCombatDialog from 'src/components/combat/CreateCombatDialog.vue';
-import type { Combat } from 'src/types';
+import type { Combat, Hero } from 'src/types';
 
 const props = defineProps<{
   campaignId: string;
@@ -277,6 +292,17 @@ function confirmDeleteCampaign(): void {
         void router.push({ name: 'campaigns' });
       }
     });
+  });
+}
+
+function confirmRemoveHero(hero: Hero): void {
+  $q.dialog({
+    title: 'Remove Character',
+    message: `Remove "${hero.name}" from this campaign? The character will be unassigned but not deleted.`,
+    cancel: true,
+    persistent: false,
+  }).onOk(() => {
+    void campaignStore.removeHero(hero.id);
   });
 }
 

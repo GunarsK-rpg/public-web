@@ -21,4 +21,7 @@ export default {
   delete(id: number): Promise<AxiosResponse<void>> {
     return api.delete(`/campaigns/${id}`);
   },
+  removeHero(campaignId: number, heroId: number): Promise<AxiosResponse<void>> {
+    return api.delete(`/campaigns/${campaignId}/heroes/${heroId}`);
+  },
 };
