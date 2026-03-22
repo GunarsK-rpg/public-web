@@ -56,8 +56,12 @@ export default {
   },
 
   // Companion NPC options
-  getCompanionNpcOptions(campaignId: number): Promise<AxiosResponse<NpcOption[]>> {
-    return api.get(`/campaigns/${campaignId}/companion-npcs`);
+  getCompanionNpcOptions(
+    heroId: number,
+    campaignId?: number | null
+  ): Promise<AxiosResponse<NpcOption[]>> {
+    const params = campaignId ? { campaignId } : {};
+    return api.get(`/heroes/${heroId}/companion-npcs`, { params });
   },
 
   // Companion resource patches

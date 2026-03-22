@@ -663,9 +663,12 @@ export const useHeroStore = defineStore('hero', () => {
   const companionNpcOptions = ref<NpcOption[]>([]);
 
   async function fetchCompanionNpcOptions(): Promise<void> {
-    if (!hero.value?.campaignId) return;
+    if (!hero.value) return;
     try {
-      const response = await heroService.getCompanionNpcOptions(hero.value.campaignId);
+      const response = await heroService.getCompanionNpcOptions(
+        hero.value.id,
+        hero.value.campaignId
+      );
       companionNpcOptions.value = response.data;
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to load companion options' });
