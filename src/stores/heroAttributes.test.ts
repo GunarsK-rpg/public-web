@@ -1102,7 +1102,7 @@ describe('useHeroAttributesStore', () => {
       expect(store.getStatBonus('deflect')).toBe(0);
     });
 
-    it('combines talent and equipment bonuses for same stat', () => {
+    it('uses highest deflect across talent and equipment (no stacking)', () => {
       setupHeroWithAttributes();
       const heroStore = useHeroStore();
       const store = useHeroAttributesStore();
@@ -1136,7 +1136,7 @@ describe('useHeroAttributesStore', () => {
         ];
       }
 
-      expect(store.getStatBonus('deflect')).toBe(5);
+      expect(store.getStatBonus('deflect')).toBe(3);
     });
   });
 

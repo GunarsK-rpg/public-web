@@ -11,10 +11,15 @@ const mockDarkToggle = vi.fn();
 const mockDarkIsActive = ref(false);
 const mockIsDesktop = ref(true);
 
+const mockPush = vi.fn();
+
 vi.mock('vue-router', () => ({
   useRoute: () => ({
     name: mockRouteName.value,
     meta: { title: 'Test Page' },
+  }),
+  useRouter: () => ({
+    push: mockPush,
   }),
 }));
 
@@ -79,9 +84,8 @@ describe('MainLayout', () => {
             template: '<div class="q-list"><slot /></div>',
           },
           QItem: {
-            template:
-              '<div class="q-item" :data-to="to ? JSON.stringify(to) : undefined" @click="$emit(\'click\')"><slot /></div>',
-            props: ['to', 'clickable'],
+            template: '<div class="q-item" @click="$emit(\'click\')"><slot /></div>',
+            props: ['clickable'],
             emits: ['click'],
           },
           QItemSection: {
@@ -102,7 +106,7 @@ describe('MainLayout', () => {
           },
           QTab: {
             template: '<div class="q-tab" @click="$emit(\'click\')"><slot /></div>',
-            props: ['name', 'to'],
+            props: ['name'],
             emits: ['click'],
           },
           QDrawer: {
@@ -154,26 +158,22 @@ describe('MainLayout', () => {
       expect(wrapper.find('.q-drawer').exists()).toBe(false);
     });
 
-    it('renders Characters nav item with correct route', () => {
+    it('navigates to Characters on click', async () => {
       const wrapper = createWrapper();
       const items = wrapper.find('.q-drawer').findAll('.q-item');
       const charactersItem = items.find((i) => i.text().includes('Characters'));
 
-      expect(charactersItem).toBeDefined();
-      expect(JSON.parse(charactersItem!.attributes('data-to')!)).toEqual({
-        name: 'my-characters',
-      });
+      await charactersItem!.trigger('click');
+      expect(mockPush).toHaveBeenCalledWith({ name: 'my-characters' });
     });
 
-    it('renders Campaigns nav item with correct route', () => {
+    it('navigates to Campaigns on click', async () => {
       const wrapper = createWrapper();
       const items = wrapper.find('.q-drawer').findAll('.q-item');
       const campaignsItem = items.find((i) => i.text().includes('Campaigns'));
 
-      expect(campaignsItem).toBeDefined();
-      expect(JSON.parse(campaignsItem!.attributes('data-to')!)).toEqual({
-        name: 'campaigns',
-      });
+      await campaignsItem!.trigger('click');
+      expect(mockPush).toHaveBeenCalledWith({ name: 'campaigns' });
     });
 
     it('highlights Characters item when on character route', () => {

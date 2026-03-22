@@ -13,6 +13,7 @@ import type { HeroGoal, HeroGoalBase, HeroConnectionBase, HeroConnection } from 
 import type { HeroCompanion, HeroCompanionBase } from 'src/types/companions';
 import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
+import filesApi, { FILE_TYPE_HERO_AVATAR } from 'src/services/filesApi';
 import heroService from 'src/services/heroService';
 import { handleError } from 'src/utils/errorHandling';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
@@ -53,6 +54,7 @@ function createEmptyHero(): HeroSheet {
     companions: [],
     cultures: [],
     favoriteActions: [],
+    avatarKey: null,
   };
 }
 
@@ -266,6 +268,43 @@ export const useHeroStore = defineStore('hero', () => {
       v,
       'Failed to update currency'
     );
+
+  // ===================
+  // AVATAR
+  // ===================
+  async function uploadAvatar(file: File): Promise<boolean> {
+    if (!hero.value) return false;
+    savingCount.value++;
+    try {
+      const uploadRes = await filesApi.upload(file, FILE_TYPE_HERO_AVATAR);
+      // Extract S3 key from URL path (last segment: /api/v1/files/hero-avatar/{key})
+      const key = uploadRes.data.url.split('/').pop();
+      if (!key) throw new Error('Invalid upload response: missing key');
+      await heroService.setAvatar(hero.value.id, key);
+      if (hero.value) hero.value.avatarKey = key;
+      return true;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to upload avatar' });
+      return false;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function deleteAvatar(): Promise<boolean> {
+    if (!hero.value) return false;
+    savingCount.value++;
+    try {
+      await heroService.deleteAvatar(hero.value.id);
+      if (hero.value) hero.value.avatarKey = null;
+      return true;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to delete avatar' });
+      return false;
+    } finally {
+      savingCount.value--;
+    }
+  }
 
   // ===================
   // EQUIPMENT (sheet)
@@ -672,6 +711,10 @@ export const useHeroStore = defineStore('hero', () => {
 
     // Hero deletion
     deleteHero,
+
+    // Avatar
+    uploadAvatar,
+    deleteAvatar,
 
     // Equipment (sheet)
     addEquipment,

@@ -91,50 +91,21 @@
 
         <div v-else class="row q-col-gutter-md">
           <div v-for="hero in campaign.heroes" :key="hero.id" class="col-12 col-sm-6 col-md-4">
-            <RouterLink
-              :to="{ name: 'character-sheet', params: { characterId: String(hero.id) } }"
-              custom
-              v-slot="{ href, navigate }"
-            >
-              <a
-                :href="href"
-                class="card-link"
-                :aria-label="`View character: ${hero.name}`"
-                @click="navigate($event)"
-              >
-                <q-card class="card-interactive cursor-pointer">
-                  <q-card-section>
-                    <div class="text-h6">{{ hero.name }}</div>
-                    <div class="text-subtitle2">
-                      Level {{ hero.level }}
-                      <span v-if="hero.radiantOrder"> · {{ hero.radiantOrder.name }} </span>
-                    </div>
-                  </q-card-section>
-
-                  <q-card-section class="row items-center no-wrap">
-                    <div>
-                      <div class="text-caption">HP: {{ hero.currentHealth }}</div>
-                      <div v-if="hero.user" class="text-caption text-muted">
-                        {{ hero.user.displayName }}
-                      </div>
-                    </div>
-                    <q-space />
-                    <q-btn
-                      v-if="isOwner"
-                      flat
-                      dense
-                      round
-                      size="sm"
-                      color="negative"
-                      :disable="saving"
-                      :aria-label="`Remove ${hero.name} from campaign`"
-                      @click.prevent.stop="confirmRemoveHero(hero)"
-                      ><Trash2 :size="16" aria-hidden="true"
-                    /></q-btn>
-                  </q-card-section>
-                </q-card>
-              </a>
-            </RouterLink>
+            <HeroCard :hero="hero" :subtitle="hero.user?.displayName">
+              <template v-if="isOwner" #actions>
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="sm"
+                  color="negative"
+                  :disable="saving"
+                  :aria-label="`Remove ${hero.name} from campaign`"
+                  @click.prevent.stop="confirmRemoveHero(hero)"
+                  ><Trash2 :size="16" aria-hidden="true"
+                /></q-btn>
+              </template>
+            </HeroCard>
           </div>
         </div>
 
@@ -228,6 +199,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { logger } from 'src/utils/logger';
 import CreateCombatDialog from 'src/components/combat/CreateCombatDialog.vue';
+import HeroCard from 'src/components/shared/HeroCard.vue';
 import type { Combat, Hero } from 'src/types';
 
 const props = defineProps<{

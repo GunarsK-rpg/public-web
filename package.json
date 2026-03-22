@@ -19,6 +19,7 @@
   "dependencies": {
     "@quasar/extras": "^1.17.0",
     "axios": "^1.13.6",
+    "cropperjs": "^1.6.2",
     "lucide-vue-next": "^0.577.0",
     "pinia": "^3.0.4",
     "pino": "^10.3.1",

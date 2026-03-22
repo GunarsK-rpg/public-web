@@ -1,52 +1,55 @@
 <template>
   <div class="cosmere-showcase" :class="{ 'hero-dead': isDead }">
     <div class="q-pa-md row items-center q-col-gutter-md">
-      <!-- Name and Level -->
-      <div class="col-12 col-sm-6">
-        <div class="row items-center no-wrap">
-          <div class="text-h5 text-heading">{{ hero?.name }}</div>
-          <q-btn
-            v-if="!readonly"
-            flat
-            dense
-            round
-            size="sm"
-            class="q-ml-sm"
-            aria-label="Edit character"
-            :to="{ name: 'character-edit', params: { characterId } }"
-            ><Pencil :size="20"
-          /></q-btn>
-        </div>
-        <div class="text-subtitle1 text-muted">
-          Level {{ hero?.level }}
-          {{ ancestryName }}
-          <span v-if="cultureName"> · {{ cultureName }}</span>
-          <span v-if="orderName"> · {{ orderName }} ({{ hero?.radiantIdeal ?? 0 }})</span>
-          <span v-if="campaignName"> · {{ campaignName }}</span>
-        </div>
-        <div v-if="activeSingerFormName" :class="`text-caption text-${RPG_COLORS.singerForm}`">
-          {{ activeSingerFormName }}
-        </div>
-        <!-- Death Indicator -->
-        <div v-if="isDead" class="q-mt-xs" role="status">
-          <q-badge color="negative" class="text-bold">DEAD</q-badge>
-        </div>
-        <!-- Active Condition Badges -->
-        <div
-          v-if="activeConditionBadges.length"
-          class="row items-center q-gutter-xs q-mt-xs"
-          style="flex-wrap: wrap"
-        >
-          <q-badge
-            v-for="badge in activeConditionBadges"
-            :key="badge.id"
-            :color="badge.positive ? 'positive' : 'warning'"
-            outline
-            class="cursor-pointer"
+      <!-- Avatar + Name -->
+      <div class="col-12 col-sm-6 row items-start no-wrap q-gutter-x-sm">
+        <AvatarDisplay :src="avatarSrc" size="48px" alt="Hero avatar" expandable />
+        <div>
+          <div class="row items-center no-wrap">
+            <div class="text-h5 text-heading">{{ hero?.name }}</div>
+            <q-btn
+              v-if="!readonly"
+              flat
+              dense
+              round
+              size="sm"
+              class="q-ml-sm"
+              aria-label="Edit character"
+              :to="{ name: 'character-edit', params: { characterId } }"
+              ><Pencil :size="20"
+            /></q-btn>
+          </div>
+          <div class="text-subtitle1 text-muted">
+            Level {{ hero?.level }}
+            {{ ancestryName }}
+            <span v-if="cultureName"> · {{ cultureName }}</span>
+            <span v-if="orderName"> · {{ orderName }} ({{ hero?.radiantIdeal ?? 0 }})</span>
+            <span v-if="campaignName"> · {{ campaignName }}</span>
+          </div>
+          <div v-if="activeSingerFormName" :class="`text-caption text-${RPG_COLORS.singerForm}`">
+            {{ activeSingerFormName }}
+          </div>
+          <!-- Death Indicator -->
+          <div v-if="isDead" class="q-mt-xs" role="status">
+            <q-badge color="negative" class="text-bold">DEAD</q-badge>
+          </div>
+          <!-- Active Condition Badges -->
+          <div
+            v-if="activeConditionBadges.length"
+            class="row items-center q-gutter-xs q-mt-xs"
+            style="flex-wrap: wrap"
           >
-            {{ badge.label }}
-            <InfoPopup>{{ badge.description }}</InfoPopup>
-          </q-badge>
+            <q-badge
+              v-for="badge in activeConditionBadges"
+              :key="badge.id"
+              :color="badge.positive ? 'positive' : 'warning'"
+              outline
+              class="cursor-pointer"
+            >
+              {{ badge.label }}
+              <InfoPopup>{{ badge.description }}</InfoPopup>
+            </q-badge>
+          </div>
         </div>
       </div>
 
@@ -75,6 +78,8 @@ import { RPG_COLORS } from 'src/constants/theme';
 import { Pencil } from 'lucide-vue-next';
 import ResourcesBar from 'src/components/shared/ResourcesBar.vue';
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
+import AvatarDisplay from 'src/components/shared/AvatarDisplay.vue';
+import filesApi from 'src/services/filesApi';
 import type { TypedValue, ResourceValues } from 'src/types/shared';
 
 defineProps<{
@@ -88,6 +93,10 @@ const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const hero = computed(() => heroStore.hero);
 const saving = computed(() => heroStore.saving);
+const avatarSrc = computed(() => {
+  if (!hero.value?.avatarKey) return null;
+  return filesApi.buildHeroAvatarUrl(hero.value.avatarKey);
+});
 
 // Synthetic TypedValue array for ResourcesBar — id:0 is a placeholder, matching is by type.code only
 const resourceDerivedStats = computed((): TypedValue[] => {

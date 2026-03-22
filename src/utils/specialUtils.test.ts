@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getSpecialByType,
   getHeroBonus,
+  getHeroMaxBonus,
   getConditionBonus,
   resolveSkillModifier,
   SPECIAL,
@@ -372,6 +373,68 @@ describe('getHeroBonus', () => {
       expect(getHeroBonus([], equipment, null, 'deflect')).toBe(2);
       expect(getHeroBonus([], equipment, null, 'cumbersome')).toBe(3);
     });
+  });
+});
+
+// =============================================================================
+// getHeroMaxBonus
+// =============================================================================
+
+describe('getHeroMaxBonus', () => {
+  it('returns highest value across all sources', () => {
+    const talents = [createHeroTalent([{ type: 'deflect', value: 2 }])];
+    const equipment = [createHeroEquipment([{ type: 'deflect', value: 3 }])];
+    const form = createSingerForm([{ type: 'deflect', value: 1 }]);
+
+    expect(getHeroMaxBonus(talents, equipment, form, 'deflect')).toBe(3);
+  });
+
+  it('returns equipment value when highest', () => {
+    const equipment = [createHeroEquipment([{ type: 'deflect', value: 4 }])];
+    const form = createSingerForm([{ type: 'deflect', value: 1 }]);
+
+    expect(getHeroMaxBonus([], equipment, form, 'deflect')).toBe(4);
+  });
+
+  it('returns singer form value when highest', () => {
+    const equipment = [createHeroEquipment([{ type: 'deflect', value: 1 }])];
+    const form = createSingerForm([{ type: 'deflect', value: 2 }]);
+
+    expect(getHeroMaxBonus([], equipment, form, 'deflect')).toBe(2);
+  });
+
+  it('returns 0 when no sources match', () => {
+    expect(getHeroMaxBonus([], [], null, 'deflect')).toBe(0);
+  });
+
+  it('ignores unequipped items', () => {
+    const equipment = [createHeroEquipment([{ type: 'deflect', value: 5 }], false)];
+
+    expect(getHeroMaxBonus([], equipment, null, 'deflect')).toBe(0);
+  });
+
+  it('uses specialOverrides over base special', () => {
+    const eq = createHeroEquipment([{ type: 'deflect', value: 2 }], true);
+    eq.specialOverrides = [{ type: 'deflect', value: 5 }];
+
+    expect(getHeroMaxBonus([], [eq], null, 'deflect')).toBe(5);
+  });
+
+  it('ignores entries with only display_value', () => {
+    const talents = [
+      createHeroTalent([{ type: 'deflect', display_value: '+1 while in stance' }], 'stonestance'),
+    ];
+
+    expect(getHeroMaxBonus(talents, [], null, 'deflect')).toBe(0);
+  });
+
+  it('handles singer form with undefined special', () => {
+    const form = {
+      ...createSingerForm([]),
+      special: undefined as unknown as SpecialEntry[],
+    };
+
+    expect(getHeroMaxBonus([], [], form, 'deflect')).toBe(0);
   });
 });
 

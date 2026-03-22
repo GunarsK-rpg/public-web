@@ -2,6 +2,21 @@
   <div>
     <div class="text-subtitle1 q-mb-md">Add personal details (optional)</div>
 
+    <!-- Avatar -->
+    <div class="q-mb-md">
+      <div class="text-subtitle2 q-mb-sm">Avatar</div>
+      <AvatarUpload
+        :avatar-key="heroStore.hero?.avatarKey ?? null"
+        :disabled="!heroStore.hero?.id"
+        :loading="heroStore.saving"
+        @upload="onAvatarUpload"
+        @delete="onAvatarDelete"
+      />
+      <div v-if="!heroStore.hero?.id" class="text-caption text-grey-6 q-mt-xs">
+        Save character first to upload avatar
+      </div>
+    </div>
+
     <!-- Biography -->
     <q-input
       :model-value="heroStore.hero?.biography ?? ''"
@@ -114,6 +129,7 @@ import { findByCode, removeById, toClassifierRef } from 'src/utils/arrayUtils';
 import { trimText, trimName } from 'src/utils/stringUtils';
 import EditableItemList from 'src/components/shared/EditableItemList.vue';
 import AddOtherDialog from 'src/components/character/AddOtherDialog.vue';
+import AvatarUpload from 'src/components/shared/AvatarUpload.vue';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 
 const heroStore = useHeroStore();
@@ -191,6 +207,15 @@ onUnmounted(() => {
   appearanceHandler.cancel();
   notesHandler.cancel();
 });
+
+// Avatar
+async function onAvatarUpload(file: File): Promise<void> {
+  await heroStore.uploadAvatar(file);
+}
+
+async function onAvatarDelete(): Promise<void> {
+  await heroStore.deleteAvatar();
+}
 
 // Goal actions
 function handleAddGoal(name: string, description: string | null) {

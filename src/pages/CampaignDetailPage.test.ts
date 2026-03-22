@@ -119,6 +119,17 @@ describe('CampaignDetailPage', () => {
             template: '<div class="q-spinner-dots" />',
             props: ['size', 'color'],
           },
+          HeroCard: {
+            template: `<div class="card-link">
+              <div class="text-h6">{{ hero.name }}</div>
+              <div>Level {{ hero.level }}</div>
+              <div v-if="hero.radiantOrder">{{ hero.radiantOrder.name }}</div>
+              <div>HP: {{ hero.currentHealth }}</div>
+              <div v-if="hero.user">{{ hero.user.displayName }}</div>
+              <slot name="actions" />
+            </div>`,
+            props: ['hero', 'subtitle'],
+          },
           QBanner: {
             template: '<div class="q-banner"><slot /><slot name="action" /></div>',
           },

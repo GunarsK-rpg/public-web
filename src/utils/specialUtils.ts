@@ -101,6 +101,36 @@ export function getSpecialByType(special: SpecialEntry[], type: string): Special
 }
 
 /**
+ * Collect all numeric values for a type from hero sources (talents, equipped equipment, singer form).
+ */
+function collectHeroValues(
+  talents: HeroTalent[],
+  equipment: HeroEquipment[],
+  singerForm: SingerForm | null,
+  type: string
+): number[] {
+  const values: number[] = [];
+  for (const t of talents) {
+    for (const entry of t.special ?? []) {
+      if (entry.type === type && entry.value !== undefined) values.push(entry.value);
+    }
+  }
+  for (const e of equipment) {
+    if (!e.isEquipped) continue;
+    // Check overrides first (per-instance stats), fall back to classifier base
+    const override = e.specialOverrides?.find((s) => s.type === type);
+    const entry = override ?? (e.special ?? []).find((s) => s.type === type);
+    if (entry?.value !== undefined) values.push(entry.value);
+  }
+  if (singerForm) {
+    for (const entry of singerForm.special ?? []) {
+      if (entry.type === type && entry.value !== undefined) values.push(entry.value);
+    }
+  }
+  return values;
+}
+
+/**
  * Get total numeric bonus for a type from all hero sources (talents, equipped equipment, singer form).
  */
 export function getHeroBonus(
@@ -109,25 +139,20 @@ export function getHeroBonus(
   singerForm: SingerForm | null,
   type: string
 ): number {
-  let total = 0;
-  for (const t of talents) {
-    for (const entry of t.special ?? []) {
-      if (entry.type === type && entry.value !== undefined) total += entry.value;
-    }
-  }
-  for (const e of equipment) {
-    if (!e.isEquipped) continue;
-    // Check overrides first (per-instance stats), fall back to classifier base
-    const override = e.specialOverrides?.find((s) => s.type === type);
-    const entry = override ?? (e.special ?? []).find((s) => s.type === type);
-    if (entry?.value !== undefined) total += entry.value;
-  }
-  if (singerForm) {
-    for (const entry of singerForm.special ?? []) {
-      if (entry.type === type && entry.value !== undefined) total += entry.value;
-    }
-  }
-  return total;
+  return collectHeroValues(talents, equipment, singerForm, type).reduce((a, b) => a + b, 0);
+}
+
+/**
+ * Get the highest numeric value for a type across all hero sources.
+ * Used for deflect where armor and singer form values don't stack (use highest).
+ */
+export function getHeroMaxBonus(
+  talents: HeroTalent[],
+  equipment: HeroEquipment[],
+  singerForm: SingerForm | null,
+  type: string
+): number {
+  return Math.max(0, ...collectHeroValues(talents, equipment, singerForm, type));
 }
 
 /**

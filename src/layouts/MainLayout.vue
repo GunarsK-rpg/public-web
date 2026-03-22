@@ -61,8 +61,8 @@
       <q-list>
         <q-item
           clickable
-          :to="{ name: 'my-characters' }"
           :class="{ 'nav-item--active': activeNavTab === 'my-characters' }"
+          @click="navigate('my-characters')"
         >
           <q-item-section avatar>
             <User :size="20" aria-hidden="true" />
@@ -71,8 +71,8 @@
         </q-item>
         <q-item
           clickable
-          :to="{ name: 'campaigns' }"
           :class="{ 'nav-item--active': activeNavTab === 'campaigns' }"
+          @click="navigate('campaigns')"
         >
           <q-item-section avatar>
             <Swords :size="20" aria-hidden="true" />
@@ -96,14 +96,14 @@
         indicator-color="primary"
         class="bottom-nav"
       >
-        <q-route-tab name="my-characters" :to="{ name: 'my-characters' }">
+        <q-tab name="my-characters" @click="navigate('my-characters')">
           <User :size="20" class="q-tab__icon" aria-hidden="true" />
           <div class="q-tab__label">Characters</div>
-        </q-route-tab>
-        <q-route-tab name="campaigns" :to="{ name: 'campaigns' }">
+        </q-tab>
+        <q-tab name="campaigns" @click="navigate('campaigns')">
           <Swords :size="20" class="q-tab__icon" aria-hidden="true" />
           <div class="q-tab__label">Campaigns</div>
-        </q-route-tab>
+        </q-tab>
       </q-tabs>
     </q-footer>
   </q-layout>
@@ -121,12 +121,17 @@ import {
   PanelLeftOpen,
   PanelLeftClose,
 } from 'lucide-vue-next';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useAuthStore } from 'stores/auth';
 import { usePageTitle } from 'src/composables/usePageTitle';
 
 const route = useRoute();
+const router = useRouter();
+
+function navigate(name: string): void {
+  void router.push({ name });
+}
 const $q = useQuasar();
 const authStore = useAuthStore();
 

@@ -53,4 +53,12 @@ export default {
   patchCurrency(heroId: number, value: number): Promise<AxiosResponse<{ currency: number }>> {
     return api.patch(`/heroes/${heroId}/currency`, { heroId, value });
   },
+
+  // Avatar
+  setAvatar(heroId: number, avatarKey: string): Promise<AxiosResponse<{ avatarKey: string }>> {
+    return api.post(`/heroes/${heroId}/avatar`, { avatarKey });
+  },
+  deleteAvatar(heroId: number): Promise<AxiosResponse<void>> {
+    return api.delete(`/heroes/${heroId}/avatar`);
+  },
 };
