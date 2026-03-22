@@ -173,6 +173,23 @@ export const useCampaignStore = defineStore('campaigns', () => {
     }
   }
 
+  async function removeHero(heroId: number): Promise<boolean> {
+    if (!currentCampaign.value) return false;
+    savingCount.value++;
+
+    try {
+      await campaignService.removeHero(currentCampaign.value.id, heroId);
+      currentCampaign.value.heroes = currentCampaign.value.heroes.filter((h) => h.id !== heroId);
+      logger.info('Hero removed from campaign', { heroId });
+      return true;
+    } catch (err: unknown) {
+      handleError(err, { errorRef: error, message: 'Failed to remove hero from campaign' });
+      return false;
+    } finally {
+      savingCount.value = Math.max(0, savingCount.value - 1);
+    }
+  }
+
   function clearCurrentCampaign(): void {
     currentCampaign.value = null;
   }
@@ -202,6 +219,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
     createCampaign,
     updateCampaign,
     deleteCampaign,
+    removeHero,
     clearCurrentCampaign,
     setError,
     reset,

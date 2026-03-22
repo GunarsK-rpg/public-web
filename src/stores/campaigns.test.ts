@@ -40,16 +40,23 @@ const mockHeroesCampaign2 = [
   { id: 3, name: 'Hero C' },
 ];
 
-const { mockGetAll, mockGetById, mockCreate, mockUpdate, mockDelete, mockHeroGetAll } = vi.hoisted(
-  () => ({
-    mockGetAll: vi.fn(),
-    mockGetById: vi.fn(),
-    mockCreate: vi.fn(),
-    mockUpdate: vi.fn(),
-    mockDelete: vi.fn(),
-    mockHeroGetAll: vi.fn(),
-  })
-);
+const {
+  mockGetAll,
+  mockGetById,
+  mockCreate,
+  mockUpdate,
+  mockDelete,
+  mockRemoveHero,
+  mockHeroGetAll,
+} = vi.hoisted(() => ({
+  mockGetAll: vi.fn(),
+  mockGetById: vi.fn(),
+  mockCreate: vi.fn(),
+  mockUpdate: vi.fn(),
+  mockDelete: vi.fn(),
+  mockRemoveHero: vi.fn(),
+  mockHeroGetAll: vi.fn(),
+}));
 
 vi.mock('src/services/campaignService', () => ({
   default: {
@@ -58,6 +65,7 @@ vi.mock('src/services/campaignService', () => ({
     create: mockCreate,
     update: mockUpdate,
     delete: mockDelete,
+    removeHero: mockRemoveHero,
   },
 }));
 
@@ -476,6 +484,60 @@ describe('useCampaignStore', () => {
       const store = useCampaignStore();
 
       const promise = store.deleteCampaign(1);
+      expect(store.saving).toBe(true);
+
+      resolveFn!({});
+      await promise;
+      expect(store.saving).toBe(false);
+    });
+  });
+
+  // ========================================
+  // removeHero
+  // ========================================
+  describe('removeHero', () => {
+    it('removes hero from currentCampaign.heroes on success', async () => {
+      mockRemoveHero.mockResolvedValue({});
+      const store = useCampaignStore();
+      await store.selectCampaign(2);
+      expect(store.currentCampaign?.heroes.length).toBe(2);
+
+      const result = await store.removeHero(2);
+
+      expect(result).toBe(true);
+      expect(store.currentCampaign?.heroes.length).toBe(1);
+      expect(store.currentCampaign?.heroes[0]?.id).toBe(3);
+      expect(mockRemoveHero).toHaveBeenCalledWith(2, 2);
+    });
+
+    it('returns false when no currentCampaign', async () => {
+      const store = useCampaignStore();
+
+      const result = await store.removeHero(1);
+
+      expect(result).toBe(false);
+      expect(mockRemoveHero).not.toHaveBeenCalled();
+    });
+
+    it('returns false and sets error on API failure', async () => {
+      mockRemoveHero.mockRejectedValue(new Error('Server error'));
+      const store = useCampaignStore();
+      await store.selectCampaign(2);
+
+      const result = await store.removeHero(2);
+
+      expect(result).toBe(false);
+      expect(store.error).toBe('Failed to remove hero from campaign');
+      expect(store.currentCampaign?.heroes.length).toBe(2);
+    });
+
+    it('sets saving during operation', async () => {
+      let resolveFn: (v: unknown) => void;
+      mockRemoveHero.mockReturnValue(new Promise((resolve) => (resolveFn = resolve)));
+      const store = useCampaignStore();
+      await store.selectCampaign(2);
+
+      const promise = store.removeHero(2);
       expect(store.saving).toBe(true);
 
       resolveFn!({});

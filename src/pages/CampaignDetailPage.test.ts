@@ -23,6 +23,9 @@ const mockCampaign = ref({
 });
 const mockLoading = ref(false);
 const mockError = ref<string | null>(null);
+const mockIsOwner = ref(false);
+const mockSaving = ref(false);
+const mockRemoveHero = vi.fn();
 
 vi.mock('src/stores/campaigns', () => ({
   useCampaignStore: () => ({
@@ -35,7 +38,15 @@ vi.mock('src/stores/campaigns', () => ({
     get error() {
       return mockError.value;
     },
+    get isOwner() {
+      return mockIsOwner.value;
+    },
+    get saving() {
+      return mockSaving.value;
+    },
     selectCampaign: vi.fn().mockResolvedValue(undefined),
+    deleteCampaign: vi.fn().mockResolvedValue(true),
+    removeHero: mockRemoveHero,
     setError: vi.fn(),
   }),
 }));
@@ -118,6 +129,12 @@ describe('CampaignDetailPage', () => {
           QSpace: {
             template: '<span class="q-space" />',
           },
+          QTooltip: {
+            template: '<span />',
+          },
+          QBadge: {
+            template: '<span class="q-badge"><slot /></span>',
+          },
           CreateCombatDialog: {
             template: '<div class="create-combat-dialog-stub" />',
           },
@@ -151,6 +168,8 @@ describe('CampaignDetailPage', () => {
     };
     mockLoading.value = false;
     mockError.value = null;
+    mockIsOwner.value = false;
+    mockSaving.value = false;
   });
 
   // ========================================
@@ -259,6 +278,35 @@ describe('CampaignDetailPage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('No characters');
+    });
+  });
+
+  // ========================================
+  // Remove Hero
+  // ========================================
+  describe('remove hero', () => {
+    it('renders remove button on hero cards when user is owner', async () => {
+      mockIsOwner.value = true;
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      const removeBtns = wrapper.findAll('button').filter((b) => {
+        const label = b.attributes('aria-label') ?? '';
+        return label.includes('Remove') && label.includes('from campaign');
+      });
+      expect(removeBtns.length).toBe(2);
+    });
+
+    it('does not render remove button when user is not owner', async () => {
+      mockIsOwner.value = false;
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      const removeBtns = wrapper.findAll('button').filter((b) => {
+        const label = b.attributes('aria-label') ?? '';
+        return label.includes('Remove') && label.includes('from campaign');
+      });
+      expect(removeBtns.length).toBe(0);
     });
   });
 

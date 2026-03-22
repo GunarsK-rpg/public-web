@@ -30,6 +30,7 @@ const mockRouter = {
   push: vi.fn(),
   replace: vi.fn(),
   back: vi.fn(),
+  resolve: vi.fn().mockReturnValue({ href: '/' }),
 };
 const mockRoute = {
   params: {},
