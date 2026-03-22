@@ -497,6 +497,8 @@ describe('buildConnectionPayload', () => {
 // buildCompanionPayload (ID-based upsert)
 // ========================================
 describe('buildCompanionPayload', () => {
+  const mockTier = { id: 1, code: 'tier1', name: 'Tier 1' };
+
   it('includes id for real DB items', () => {
     const comp: HeroCompanion = {
       id: 90,
@@ -504,6 +506,15 @@ describe('buildCompanionPayload', () => {
       companionType: { id: 3, code: 'spren', name: 'Spren' },
       description: 'Syl',
       notes: 'Honorspren',
+      npcId: 42,
+      displayName: 'Syl',
+      currentHp: 10,
+      currentFocus: 2,
+      currentInvestiture: 0,
+      name: 'Honorspren',
+      tier: mockTier,
+      type: 'rival',
+      derivedStats: [],
     };
     const payload = buildCompanionPayload(1, comp);
 
@@ -517,6 +528,17 @@ describe('buildCompanionPayload', () => {
       id: -4,
       heroId: 1,
       companionType: { id: 3, code: 'spren', name: 'Spren' },
+      description: null,
+      notes: null,
+      npcId: 42,
+      displayName: null,
+      currentHp: 0,
+      currentFocus: 0,
+      currentInvestiture: 0,
+      name: 'Honorspren',
+      tier: mockTier,
+      type: 'rival',
+      derivedStats: [],
     };
     const payload = buildCompanionPayload(1, comp);
 

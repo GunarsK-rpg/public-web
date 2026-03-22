@@ -20,25 +20,27 @@
         </a>
       </RouterLink>
       <template v-if="!readonly">
-        <TurnSpeedToggle
-          v-if="npc.type !== 'boss'"
-          :model-value="npc.turnSpeed ?? null"
-          :saving="saving"
-          class="q-mr-sm"
-          @update:model-value="onTurnSpeedChange"
-        />
-        <q-btn
-          flat
-          dense
-          round
-          size="sm"
-          :color="turnDone ? 'positive' : undefined"
-          :disable="saving"
-          aria-label="Toggle turn done"
-          @click="$emit('toggle-turn-done')"
-          ><CircleCheck v-if="turnDone" :size="16" aria-hidden="true" />
-          <Circle v-else :size="16" aria-hidden="true"
-        /></q-btn>
+        <template v-if="showTurnControls">
+          <TurnSpeedToggle
+            v-if="npc.type !== 'boss'"
+            :model-value="turnSpeed ?? null"
+            :saving="saving"
+            class="q-mr-sm"
+            @update:model-value="onTurnSpeedChange"
+          />
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            :color="turnDone ? 'positive' : undefined"
+            :disable="saving"
+            aria-label="Toggle turn done"
+            @click="$emit('toggle-turn-done')"
+            ><CircleCheck v-if="turnDone" :size="16" aria-hidden="true" />
+            <Circle v-else :size="16" aria-hidden="true"
+          /></q-btn>
+        </template>
         <q-btn
           flat
           dense
@@ -163,15 +165,21 @@ import ResourceBox from 'src/components/shared/ResourceBox.vue';
 import HpManagementDialog from 'src/components/shared/HpManagementDialog.vue';
 import TurnSpeedToggle from './TurnSpeedToggle.vue';
 import type { TurnPhase } from 'src/constants/combat';
-import type { CombatNpc } from 'src/types';
+import type { NpcTileData } from 'src/types/combat';
 
 const props = defineProps<{
-  npc: CombatNpc;
+  npc: NpcTileData;
   campaignId: number;
   saving: boolean;
   readonly?: boolean;
   turnPhase?: TurnPhase | undefined;
   turnDone?: boolean;
+  /** Combat-specific fields — omit for companion usage */
+  turnSpeed?: 'fast' | 'slow' | null;
+  showTurnControls?: boolean;
+  combatId?: number;
+  /** Companion-specific: hero ID for back navigation from NPC detail */
+  heroId?: number;
 }>();
 
 const emit = defineEmits<{
@@ -207,8 +215,8 @@ const displayLabel = computed(() => props.npc.displayName ?? props.npc.name);
 const dimmed = computed(() => {
   if (props.npc.currentHp <= 0) return true;
   if (props.turnDone) return true;
-  if (!props.turnPhase || props.npc.type === 'boss') return false;
-  return props.npc.turnSpeed !== props.turnPhase;
+  if (!props.showTurnControls || !props.turnPhase || props.npc.type === 'boss') return false;
+  return props.turnSpeed !== props.turnPhase;
 });
 
 function derivedStat(code: string): number {
@@ -238,10 +246,16 @@ const statBlockRoute = computed(() => ({
     campaignId: String(props.campaignId),
     npcId: String(props.npc.npcId),
   },
-  query: {
-    combatId: String(props.npc.combatId),
-    instanceId: String(props.npc.id),
-  },
+  ...(props.combatId != null
+    ? {
+        query: {
+          combatId: String(props.combatId),
+          instanceId: String(props.npc.id),
+        },
+      }
+    : props.heroId != null
+      ? { query: { heroId: String(props.heroId) } }
+      : {}),
 }));
 
 function onTurnSpeedChange(value: 'fast' | 'slow' | null) {

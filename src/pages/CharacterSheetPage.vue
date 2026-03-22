@@ -49,6 +49,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, type Component } from 'vue';
+import { useRoute } from 'vue-router';
 import { useHeroStore } from 'stores/hero';
 import { useAuthStore } from 'stores/auth';
 import { useClassifierStore } from 'stores/classifiers';
@@ -63,6 +64,7 @@ import {
   GraduationCap,
   Ellipsis,
   Activity,
+  PawPrint,
 } from 'lucide-vue-next';
 import CharacterHeader from 'components/character/CharacterHeader.vue';
 import StatsTab from 'components/character/tabs/StatsTab.vue';
@@ -73,6 +75,7 @@ import TalentsTab from 'components/character/tabs/TalentsTab.vue';
 import ExpertisesTab from 'components/character/tabs/ExpertisesTab.vue';
 import ConditionsTab from 'components/character/tabs/ConditionsTab.vue';
 import OthersTab from 'components/character/tabs/OthersTab.vue';
+import CompanionsTab from 'components/character/tabs/CompanionsTab.vue';
 
 // Static tab configuration - hoisted outside reactive scope for performance
 const tabs: { id: string; label: string; icon: Component }[] = [
@@ -83,6 +86,7 @@ const tabs: { id: string; label: string; icon: Component }[] = [
   { id: 'talents', label: 'Talents', icon: Sparkles },
   { id: 'expertises', label: 'Expertises', icon: GraduationCap },
   { id: 'conditions', label: 'Conditions', icon: Activity },
+  { id: 'companions', label: 'Companions', icon: PawPrint },
   { id: 'others', label: 'Others', icon: Ellipsis },
 ];
 
@@ -95,6 +99,7 @@ const tabComponents: Record<string, Component> = {
   talents: TalentsTab,
   expertises: ExpertisesTab,
   conditions: ConditionsTab,
+  companions: CompanionsTab,
   others: OthersTab,
 };
 
@@ -106,7 +111,9 @@ const heroStore = useHeroStore();
 const authStore = useAuthStore();
 const classifierStore = useClassifierStore();
 
-const activeTab = ref('stats');
+const route = useRoute();
+const initialTab = typeof route.query.tab === 'string' ? route.query.tab : 'stats';
+const activeTab = ref(initialTab);
 
 const initializing = ref(true);
 const isLoaded = computed(() => heroStore.isLoaded);

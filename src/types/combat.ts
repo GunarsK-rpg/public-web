@@ -1,6 +1,29 @@
 import type { ClassifierRef, TypedValue } from './shared';
 import type { TurnPhase } from 'src/constants/combat';
 
+/** NPC identity from template — name, tier, type, stats */
+export interface NpcIdentity {
+  name: string;
+  tier: ClassifierRef;
+  type: string;
+  derivedStats: TypedValue[];
+}
+
+/** Live resource counters shared by combat NPCs and companions */
+export interface NpcResources {
+  currentHp: number;
+  currentFocus: number;
+  currentInvestiture: number;
+}
+
+/** NPC instance data — prop contract for CombatNpcTile (combat + companion) */
+export interface NpcTileData extends NpcIdentity, NpcResources {
+  id: number;
+  npcId: number;
+  displayName?: string | null;
+  notes?: string | null;
+}
+
 /** NPC option — lightweight picker list from get_npc_options */
 export interface NpcOption {
   id: number;
@@ -8,6 +31,7 @@ export interface NpcOption {
   name: string;
   tier: ClassifierRef;
   type: string;
+  isCompanion?: boolean;
 }
 
 /** NPC feature or opportunity (JSONB — snake_case matches DB storage) */
@@ -62,7 +86,6 @@ export interface Combat extends CombatBase {
 
 /** Combat NPC — upsert payload */
 export interface CombatNpcBase {
-  id?: number;
   campaignId: number;
   combatId: number;
   npcId: number;
@@ -73,17 +96,13 @@ export interface CombatNpcBase {
   notes?: string | null;
 }
 
-/** Combat NPC — API response (NPC identity + combat instance data) */
-export interface CombatNpc extends CombatNpcBase {
-  id: number;
+/** Combat NPC — API response (NPC tile data + combat-specific fields) */
+export interface CombatNpc extends NpcTileData {
+  campaignId: number;
+  combatId: number;
   sortOrder: number;
-  currentHp: number;
-  currentFocus: number;
-  currentInvestiture: number;
-  name: string;
-  tier: ClassifierRef;
-  type: string;
-  derivedStats: TypedValue[];
+  side: 'ally' | 'enemy';
+  turnSpeed: 'fast' | 'slow' | null;
 }
 
 /** Combat with NPC instances — from get_combat */

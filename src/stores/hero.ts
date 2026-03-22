@@ -11,6 +11,7 @@ import type {
 import type { HeroConditionBase, HeroInjury, HeroInjuryBase, Injury } from 'src/types/conditions';
 import type { HeroGoal, HeroGoalBase, HeroConnectionBase, HeroConnection } from 'src/types/goals';
 import type { HeroCompanion, HeroCompanionBase } from 'src/types/companions';
+import type { NpcOption } from 'src/types';
 import type { HeroNote, HeroNoteBase } from 'src/types/notes';
 import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
 import { logger } from 'src/utils/logger';
@@ -655,6 +656,72 @@ export const useHeroStore = defineStore('hero', () => {
     HeroCompanion
   >('companions', 'companions', 'companion');
 
+  const companionNpcOptions = ref<NpcOption[]>([]);
+
+  async function fetchCompanionNpcOptions(): Promise<void> {
+    if (!hero.value?.campaignId) return;
+    try {
+      const response = await heroService.getCompanionNpcOptions(hero.value.campaignId);
+      companionNpcOptions.value = response.data;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to load companion options' });
+    }
+  }
+
+  async function patchCompanionHp(companionId: number, value: number): Promise<void> {
+    if (!hero.value) return;
+    savingCount.value++;
+    try {
+      const response = await heroService.patchCompanionHp({
+        id: companionId,
+        heroId: hero.value.id,
+        value: Math.max(0, Math.floor(value)),
+      });
+      const comp = hero.value.companions.find((c) => c.id === companionId);
+      if (comp) comp.currentHp = response.data.currentHp;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to update companion HP' });
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function patchCompanionFocus(companionId: number, value: number): Promise<void> {
+    if (!hero.value) return;
+    savingCount.value++;
+    try {
+      const response = await heroService.patchCompanionFocus({
+        id: companionId,
+        heroId: hero.value.id,
+        value: Math.max(0, Math.floor(value)),
+      });
+      const comp = hero.value.companions.find((c) => c.id === companionId);
+      if (comp) comp.currentFocus = response.data.currentFocus;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to update companion focus' });
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function patchCompanionInvestiture(companionId: number, value: number): Promise<void> {
+    if (!hero.value) return;
+    savingCount.value++;
+    try {
+      const response = await heroService.patchCompanionInvestiture({
+        id: companionId,
+        heroId: hero.value.id,
+        value: Math.max(0, Math.floor(value)),
+      });
+      const comp = hero.value.companions.find((c) => c.id === companionId);
+      if (comp) comp.currentInvestiture = response.data.currentInvestiture;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to update companion investiture' });
+    } finally {
+      savingCount.value--;
+    }
+  }
+
   const { upsert: upsertNote, remove: removeNote } = createSubResourceActions<
     HeroNoteBase,
     HeroNote
@@ -755,6 +822,11 @@ export const useHeroStore = defineStore('hero', () => {
     // Companions (sheet)
     upsertCompanion,
     removeCompanion,
+    companionNpcOptions,
+    fetchCompanionNpcOptions,
+    patchCompanionHp,
+    patchCompanionFocus,
+    patchCompanionInvestiture,
 
     // Notes (sheet)
     heroNotes,

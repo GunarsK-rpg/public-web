@@ -141,6 +141,11 @@ export function buildCompanionPayload(heroId: number, comp: HeroCompanion): Hero
     companionType: toClassifierInput(comp.companionType),
     description: comp.description ?? null,
     notes: comp.notes ?? null,
+    npcId: comp.npcId ?? null,
+    displayName: comp.displayName ?? null,
+    currentHp: comp.currentHp,
+    currentFocus: comp.currentFocus,
+    currentInvestiture: comp.currentInvestiture,
   };
 }
 

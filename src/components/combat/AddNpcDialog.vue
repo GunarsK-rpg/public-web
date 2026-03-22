@@ -7,7 +7,7 @@
   >
     <q-card class="add-npc-card" role="dialog">
       <q-card-section class="row items-center">
-        <div id="add-npc-dialog-title" class="text-h6">Add NPC</div>
+        <div id="add-npc-dialog-title" class="text-h6">{{ title }}</div>
         <q-space />
         <q-btn flat round dense aria-label="Close dialog" @click="close"><X :size="20" /></q-btn>
       </q-card-section>
@@ -118,11 +118,15 @@ import { X } from 'lucide-vue-next';
 import { useClassifierStore } from 'src/stores/classifiers';
 import type { NpcOption } from 'src/types';
 
-const props = defineProps<{
-  modelValue: boolean;
-  npcOptions: NpcOption[];
-  saving: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    modelValue: boolean;
+    npcOptions: NpcOption[];
+    saving: boolean;
+    title?: string;
+  }>(),
+  { title: 'Add NPC' }
+);
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];
