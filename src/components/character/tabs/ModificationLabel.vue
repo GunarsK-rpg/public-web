@@ -1,6 +1,14 @@
 <template>
   <span class="row no-wrap items-center" :class="colorClass">
     <span>{{ prefix }} {{ mod.modification?.name ?? mod.customText }}</span>
+    <q-badge
+      v-if="mod.tier"
+      :color="mod.tier === 'advanced' ? 'accent' : 'grey-6'"
+      class="q-ml-xs"
+      dense
+    >
+      {{ mod.tier === 'advanced' ? 'Advanced' : 'Basic' }}
+    </q-badge>
     <q-btn
       v-if="description"
       flat
