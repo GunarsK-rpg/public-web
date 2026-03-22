@@ -3,6 +3,8 @@
     :model-value="modelValue"
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
+    @show="initCropper"
+    @hide="destroyCropper"
   >
     <q-card class="crop-card">
       <q-card-section class="text-h6">Crop Avatar</q-card-section>
@@ -20,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onBeforeUnmount } from 'vue';
+import { ref, onBeforeUnmount } from 'vue';
 import { useQuasar } from 'quasar';
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
@@ -29,7 +31,7 @@ const $q = useQuasar();
 
 const CROP_SIZE = 256;
 
-const props = defineProps<{
+defineProps<{
   modelValue: boolean;
   imageSrc: string;
 }>();
@@ -42,20 +44,6 @@ const emit = defineEmits<{
 const imageEl = ref<HTMLImageElement | null>(null);
 const saving = ref(false);
 let cropper: Cropper | null = null;
-
-watch(
-  () => props.modelValue,
-  async (open) => {
-    if (open) {
-      // Two ticks needed: first for q-dialog transition, second for img element render
-      await nextTick();
-      await nextTick();
-      initCropper();
-    } else {
-      destroyCropper();
-    }
-  }
-);
 
 onBeforeUnmount(() => destroyCropper());
 
@@ -75,8 +63,9 @@ function initCropper(): void {
     background: false,
     responsive: true,
     ready() {
-      // Apply circular mask via CSS
-      const cropBox = imageEl.value?.parentElement?.querySelector('.cropper-crop-box');
+      // Apply circular mask via CSS — use cropper's wrapper element (cropper.cropper)
+      const wrapper = (cropper as Cropper & { cropper?: HTMLElement }).cropper;
+      const cropBox = wrapper?.querySelector('.cropper-crop-box');
       if (cropBox) {
         cropBox.classList.add('cropper-circle');
       }

@@ -4,7 +4,7 @@ import { useHeroStore } from './hero';
 import { useClassifierStore } from './classifiers';
 import { findById, findByCode, findByProp, toClassifierRef } from 'src/utils/arrayUtils';
 import { calculateFormulaStat } from 'src/utils/derivedStats';
-import { getHeroBonus, getConditionBonus, SPECIAL } from 'src/utils/specialUtils';
+import { getHeroBonus, getHeroMaxBonus, getConditionBonus, SPECIAL } from 'src/utils/specialUtils';
 import {
   MIN_ATTRIBUTE_VALUE,
   MAX_ATTRIBUTE_VALUE,
@@ -107,6 +107,16 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
     );
   }
 
+  function maxBonus(type: string): number {
+    if (!heroStore.hero) return 0;
+    return getHeroMaxBonus(
+      heroStore.hero.talents,
+      heroStore.hero.equipment,
+      activeSingerForm.value,
+      type
+    );
+  }
+
   function conditionBonus(type: string): number {
     if (!heroStore.hero) return 0;
     return getConditionBonus(heroStore.hero.conditions, type);
@@ -153,7 +163,7 @@ export const useHeroAttributesStore = defineStore('heroAttributes', () => {
       case 'max_investiture':
         return bonus(SPECIAL.INVESTITURE_PER_TIER) * tier;
       case 'deflect':
-        return bonus(SPECIAL.DEFLECT);
+        return maxBonus(SPECIAL.DEFLECT);
       case 'physical_defense':
         return bonus(SPECIAL.DEFENSE_PHYSICAL);
       case 'cognitive_defense':
