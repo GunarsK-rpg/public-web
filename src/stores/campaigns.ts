@@ -175,6 +175,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
 
   async function removeHero(heroId: number): Promise<boolean> {
     if (!currentCampaign.value) return false;
+    error.value = null;
     savingCount.value++;
 
     try {

@@ -83,6 +83,21 @@ vi.mock('src/utils/logger', () => ({
   logger: { error: vi.fn() },
 }));
 
+let dialogOkCallback: (() => void) | null = null;
+const mockDialog = vi.fn(() => ({
+  onOk: vi.fn((cb: () => void) => {
+    dialogOkCallback = cb;
+    return { onCancel: vi.fn() };
+  }),
+}));
+
+vi.mock('quasar', () => ({
+  useQuasar: () => ({
+    dialog: mockDialog,
+  }),
+  copyToClipboard: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe('CampaignDetailPage', () => {
   const createWrapper = () =>
     shallowMount(CampaignDetailPage, {
@@ -96,8 +111,8 @@ describe('CampaignDetailPage', () => {
           },
           QBtn: {
             template:
-              '<button class="q-btn" :data-to="to ? JSON.stringify(to) : undefined" @click="$emit(\'click\')"><slot />{{ label }}</button>',
-            props: ['color', 'icon', 'label', 'flat', 'to'],
+              '<button class="q-btn" :data-to="to ? JSON.stringify(to) : undefined" @click="$emit(\'click\', $event)"><slot />{{ label }}</button>',
+            props: ['color', 'icon', 'label', 'flat', 'to', 'dense', 'round', 'size', 'disable'],
             emits: ['click'],
           },
           QSpinnerDots: {
@@ -170,6 +185,7 @@ describe('CampaignDetailPage', () => {
     mockError.value = null;
     mockIsOwner.value = false;
     mockSaving.value = false;
+    dialogOkCallback = null;
   });
 
   // ========================================
@@ -295,6 +311,28 @@ describe('CampaignDetailPage', () => {
         return label.includes('Remove') && label.includes('from campaign');
       });
       expect(removeBtns.length).toBe(2);
+    });
+
+    it('calls removeHero after confirming removal dialog', async () => {
+      mockIsOwner.value = true;
+      mockRemoveHero.mockResolvedValue(true);
+      const wrapper = createWrapper();
+      await flushPromises();
+
+      const removeBtns = wrapper.findAll('button').filter((b) => {
+        const label = b.attributes('aria-label') ?? '';
+        return label.includes('Remove') && label.includes('from campaign');
+      });
+      expect(removeBtns.length).toBeGreaterThan(0);
+      await removeBtns[0]!.trigger('click');
+
+      expect(mockDialog).toHaveBeenCalled();
+      expect(dialogOkCallback).not.toBeNull();
+
+      dialogOkCallback!();
+      await flushPromises();
+
+      expect(mockRemoveHero).toHaveBeenCalledWith(1);
     });
 
     it('does not render remove button when user is not owner', async () => {
