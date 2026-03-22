@@ -43,7 +43,7 @@
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.4.0",
     "jsdom": "^27.4.0",
-    "markdownlint-cli2": "^0.21.0",
+    "markdownlint-cli2": "^0.22.0",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "vite-plugin-checker": "^0.12.0",
