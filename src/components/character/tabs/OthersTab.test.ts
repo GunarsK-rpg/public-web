@@ -633,6 +633,28 @@ describe('OthersTab', () => {
       expect(mockRemoveInjury).toHaveBeenCalledWith(5);
     });
 
+    it('calls removeNote when remove button is clicked', async () => {
+      mockHeroNotes.value = [{ id: 5, heroId: 1, content: 'Test note' }];
+      const wrapper = createWrapper();
+
+      const removeBtn = wrapper.find('button[aria-label="Remove note: Test note"]');
+      await removeBtn.trigger('click');
+
+      expect(mockRemoveNote).toHaveBeenCalledWith(5);
+    });
+
+    it('calls upsertNote when note is added via dialog', async () => {
+      const wrapper = createWrapper();
+      const dialogs = wrapper.findAllComponents({ name: 'AddOtherDialog' });
+      const noteDialog = dialogs.find((d) => d.props('title') === 'Add Note');
+      await noteDialog!.vm.$emit('add', 'New note content', null, null);
+
+      expect(mockUpsertNote).toHaveBeenCalledWith({
+        heroId: 1,
+        content: 'New note content',
+      });
+    });
+
     it('calls upsertInjury when injury is added via dialog', async () => {
       const wrapper = createWrapper();
       const dialog = wrapper.findComponent({ name: 'AddInjuryDialog' });
