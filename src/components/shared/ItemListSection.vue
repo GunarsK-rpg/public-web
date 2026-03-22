@@ -13,10 +13,24 @@
         <span class="text-weight-bold">{{ item.name }}</span>
         <q-space />
         <template v-if="editable">
-          <q-btn flat dense round size="sm" @click="$emit('edit', i)">
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            :aria-label="`Edit ${item.name}`"
+            @click="$emit('edit', i)"
+          >
             <Pencil :size="16" />
           </q-btn>
-          <q-btn flat dense round size="sm" @click="$emit('remove', i)">
+          <q-btn
+            flat
+            dense
+            round
+            size="sm"
+            :aria-label="`Remove ${item.name}`"
+            @click="$emit('remove', i)"
+          >
             <X :size="16" />
           </q-btn>
         </template>
@@ -28,7 +42,7 @@
       flat
       dense
       color="primary"
-      :label="`Add ${title.replace(/s$/, '')}`"
+      :label="`Add ${singularLabel ?? title}`"
       class="q-mt-xs"
       @click="$emit('add')"
     />
@@ -49,6 +63,7 @@ export interface ListItem {
 withDefaults(
   defineProps<{
     title: string;
+    singularLabel?: string;
     items: ListItem[];
     separator?: boolean;
     editable?: boolean;

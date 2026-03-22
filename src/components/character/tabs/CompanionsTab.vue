@@ -3,13 +3,13 @@
     <div class="row items-center q-mb-md">
       <q-space />
       <q-btn
-        v-if="!readonly"
+        v-if="!readonly && heroStore.hero && campaignId"
         flat
         color="primary"
         :to="{
           name: 'npc-create',
           params: { campaignId: String(campaignId) },
-          query: { heroId: String(heroStore.hero!.id) },
+          query: { heroId: String(heroStore.hero.id) },
         }"
       >
         <Plus :size="20" class="on-left" />Create Companion

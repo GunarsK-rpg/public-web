@@ -28,6 +28,7 @@ export const useCombatStore = defineStore('combat', () => {
 
   let fetchRequestId = 0;
   let selectRequestId = 0;
+  let fetchNpcRequestId = 0;
 
   const saving = computed(() => savingCount.value > 0);
   const hasCombats = computed(() => combats.value.length > 0);
@@ -182,17 +183,23 @@ export const useCombatStore = defineStore('combat', () => {
   // ===================
 
   async function fetchNpc(campaignId: number, npcId: number): Promise<Npc | null> {
+    const requestId = ++fetchNpcRequestId;
     loading.value = true;
     error.value = null;
     try {
       const response = await combatService.getNpc(campaignId, npcId);
+      if (requestId !== fetchNpcRequestId) return null;
       currentNpc.value = response.data;
       return response.data;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to load NPC' });
+      if (requestId === fetchNpcRequestId) {
+        handleError(err, { errorRef: error, message: 'Failed to load NPC' });
+      }
       return null;
     } finally {
-      loading.value = false;
+      if (requestId === fetchNpcRequestId) {
+        loading.value = false;
+      }
     }
   }
 
@@ -201,7 +208,7 @@ export const useCombatStore = defineStore('combat', () => {
     error.value = null;
     try {
       const response = await combatService.createNpc(data);
-      npcOptions.value = [];
+      currentNpc.value = response.data;
       logger.info('NPC created', { id: response.data.id, name: response.data.name });
       return response.data;
     } catch (err: unknown) {
@@ -217,7 +224,6 @@ export const useCombatStore = defineStore('combat', () => {
     error.value = null;
     try {
       const response = await combatService.updateNpc(data);
-      npcOptions.value = [];
       currentNpc.value = response.data;
       logger.info('NPC updated', { id: data.id });
       return response.data;
@@ -457,6 +463,7 @@ export const useCombatStore = defineStore('combat', () => {
     turnDoneIds.value = new Set();
     fetchRequestId = 0;
     selectRequestId = 0;
+    fetchNpcRequestId = 0;
   }
 
   return {

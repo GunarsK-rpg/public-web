@@ -2,11 +2,13 @@ import { type Ref, ref, computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import type { Npc } from 'src/types';
 
+type StatSection = 'skills' | 'derivedStats';
+
 export function useNpcStatDialog(editableNpc: Ref<Npc | null>) {
   const classifiers = useClassifierStore();
 
   const showStatDialog = ref(false);
-  const statDialogSection = ref<'skills' | 'derivedStats'>('skills');
+  const statDialogSection = ref<StatSection>('skills');
   const statDialogEditIndex = ref<number | null>(null);
   const statDialogEditCode = ref<string | undefined>(undefined);
   const statDialogEditValue = ref<number | undefined>(undefined);
@@ -26,15 +28,12 @@ export function useNpcStatDialog(editableNpc: Ref<Npc | null>) {
 
   const statDialogUsedCodes = computed(() => {
     if (!editableNpc.value) return [];
-    const list =
-      statDialogSection.value === 'skills'
-        ? editableNpc.value.skills
-        : editableNpc.value.derivedStats;
+    const list = editableNpc.value[statDialogSection.value];
     return list.map((e) => e.type.code);
   });
 
   function onStatAdd(section: string) {
-    statDialogSection.value = section as 'skills' | 'derivedStats';
+    statDialogSection.value = section as StatSection;
     statDialogEditIndex.value = null;
     statDialogEditCode.value = undefined;
     statDialogEditValue.value = undefined;
@@ -44,7 +43,7 @@ export function useNpcStatDialog(editableNpc: Ref<Npc | null>) {
 
   function onStatEdit(section: string, index: number) {
     if (!editableNpc.value) return;
-    const key = section as 'skills' | 'derivedStats';
+    const key = section as StatSection;
     const entry = editableNpc.value[key][index];
     if (!entry) return;
     statDialogSection.value = key;
@@ -57,8 +56,7 @@ export function useNpcStatDialog(editableNpc: Ref<Npc | null>) {
 
   function onStatRemove(section: string, index: number) {
     if (!editableNpc.value) return;
-    const key = section as 'skills' | 'derivedStats';
-    editableNpc.value[key].splice(index, 1);
+    editableNpc.value[section as StatSection].splice(index, 1);
   }
 
   function onStatDialogSave(code: string, value: number, displayValue: string | null) {

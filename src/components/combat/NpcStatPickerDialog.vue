@@ -43,7 +43,7 @@
           flat
           color="primary"
           :label="editIndex != null ? 'Save' : 'Add'"
-          :disable="!selectedCode || form.value == null"
+          :disable="!selectedCode || !Number.isFinite(form.value)"
           @click="onSubmit"
         />
       </q-card-actions>
@@ -99,7 +99,7 @@ watch(
 );
 
 function onSubmit() {
-  if (!selectedCode.value) return;
+  if (!selectedCode.value || !Number.isFinite(form.value.value)) return;
   emit('save', selectedCode.value, form.value.value, form.value.displayValue.trim() || null);
 }
 

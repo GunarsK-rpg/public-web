@@ -16,6 +16,7 @@
                 borderless
                 input-class="text-center attribute-value"
                 :min="0"
+                :aria-label="`Edit ${attr.type.name}`"
                 @update:model-value="$emit('update', attr.type.code, Number($event) || 0)"
               />
             </template>

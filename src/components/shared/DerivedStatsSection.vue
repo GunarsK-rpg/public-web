@@ -10,10 +10,24 @@
             <q-card-section class="q-pa-sm">
               <div class="row items-center no-wrap">
                 <div class="text-caption text-muted col">{{ stat.type.name }}</div>
-                <q-btn flat dense round size="xs" @click="$emit('edit', i)">
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="xs"
+                  :aria-label="`Edit ${stat.type.name}`"
+                  @click="$emit('edit', i)"
+                >
                   <Pencil :size="14" />
                 </q-btn>
-                <q-btn flat dense round size="xs" @click="$emit('remove', i)">
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="xs"
+                  :aria-label="`Remove ${stat.type.name}`"
+                  @click="$emit('remove', i)"
+                >
                   <X :size="14" />
                 </q-btn>
               </div>

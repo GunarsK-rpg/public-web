@@ -13,6 +13,7 @@
                 borderless
                 input-class="text-center defense-value"
                 :min="0"
+                :aria-label="`Edit ${def.type.name} defense`"
                 @update:model-value="$emit('update', def.type.code, Number($event) || 0)"
               />
             </template>

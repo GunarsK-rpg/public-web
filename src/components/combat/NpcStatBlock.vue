@@ -151,6 +151,7 @@
     />
     <ItemListSection
       title="Opportunities"
+      singular-label="Opportunity"
       :items="opportunityItems"
       :separator="false"
       :editable="editable"

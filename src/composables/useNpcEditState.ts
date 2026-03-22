@@ -1,6 +1,5 @@
 import { type Ref, ref, computed, reactive } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
-import { useCombatStore } from 'src/stores/combat';
 import type { Npc, NpcUpsert } from 'src/types';
 import type { TypedValue } from 'src/types/shared';
 
@@ -10,7 +9,6 @@ export function useNpcEditState(
   isCreateMode: Ref<boolean>
 ) {
   const classifiers = useClassifierStore();
-  const combatStore = useCombatStore();
 
   const npc = ref<Npc | null>(null);
   const editableNpc = ref<Npc | null>(null);
@@ -73,7 +71,7 @@ export function useNpcEditState(
   }
 
   function startEdit() {
-    if (!npc.value) return;
+    if (!npc.value || !canEdit.value) return;
     editableNpc.value = reactive(cloneNpc(npc.value));
     editing.value = true;
   }
@@ -87,22 +85,16 @@ export function useNpcEditState(
     clone.heroId = heroId.value;
     clone.name = `${npc.value.name} (Copy)`;
     editableNpc.value = clone;
-    npc.value = null;
     editing.value = true;
     isClone.value = true;
   }
 
-  function cancelEdit(npcId: number | null) {
+  function cancelEdit() {
     if (isCreateMode.value) return 'goBack' as const;
-    if (isClone.value && npcId) {
+    if (isClone.value) {
       isClone.value = false;
-      void combatStore.fetchNpc(numCampaignId.value, npcId).then((result) => {
-        npc.value = result;
-        editableNpc.value = result;
-      });
-    } else {
-      editableNpc.value = npc.value;
     }
+    editableNpc.value = npc.value;
     editing.value = false;
     return 'stay' as const;
   }

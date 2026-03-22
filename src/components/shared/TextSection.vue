@@ -9,7 +9,7 @@
       autogrow
       dense
       :rows="2"
-      @update:model-value="$emit('update', String($event))"
+      @update:model-value="$emit('update', $event == null ? '' : String($event))"
     />
     <div v-else class="text-body2">{{ text }}</div>
   </div>

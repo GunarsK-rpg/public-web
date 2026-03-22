@@ -225,7 +225,7 @@ function goBack() {
 }
 
 function handleCancel() {
-  const result = cancelEdit(props.npcId ? Number(props.npcId) : null);
+  const result = cancelEdit();
   if (result === 'goBack') goBack();
 }
 
@@ -247,6 +247,7 @@ async function handleSave() {
       npc.value = result;
       editableNpc.value = result;
       editing.value = false;
+      setPageTitle(result.name);
     }
   }
 }
@@ -300,6 +301,11 @@ onMounted(async () => {
       await classifiers.initialize();
     }
 
+    if (isNaN(campaignId) || campaignId <= 0) {
+      error.value = 'Invalid campaign ID';
+      return;
+    }
+
     if (isCreateMode.value) {
       editableNpc.value = buildEmptyNpc();
       editing.value = true;
@@ -308,7 +314,7 @@ onMounted(async () => {
     }
 
     const npcId = Number(props.npcId);
-    if (isNaN(campaignId) || campaignId <= 0 || isNaN(npcId) || npcId <= 0) {
+    if (isNaN(npcId) || npcId <= 0) {
       error.value = 'Invalid NPC ID';
       return;
     }
