@@ -5,15 +5,14 @@ import type {
   Combat,
   CombatBase,
   CombatDetail,
-  CombatNpc,
-  CombatNpcBase,
-  CombatNpcResourcePatch,
+  NpcInstance,
   Npc,
   NpcOption,
   NpcUpsert,
 } from 'src/types';
 import { logger } from 'src/utils/logger';
 import combatService from 'src/services/combatService';
+import npcInstanceService from 'src/services/npcInstanceService';
 import { handleError } from 'src/utils/errorHandling';
 
 export const useCombatStore = defineStore('combat', () => {
@@ -260,21 +259,30 @@ export const useCombatStore = defineStore('combat', () => {
   // COMBAT NPC INSTANCES
   // ===================
 
-  async function addCombatNpc(data: CombatNpcBase): Promise<CombatNpc | null> {
+  async function addNpcInstance(data: {
+    npcId: number;
+    combatId: number;
+    displayName?: string | null;
+    side: 'ally' | 'enemy';
+  }): Promise<NpcInstance | null> {
     if (!currentCombat.value) return null;
     savingCount.value++;
 
     // Auto-number duplicates if no custom display name
-    if (!data.displayName) {
+    let displayName = data.displayName;
+    if (!displayName) {
       const existing = currentCombat.value.npcs.filter((n) => n.npcId === data.npcId);
       const first = existing[0];
       if (first) {
-        data = { ...data, displayName: `${first.name} ${existing.length + 1}` };
+        displayName = `${first.name} ${existing.length + 1}`;
       }
     }
 
     try {
-      const response = await combatService.addCombatNpc(data);
+      const response = await npcInstanceService.create({
+        ...data,
+        displayName: displayName ?? null,
+      });
       currentCombat.value.npcs.push(response.data);
       logger.info('Combat NPC added', { id: response.data.id, npcId: data.npcId });
       return response.data;
@@ -286,13 +294,16 @@ export const useCombatStore = defineStore('combat', () => {
     }
   }
 
-  async function updateCombatNpc(data: CombatNpcBase & { id: number }): Promise<CombatNpc | null> {
+  async function updateNpcInstance(
+    id: number,
+    data: Record<string, unknown>
+  ): Promise<NpcInstance | null> {
     if (!currentCombat.value) return null;
     savingCount.value++;
 
     try {
-      const response = await combatService.updateCombatNpc(data);
-      const idx = currentCombat.value.npcs.findIndex((n) => n.id === data.id);
+      const response = await npcInstanceService.patch(id, data);
+      const idx = currentCombat.value.npcs.findIndex((n) => n.id === id);
       if (idx !== -1) {
         currentCombat.value.npcs[idx] = response.data;
       }
@@ -305,16 +316,12 @@ export const useCombatStore = defineStore('combat', () => {
     }
   }
 
-  async function removeCombatNpc(
-    campaignId: number,
-    combatId: number,
-    instanceId: number
-  ): Promise<boolean> {
+  async function removeNpcInstance(instanceId: number): Promise<boolean> {
     if (!currentCombat.value) return false;
     savingCount.value++;
 
     try {
-      await combatService.deleteCombatNpc(campaignId, combatId, instanceId);
+      await npcInstanceService.delete(instanceId);
       currentCombat.value.npcs = currentCombat.value.npcs.filter((n) => n.id !== instanceId);
       logger.info('Combat NPC removed', { id: instanceId });
       return true;
@@ -330,23 +337,27 @@ export const useCombatStore = defineStore('combat', () => {
   // RESOURCE PATCHES
   // ===================
 
-  async function patchNpcResource(
-    data: CombatNpcResourcePatch,
-    serviceFn: (d: CombatNpcResourcePatch) => Promise<{ data: Record<string, number> }>,
-    field: keyof CombatNpc,
-    responseKey: string,
+  async function patchInstanceResource(
+    instanceId: number,
+    field: 'current_hp' | 'current_focus' | 'current_investiture',
+    value: number,
+    npcField: keyof NpcInstance,
     errorMessage: string
   ): Promise<void> {
     if (!currentCombat.value) return;
     savingCount.value++;
 
     try {
-      const response = await serviceFn({ ...data, value: Math.max(0, Math.floor(data.value)) });
-      const npc = currentCombat.value.npcs.find((n) => n.id === data.id);
+      const response = await npcInstanceService.patchResource(
+        instanceId,
+        field,
+        Math.max(0, Math.floor(value))
+      );
+      const npc = currentCombat.value.npcs.find((n) => n.id === instanceId);
       if (npc) {
-        const val = response.data[responseKey];
+        const val = response.data[field];
         if (val !== undefined) {
-          (npc[field] as number) = val;
+          (npc[npcField] as number) = val;
         }
       }
     } catch (err: unknown) {
@@ -356,29 +367,23 @@ export const useCombatStore = defineStore('combat', () => {
     }
   }
 
-  const patchHp = (data: CombatNpcResourcePatch) =>
-    patchNpcResource(
-      data,
-      (d) => combatService.patchHp(d),
-      'currentHp',
-      'currentHp',
-      'Failed to update HP'
-    );
+  const patchHp = (data: { id: number; value: number }) =>
+    patchInstanceResource(data.id, 'current_hp', data.value, 'currentHp', 'Failed to update HP');
 
-  const patchFocus = (data: CombatNpcResourcePatch) =>
-    patchNpcResource(
-      data,
-      (d) => combatService.patchFocus(d),
-      'currentFocus',
+  const patchFocus = (data: { id: number; value: number }) =>
+    patchInstanceResource(
+      data.id,
+      'current_focus',
+      data.value,
       'currentFocus',
       'Failed to update focus'
     );
 
-  const patchInvestiture = (data: CombatNpcResourcePatch) =>
-    patchNpcResource(
-      data,
-      (d) => combatService.patchInvestiture(d),
-      'currentInvestiture',
+  const patchInvestiture = (data: { id: number; value: number }) =>
+    patchInstanceResource(
+      data.id,
+      'current_investiture',
+      data.value,
       'currentInvestiture',
       'Failed to update investiture'
     );
@@ -488,9 +493,9 @@ export const useCombatStore = defineStore('combat', () => {
     createNpc,
     updateNpc,
     deleteNpc,
-    addCombatNpc,
-    updateCombatNpc,
-    removeCombatNpc,
+    addNpcInstance,
+    updateNpcInstance,
+    removeNpcInstance,
     patchHp,
     patchFocus,
     patchInvestiture,

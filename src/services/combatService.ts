@@ -6,15 +6,12 @@ import type {
   Combat,
   CombatBase,
   CombatDetail,
-  CombatNpc,
-  CombatNpcBase,
-  CombatNpcResourcePatch,
   EndRoundPayload,
 } from 'src/types';
 import { api } from './api';
 
 export default {
-  // NPC library
+  // NPC library (templates)
   getNpcOptions(campaignId: number): Promise<AxiosResponse<NpcOption[]>> {
     return api.get(`/campaigns/${campaignId}/npcs`);
   },
@@ -46,46 +43,6 @@ export default {
   },
   deleteCombat(campaignId: number, combatId: number): Promise<AxiosResponse<void>> {
     return api.delete(`/campaigns/${campaignId}/combats/${combatId}`);
-  },
-
-  // Combat NPC instances
-  addCombatNpc(data: CombatNpcBase): Promise<AxiosResponse<CombatNpc>> {
-    return api.post(`/campaigns/${data.campaignId}/combats/${data.combatId}/npcs`, data);
-  },
-  updateCombatNpc(data: CombatNpcBase & { id: number }): Promise<AxiosResponse<CombatNpc>> {
-    return api.patch(
-      `/campaigns/${data.campaignId}/combats/${data.combatId}/npcs/${data.id}`,
-      data
-    );
-  },
-  deleteCombatNpc(
-    campaignId: number,
-    combatId: number,
-    instanceId: number
-  ): Promise<AxiosResponse<void>> {
-    return api.delete(`/campaigns/${campaignId}/combats/${combatId}/npcs/${instanceId}`);
-  },
-
-  // Resource patches
-  patchHp(data: CombatNpcResourcePatch): Promise<AxiosResponse<{ currentHp: number }>> {
-    return api.patch(
-      `/campaigns/${data.campaignId}/combats/${data.combatId}/npcs/${data.id}/hp`,
-      data
-    );
-  },
-  patchFocus(data: CombatNpcResourcePatch): Promise<AxiosResponse<{ currentFocus: number }>> {
-    return api.patch(
-      `/campaigns/${data.campaignId}/combats/${data.combatId}/npcs/${data.id}/focus`,
-      data
-    );
-  },
-  patchInvestiture(
-    data: CombatNpcResourcePatch
-  ): Promise<AxiosResponse<{ currentInvestiture: number }>> {
-    return api.patch(
-      `/campaigns/${data.campaignId}/combats/${data.combatId}/npcs/${data.id}/investiture`,
-      data
-    );
   },
 
   // End round

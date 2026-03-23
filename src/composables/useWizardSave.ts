@@ -19,7 +19,6 @@ import {
   buildEquipmentPayload,
   buildGoalPayload,
   buildConnectionPayload,
-  buildCompanionPayload,
   buildDerivedStatPayload,
 } from 'src/services/heroPayloads';
 import { logger } from 'src/utils/logger';
@@ -187,13 +186,6 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
           hero.connections,
           buildConnectionPayload,
           'connections'
-        );
-        await syncSubResource(
-          hero.id,
-          'companions',
-          hero.companions,
-          buildCompanionPayload,
-          'companions'
         );
         break;
       default: {

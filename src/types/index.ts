@@ -20,7 +20,6 @@ export * from './equipmentAttributes';
 export * from './equipments';
 export * from './modifications';
 export * from './conditions';
-export * from './companionTypes';
 export * from './startingKits';
 export * from './ancestries';
 export * from './culture';
@@ -33,7 +32,6 @@ export * from './classifiers';
 // Hero entity and data
 export * from './heroes';
 export * from './goals';
-export * from './companions';
 export * from './notes';
 export * from './campaign';
 

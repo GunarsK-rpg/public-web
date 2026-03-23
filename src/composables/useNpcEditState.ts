@@ -3,11 +3,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import type { Npc, NpcUpsert } from 'src/types';
 import type { TypedValue } from 'src/types/shared';
 
-export function useNpcEditState(
-  numCampaignId: Ref<number>,
-  heroId: Ref<number | null>,
-  isCreateMode: Ref<boolean>
-) {
+export function useNpcEditState(numCampaignId: Ref<number>, isCreateMode: Ref<boolean>) {
   const classifiers = useClassifierStore();
 
   const npc = ref<Npc | null>(null);
@@ -42,13 +38,12 @@ export function useNpcEditState(
     const firstTier = classifiers.tiers[0];
     return reactive({
       id: 0,
-      campaignId: heroId.value ? null : numCampaignId.value,
-      heroId: heroId.value,
+      campaignId: numCampaignId.value,
       createdBy: 1,
       name: '',
       tier: { id: firstTier?.id ?? 0, code: firstTier?.code ?? '', name: firstTier?.name ?? '' },
       type: 'minion',
-      isCompanion: !!heroId.value,
+      isCompanion: false,
       size: '',
       languages: null,
       description: null,
@@ -81,8 +76,7 @@ export function useNpcEditState(
     const clone = reactive(cloneNpc(npc.value));
     clone.id = 0;
     clone.createdBy = 1;
-    clone.campaignId = heroId.value ? null : numCampaignId.value;
-    clone.heroId = heroId.value;
+    clone.campaignId = numCampaignId.value;
     clone.name = `${npc.value.name} (Copy)`;
     editableNpc.value = clone;
     editing.value = true;
@@ -148,7 +142,6 @@ export function useNpcEditState(
     return {
       ...(isCreateMode.value || isClone.value ? {} : { id: Number(npcId) }),
       campaignId: numCampaignId.value,
-      heroId: heroId.value,
       name: n.name.trim(),
       tier: { code: n.tier.code },
       type: n.type,
@@ -157,7 +150,7 @@ export function useNpcEditState(
       description: n.description?.trim() || null,
       tactics: n.tactics?.trim() || null,
       immunities: n.immunities?.trim() || null,
-      isCompanion: heroId.value ? true : n.isCompanion,
+      isCompanion: n.isCompanion,
       features: n.features,
       actions: n.actions,
       opportunities: n.opportunities,

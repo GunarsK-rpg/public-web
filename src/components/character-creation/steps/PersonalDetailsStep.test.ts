@@ -74,10 +74,6 @@ vi.mock('src/stores/classifiers', () => ({
       { id: 1, code: 'ally', name: 'Ally' },
       { id: 2, code: 'rival', name: 'Rival' },
     ],
-    companionTypes: [
-      { id: 1, code: 'pet', name: 'Pet' },
-      { id: 2, code: 'spren', name: 'Spren' },
-    ],
   }),
 }));
 

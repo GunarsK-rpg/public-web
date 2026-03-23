@@ -7,7 +7,7 @@ import type { HeroTalent } from './talents';
 import type { HeroEquipment } from './equipments';
 import type { HeroCondition, HeroInjury } from './conditions';
 import type { HeroGoal, HeroConnection } from './goals';
-import type { HeroCompanion } from './companions';
+import type { NpcInstance } from './combat';
 import type { HeroNote } from './notes';
 import type { HeroCulture } from './culture';
 import type { HeroFavoriteAction } from './actions';
@@ -59,7 +59,7 @@ export interface HeroSheet extends Hero {
   injuries: HeroInjury[];
   goals: HeroGoal[];
   connections: HeroConnection[];
-  companions: HeroCompanion[];
+  companions: NpcInstance[];
   heroNotes: HeroNote[];
   cultures: HeroCulture[];
   favoriteActions: HeroFavoriteAction[];

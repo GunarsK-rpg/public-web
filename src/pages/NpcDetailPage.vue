@@ -34,7 +34,7 @@
               @click="handleSave"
             />
           </template>
-          <template v-else>
+          <template v-else-if="!heroId">
             <q-btn flat dense label="Clone" color="secondary" @click="cloneAsNew" />
             <template v-if="canEdit">
               <q-btn flat dense label="Edit" color="primary" @click="startEdit" />
@@ -49,9 +49,9 @@
           :current-resources="currentResources"
           :notes="combatNpc?.notes"
           :saving="saving"
-          :readonly="!combatStore.currentCombat?.isActive"
+          :readonly="!combatNpc || editing"
           :editable="editing"
-          :show-companion-toggle="editing && !heroId"
+          :show-companion-toggle="editing"
           @resource-update="onResourceUpdate"
           @field-update="onFieldUpdate"
           @stat-update="onStatUpdate"
@@ -104,11 +104,12 @@ import { ArrowLeft, UserX } from 'lucide-vue-next';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useCombatStore } from 'src/stores/combat';
 import combatService from 'src/services/combatService';
+import npcInstanceService from 'src/services/npcInstanceService';
 import NpcStatBlock from 'src/components/combat/NpcStatBlock.vue';
 import NpcItemEditDialog from 'src/components/combat/NpcItemEditDialog.vue';
 import NpcStatPickerDialog from 'src/components/combat/NpcStatPickerDialog.vue';
 import { handleError } from 'src/utils/errorHandling';
-import type { CombatNpc, NpcUpsert } from 'src/types';
+import type { NpcInstance, NpcUpsert } from 'src/types';
 
 const props = defineProps<{
   campaignId: string;
@@ -124,7 +125,7 @@ const { setPageTitle } = usePageTitle();
 
 const loadingInit = ref(true);
 const error = ref<string | null>(null);
-const combatNpc = ref<CombatNpc | null>(null);
+const combatNpc = ref<NpcInstance | null>(null);
 
 const saving = computed(() => combatStore.saving);
 const isCreateMode = computed(() => route.name === 'npc-create');
@@ -172,7 +173,7 @@ const {
   onFieldUpdate,
   onStatUpdate,
   buildPayload,
-} = useNpcEditState(numCampaignId, heroId, isCreateMode);
+} = useNpcEditState(numCampaignId, isCreateMode);
 
 // Dialogs
 const {
@@ -270,26 +271,33 @@ function confirmDelete() {
   });
 }
 
-// Resource patches (combat context)
-const resourcePatchMap: Record<
-  string,
-  (data: { id: number; combatId: number; campaignId: number; value: number }) => Promise<void>
-> = {
-  max_health: (d) => combatStore.patchHp(d),
-  max_focus: (d) => combatStore.patchFocus(d),
-  max_investiture: (d) => combatStore.patchInvestiture(d),
+// Resource patches
+const resourceFieldMap: Record<string, 'current_hp' | 'current_focus' | 'current_investiture'> = {
+  max_health: 'current_hp',
+  max_focus: 'current_focus',
+  max_investiture: 'current_investiture',
 };
 
-function onResourceUpdate(code: string, value: number) {
-  if (!combatNpc.value || !combatId.value) return;
-  const patchFn = resourcePatchMap[code];
-  if (!patchFn) return;
-  void patchFn({
-    id: combatNpc.value.id,
-    combatId: combatId.value,
-    campaignId: numCampaignId.value,
-    value,
-  });
+const resourceKeyMap: Record<string, 'currentHp' | 'currentFocus' | 'currentInvestiture'> = {
+  max_health: 'currentHp',
+  max_focus: 'currentFocus',
+  max_investiture: 'currentInvestiture',
+};
+
+async function onResourceUpdate(code: string, value: number) {
+  if (!combatNpc.value) return;
+  const field = resourceFieldMap[code];
+  const npcKey = resourceKeyMap[code];
+  if (!field || !npcKey) return;
+  try {
+    const response = await npcInstanceService.patchResource(combatNpc.value.id, field, value);
+    const newValue = response.data[field];
+    if (combatNpc.value && typeof newValue === 'number') {
+      combatNpc.value[npcKey] = newValue;
+    }
+  } catch (err: unknown) {
+    handleError(err, { errorRef: error, message: 'Failed to update resource' });
+  }
 }
 
 // Init
@@ -328,10 +336,9 @@ onMounted(async () => {
       startEdit();
     }
 
-    if (combatId.value && instanceId.value) {
-      await combatStore.selectCombat(campaignId, combatId.value);
-      combatNpc.value =
-        combatStore.currentCombat?.npcs.find((n) => n.id === instanceId.value) ?? null;
+    if (instanceId.value) {
+      const instanceResponse = await npcInstanceService.get(instanceId.value);
+      combatNpc.value = instanceResponse.data;
     }
   } catch (err: unknown) {
     handleError(err, { errorRef: error, message: 'Failed to load NPC' });

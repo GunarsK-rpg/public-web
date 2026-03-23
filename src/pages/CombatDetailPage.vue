@@ -88,7 +88,7 @@
             dense
             label="Create NPC"
             color="primary"
-            :to="{ name: 'npc-create', params: { campaignId } }"
+            :to="{ name: 'npc-create', params: { campaignId }, query: { combatId } }"
           />
           <q-toggle
             :model-value="combat.isActive"
@@ -173,7 +173,7 @@ import { TURN_PHASES } from 'src/constants/combat';
 import ResourceBox from 'src/components/shared/ResourceBox.vue';
 import CombatNpcSection from 'src/components/combat/CombatNpcSection.vue';
 import AddNpcDialog from 'src/components/combat/AddNpcDialog.vue';
-import type { CombatNpc } from 'src/types';
+import type { NpcInstance } from 'src/types';
 
 const props = defineProps<{
   campaignId: string;
@@ -300,10 +300,9 @@ function openAddNpc(side: 'ally' | 'enemy') {
 }
 
 async function onAddNpc(npcId: number, displayName: string | null) {
-  const result = await combatStore.addCombatNpc({
-    campaignId: numCampaignId.value,
-    combatId: numCombatId.value,
+  const result = await combatStore.addNpcInstance({
     npcId,
+    combatId: numCombatId.value,
     side: addNpcSide.value,
     displayName,
   });
@@ -313,61 +312,31 @@ async function onAddNpc(npcId: number, displayName: string | null) {
 }
 
 // NPC tile event handlers
-function onEditNpc(npc: CombatNpc, displayName: string | null, notes: string | null) {
-  void combatStore.updateCombatNpc({
-    id: npc.id,
-    campaignId: numCampaignId.value,
-    combatId: numCombatId.value,
-    npcId: npc.npcId,
-    side: npc.side,
-    displayName,
-    notes,
-  });
+function onEditNpc(npc: NpcInstance, displayName: string | null, notes: string | null) {
+  void combatStore.updateNpcInstance(npc.id, { displayName, notes });
 }
 
-function onTurnSpeed(npc: CombatNpc, value: 'fast' | 'slow' | null) {
-  void combatStore.updateCombatNpc({
-    id: npc.id,
-    campaignId: numCampaignId.value,
-    combatId: numCombatId.value,
-    npcId: npc.npcId,
-    side: npc.side,
-    turnSpeed: value,
-  });
+function onTurnSpeed(npc: NpcInstance, value: 'fast' | 'slow' | null) {
+  void combatStore.updateNpcInstance(npc.id, { turnSpeed: value });
 }
 
-function onPatchHp(npc: CombatNpc, value: number) {
-  void combatStore.patchHp({
-    id: npc.id,
-    combatId: numCombatId.value,
-    campaignId: numCampaignId.value,
-    value,
-  });
+function onPatchHp(npc: NpcInstance, value: number) {
+  void combatStore.patchHp({ id: npc.id, value });
 }
 
-function onPatchFocus(npc: CombatNpc, value: number) {
-  void combatStore.patchFocus({
-    id: npc.id,
-    combatId: numCombatId.value,
-    campaignId: numCampaignId.value,
-    value,
-  });
+function onPatchFocus(npc: NpcInstance, value: number) {
+  void combatStore.patchFocus({ id: npc.id, value });
 }
 
-function onPatchInvestiture(npc: CombatNpc, value: number) {
-  void combatStore.patchInvestiture({
-    id: npc.id,
-    combatId: numCombatId.value,
-    campaignId: numCampaignId.value,
-    value,
-  });
+function onPatchInvestiture(npc: NpcInstance, value: number) {
+  void combatStore.patchInvestiture({ id: npc.id, value });
 }
 
-function onToggleTurnDone(npc: CombatNpc) {
+function onToggleTurnDone(npc: NpcInstance) {
   combatStore.toggleTurnDone(npc.id);
 }
 
-function onRemoveNpc(npc: CombatNpc) {
-  void combatStore.removeCombatNpc(numCampaignId.value, numCombatId.value, npc.id);
+function onRemoveNpc(npc: NpcInstance) {
+  void combatStore.removeNpcInstance(npc.id);
 }
 </script>

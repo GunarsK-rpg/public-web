@@ -32,7 +32,6 @@ import type {
   Injury,
   GoalStatus,
   ConnectionType,
-  CompanionType,
   StartingKit,
   Ancestry,
   Culture,
@@ -91,7 +90,6 @@ export const useClassifierStore = defineStore('classifiers', () => {
   // Character Details
   const goalStatuses = computed((): GoalStatus[] => data.value?.goalStatuses || []);
   const connectionTypes = computed((): ConnectionType[] => data.value?.connectionTypes || []);
-  const companionTypes = computed((): CompanionType[] => data.value?.companionTypes || []);
 
   // Starting & Ancestry
   const startingKits = computed((): StartingKit[] => data.value?.startingKits || []);
@@ -236,7 +234,6 @@ export const useClassifierStore = defineStore('classifiers', () => {
     // Character Details
     goalStatuses,
     connectionTypes,
-    companionTypes,
 
     // Starting & Ancestry
     startingKits,

@@ -28,7 +28,6 @@ export interface NpcTileData extends NpcIdentity, NpcResources {
 export interface NpcOption {
   id: number;
   campaignId: number | null;
-  heroId: number | null;
   name: string;
   tier: ClassifierRef;
   type: string;
@@ -86,38 +85,18 @@ export interface Combat extends CombatBase {
   turnPhase: TurnPhase;
 }
 
-/** Combat NPC — upsert payload */
-export interface CombatNpcBase {
-  campaignId: number;
-  combatId: number;
-  npcId: number;
-  displayName?: string | null;
-  sortOrder?: number;
-  side: 'ally' | 'enemy';
-  turnSpeed?: 'fast' | 'slow' | null;
-  notes?: string | null;
-}
-
-/** Combat NPC — API response (NPC tile data + combat-specific fields) */
-export interface CombatNpc extends NpcTileData {
-  campaignId: number;
-  combatId: number;
-  sortOrder: number;
-  side: 'ally' | 'enemy';
+/** Unified NPC instance — combat or companion (from v_npc_instance_detail) */
+export interface NpcInstance extends NpcTileData {
+  combatId: number | null;
+  heroId: number | null;
+  sortOrder: number | null;
+  side: 'ally' | 'enemy' | null;
   turnSpeed: 'fast' | 'slow' | null;
 }
 
 /** Combat with NPC instances — from get_combat */
 export interface CombatDetail extends Combat {
-  npcs: CombatNpc[];
-}
-
-/** Resource patch payload (HP/focus/investiture) */
-export interface CombatNpcResourcePatch {
-  id: number;
-  combatId: number;
-  campaignId: number;
-  value: number;
+  npcs: NpcInstance[];
 }
 
 /** End round payload */
@@ -131,7 +110,6 @@ export interface EndRoundPayload {
 export interface NpcUpsert {
   id?: number;
   campaignId: number;
-  heroId?: number | null;
   name: string;
   tier: ClassifierInput;
   type: string;

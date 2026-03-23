@@ -23,12 +23,12 @@
           :turn-done="turnDoneIds.has(npc.id)"
           :show-turn-controls="true"
           :turn-speed="npc.turnSpeed ?? null"
-          :combat-id="npc.combatId"
-          @update-turn-speed="(v) => $emit('update-turn-speed', npc, v)"
-          @update-hp="(v) => $emit('update-hp', npc, v)"
-          @update-focus="(v) => $emit('update-focus', npc, v)"
-          @update-investiture="(v) => $emit('update-investiture', npc, v)"
-          @edit="(name, notes) => $emit('edit', npc, name, notes)"
+          :combat-id="npc.combatId!"
+          @update-turn-speed="(v: 'fast' | 'slow' | null) => $emit('update-turn-speed', npc, v)"
+          @update-hp="(v: number) => $emit('update-hp', npc, v)"
+          @update-focus="(v: number) => $emit('update-focus', npc, v)"
+          @update-investiture="(v: number) => $emit('update-investiture', npc, v)"
+          @edit="(name: string | null, notes: string | null) => $emit('edit', npc, name, notes)"
           @remove="$emit('remove', npc)"
           @toggle-turn-done="$emit('toggle-turn-done', npc)"
         />
@@ -40,12 +40,12 @@
 <script setup lang="ts">
 import { UserPlus } from 'lucide-vue-next';
 import CombatNpcTile from './CombatNpcTile.vue';
-import type { CombatNpc } from 'src/types';
+import type { NpcInstance } from 'src/types';
 
 defineProps<{
   title: string;
   addLabel: string;
-  npcs: CombatNpc[];
+  npcs: NpcInstance[];
   campaignId: number;
   saving: boolean;
   readonly: boolean;
@@ -55,12 +55,12 @@ defineProps<{
 
 defineEmits<{
   add: [];
-  'update-turn-speed': [npc: CombatNpc, value: 'fast' | 'slow' | null];
-  'update-hp': [npc: CombatNpc, value: number];
-  'update-focus': [npc: CombatNpc, value: number];
-  'update-investiture': [npc: CombatNpc, value: number];
-  edit: [npc: CombatNpc, displayName: string | null, notes: string | null];
-  remove: [npc: CombatNpc];
-  'toggle-turn-done': [npc: CombatNpc];
+  'update-turn-speed': [npc: NpcInstance, value: 'fast' | 'slow' | null];
+  'update-hp': [npc: NpcInstance, value: number];
+  'update-focus': [npc: NpcInstance, value: number];
+  'update-investiture': [npc: NpcInstance, value: number];
+  edit: [npc: NpcInstance, displayName: string | null, notes: string | null];
+  remove: [npc: NpcInstance];
+  'toggle-turn-done': [npc: NpcInstance];
 }>();
 </script>

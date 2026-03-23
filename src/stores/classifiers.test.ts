@@ -111,7 +111,6 @@ const mockClassifiers = {
   injuries: [],
   goalStatuses: [],
   connectionTypes: [],
-  companionTypes: [],
   startingKits: [],
   ancestries: [{ id: 1, code: 'human', name: 'Human' }],
   cultures: [{ id: 1, code: 'alethi', name: 'Alethi' }],
@@ -531,11 +530,6 @@ describe('useClassifierStore', () => {
     it('returns empty connectionTypes', () => {
       const store = useClassifierStore();
       expect(store.connectionTypes).toEqual([]);
-    });
-
-    it('returns empty companionTypes', () => {
-      const store = useClassifierStore();
-      expect(store.companionTypes).toEqual([]);
     });
 
     it('returns empty startingKits', () => {

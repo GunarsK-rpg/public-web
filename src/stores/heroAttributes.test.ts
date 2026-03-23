@@ -67,7 +67,6 @@ const mockClassifiers = {
   injuries: [],
   goalStatuses: [],
   connectionTypes: [],
-  companionTypes: [],
   startingKits: [],
   ancestries: [],
   cultures: [],

@@ -183,7 +183,6 @@ const mockClassifiers = {
   injuries: [],
   goalStatuses: [],
   connectionTypes: [],
-  companionTypes: [],
   startingKits: [],
   ancestries: [
     { id: 1, code: 'human', name: 'Human' },

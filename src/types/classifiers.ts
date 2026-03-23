@@ -14,7 +14,6 @@ import type { ModificationClassifier } from './modifications';
 import type { EquipmentAttribute } from './equipmentAttributes';
 import type { Condition, Injury } from './conditions';
 import type { GoalStatus, ConnectionType } from './goals';
-import type { CompanionType } from './companionTypes';
 import type { StartingKit } from './startingKits';
 import type { Ancestry } from './ancestries';
 import type { Culture } from './culture';
@@ -63,8 +62,6 @@ export interface Classifiers {
   // Character Details
   goalStatuses: GoalStatus[];
   connectionTypes: ConnectionType[];
-  companionTypes: CompanionType[];
-
   // Starting & Ancestry
   startingKits: StartingKit[];
   ancestries: Ancestry[];

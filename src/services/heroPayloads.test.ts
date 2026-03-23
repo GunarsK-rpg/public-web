@@ -9,7 +9,6 @@ import {
   buildEquipmentPayload,
   buildGoalPayload,
   buildConnectionPayload,
-  buildCompanionPayload,
 } from './heroPayloads';
 import type { HeroSheet } from 'src/types/heroes';
 import type { HeroAttribute } from 'src/types/attributes';
@@ -19,7 +18,6 @@ import type { HeroTalent } from 'src/types/talents';
 import type { HeroCulture } from 'src/types/culture';
 import type { HeroEquipment } from 'src/types/equipments';
 import type { HeroGoal, HeroConnection } from 'src/types/goals';
-import type { HeroCompanion } from 'src/types/companions';
 
 function makeHero(overrides: Partial<HeroSheet> = {}): HeroSheet {
   return {
@@ -488,59 +486,6 @@ describe('buildConnectionPayload', () => {
       connectionType: { id: 2, code: 'ally', name: 'Ally' },
     };
     const payload = buildConnectionPayload(1, conn);
-
-    expect(payload.id).toBeUndefined();
-  });
-});
-
-// ========================================
-// buildCompanionPayload (ID-based upsert)
-// ========================================
-describe('buildCompanionPayload', () => {
-  const mockTier = { id: 1, code: 'tier1', name: 'Tier 1' };
-
-  it('includes id for real DB items', () => {
-    const comp: HeroCompanion = {
-      id: 90,
-      heroId: 1,
-      companionType: { id: 3, code: 'spren', name: 'Spren' },
-      description: 'Syl',
-      notes: 'Honorspren',
-      npcId: 42,
-      displayName: 'Syl',
-      currentHp: 10,
-      currentFocus: 2,
-      currentInvestiture: 0,
-      name: 'Honorspren',
-      tier: mockTier,
-      type: 'rival',
-      derivedStats: [],
-    };
-    const payload = buildCompanionPayload(1, comp);
-
-    expect(payload.id).toBe(90);
-    expect(payload.companionType).toEqual({ code: 'spren' });
-    expect(payload.description).toBe('Syl');
-  });
-
-  it('omits id for temp items', () => {
-    const comp: HeroCompanion = {
-      id: -4,
-      heroId: 1,
-      companionType: { id: 3, code: 'spren', name: 'Spren' },
-      description: null,
-      notes: null,
-      npcId: 42,
-      displayName: null,
-      currentHp: 0,
-      currentFocus: 0,
-      currentInvestiture: 0,
-      name: 'Honorspren',
-      tier: mockTier,
-      type: 'rival',
-      derivedStats: [],
-    };
-    const payload = buildCompanionPayload(1, comp);
 
     expect(payload.id).toBeUndefined();
   });
