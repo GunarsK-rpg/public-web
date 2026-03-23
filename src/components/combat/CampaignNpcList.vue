@@ -64,6 +64,9 @@
         }"
         :class="{ 'npc-archived': npc.deletedAt }"
       >
+        <q-item-section v-if="npc.avatarKey" avatar>
+          <AvatarDisplay :avatar-key="npc.avatarKey" size="32px" />
+        </q-item-section>
         <q-item-section>
           <q-item-label>{{ npc.name }}</q-item-label>
         </q-item-section>
@@ -88,6 +91,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { Plus, UserX } from 'lucide-vue-next';
+import AvatarDisplay from 'src/components/shared/AvatarDisplay.vue';
 import combatService from 'src/services/combatService';
 import { handleError } from 'src/utils/errorHandling';
 import type { NpcOption } from 'src/types';

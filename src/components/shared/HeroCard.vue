@@ -12,7 +12,7 @@
     >
       <q-card class="card-interactive cursor-pointer">
         <q-card-section class="row items-center no-wrap q-gutter-x-md">
-          <AvatarDisplay :src="hero.avatarKey ? avatarUrl : null" size="44px" expandable />
+          <AvatarDisplay :avatar-key="hero.avatarKey" size="44px" expandable />
           <div class="col">
             <div class="text-h6">{{ hero.name }}</div>
             <div class="text-subtitle2">
@@ -38,20 +38,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import type { Hero } from 'src/types';
 import AvatarDisplay from './AvatarDisplay.vue';
-import filesApi from 'src/services/filesApi';
 import { clearHeroTab } from 'src/utils/routeUtils';
 
 const props = defineProps<{
   hero: Hero;
   subtitle?: string | null | undefined;
 }>();
-
-const avatarUrl = computed(() =>
-  props.hero.avatarKey ? filesApi.buildHeroAvatarUrl(props.hero.avatarKey) : null
-);
 
 function onNavigate(event: MouseEvent, navigate: (e: MouseEvent) => void) {
   clearHeroTab(props.hero.id);
