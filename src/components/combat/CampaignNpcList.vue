@@ -11,7 +11,7 @@
     </div>
 
     <template v-if="npcs.length > 0">
-      <q-input v-model="search" dense outlined placeholder="Search..." class="q-mb-sm" clearable />
+      <q-input v-model="search" label="Search NPCs" dense outlined class="q-mb-sm" clearable />
       <div class="row q-gutter-xs q-mb-sm">
         <q-chip
           v-for="f in filterOptions"
@@ -40,6 +40,11 @@
       <UserX :size="64" class="text-grey-5" aria-hidden="true" />
       <div class="text-h6 text-grey-7 q-mt-md">No NPCs yet</div>
       <div class="text-body2 text-grey-6">Create an NPC to add to your library.</div>
+    </div>
+
+    <div v-else-if="filtered.length === 0" class="text-center q-pa-xl">
+      <UserX :size="64" class="text-grey-5" aria-hidden="true" />
+      <div class="text-h6 text-grey-7 q-mt-md">No matching NPCs</div>
     </div>
 
     <q-virtual-scroll

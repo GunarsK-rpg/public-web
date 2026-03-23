@@ -88,7 +88,7 @@ export function useNpcEditState(numCampaignId: Ref<number>, isCreateMode: Ref<bo
     if (isClone.value) {
       isClone.value = false;
     }
-    editableNpc.value = npc.value;
+    editableNpc.value = npc.value ? reactive(cloneNpc(npc.value)) : null;
     editing.value = false;
     return 'stay' as const;
   }
@@ -159,6 +159,7 @@ export function useNpcEditState(numCampaignId: Ref<number>, isCreateMode: Ref<bo
       attributes: n.attributes
         .filter((a) => a.value !== 0)
         .map((a) => ({ code: a.type.code, value: a.value })),
+      // Defenses always sent — default is 10, so 0 is an intentional override (unlike attrs/skills where 0 means unset)
       defenses: n.defenses.map((d) => ({ code: d.type.code, value: d.value })),
       skills: n.skills
         .filter((s) => s.value !== 0)
