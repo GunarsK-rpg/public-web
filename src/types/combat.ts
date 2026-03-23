@@ -22,6 +22,7 @@ export interface NpcTileData extends NpcIdentity, NpcResources {
   npcId: number;
   displayName?: string | null;
   notes?: string | null;
+  avatarKey?: string | null;
 }
 
 /** NPC option — lightweight picker list from get_npc_options */
@@ -32,6 +33,7 @@ export interface NpcOption {
   tier: ClassifierRef;
   type: string;
   isCompanion?: boolean;
+  avatarKey?: string | null;
   deletedAt?: string | null;
 }
 

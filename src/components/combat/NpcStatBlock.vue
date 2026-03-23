@@ -4,89 +4,112 @@
     <div class="row items-center q-col-gutter-md q-mb-md">
       <div class="col-12 col-sm-6">
         <template v-if="editable">
-          <q-input
-            :model-value="npc.name"
-            label="Name *"
-            dense
-            borderless
-            input-class="text-h5"
-            maxlength="100"
-            @update:model-value="emitField('name', $event)"
-          />
-          <div class="row q-col-gutter-sm q-mt-xs">
-            <div class="col-4">
-              <q-select
-                :model-value="npc.tier.code"
-                :options="tierOptions"
-                label="Tier"
+          <div class="row items-start q-gutter-sm">
+            <AvatarUpload
+              v-if="npc.id"
+              :avatar-key="npc.avatarKey ?? null"
+              :loading="avatarSaving"
+              @upload="(file: File) => emit('avatarUpload', file)"
+              @delete="emit('avatarDelete')"
+            />
+            <div class="col-12 col-sm" style="min-width: 0">
+              <q-input
+                :model-value="npc.name"
+                label="Name *"
                 dense
-                outlined
-                emit-value
-                map-options
-                behavior="menu"
-                @update:model-value="emitField('tierCode', $event)"
+                borderless
+                input-class="text-h5"
+                maxlength="100"
+                @update:model-value="emitField('name', $event)"
               />
-            </div>
-            <div class="col-4">
-              <q-select
-                :model-value="npc.type"
-                :options="typeOptions"
-                label="Type"
+              <div class="row q-col-gutter-sm q-mt-xs">
+                <div class="col-4">
+                  <q-select
+                    :model-value="npc.tier.code"
+                    :options="tierOptions"
+                    label="Tier"
+                    dense
+                    outlined
+                    emit-value
+                    map-options
+                    behavior="menu"
+                    @update:model-value="emitField('tierCode', $event)"
+                  />
+                </div>
+                <div class="col-4">
+                  <q-select
+                    :model-value="npc.type"
+                    :options="typeOptions"
+                    label="Type"
+                    dense
+                    outlined
+                    emit-value
+                    map-options
+                    behavior="menu"
+                    @update:model-value="emitField('type', $event)"
+                  />
+                </div>
+                <div class="col-4">
+                  <q-select
+                    :model-value="npc.size"
+                    :options="NPC_SIZES"
+                    label="Size *"
+                    dense
+                    outlined
+                    emit-value
+                    map-options
+                    behavior="menu"
+                    @update:model-value="emitField('size', $event)"
+                  />
+                </div>
+              </div>
+              <q-input
+                :model-value="npc.languages ?? ''"
+                label="Languages"
                 dense
-                outlined
-                emit-value
-                map-options
-                behavior="menu"
-                @update:model-value="emitField('type', $event)"
+                borderless
+                class="q-mt-xs"
+                @update:model-value="emitField('languages', $event)"
               />
-            </div>
-            <div class="col-4">
-              <q-select
-                :model-value="npc.size"
-                :options="NPC_SIZES"
-                label="Size *"
+              <q-input
+                :model-value="npc.immunities ?? ''"
+                label="Immunities"
                 dense
-                outlined
-                emit-value
-                map-options
-                behavior="menu"
-                @update:model-value="emitField('size', $event)"
+                borderless
+                @update:model-value="emitField('immunities', $event)"
+              />
+              <q-toggle
+                v-if="showCompanionToggle"
+                :model-value="npc.isCompanion"
+                label="Available as companion"
+                @update:model-value="emitField('isCompanion', $event ?? false)"
               />
             </div>
           </div>
-          <q-input
-            :model-value="npc.languages ?? ''"
-            label="Languages"
-            dense
-            borderless
-            class="q-mt-xs"
-            @update:model-value="emitField('languages', $event)"
-          />
-          <q-input
-            :model-value="npc.immunities ?? ''"
-            label="Immunities"
-            dense
-            borderless
-            @update:model-value="emitField('immunities', $event)"
-          />
-          <q-toggle
-            v-if="showCompanionToggle"
-            :model-value="npc.isCompanion"
-            label="Available as companion"
-            @update:model-value="emitField('isCompanion', $event ?? false)"
-          />
         </template>
         <template v-else>
-          <div class="text-h5">{{ displayName || npc.name }}</div>
-          <div class="text-subtitle1 text-grey">
-            {{ npc.tier.name }} {{ npc.type }}
-            <span v-if="npc.size"> · {{ npc.size }}</span>
-          </div>
-          <div v-if="npc.languages" class="text-body2">
-            <span class="text-weight-bold">Languages:</span> {{ npc.languages }}
-          </div>
-          <div v-if="npc.immunities" class="text-body2">
-            <span class="text-weight-bold">Immunities:</span> {{ npc.immunities }}
+          <div class="row items-start no-wrap q-gutter-x-sm">
+            <AvatarDisplay
+              v-if="npc.avatarKey"
+              :avatar-key="npc.avatarKey"
+              size="64px"
+              expandable
+            />
+            <div>
+              <div class="text-h5">{{ displayName || npc.name }}</div>
+              <div class="text-subtitle1 text-grey">
+                {{ npc.tier.name }} {{ npc.type }}
+                <span v-if="npc.size"> · {{ npc.size }}</span>
+              </div>
+              <div v-if="npc.languages" class="text-body2">
+                <span class="text-weight-bold">Languages:</span>
+                {{ npc.languages }}
+              </div>
+              <div v-if="npc.immunities" class="text-body2">
+                <span class="text-weight-bold">Immunities:</span>
+                {{ npc.immunities }}
+              </div>
+            </div>
           </div>
         </template>
       </div>
@@ -188,6 +211,8 @@
 import { computed } from 'vue';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { NPC_SIZES } from 'src/constants/combat';
+import AvatarDisplay from 'src/components/shared/AvatarDisplay.vue';
+import AvatarUpload from 'src/components/shared/AvatarUpload.vue';
 import ResourcesBar from 'src/components/shared/ResourcesBar.vue';
 import DefensesSection from 'src/components/shared/DefensesSection.vue';
 import AttributesSection from 'src/components/shared/AttributesSection.vue';
@@ -207,8 +232,9 @@ const props = withDefaults(
     readonly?: boolean;
     editable?: boolean;
     showCompanionToggle?: boolean;
+    avatarSaving?: boolean;
   }>(),
-  { editable: false, showCompanionToggle: false }
+  { editable: false, showCompanionToggle: false, avatarSaving: false }
 );
 
 const emit = defineEmits<{
@@ -221,6 +247,8 @@ const emit = defineEmits<{
   itemAdd: [list: string];
   itemEdit: [list: string, index: number];
   itemRemove: [list: string, index: number];
+  avatarUpload: [file: File];
+  avatarDelete: [];
 }>();
 
 function emitField(field: string, value: string | number | null | boolean) {

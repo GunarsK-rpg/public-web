@@ -2,7 +2,7 @@
   <q-avatar
     :size="size"
     class="avatar-display"
-    :class="{ 'cursor-pointer': expandable && src, 'avatar-has-image': !!src }"
+    :class="{ 'cursor-pointer': expandable && !!src, 'avatar-has-image': !!src }"
     @click="onClick"
   >
     <img v-if="src" :src="src" :alt="alt" />
@@ -11,7 +11,7 @@
 
   <q-dialog v-if="expandable" v-model="showExpanded">
     <q-card class="avatar-expanded-card">
-      <img :src="src!" :alt="alt" class="avatar-expanded-img" />
+      <img v-if="src" :src="src" :alt="alt" class="avatar-expanded-img" />
       <q-btn
         flat
         dense
@@ -31,20 +31,27 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { User, X } from 'lucide-vue-next';
+import filesApi from 'src/services/filesApi';
 
 const props = withDefaults(
   defineProps<{
-    src: string | null;
+    avatarKey: string | null | undefined;
     size?: string;
     alt?: string;
     expandable?: boolean;
   }>(),
   {
+    avatarKey: null,
     size: '48px',
     alt: '',
     expandable: false,
   }
 );
+
+const src = computed(() => {
+  if (!props.avatarKey) return null;
+  return filesApi.buildHeroAvatarUrl(props.avatarKey);
+});
 
 const emit = defineEmits<{
   click: [];
@@ -54,7 +61,7 @@ const showExpanded = ref(false);
 const iconSize = computed(() => Math.round(parseInt(props.size) / 2));
 
 function onClick(): void {
-  if (props.expandable && props.src) {
+  if (props.expandable && src.value) {
     showExpanded.value = true;
   }
   emit('click');

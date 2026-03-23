@@ -53,6 +53,7 @@
           :readonly="true"
           :editable="editing"
           :show-companion-toggle="editing"
+          :avatar-saving="avatarSaving"
           @field-update="onFieldUpdate"
           @stat-update="onStatUpdate"
           @stat-add="onStatAdd"
@@ -61,6 +62,8 @@
           @item-add="onItemAdd"
           @item-edit="onItemEdit"
           @item-remove="onItemRemove"
+          @avatar-upload="onAvatarUpload"
+          @avatar-delete="onAvatarDelete"
         />
 
         <!-- Item edit dialog -->
@@ -107,6 +110,7 @@ import combatService from 'src/services/combatService';
 import NpcStatBlock from 'src/components/combat/NpcStatBlock.vue';
 import NpcItemEditDialog from 'src/components/combat/NpcItemEditDialog.vue';
 import NpcStatPickerDialog from 'src/components/combat/NpcStatPickerDialog.vue';
+import filesApi, { FILE_TYPE_HERO_AVATAR } from 'src/services/filesApi';
 import { handleError } from 'src/utils/errorHandling';
 import type { NpcUpsert } from 'src/types';
 
@@ -150,6 +154,40 @@ const {
 } = useNpcEditState(numCampaignId, isCreateMode);
 
 const isArchived = computed(() => !!npc.value?.deletedAt);
+
+// Avatar
+const avatarSaving = ref(false);
+
+async function onAvatarUpload(file: File): Promise<void> {
+  if (!editableNpc.value?.id || !numCampaignId.value) return;
+  avatarSaving.value = true;
+  try {
+    const uploadRes = await filesApi.upload(file, FILE_TYPE_HERO_AVATAR);
+    const key = uploadRes.data.url.split('/').pop();
+    if (!key) throw new Error('Invalid upload response: missing key');
+    await combatService.setNpcAvatar(numCampaignId.value, editableNpc.value.id, key);
+    editableNpc.value.avatarKey = key;
+    if (npc.value) npc.value.avatarKey = key;
+  } catch {
+    $q.notify({ type: 'negative', message: 'Failed to upload avatar' });
+  } finally {
+    avatarSaving.value = false;
+  }
+}
+
+async function onAvatarDelete(): Promise<void> {
+  if (!editableNpc.value?.id || !numCampaignId.value) return;
+  avatarSaving.value = true;
+  try {
+    await combatService.deleteNpcAvatar(numCampaignId.value, editableNpc.value.id);
+    editableNpc.value.avatarKey = null;
+    if (npc.value) npc.value.avatarKey = null;
+  } catch {
+    $q.notify({ type: 'negative', message: 'Failed to delete avatar' });
+  } finally {
+    avatarSaving.value = false;
+  }
+}
 
 // Dialogs
 const {

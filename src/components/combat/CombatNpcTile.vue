@@ -1,6 +1,7 @@
 <template>
   <q-card class="combat-npc-tile" :class="{ 'npc-dimmed': dimmed }">
     <q-card-section class="row items-center no-wrap q-pb-none">
+      <AvatarDisplay v-if="npc.avatarKey" :avatar-key="npc.avatarKey" size="36px" class="q-mr-sm" />
       <RouterLink :to="statBlockRoute" custom v-slot="{ href, navigate }">
         <a
           :href="href"
@@ -159,6 +160,7 @@
 import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { Circle, CircleCheck, Pencil, Trash2 } from 'lucide-vue-next';
+import AvatarDisplay from 'src/components/shared/AvatarDisplay.vue';
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import { RPG_COLORS } from 'src/constants/theme';
 import ResourceBox from 'src/components/shared/ResourceBox.vue';

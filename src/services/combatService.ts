@@ -30,6 +30,16 @@ export default {
   deleteNpc(campaignId: number, npcId: number): Promise<AxiosResponse<void>> {
     return api.delete(`/campaigns/${campaignId}/npcs/${npcId}`);
   },
+  setNpcAvatar(
+    campaignId: number,
+    npcId: number,
+    avatarKey: string
+  ): Promise<AxiosResponse<{ avatarKey: string }>> {
+    return api.post(`/campaigns/${campaignId}/npcs/${npcId}/avatar`, { avatarKey });
+  },
+  deleteNpcAvatar(campaignId: number, npcId: number): Promise<AxiosResponse<void>> {
+    return api.delete(`/campaigns/${campaignId}/npcs/${npcId}/avatar`);
+  },
 
   // Combats
   getCombats(campaignId: number): Promise<AxiosResponse<Combat[]>> {

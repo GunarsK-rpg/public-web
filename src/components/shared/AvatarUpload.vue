@@ -6,7 +6,7 @@
       'avatar-inactive': readonly || disabled || loading,
     }"
   >
-    <AvatarDisplay :src="avatarSrc" size="80px" alt="Hero avatar" @click="onAvatarClick" />
+    <AvatarDisplay :avatar-key="avatarKey" size="80px" alt="Avatar" @click="onAvatarClick" />
     <q-btn
       v-if="avatarKey && !readonly && !disabled && !loading"
       flat
@@ -33,12 +33,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { X } from 'lucide-vue-next';
 import { useQuasar } from 'quasar';
 import AvatarDisplay from './AvatarDisplay.vue';
 import AvatarCropDialog from './AvatarCropDialog.vue';
-import filesApi from 'src/services/filesApi';
 
 const MAX_AVATAR_SIZE = 10 * 1024 * 1024; // 10MB before crop (crop output is smaller)
 
@@ -58,11 +57,6 @@ const $q = useQuasar();
 const fileInput = ref<HTMLInputElement | null>(null);
 const showCrop = ref(false);
 const cropImageSrc = ref('');
-
-const avatarSrc = computed(() => {
-  if (!props.avatarKey) return null;
-  return filesApi.buildHeroAvatarUrl(props.avatarKey);
-});
 
 // Revoke object URL when crop dialog closes (cancel or confirm)
 watch(showCrop, (open) => {

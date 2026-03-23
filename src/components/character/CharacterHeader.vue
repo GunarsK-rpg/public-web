@@ -3,7 +3,7 @@
     <div class="q-pa-md row items-center q-col-gutter-md">
       <!-- Avatar + Name -->
       <div class="col-12 col-sm-6 row items-start no-wrap q-gutter-x-sm">
-        <AvatarDisplay :src="avatarSrc" size="48px" alt="Hero avatar" expandable />
+        <AvatarDisplay :avatar-key="hero?.avatarKey" size="48px" alt="Hero avatar" expandable />
         <div>
           <div class="row items-center no-wrap">
             <div class="text-h5 text-heading">{{ hero?.name }}</div>
@@ -79,7 +79,6 @@ import { Pencil } from 'lucide-vue-next';
 import ResourcesBar from 'src/components/shared/ResourcesBar.vue';
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import AvatarDisplay from 'src/components/shared/AvatarDisplay.vue';
-import filesApi from 'src/services/filesApi';
 import type { TypedValue, ResourceValues } from 'src/types/shared';
 
 defineProps<{
@@ -93,11 +92,6 @@ const talentStore = useHeroTalentsStore();
 const classifiers = useClassifierStore();
 const hero = computed(() => heroStore.hero);
 const saving = computed(() => heroStore.saving);
-const avatarSrc = computed(() => {
-  if (!hero.value?.avatarKey) return null;
-  return filesApi.buildHeroAvatarUrl(hero.value.avatarKey);
-});
-
 // Synthetic TypedValue array for ResourcesBar — id:0 is a placeholder, matching is by type.code only
 const resourceDerivedStats = computed((): TypedValue[] => {
   const stats: TypedValue[] = [
