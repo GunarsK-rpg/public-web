@@ -102,6 +102,16 @@
         </p>
       </q-card-section>
 
+      <q-separator />
+
+      <q-card-section class="privacy-content">
+        <h3>Fan Content Disclaimer</h3>
+        <p>
+          This is unofficial fan content, created and shared for non-commercial use. It has not been
+          reviewed by Dragonsteel Entertainment, LLC or Brotherwise Games, LLC.
+        </p>
+      </q-card-section>
+
       <q-card-section class="text-center">
         <q-btn flat no-caps color="primary" :to="{ name: 'login' }">Back</q-btn>
       </q-card-section>
