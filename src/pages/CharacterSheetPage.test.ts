@@ -43,6 +43,10 @@ vi.mock('stores/hero', () => ({
     get error() {
       return mockError.value;
     },
+    get isOwner() {
+      const heroUsername = mockHero.value?.user?.username?.trim().toLowerCase();
+      return !!heroUsername && heroUsername === 'testuser';
+    },
     loadHero: vi.fn().mockResolvedValue(undefined),
     clearHero: vi.fn(),
     setError: vi.fn(),

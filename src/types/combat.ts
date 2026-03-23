@@ -1,4 +1,4 @@
-import type { ClassifierRef, TypedValue } from './shared';
+import type { ClassifierInput, ClassifierRef, ClassifierValue, TypedValue } from './shared';
 import type { TurnPhase } from 'src/constants/combat';
 
 /** NPC identity from template — name, tier, type, stats */
@@ -32,6 +32,7 @@ export interface NpcOption {
   tier: ClassifierRef;
   type: string;
   isCompanion?: boolean;
+  deletedAt?: string | null;
 }
 
 /** NPC feature or opportunity (JSONB — snake_case matches DB storage) */
@@ -48,6 +49,7 @@ export interface NpcAction extends NpcFeature {
 /** Full NPC stat block — from get_npc */
 export interface Npc extends NpcOption {
   createdBy: number | null;
+  isCompanion: boolean;
   size: string;
   languages: string | null;
   description: string | null;
@@ -84,38 +86,19 @@ export interface Combat extends CombatBase {
   turnPhase: TurnPhase;
 }
 
-/** Combat NPC — upsert payload */
-export interface CombatNpcBase {
-  campaignId: number;
-  combatId: number;
-  npcId: number;
-  displayName?: string | null;
-  sortOrder?: number;
-  side: 'ally' | 'enemy';
-  turnSpeed?: 'fast' | 'slow' | null;
-  notes?: string | null;
-}
-
-/** Combat NPC — API response (NPC tile data + combat-specific fields) */
-export interface CombatNpc extends NpcTileData {
-  campaignId: number;
-  combatId: number;
-  sortOrder: number;
-  side: 'ally' | 'enemy';
+/** Unified NPC instance — combat or companion (from v_npc_instance_detail) */
+export interface NpcInstance extends NpcTileData {
+  combatId: number | null;
+  heroId: number | null;
+  userId: number | null;
+  sortOrder: number | null;
+  side: 'ally' | 'enemy' | null;
   turnSpeed: 'fast' | 'slow' | null;
 }
 
 /** Combat with NPC instances — from get_combat */
 export interface CombatDetail extends Combat {
-  npcs: CombatNpc[];
-}
-
-/** Resource patch payload (HP/focus/investiture) */
-export interface CombatNpcResourcePatch {
-  id: number;
-  combatId: number;
-  campaignId: number;
-  value: number;
+  npcs: NpcInstance[];
 }
 
 /** End round payload */
@@ -123,4 +106,37 @@ export interface EndRoundPayload {
   combatId: number;
   campaignId: number;
   round: number;
+}
+
+/** Patch payload for NPC instance updates */
+export interface NpcInstancePatch {
+  displayName?: string | null;
+  notes?: string | null;
+  turnSpeed?: 'fast' | 'slow' | null;
+  side?: 'ally' | 'enemy' | null;
+  sortOrder?: number | null;
+  combatId?: number | null;
+  heroId?: number | null;
+}
+
+/** NPC upsert payload — create/update custom NPC */
+export interface NpcUpsert {
+  id?: number;
+  campaignId: number;
+  name: string;
+  tier: ClassifierInput;
+  type: string;
+  size: string;
+  languages?: string | null;
+  description?: string | null;
+  tactics?: string | null;
+  immunities?: string | null;
+  isCompanion?: boolean;
+  features: NpcFeature[];
+  actions: NpcAction[];
+  opportunities: NpcFeature[];
+  attributes: ClassifierValue[];
+  defenses: ClassifierValue[];
+  skills: ClassifierValue[];
+  derivedStats: (ClassifierValue & { displayValue?: string | null })[];
 }

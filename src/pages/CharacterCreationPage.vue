@@ -67,6 +67,7 @@
 import { ref, computed, provide, onMounted, onUnmounted, type Component } from 'vue';
 import { RefreshCw } from 'lucide-vue-next';
 import { useRouter, useRoute } from 'vue-router';
+import { clearHeroTab } from 'src/utils/routeUtils';
 import { useQuasar } from 'quasar';
 import { useWizardStore } from 'stores/wizard';
 import { useHeroStore } from 'stores/hero';
@@ -184,6 +185,7 @@ function closeWizardAndNavigate(): void {
   wizardStore.reset();
   heroStore.clearHero();
   if (heroId && heroId > 0) {
+    clearHeroTab(heroId);
     void router.push({ name: 'character-sheet', params: { characterId: String(heroId) } });
   } else {
     void router.push({ name: 'my-characters' });

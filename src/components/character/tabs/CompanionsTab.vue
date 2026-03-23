@@ -7,18 +7,17 @@
       </q-btn>
     </div>
 
-    <div v-if="heroStore.companions.length" class="row q-col-gutter-md">
+    <div v-if="heroStore.hero && heroStore.companions.length" class="row q-col-gutter-md">
       <div v-for="comp in heroStore.companions" :key="comp.id" class="col-12 col-sm-6 col-md-4">
         <CombatNpcTile
           :npc="comp"
-          :campaign-id="campaignId"
-          :hero-id="heroStore.hero!.id"
+          :hero-id="heroStore.hero.id"
           :saving="saving"
           :readonly="readonly"
           @update-hp="heroStore.patchCompanionHp(comp.id, $event)"
           @update-focus="heroStore.patchCompanionFocus(comp.id, $event)"
           @update-investiture="heroStore.patchCompanionInvestiture(comp.id, $event)"
-          @edit="(dn: string | null, n: string | null) => onEditCompanion(comp, dn, n)"
+          @edit="(dn: string | null, n: string | null) => onEditCompanion(comp.id, dn, n)"
           @remove="heroStore.removeCompanion(comp.id)"
         />
       </div>
@@ -38,52 +37,44 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { UserPlus } from 'lucide-vue-next';
 import { useHeroStore } from 'src/stores/hero';
 import CombatNpcTile from 'src/components/combat/CombatNpcTile.vue';
 import AddNpcDialog from 'src/components/combat/AddNpcDialog.vue';
-import type { HeroCompanion } from 'src/types/companions';
 
 defineProps<{
   readonly?: boolean;
 }>();
 
+const $q = useQuasar();
 const heroStore = useHeroStore();
 const saving = computed(() => heroStore.saving);
 const showAddDialog = ref(false);
 
-const campaignId = computed(() => heroStore.hero?.campaignId ?? 0);
-
 async function openAddDialog() {
-  await heroStore.fetchCompanionNpcOptions();
-  showAddDialog.value = true;
+  if (await heroStore.fetchCompanionNpcOptions()) {
+    showAddDialog.value = true;
+  } else {
+    $q.notify({ type: 'negative', message: 'Failed to load companion options' });
+  }
 }
 
 async function onAddCompanion(npcId: number, displayName: string | null) {
-  await heroStore.upsertCompanion({
-    heroId: heroStore.hero!.id,
-    companionType: { code: 'animal' },
+  if (!heroStore.hero) return;
+  const result = await heroStore.addCompanion({
     npcId,
+    heroId: heroStore.hero.id,
     displayName,
   });
-  showAddDialog.value = false;
+  if (result) showAddDialog.value = false;
 }
 
 async function onEditCompanion(
-  comp: HeroCompanion,
+  instanceId: number,
   displayName: string | null,
   notes: string | null
 ) {
-  await heroStore.upsertCompanion({
-    id: comp.id,
-    heroId: heroStore.hero!.id,
-    companionType: { code: comp.companionType.code },
-    npcId: comp.npcId,
-    displayName,
-    notes,
-    currentHp: comp.currentHp,
-    currentFocus: comp.currentFocus,
-    currentInvestiture: comp.currentInvestiture,
-  });
+  await heroStore.patchCompanion(instanceId, { displayName, notes });
 }
 </script>

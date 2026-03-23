@@ -10,17 +10,14 @@ import type {
 } from 'src/types';
 import type { HeroConditionBase, HeroInjury, HeroInjuryBase, Injury } from 'src/types/conditions';
 import type { HeroGoal, HeroGoalBase, HeroConnectionBase, HeroConnection } from 'src/types/goals';
-import type {
-  HeroCompanion,
-  HeroCompanionBase,
-  CompanionResourcePatch,
-} from 'src/types/companions';
-import type { NpcOption } from 'src/types';
+import type { NpcOption, NpcInstance } from 'src/types';
 import type { HeroNote, HeroNoteBase } from 'src/types/notes';
 import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
+import { useAuthStore } from 'src/stores/auth';
 import { logger } from 'src/utils/logger';
 import filesApi, { FILE_TYPE_HERO_AVATAR } from 'src/services/filesApi';
 import heroService from 'src/services/heroService';
+import npcInstanceService from 'src/services/npcInstanceService';
 import { handleError } from 'src/utils/errorHandling';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
 import { clamp } from 'src/utils/numberUtils';
@@ -86,6 +83,11 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   const isLoaded = computed(() => !!hero.value);
   const isNew = computed(() => hero.value?.id === 0);
+
+  const isOwner = computed(() => {
+    const authStore = useAuthStore();
+    return !!authStore.userId && !!hero.value?.userId && authStore.userId === hero.value.userId;
+  });
 
   // Array getters - avoid repeating `hero.value?.X ?? []` everywhere
   const talents = computed(() => hero.value?.talents ?? []);
@@ -655,41 +657,109 @@ export const useHeroStore = defineStore('hero', () => {
     HeroConnection
   >('connections', 'connections', 'connection');
 
-  const { upsert: upsertCompanion, remove: removeCompanion } = createSubResourceActions<
-    HeroCompanionBase,
-    HeroCompanion
-  >('companions', 'companions', 'companion');
-
   const companionNpcOptions = ref<NpcOption[]>([]);
 
-  async function fetchCompanionNpcOptions(): Promise<void> {
-    if (!hero.value?.campaignId) return;
+  async function fetchCompanionNpcOptions(): Promise<boolean> {
+    if (!hero.value) return false;
+    const currentHeroId = hero.value.id;
+    companionNpcOptions.value = [];
     try {
-      const response = await heroService.getCompanionNpcOptions(hero.value.campaignId);
+      const response = await heroService.getCompanionNpcOptions(currentHeroId);
+      if (hero.value?.id !== currentHeroId) return false;
       companionNpcOptions.value = response.data;
+      return true;
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to load companion options' });
+      return false;
+    }
+  }
+
+  async function addCompanion(data: {
+    npcId: number;
+    heroId: number;
+    displayName?: string | null;
+  }): Promise<NpcInstance | null> {
+    if (!hero.value) return null;
+    const currentHeroId = hero.value.id;
+    savingCount.value++;
+    try {
+      const response = await npcInstanceService.create({ ...data, heroId: currentHeroId });
+      if (hero.value?.id === currentHeroId) {
+        hero.value.companions.push(response.data);
+      }
+      logger.info('Companion added', { id: response.data.id });
+      return response.data;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to add companion' });
+      return null;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function patchCompanion(
+    instanceId: number,
+    data: { displayName?: string | null; notes?: string | null }
+  ): Promise<boolean> {
+    if (!hero.value) return false;
+    const currentHeroId = hero.value.id;
+    savingCount.value++;
+    try {
+      const response = await npcInstanceService.patch(instanceId, data);
+      if (hero.value?.id !== currentHeroId) return false;
+      const comp = hero.value.companions.find((c) => c.id === instanceId);
+      if (comp) {
+        comp.displayName = response.data.displayName ?? null;
+        comp.notes = response.data.notes ?? null;
+      }
+      return true;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to update companion' });
+      return false;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function removeCompanion(instanceId: number): Promise<boolean> {
+    if (!hero.value) return false;
+    const currentHeroId = hero.value.id;
+    savingCount.value++;
+    try {
+      await npcInstanceService.delete(instanceId);
+      if (hero.value?.id === currentHeroId) {
+        hero.value.companions = hero.value.companions.filter((c) => c.id !== instanceId);
+      }
+      logger.info('Companion removed', { id: instanceId });
+      return true;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to remove companion' });
+      return false;
+    } finally {
+      savingCount.value--;
     }
   }
 
   async function patchCompanionResource(
-    companionId: number,
+    instanceId: number,
+    field: 'current_hp' | 'current_focus' | 'current_investiture',
     value: number,
-    serviceFn: (data: CompanionResourcePatch) => Promise<{ data: Record<string, number> }>,
-    field: 'currentHp' | 'currentFocus' | 'currentInvestiture',
+    npcField: 'currentHp' | 'currentFocus' | 'currentInvestiture',
     errorMessage: string
   ): Promise<void> {
     if (!hero.value) return;
+    const currentHeroId = hero.value.id;
     savingCount.value++;
     try {
-      const response = await serviceFn({
-        id: companionId,
-        heroId: hero.value.id,
-        value: Math.max(0, Math.floor(value)),
-      });
-      const comp = hero.value.companions.find((c) => c.id === companionId);
+      const response = await npcInstanceService.patchResource(
+        instanceId,
+        field,
+        Math.max(0, Math.floor(value))
+      );
+      if (hero.value?.id !== currentHeroId) return;
+      const comp = hero.value.companions.find((c) => c.id === instanceId);
       const newValue = response.data[field];
-      if (comp && typeof newValue === 'number') comp[field] = newValue;
+      if (comp && typeof newValue === 'number') comp[npcField] = newValue;
     } catch (err) {
       handleError(err, { errorRef: error, message: errorMessage });
     } finally {
@@ -698,26 +768,20 @@ export const useHeroStore = defineStore('hero', () => {
   }
 
   const patchCompanionHp = (id: number, v: number) =>
-    patchCompanionResource(
-      id,
-      v,
-      (d) => heroService.patchCompanionHp(d),
-      'currentHp',
-      'Failed to update companion HP'
-    );
+    patchCompanionResource(id, 'current_hp', v, 'currentHp', 'Failed to update companion HP');
   const patchCompanionFocus = (id: number, v: number) =>
     patchCompanionResource(
       id,
+      'current_focus',
       v,
-      (d) => heroService.patchCompanionFocus(d),
       'currentFocus',
       'Failed to update companion focus'
     );
   const patchCompanionInvestiture = (id: number, v: number) =>
     patchCompanionResource(
       id,
+      'current_investiture',
       v,
-      (d) => heroService.patchCompanionInvestiture(d),
       'currentInvestiture',
       'Failed to update companion investiture'
     );
@@ -752,6 +816,7 @@ export const useHeroStore = defineStore('hero', () => {
 
     // Computed
     isLoaded,
+    isOwner,
     isNew,
     talents,
     skills,
@@ -820,10 +885,11 @@ export const useHeroStore = defineStore('hero', () => {
     removeConnection,
 
     // Companions (sheet)
-    upsertCompanion,
+    addCompanion,
     removeCompanion,
     companionNpcOptions,
     fetchCompanionNpcOptions,
+    patchCompanion,
     patchCompanionHp,
     patchCompanionFocus,
     patchCompanionInvestiture,

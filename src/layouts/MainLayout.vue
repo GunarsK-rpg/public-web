@@ -148,6 +148,8 @@ const pageTitle = computed(() => {
   return dynamicTitle.value || (route.meta?.title as string) || 'Cosmere RPG';
 });
 
+const npcRoutes = new Set(['npc-detail', 'npc-create', 'npc-edit']);
+
 const campaignRoutes = new Set([
   'campaigns',
   'campaign-detail',
@@ -156,11 +158,15 @@ const campaignRoutes = new Set([
   'join-campaign',
   'combat-detail',
   'npc-detail',
+  'npc-create',
+  'npc-edit',
 ]);
 
 const activeNavTab = computed(() => {
   const name = route.name as string;
   if (name === 'account') return null;
+  // NPC pages from hero context belong to Characters
+  if (route.query?.heroId && npcRoutes.has(name)) return 'my-characters';
   return campaignRoutes.has(name) ? 'campaigns' : 'my-characters';
 });
 

@@ -182,6 +182,10 @@
             :saving="combatStore.saving"
             @create="onCreateCombat"
           />
+
+          <div class="q-mt-lg">
+            <CampaignNpcList :campaign-id="Number(campaignId)" />
+          </div>
         </template>
       </template>
     </div>
@@ -199,6 +203,7 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { logger } from 'src/utils/logger';
 import CreateCombatDialog from 'src/components/combat/CreateCombatDialog.vue';
+import CampaignNpcList from 'src/components/combat/CampaignNpcList.vue';
 import HeroCard from 'src/components/shared/HeroCard.vue';
 import type { Combat, Hero } from 'src/types';
 

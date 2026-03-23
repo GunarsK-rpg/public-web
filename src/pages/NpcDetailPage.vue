@@ -6,30 +6,86 @@
       <q-banner v-else-if="error" class="bg-negative text-white q-mb-md">
         {{ error }}
         <template v-slot:action>
-          <q-btn flat label="Go Back" :to="backRoute" />
+          <q-btn flat label="Go Back" @click="goBack" />
         </template>
       </q-banner>
 
-      <div v-else-if="!npc" class="text-center q-pa-xl">
+      <div v-else-if="!editableNpc && !isCreateMode" class="text-center q-pa-xl">
         <UserX :size="64" class="text-grey-5" aria-hidden="true" />
         <div class="text-h6 text-grey-7 q-mt-md">NPC not found</div>
-        <q-btn color="primary" label="Go Back" class="q-mt-md" :to="backRoute" />
+        <q-btn color="primary" label="Go Back" class="q-mt-md" @click="goBack" />
       </div>
 
-      <template v-else>
-        <div class="q-mb-md">
-          <q-btn flat dense round size="sm" aria-label="Back" :to="backRoute">
+      <template v-else-if="editableNpc">
+        <!-- Header bar -->
+        <div class="row items-center q-mb-md">
+          <q-btn flat dense round size="sm" aria-label="Back" @click="goBack">
             <ArrowLeft :size="20" />
           </q-btn>
+          <q-space />
+          <template v-if="editing">
+            <q-btn flat dense label="Cancel" class="q-mr-sm" @click="handleCancel" />
+            <q-btn
+              dense
+              color="primary"
+              label="Save"
+              :loading="saving"
+              :disable="!isFormValid"
+              @click="handleSave"
+            />
+          </template>
+          <template v-else-if="!isArchived">
+            <q-btn flat dense label="Clone" color="secondary" @click="cloneAsNew" />
+            <template v-if="canEdit">
+              <q-btn flat dense label="Edit" color="primary" @click="startEdit" />
+              <q-btn flat dense label="Archive" color="negative" @click="confirmDelete" />
+            </template>
+          </template>
         </div>
+
+        <q-banner v-if="isArchived" class="bg-grey-3 text-grey-8 q-mb-md">
+          This NPC has been archived. It remains visible in existing combats and companions.
+        </q-banner>
+
         <NpcStatBlock
-          :npc="npc"
-          :display-name="combatNpc?.displayName"
-          :current-resources="currentResources"
-          :notes="combatNpc?.notes"
+          :npc="editableNpc"
           :saving="saving"
-          :readonly="!combatStore.currentCombat?.isActive"
-          @resource-update="onResourceUpdate"
+          :readonly="true"
+          :editable="editing"
+          :show-companion-toggle="editing"
+          @field-update="onFieldUpdate"
+          @stat-update="onStatUpdate"
+          @stat-add="onStatAdd"
+          @stat-edit="onStatEdit"
+          @stat-remove="onStatRemove"
+          @item-add="onItemAdd"
+          @item-edit="onItemEdit"
+          @item-remove="onItemRemove"
+        />
+
+        <!-- Item edit dialog -->
+        <NpcItemEditDialog
+          v-if="editing"
+          v-model="showItemDialog"
+          :item="dialogItem"
+          :show-activation-type="dialogShowActivationType"
+          :item-label="dialogItemLabel"
+          @save="onItemSave"
+        />
+
+        <!-- Stat picker dialog (skills / derived stats) -->
+        <NpcStatPickerDialog
+          v-if="editing"
+          v-model="showStatDialog"
+          :title="statDialogTitle"
+          :options="statDialogOptions"
+          :used-codes="statDialogUsedCodes"
+          :edit-index="statDialogEditIndex"
+          :edit-code="statDialogEditCode"
+          :edit-value="statDialogEditValue"
+          :edit-display-value="statDialogEditDisplayValue"
+          :show-display-value="statDialogShowDisplayValue"
+          @save="onStatDialogSave"
         />
       </template>
     </div>
@@ -38,120 +94,190 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
 import { usePageTitle } from 'src/composables/usePageTitle';
+import { useNpcEditState } from 'src/composables/useNpcEditState';
+import { useNpcItemDialog } from 'src/composables/useNpcItemDialog';
+import { useNpcStatDialog } from 'src/composables/useNpcStatDialog';
 import { ArrowLeft, UserX } from 'lucide-vue-next';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useCombatStore } from 'src/stores/combat';
 import combatService from 'src/services/combatService';
 import NpcStatBlock from 'src/components/combat/NpcStatBlock.vue';
+import NpcItemEditDialog from 'src/components/combat/NpcItemEditDialog.vue';
+import NpcStatPickerDialog from 'src/components/combat/NpcStatPickerDialog.vue';
 import { handleError } from 'src/utils/errorHandling';
-import type { Npc, CombatNpc } from 'src/types';
+import type { NpcUpsert } from 'src/types';
 
 const props = defineProps<{
   campaignId: string;
-  npcId: string;
+  npcId?: string;
 }>();
 
 const route = useRoute();
+const router = useRouter();
+const $q = useQuasar();
 const combatStore = useCombatStore();
+const classifiers = useClassifierStore();
 const { setPageTitle } = usePageTitle();
-const loading = ref(true);
+
+const loadingInit = ref(true);
 const error = ref<string | null>(null);
-const npc = ref<Npc | null>(null);
-const combatNpc = ref<CombatNpc | null>(null);
 
 const saving = computed(() => combatStore.saving);
+const isCreateMode = computed(() => route.name === 'npc-create');
+const isEditRoute = computed(() => route.name === 'npc-edit');
+const loading = computed(() => loadingInit.value || combatStore.loading);
 
-const combatId = computed(() => {
-  const n = Number(route.query.combatId);
-  return Number.isFinite(n) && n > 0 ? n : null;
-});
+const numCampaignId = computed(() => Number(props.campaignId));
 
-const instanceId = computed(() => {
-  const n = Number(route.query.instanceId);
-  return Number.isFinite(n) && n > 0 ? n : null;
-});
+// Edit state
+const {
+  npc,
+  editableNpc,
+  editing,
+  isClone,
+  canEdit,
+  isFormValid,
+  buildEmptyNpc,
+  startEdit,
+  cloneAsNew,
+  cancelEdit,
+  onFieldUpdate,
+  onStatUpdate,
+  buildPayload,
+} = useNpcEditState(numCampaignId, isCreateMode);
 
-const heroId = computed(() => {
-  const n = Number(route.query.heroId);
-  return Number.isFinite(n) && n > 0 ? n : null;
-});
+const isArchived = computed(() => !!npc.value?.deletedAt);
 
-const backRoute = computed(() => {
-  if (combatId.value) {
-    return {
-      name: 'combat-detail',
-      params: { campaignId: props.campaignId, combatId: String(combatId.value) },
-    };
-  }
-  if (heroId.value) {
-    return {
-      name: 'character-sheet',
-      params: { characterId: String(heroId.value) },
-      query: { tab: 'companions' },
-    };
-  }
+// Dialogs
+const {
+  showItemDialog,
+  dialogItem,
+  dialogShowActivationType,
+  dialogItemLabel,
+  onItemAdd,
+  onItemEdit,
+  onItemRemove,
+  onItemSave,
+} = useNpcItemDialog(editableNpc);
+
+const {
+  showStatDialog,
+  statDialogTitle,
+  statDialogOptions,
+  statDialogUsedCodes,
+  statDialogEditIndex,
+  statDialogEditCode,
+  statDialogEditValue,
+  statDialogEditDisplayValue,
+  statDialogShowDisplayValue,
+  onStatAdd,
+  onStatEdit,
+  onStatRemove,
+  onStatDialogSave,
+} = useNpcStatDialog(editableNpc);
+
+// Navigation
+function backRoute() {
   return { name: 'campaign-detail', params: { campaignId: props.campaignId } };
-});
+}
 
-const currentResources = computed(() => {
-  if (!combatNpc.value) return null;
-  return {
-    currentHp: combatNpc.value.currentHp,
-    currentFocus: combatNpc.value.currentFocus,
-    currentInvestiture: combatNpc.value.currentInvestiture,
-  };
-});
+function goBack() {
+  void router.push(backRoute());
+}
 
-onMounted(async () => {
-  const campaignId = Number(props.campaignId);
-  const npcId = Number(props.npcId);
-  if (isNaN(campaignId) || campaignId <= 0 || isNaN(npcId) || npcId <= 0) {
-    error.value = 'Invalid NPC ID';
-    loading.value = false;
-    return;
+function handleCancel() {
+  const result = cancelEdit();
+  if (result === 'goBack') goBack();
+}
+
+// Save
+async function handleSave() {
+  if (!isFormValid.value) return;
+  const payload = buildPayload(props.npcId);
+
+  const isNew = isCreateMode.value || isClone.value;
+  const result = isNew
+    ? await combatStore.createNpc(payload)
+    : await combatStore.updateNpc(payload as NpcUpsert & { id: number });
+
+  if (result) {
+    if (isNew) {
+      isClone.value = false;
+      goBack();
+    } else {
+      npc.value = result;
+      editableNpc.value = result;
+      editing.value = false;
+      setPageTitle(result.name);
+    }
   }
+}
+
+// Delete
+function confirmDelete() {
+  $q.dialog({
+    title: 'Archive NPC',
+    message: `Archive "${npc.value?.name}"? It will remain visible in existing combats and companions but cannot be added to new ones.`,
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    combatStore
+      .deleteNpc(numCampaignId.value, Number(props.npcId))
+      .then((deleted) => {
+        if (deleted) {
+          goBack();
+        } else if (combatStore.error) {
+          $q.notify({ type: 'negative', message: combatStore.error });
+        }
+      })
+      .catch(() => {
+        $q.notify({ type: 'negative', message: 'Failed to delete NPC' });
+      });
+  });
+}
+
+// Init
+onMounted(async () => {
+  const campaignId = numCampaignId.value;
+
   try {
-    const classifiers = useClassifierStore();
     if (!classifiers.initialized) {
       await classifiers.initialize();
     }
+
+    if (isNaN(campaignId) || campaignId <= 0) {
+      error.value = 'Invalid campaign ID';
+      return;
+    }
+
+    if (isCreateMode.value) {
+      editableNpc.value = buildEmptyNpc();
+      editing.value = true;
+      setPageTitle('Create NPC');
+      return;
+    }
+
+    const npcId = Number(props.npcId);
+    if (isNaN(npcId) || npcId <= 0) {
+      error.value = 'Invalid NPC ID';
+      return;
+    }
+
     const response = await combatService.getNpc(campaignId, npcId);
     npc.value = response.data;
+    editableNpc.value = response.data;
     setPageTitle(response.data.name);
 
-    // Load combat NPC instance if combat context provided
-    if (combatId.value && instanceId.value) {
-      await combatStore.selectCombat(campaignId, combatId.value);
-      combatNpc.value =
-        combatStore.currentCombat?.npcs.find((n) => n.id === instanceId.value) ?? null;
+    if (isEditRoute.value) {
+      startEdit();
     }
   } catch (err: unknown) {
     handleError(err, { errorRef: error, message: 'Failed to load NPC' });
   } finally {
-    loading.value = false;
+    loadingInit.value = false;
   }
 });
-
-const resourcePatchMap: Record<
-  string,
-  (data: { id: number; combatId: number; campaignId: number; value: number }) => Promise<void>
-> = {
-  max_health: (d) => combatStore.patchHp(d),
-  max_focus: (d) => combatStore.patchFocus(d),
-  max_investiture: (d) => combatStore.patchInvestiture(d),
-};
-
-function onResourceUpdate(code: string, value: number) {
-  if (!combatNpc.value || !combatId.value) return;
-  const patchFn = resourcePatchMap[code];
-  if (!patchFn) return;
-  void patchFn({
-    id: combatNpc.value.id,
-    combatId: combatId.value,
-    campaignId: Number(props.campaignId),
-    value,
-  });
-}
 </script>

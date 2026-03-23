@@ -7,7 +7,6 @@ import type { HeroTalent, HeroTalentBase } from 'src/types/talents';
 import type { HeroCulture, HeroCultureBase } from 'src/types/culture';
 import type { HeroEquipment, HeroEquipmentBase } from 'src/types/equipments';
 import type { HeroGoal, HeroGoalBase, HeroConnection, HeroConnectionBase } from 'src/types/goals';
-import type { HeroCompanion, HeroCompanionBase } from 'src/types/companions';
 import type { HeroDerivedStatSheet, HeroDerivedStatBase } from 'src/types/derivedStats';
 
 function toClassifierInput(ref: ClassifierRef): ClassifierInput {
@@ -131,21 +130,6 @@ export function buildConnectionPayload(heroId: number, conn: HeroConnection): He
     connectionType: toClassifierInput(conn.connectionType),
     description: conn.description ?? null,
     notes: conn.notes ?? null,
-  };
-}
-
-export function buildCompanionPayload(heroId: number, comp: HeroCompanion): HeroCompanionBase {
-  return {
-    ...realIdSpread(comp.id),
-    heroId,
-    companionType: toClassifierInput(comp.companionType),
-    description: comp.description ?? null,
-    notes: comp.notes ?? null,
-    npcId: comp.npcId ?? null,
-    displayName: comp.displayName ?? null,
-    currentHp: comp.currentHp,
-    currentFocus: comp.currentFocus,
-    currentInvestiture: comp.currentInvestiture,
   };
 }
 

@@ -21,6 +21,7 @@ export function setRouterInstance(router: Router): void {
 
 export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false);
+  const userId = ref<number | null>(null);
   const username = ref('');
   const email = ref('');
   const emailVerified = ref(false);
@@ -56,6 +57,7 @@ export const useAuthStore = defineStore('auth', () => {
   function resetAuthState(): void {
     clearProactiveRefresh();
     isAuthenticated.value = false;
+    userId.value = null;
     username.value = '';
     email.value = '';
     emailVerified.value = false;
@@ -84,6 +86,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       isAuthenticated.value = true;
+      userId.value = response.data.user_id ?? null;
       username.value = response.data.username ?? '';
       hydrateProfile(response.data);
       scopes.value = response.data.scopes ?? {};
@@ -105,12 +108,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   function hydrateLoginResponse(data: LoginResponse, fallbackUsername = ''): void {
     isAuthenticated.value = true;
+    userId.value = data.user_id ?? null;
     username.value = data.username || fallbackUsername;
     hydrateProfile(data);
     scopes.value = data.scopes || {};
 
-    if (data.user_id) {
-      setUserContext({ id: data.user_id });
+    if (userId.value) {
+      setUserContext({ id: userId.value });
     }
 
     scheduleProactiveRefresh(data.expires_in);
@@ -211,6 +215,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     isAuthenticated,
+    userId,
     username,
     email,
     emailVerified,

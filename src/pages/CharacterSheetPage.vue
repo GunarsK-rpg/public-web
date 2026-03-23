@@ -50,8 +50,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { heroTabKey } from 'src/utils/routeUtils';
 import { useHeroStore } from 'stores/hero';
-import { useAuthStore } from 'stores/auth';
 import { useClassifierStore } from 'stores/classifiers';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
@@ -108,7 +108,6 @@ const props = defineProps<{
 }>();
 
 const heroStore = useHeroStore();
-const authStore = useAuthStore();
 const classifierStore = useClassifierStore();
 
 const tabIds = new Set(tabs.map((t) => t.id));
@@ -122,7 +121,7 @@ function resolveInitialTab(): string {
     void router.replace({ query: { ...route.query, tab: undefined } });
     return queryTab;
   }
-  const stored = sessionStorage.getItem(`hero-tab-${props.characterId}`);
+  const stored = sessionStorage.getItem(heroTabKey(props.characterId));
   if (stored && tabIds.has(stored)) return stored;
   return 'stats';
 }
@@ -130,16 +129,12 @@ function resolveInitialTab(): string {
 const activeTab = ref(resolveInitialTab());
 
 watch(activeTab, (tab) => {
-  sessionStorage.setItem(`hero-tab-${props.characterId}`, tab);
+  sessionStorage.setItem(heroTabKey(props.characterId), tab);
 });
 
 const initializing = ref(true);
 const isLoaded = computed(() => heroStore.isLoaded);
-const isReadonly = computed(() => {
-  const heroUsername = heroStore.hero?.user?.username?.trim().toLowerCase();
-  const authUsername = authStore.username?.trim().toLowerCase();
-  return !heroUsername || !authUsername || heroUsername !== authUsername;
-});
+const isReadonly = computed(() => !heroStore.isOwner);
 const loading = computed(() => initializing.value || heroStore.loading);
 const error = computed(() => heroStore.error);
 const classifierLoading = computed(() => classifierStore.loading);

@@ -5,9 +5,25 @@
       <div v-for="def in defenses" :key="def.type.code" class="col-3">
         <q-card class="defense-card">
           <q-card-section class="text-center q-pa-sm">
-            <div class="defense-value" :aria-label="`${def.type.name} defense: ${def.value}`">
-              {{ def.value }}
-            </div>
+            <template v-if="editable">
+              <q-input
+                :model-value="def.value"
+                type="number"
+                dense
+                borderless
+                input-style="text-align: center; font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums"
+                :min="0"
+                :aria-label="`Edit ${def.type.name} defense`"
+                @update:model-value="
+                  $emit('update', def.type.code, Math.max(0, Number($event) || 0))
+                "
+              />
+            </template>
+            <template v-else>
+              <div class="defense-value" :aria-label="`${def.type.name} defense: ${def.value}`">
+                {{ def.value }}
+              </div>
+            </template>
             <div class="defense-name">{{ def.type.name }}</div>
           </q-card-section>
         </q-card>
@@ -44,9 +60,17 @@ import { useClassifierStore } from 'src/stores/classifiers';
 import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import type { StatValue } from 'src/types/shared';
 
-defineProps<{
-  defenses: StatValue[];
-  deflect?: StatValue | null | undefined;
+withDefaults(
+  defineProps<{
+    defenses: StatValue[];
+    deflect?: StatValue | null | undefined;
+    editable?: boolean;
+  }>(),
+  { editable: false }
+);
+
+defineEmits<{
+  update: [code: string, value: number];
 }>();
 
 const classifiers = useClassifierStore();

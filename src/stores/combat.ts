@@ -1,22 +1,26 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import axios from 'axios';
 import type {
   Combat,
   CombatBase,
   CombatDetail,
-  CombatNpc,
-  CombatNpcBase,
-  CombatNpcResourcePatch,
+  NpcInstance,
+  NpcInstancePatch,
+  Npc,
   NpcOption,
+  NpcUpsert,
 } from 'src/types';
 import { logger } from 'src/utils/logger';
 import combatService from 'src/services/combatService';
+import npcInstanceService from 'src/services/npcInstanceService';
 import { handleError } from 'src/utils/errorHandling';
 
 export const useCombatStore = defineStore('combat', () => {
   const combats = ref<Combat[]>([]);
   const currentCombat = ref<CombatDetail | null>(null);
   const npcOptions = ref<NpcOption[]>([]);
+  const currentNpc = ref<Npc | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
   const savingCount = ref(0);
@@ -24,6 +28,7 @@ export const useCombatStore = defineStore('combat', () => {
 
   let fetchRequestId = 0;
   let selectRequestId = 0;
+  let fetchNpcRequestId = 0;
 
   const saving = computed(() => savingCount.value > 0);
   const hasCombats = computed(() => combats.value.length > 0);
@@ -174,24 +179,133 @@ export const useCombatStore = defineStore('combat', () => {
   }
 
   // ===================
+  // NPC CRUD
+  // ===================
+
+  async function fetchNpc(campaignId: number, npcId: number): Promise<Npc | null> {
+    const requestId = ++fetchNpcRequestId;
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await combatService.getNpc(campaignId, npcId);
+      if (requestId !== fetchNpcRequestId) return null;
+      currentNpc.value = response.data;
+      return response.data;
+    } catch (err: unknown) {
+      if (requestId === fetchNpcRequestId) {
+        handleError(err, { errorRef: error, message: 'Failed to load NPC' });
+      }
+      return null;
+    } finally {
+      if (requestId === fetchNpcRequestId) {
+        loading.value = false;
+      }
+    }
+  }
+
+  async function createNpc(data: NpcUpsert): Promise<Npc | null> {
+    savingCount.value++;
+    error.value = null;
+    try {
+      const response = await combatService.createNpc(data);
+      currentNpc.value = response.data;
+      npcOptions.value = [
+        ...npcOptions.value,
+        {
+          id: response.data.id,
+          campaignId: response.data.campaignId,
+          name: response.data.name,
+          tier: response.data.tier,
+          type: response.data.type,
+          isCompanion: response.data.isCompanion,
+        },
+      ];
+      logger.info('NPC created', { id: response.data.id, name: response.data.name });
+      return response.data;
+    } catch (err: unknown) {
+      handleError(err, { errorRef: error, message: 'Failed to create NPC' });
+      return null;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function updateNpc(data: NpcUpsert & { id: number }): Promise<Npc | null> {
+    savingCount.value++;
+    error.value = null;
+    try {
+      const response = await combatService.updateNpc(data);
+      currentNpc.value = response.data;
+      const idx = npcOptions.value.findIndex((o) => o.id === data.id);
+      if (idx !== -1) {
+        npcOptions.value[idx] = {
+          id: response.data.id,
+          campaignId: response.data.campaignId,
+          name: response.data.name,
+          tier: response.data.tier,
+          type: response.data.type,
+          isCompanion: response.data.isCompanion,
+        };
+      }
+      logger.info('NPC updated', { id: data.id });
+      return response.data;
+    } catch (err: unknown) {
+      handleError(err, { errorRef: error, message: 'Failed to update NPC' });
+      return null;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  async function deleteNpc(campaignId: number, npcId: number): Promise<boolean> {
+    savingCount.value++;
+    error.value = null;
+    try {
+      await combatService.deleteNpc(campaignId, npcId);
+      npcOptions.value = npcOptions.value.filter((n) => n.id !== npcId);
+      if (currentNpc.value?.id === npcId) currentNpc.value = null;
+      logger.info('NPC deleted', { id: npcId });
+      return true;
+    } catch (err: unknown) {
+      const apiMessage =
+        axios.isAxiosError(err) && typeof err.response?.data?.error === 'string'
+          ? err.response.data.error
+          : 'Failed to delete NPC';
+      handleError(err, { errorRef: error, message: apiMessage });
+      return false;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
+  // ===================
   // COMBAT NPC INSTANCES
   // ===================
 
-  async function addCombatNpc(data: CombatNpcBase): Promise<CombatNpc | null> {
+  async function addNpcInstance(data: {
+    npcId: number;
+    combatId: number;
+    displayName?: string | null;
+    side: 'ally' | 'enemy';
+  }): Promise<NpcInstance | null> {
     if (!currentCombat.value) return null;
     savingCount.value++;
 
     // Auto-number duplicates if no custom display name
-    if (!data.displayName) {
+    let displayName = data.displayName;
+    if (!displayName) {
       const existing = currentCombat.value.npcs.filter((n) => n.npcId === data.npcId);
       const first = existing[0];
       if (first) {
-        data = { ...data, displayName: `${first.name} ${existing.length + 1}` };
+        displayName = `${first.name} ${existing.length + 1}`;
       }
     }
 
     try {
-      const response = await combatService.addCombatNpc(data);
+      const response = await npcInstanceService.create({
+        ...data,
+        displayName: displayName ?? null,
+      });
       currentCombat.value.npcs.push(response.data);
       logger.info('Combat NPC added', { id: response.data.id, npcId: data.npcId });
       return response.data;
@@ -203,13 +317,16 @@ export const useCombatStore = defineStore('combat', () => {
     }
   }
 
-  async function updateCombatNpc(data: CombatNpcBase & { id: number }): Promise<CombatNpc | null> {
+  async function updateNpcInstance(
+    id: number,
+    data: NpcInstancePatch
+  ): Promise<NpcInstance | null> {
     if (!currentCombat.value) return null;
     savingCount.value++;
 
     try {
-      const response = await combatService.updateCombatNpc(data);
-      const idx = currentCombat.value.npcs.findIndex((n) => n.id === data.id);
+      const response = await npcInstanceService.patch(id, data);
+      const idx = currentCombat.value.npcs.findIndex((n) => n.id === id);
       if (idx !== -1) {
         currentCombat.value.npcs[idx] = response.data;
       }
@@ -222,16 +339,12 @@ export const useCombatStore = defineStore('combat', () => {
     }
   }
 
-  async function removeCombatNpc(
-    campaignId: number,
-    combatId: number,
-    instanceId: number
-  ): Promise<boolean> {
+  async function removeNpcInstance(instanceId: number): Promise<boolean> {
     if (!currentCombat.value) return false;
     savingCount.value++;
 
     try {
-      await combatService.deleteCombatNpc(campaignId, combatId, instanceId);
+      await npcInstanceService.delete(instanceId);
       currentCombat.value.npcs = currentCombat.value.npcs.filter((n) => n.id !== instanceId);
       logger.info('Combat NPC removed', { id: instanceId });
       return true;
@@ -247,23 +360,27 @@ export const useCombatStore = defineStore('combat', () => {
   // RESOURCE PATCHES
   // ===================
 
-  async function patchNpcResource(
-    data: CombatNpcResourcePatch,
-    serviceFn: (d: CombatNpcResourcePatch) => Promise<{ data: Record<string, number> }>,
-    field: keyof CombatNpc,
-    responseKey: string,
+  async function patchInstanceResource(
+    instanceId: number,
+    field: 'current_hp' | 'current_focus' | 'current_investiture',
+    value: number,
+    npcField: keyof NpcInstance,
     errorMessage: string
   ): Promise<void> {
     if (!currentCombat.value) return;
     savingCount.value++;
 
     try {
-      const response = await serviceFn({ ...data, value: Math.max(0, Math.floor(data.value)) });
-      const npc = currentCombat.value.npcs.find((n) => n.id === data.id);
+      const response = await npcInstanceService.patchResource(
+        instanceId,
+        field,
+        Math.max(0, Math.floor(value))
+      );
+      const npc = currentCombat.value.npcs.find((n) => n.id === instanceId);
       if (npc) {
-        const val = response.data[responseKey];
+        const val = response.data[field];
         if (val !== undefined) {
-          (npc[field] as number) = val;
+          (npc[npcField] as number) = val;
         }
       }
     } catch (err: unknown) {
@@ -273,29 +390,23 @@ export const useCombatStore = defineStore('combat', () => {
     }
   }
 
-  const patchHp = (data: CombatNpcResourcePatch) =>
-    patchNpcResource(
-      data,
-      (d) => combatService.patchHp(d),
-      'currentHp',
-      'currentHp',
-      'Failed to update HP'
-    );
+  const patchHp = (data: { id: number; value: number }) =>
+    patchInstanceResource(data.id, 'current_hp', data.value, 'currentHp', 'Failed to update HP');
 
-  const patchFocus = (data: CombatNpcResourcePatch) =>
-    patchNpcResource(
-      data,
-      (d) => combatService.patchFocus(d),
-      'currentFocus',
+  const patchFocus = (data: { id: number; value: number }) =>
+    patchInstanceResource(
+      data.id,
+      'current_focus',
+      data.value,
       'currentFocus',
       'Failed to update focus'
     );
 
-  const patchInvestiture = (data: CombatNpcResourcePatch) =>
-    patchNpcResource(
-      data,
-      (d) => combatService.patchInvestiture(d),
-      'currentInvestiture',
+  const patchInvestiture = (data: { id: number; value: number }) =>
+    patchInstanceResource(
+      data.id,
+      'current_investiture',
+      data.value,
       'currentInvestiture',
       'Failed to update investiture'
     );
@@ -372,6 +483,7 @@ export const useCombatStore = defineStore('combat', () => {
   function reset(): void {
     combats.value = [];
     currentCombat.value = null;
+    currentNpc.value = null;
     npcOptions.value = [];
     loading.value = false;
     error.value = null;
@@ -379,11 +491,13 @@ export const useCombatStore = defineStore('combat', () => {
     turnDoneIds.value = new Set();
     fetchRequestId = 0;
     selectRequestId = 0;
+    fetchNpcRequestId = 0;
   }
 
   return {
     combats,
     currentCombat,
+    currentNpc,
     npcOptions,
     loading,
     error,
@@ -398,9 +512,13 @@ export const useCombatStore = defineStore('combat', () => {
     updateCombat,
     deleteCombat,
     fetchNpcOptions,
-    addCombatNpc,
-    updateCombatNpc,
-    removeCombatNpc,
+    fetchNpc,
+    createNpc,
+    updateNpc,
+    deleteNpc,
+    addNpcInstance,
+    updateNpcInstance,
+    removeNpcInstance,
     patchHp,
     patchFocus,
     patchInvestiture,

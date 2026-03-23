@@ -17,6 +17,11 @@ export interface ClassifierInput {
   code: string;
 }
 
+/** Classifier code + numeric value — for upsert payloads (attributes, defenses, skills) */
+export interface ClassifierValue extends ClassifierInput {
+  value: number;
+}
+
 /** Enriched classifier reference returned by the API */
 export interface ClassifierRef extends ClassifierInput {
   id: number;

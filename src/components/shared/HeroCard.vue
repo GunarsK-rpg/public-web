@@ -8,7 +8,7 @@
       :href="href"
       class="card-link"
       :aria-label="`View character: ${hero.name}`"
-      @click="navigate($event)"
+      @click="onNavigate($event, navigate)"
     >
       <q-card class="card-interactive cursor-pointer">
         <q-card-section class="row items-center no-wrap q-gutter-x-md">
@@ -42,6 +42,7 @@ import { computed } from 'vue';
 import type { Hero } from 'src/types';
 import AvatarDisplay from './AvatarDisplay.vue';
 import filesApi from 'src/services/filesApi';
+import { clearHeroTab } from 'src/utils/routeUtils';
 
 const props = defineProps<{
   hero: Hero;
@@ -51,4 +52,9 @@ const props = defineProps<{
 const avatarUrl = computed(() =>
   props.hero.avatarKey ? filesApi.buildHeroAvatarUrl(props.hero.avatarKey) : null
 );
+
+function onNavigate(event: MouseEvent, navigate: (e: MouseEvent) => void) {
+  clearHeroTab(props.hero.id);
+  navigate(event);
+}
 </script>

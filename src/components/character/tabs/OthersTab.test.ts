@@ -7,7 +7,7 @@ import type {
   HeroCulture,
   HeroGoal,
   HeroConnection,
-  HeroCompanion,
+  NpcInstance,
   HeroInjury,
   HeroNote,
 } from 'src/types';
@@ -24,7 +24,7 @@ const mockHero = ref<{
 const mockCultures = ref<HeroCulture[]>([]);
 const mockGoals = ref<HeroGoal[]>([]);
 const mockConnections = ref<HeroConnection[]>([]);
-const mockCompanions = ref<HeroCompanion[]>([]);
+const mockCompanions = ref<NpcInstance[]>([]);
 const mockHeroNotes = ref<HeroNote[]>([]);
 const mockInjuries = ref<HeroInjury[]>([]);
 const mockIsSinger = ref(false);
@@ -101,10 +101,6 @@ vi.mock('src/stores/classifiers', () => ({
     connectionTypes: [
       { id: 1, code: 'ally', name: 'Ally' },
       { id: 2, code: 'enemy', name: 'Enemy' },
-    ],
-    companionTypes: [
-      { id: 1, code: 'pet', name: 'Pet' },
-      { id: 2, code: 'spren', name: 'Spren' },
     ],
     injuries: [
       { id: 1, code: 'broken-arm', name: 'Broken Arm' },
