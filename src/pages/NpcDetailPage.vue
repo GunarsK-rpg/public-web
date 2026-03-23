@@ -34,7 +34,7 @@
               @click="handleSave"
             />
           </template>
-          <template v-else-if="!heroId">
+          <template v-else>
             <q-btn flat dense label="Clone" color="secondary" @click="cloneAsNew" />
             <template v-if="canEdit">
               <q-btn flat dense label="Edit" color="primary" @click="startEdit" />
@@ -45,14 +45,10 @@
 
         <NpcStatBlock
           :npc="editableNpc"
-          :display-name="combatNpc?.displayName"
-          :current-resources="currentResources"
-          :notes="combatNpc?.notes"
           :saving="saving"
-          :readonly="resourcesReadonly"
+          :readonly="true"
           :editable="editing"
           :show-companion-toggle="editing"
-          @resource-update="onResourceUpdate"
           @field-update="onFieldUpdate"
           @stat-update="onStatUpdate"
           @stat-add="onStatAdd"
@@ -104,12 +100,11 @@ import { ArrowLeft, UserX } from 'lucide-vue-next';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useCombatStore } from 'src/stores/combat';
 import combatService from 'src/services/combatService';
-import npcInstanceService from 'src/services/npcInstanceService';
 import NpcStatBlock from 'src/components/combat/NpcStatBlock.vue';
 import NpcItemEditDialog from 'src/components/combat/NpcItemEditDialog.vue';
 import NpcStatPickerDialog from 'src/components/combat/NpcStatPickerDialog.vue';
 import { handleError } from 'src/utils/errorHandling';
-import type { NpcInstance, NpcUpsert } from 'src/types';
+import type { NpcUpsert } from 'src/types';
 
 const props = defineProps<{
   campaignId: string;
@@ -125,41 +120,13 @@ const { setPageTitle } = usePageTitle();
 
 const loadingInit = ref(true);
 const error = ref<string | null>(null);
-const combatNpc = ref<NpcInstance | null>(null);
-const localSaving = ref(false);
 
-const saving = computed(() => combatStore.saving || localSaving.value);
+const saving = computed(() => combatStore.saving);
 const isCreateMode = computed(() => route.name === 'npc-create');
 const isEditRoute = computed(() => route.name === 'npc-edit');
 const loading = computed(() => loadingInit.value || combatStore.loading);
 
-const combatId = computed(() => {
-  const n = Number(route.query.combatId);
-  return Number.isFinite(n) && n > 0 ? n : null;
-});
-
-const instanceId = computed(() => {
-  const n = Number(route.query.instanceId);
-  return Number.isFinite(n) && n > 0 ? n : null;
-});
-
-const heroId = computed(() => {
-  const n = Number(route.query.heroId);
-  return Number.isFinite(n) && n > 0 ? n : null;
-});
-
 const numCampaignId = computed(() => Number(props.campaignId));
-
-const isReadonlyQuery = computed(() => route.query.readonly === '1');
-
-const currentResources = computed(() => {
-  if (!combatNpc.value) return null;
-  return {
-    currentHp: combatNpc.value.currentHp,
-    currentFocus: combatNpc.value.currentFocus,
-    currentInvestiture: combatNpc.value.currentInvestiture,
-  };
-});
 
 // Edit state
 const {
@@ -177,10 +144,6 @@ const {
   onStatUpdate,
   buildPayload,
 } = useNpcEditState(numCampaignId, isCreateMode);
-
-const resourcesReadonly = computed(
-  () => !combatNpc.value || editing.value || isReadonlyQuery.value
-);
 
 // Dialogs
 const {
@@ -212,19 +175,6 @@ const {
 
 // Navigation
 function backRoute() {
-  if (combatId.value) {
-    return {
-      name: 'combat-detail',
-      params: { campaignId: props.campaignId, combatId: String(combatId.value) },
-    };
-  }
-  if (heroId.value) {
-    return {
-      name: 'character-sheet',
-      params: { characterId: String(heroId.value) },
-      query: { tab: 'companions' },
-    };
-  }
   return { name: 'campaign-detail', params: { campaignId: props.campaignId } };
 }
 
@@ -283,38 +233,6 @@ function confirmDelete() {
   });
 }
 
-// Resource patches
-const resourceFieldMap: Record<string, 'current_hp' | 'current_focus' | 'current_investiture'> = {
-  max_health: 'current_hp',
-  max_focus: 'current_focus',
-  max_investiture: 'current_investiture',
-};
-
-const resourceKeyMap: Record<string, 'currentHp' | 'currentFocus' | 'currentInvestiture'> = {
-  max_health: 'currentHp',
-  max_focus: 'currentFocus',
-  max_investiture: 'currentInvestiture',
-};
-
-async function onResourceUpdate(code: string, value: number) {
-  if (!combatNpc.value) return;
-  const field = resourceFieldMap[code];
-  const npcKey = resourceKeyMap[code];
-  if (!field || !npcKey) return;
-  localSaving.value = true;
-  try {
-    const response = await npcInstanceService.patchResource(combatNpc.value.id, field, value);
-    const newValue = response.data[field];
-    if (combatNpc.value && typeof newValue === 'number') {
-      combatNpc.value[npcKey] = newValue;
-    }
-  } catch (err: unknown) {
-    handleError(err, { errorRef: error, message: 'Failed to update resource' });
-  } finally {
-    localSaving.value = false;
-  }
-}
-
 // Init
 onMounted(async () => {
   const campaignId = numCampaignId.value;
@@ -349,11 +267,6 @@ onMounted(async () => {
 
     if (isEditRoute.value) {
       startEdit();
-    }
-
-    if (instanceId.value) {
-      const instanceResponse = await npcInstanceService.get(instanceId.value);
-      combatNpc.value = instanceResponse.data;
     }
   } catch (err: unknown) {
     handleError(err, { errorRef: error, message: 'Failed to load NPC' });

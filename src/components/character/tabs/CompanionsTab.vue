@@ -11,7 +11,6 @@
       <div v-for="comp in heroStore.companions" :key="comp.id" class="col-12 col-sm-6 col-md-4">
         <CombatNpcTile
           :npc="comp"
-          :campaign-id="campaignId"
           :hero-id="heroStore.hero.id"
           :saving="saving"
           :readonly="readonly"
@@ -54,8 +53,6 @@ const localSaving = ref(false);
 const saving = computed(() => heroStore.saving || localSaving.value);
 const showAddDialog = ref(false);
 const error = ref<string | null>(null);
-
-const campaignId = computed(() => heroStore.hero?.campaignId ?? 0);
 
 async function openAddDialog() {
   if (await heroStore.fetchCompanionNpcOptions()) {

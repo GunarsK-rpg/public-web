@@ -122,6 +122,13 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Edit Character' },
       },
       {
+        path: 'npc-instances/:instanceId(\\d+)',
+        name: 'npc-instance',
+        component: () => import('pages/NpcInstancePage.vue'),
+        props: true,
+        meta: { title: 'NPC' },
+      },
+      {
         path: 'account',
         name: 'account',
         component: () => import('pages/AccountPage.vue'),

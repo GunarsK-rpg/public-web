@@ -169,7 +169,6 @@ import type { NpcTileData } from 'src/types/combat';
 
 const props = defineProps<{
   npc: NpcTileData;
-  campaignId: number;
   saving: boolean;
   readonly?: boolean;
   turnPhase?: TurnPhase | undefined;
@@ -178,8 +177,10 @@ const props = defineProps<{
   turnSpeed?: 'fast' | 'slow' | null;
   showTurnControls?: boolean;
   combatId?: number;
-  /** Companion-specific: hero ID for back navigation from NPC detail */
+  /** Companion-specific: hero ID for back navigation from NPC instance */
   heroId?: number;
+  /** Campaign ID — optional, used for direct NPC template links */
+  campaignId?: number;
 }>();
 
 const emit = defineEmits<{
@@ -240,23 +241,25 @@ const resourceColClass = computed(() => {
   return 'col-4';
 });
 
-const statBlockRoute = computed(() => ({
-  name: 'npc-detail',
-  params: {
-    campaignId: String(props.campaignId),
-    npcId: String(props.npc.npcId),
-  },
-  ...(props.combatId != null
-    ? {
-        query: {
-          combatId: String(props.combatId),
-          instanceId: String(props.npc.id),
-        },
-      }
-    : props.heroId != null
-      ? { query: { heroId: String(props.heroId), instanceId: String(props.npc.id), ...(props.readonly ? { readonly: '1' } : {}) } }
-      : {}),
-}));
+const statBlockRoute = computed(() => {
+  if (props.combatId != null || props.heroId != null) {
+    return {
+      name: 'npc-instance',
+      params: { instanceId: String(props.npc.id) },
+      ...(props.readonly ? { query: { readonly: '1' } } : {}),
+    };
+  }
+  if (props.campaignId) {
+    return {
+      name: 'npc-detail',
+      params: {
+        campaignId: String(props.campaignId),
+        npcId: String(props.npc.npcId),
+      },
+    };
+  }
+  return { name: 'npc-instance', params: { instanceId: String(props.npc.id) } };
+});
 
 function onTurnSpeedChange(value: 'fast' | 'slow' | null) {
   emit('update-turn-speed', value);

@@ -16,7 +16,7 @@
       <div v-for="npc in npcs" :key="npc.id" class="col-12 col-sm-6 col-md-4">
         <CombatNpcTile
           :npc="npc"
-          :campaign-id="campaignId"
+          :campaign-id="campaignId ?? 0"
           :saving="saving"
           :readonly="readonly"
           :turn-phase="turnPhase"
@@ -46,11 +46,11 @@ defineProps<{
   title: string;
   addLabel: string;
   npcs: NpcInstance[];
-  campaignId: number;
   saving: boolean;
   readonly: boolean;
   turnPhase?: 'fast' | 'slow' | null;
   turnDoneIds: Set<number>;
+  campaignId?: number;
 }>();
 
 defineEmits<{
