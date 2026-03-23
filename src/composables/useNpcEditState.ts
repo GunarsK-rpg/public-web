@@ -11,7 +11,7 @@ export function useNpcEditState(numCampaignId: Ref<number>, isCreateMode: Ref<bo
   const editing = ref(false);
   const isClone = ref(false);
 
-  const canEdit = computed(() => npc.value?.createdBy !== null);
+  const canEdit = computed(() => !!npc.value && npc.value.createdBy !== null);
 
   const isFormValid = computed(
     () =>

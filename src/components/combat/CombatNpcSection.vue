@@ -13,27 +13,28 @@
     </div>
 
     <div v-else class="row q-col-gutter-md">
-      <div v-for="npc in npcs" :key="npc.id" class="col-12 col-sm-6 col-md-4">
-        <CombatNpcTile
-          v-if="npc.combatId != null"
-          :npc="npc"
-          v-bind="campaignId != null ? { campaignId } : {}"
-          :saving="saving"
-          :readonly="readonly"
-          :turn-phase="turnPhase"
-          :turn-done="turnDoneIds.has(npc.id)"
-          :show-turn-controls="true"
-          :turn-speed="npc.turnSpeed ?? null"
-          :combat-id="npc.combatId"
-          @update-turn-speed="(v: 'fast' | 'slow' | null) => $emit('update-turn-speed', npc, v)"
-          @update-hp="(v: number) => $emit('update-hp', npc, v)"
-          @update-focus="(v: number) => $emit('update-focus', npc, v)"
-          @update-investiture="(v: number) => $emit('update-investiture', npc, v)"
-          @edit="(name: string | null, notes: string | null) => $emit('edit', npc, name, notes)"
-          @remove="$emit('remove', npc)"
-          @toggle-turn-done="$emit('toggle-turn-done', npc)"
-        />
-      </div>
+      <template v-for="npc in npcs" :key="npc.id">
+        <div v-if="npc.combatId != null" class="col-12 col-sm-6 col-md-4">
+          <CombatNpcTile
+            :npc="npc"
+            v-bind="campaignId != null ? { campaignId } : {}"
+            :saving="saving"
+            :readonly="readonly"
+            :turn-phase="turnPhase"
+            :turn-done="turnDoneIds.has(npc.id)"
+            :show-turn-controls="true"
+            :turn-speed="npc.turnSpeed ?? null"
+            :combat-id="npc.combatId"
+            @update-turn-speed="(v: 'fast' | 'slow' | null) => $emit('update-turn-speed', npc, v)"
+            @update-hp="(v: number) => $emit('update-hp', npc, v)"
+            @update-focus="(v: number) => $emit('update-focus', npc, v)"
+            @update-investiture="(v: number) => $emit('update-investiture', npc, v)"
+            @edit="(name: string | null, notes: string | null) => $emit('edit', npc, name, notes)"
+            @remove="$emit('remove', npc)"
+            @toggle-turn-done="$emit('toggle-turn-done', npc)"
+          />
+        </div>
+      </template>
     </div>
   </div>
 </template>
