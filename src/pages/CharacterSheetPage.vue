@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { heroTabKey } from 'src/utils/routeUtils';
 import { useHeroStore } from 'stores/hero';
 import { useAuthStore } from 'stores/auth';
 import { useClassifierStore } from 'stores/classifiers';
@@ -122,7 +123,7 @@ function resolveInitialTab(): string {
     void router.replace({ query: { ...route.query, tab: undefined } });
     return queryTab;
   }
-  const stored = sessionStorage.getItem(`hero-tab-${props.characterId}`);
+  const stored = sessionStorage.getItem(heroTabKey(props.characterId));
   if (stored && tabIds.has(stored)) return stored;
   return 'stats';
 }
@@ -130,7 +131,7 @@ function resolveInitialTab(): string {
 const activeTab = ref(resolveInitialTab());
 
 watch(activeTab, (tab) => {
-  sessionStorage.setItem(`hero-tab-${props.characterId}`, tab);
+  sessionStorage.setItem(heroTabKey(props.characterId), tab);
 });
 
 const initializing = ref(true);

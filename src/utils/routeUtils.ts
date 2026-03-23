@@ -21,6 +21,20 @@ export function removeQueryParam(query: LocationQuery, key: string): LocationQue
 /**
  * Validates that a redirect URL is safe (relative path only).
  */
+/**
+ * SessionStorage key for persisting the active hero tab.
+ */
+export function heroTabKey(characterId: string | number): string {
+  return `hero-tab-${characterId}`;
+}
+
+/**
+ * Clear the stored hero tab so fresh navigation opens the default tab.
+ */
+export function clearHeroTab(characterId: string | number): void {
+  sessionStorage.removeItem(heroTabKey(characterId));
+}
+
 export function isValidRedirect(url: string): boolean {
   const normalized = url.replace(/\\/g, '/');
   if (!normalized.startsWith('/')) return false;

@@ -89,6 +89,7 @@
 import { ref, onMounted } from 'vue';
 import { FolderX, Plus } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
+import { clearHeroTab } from 'src/utils/routeUtils';
 import { useQuasar } from 'quasar';
 import axios from 'axios';
 import type { Campaign, Hero } from 'src/types';
@@ -142,6 +143,7 @@ async function doAssignHero(hero: Hero, campaignCode: string): Promise<void> {
       campaign: { id: 0, code: campaignCode, name: '' },
     });
     await heroService.update(hero.id, payload);
+    clearHeroTab(hero.id);
     void router.push({
       name: 'character-sheet',
       params: { characterId: String(hero.id) },

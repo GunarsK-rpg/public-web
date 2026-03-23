@@ -126,8 +126,9 @@ const { setPageTitle } = usePageTitle();
 const loadingInit = ref(true);
 const error = ref<string | null>(null);
 const combatNpc = ref<NpcInstance | null>(null);
+const localSaving = ref(false);
 
-const saving = computed(() => combatStore.saving);
+const saving = computed(() => combatStore.saving || localSaving.value);
 const isCreateMode = computed(() => route.name === 'npc-create');
 const isEditRoute = computed(() => route.name === 'npc-edit');
 const loading = computed(() => loadingInit.value || combatStore.loading);
@@ -261,13 +262,18 @@ function confirmDelete() {
     cancel: true,
     persistent: true,
   }).onOk(() => {
-    void combatStore.deleteNpc(numCampaignId.value, Number(props.npcId)).then((deleted) => {
-      if (deleted) {
-        goBack();
-      } else if (combatStore.error) {
-        $q.notify({ type: 'negative', message: combatStore.error });
-      }
-    });
+    combatStore
+      .deleteNpc(numCampaignId.value, Number(props.npcId))
+      .then((deleted) => {
+        if (deleted) {
+          goBack();
+        } else if (combatStore.error) {
+          $q.notify({ type: 'negative', message: combatStore.error });
+        }
+      })
+      .catch(() => {
+        $q.notify({ type: 'negative', message: 'Failed to delete NPC' });
+      });
   });
 }
 
@@ -289,6 +295,7 @@ async function onResourceUpdate(code: string, value: number) {
   const field = resourceFieldMap[code];
   const npcKey = resourceKeyMap[code];
   if (!field || !npcKey) return;
+  localSaving.value = true;
   try {
     const response = await npcInstanceService.patchResource(combatNpc.value.id, field, value);
     const newValue = response.data[field];
@@ -297,6 +304,8 @@ async function onResourceUpdate(code: string, value: number) {
     }
   } catch (err: unknown) {
     handleError(err, { errorRef: error, message: 'Failed to update resource' });
+  } finally {
+    localSaving.value = false;
   }
 }
 

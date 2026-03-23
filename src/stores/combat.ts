@@ -208,6 +208,17 @@ export const useCombatStore = defineStore('combat', () => {
     try {
       const response = await combatService.createNpc(data);
       currentNpc.value = response.data;
+      npcOptions.value = [
+        ...npcOptions.value,
+        {
+          id: response.data.id,
+          campaignId: response.data.campaignId,
+          name: response.data.name,
+          tier: response.data.tier,
+          type: response.data.type,
+          isCompanion: response.data.isCompanion,
+        },
+      ];
       logger.info('NPC created', { id: response.data.id, name: response.data.name });
       return response.data;
     } catch (err: unknown) {
@@ -224,6 +235,17 @@ export const useCombatStore = defineStore('combat', () => {
     try {
       const response = await combatService.updateNpc(data);
       currentNpc.value = response.data;
+      const idx = npcOptions.value.findIndex((o) => o.id === data.id);
+      if (idx !== -1) {
+        npcOptions.value[idx] = {
+          id: response.data.id,
+          campaignId: response.data.campaignId,
+          name: response.data.name,
+          tier: response.data.tier,
+          type: response.data.type,
+          isCompanion: response.data.isCompanion,
+        };
+      }
       logger.info('NPC updated', { id: data.id });
       return response.data;
     } catch (err: unknown) {

@@ -7,12 +7,12 @@
       </q-btn>
     </div>
 
-    <div v-if="heroStore.companions.length" class="row q-col-gutter-md">
+    <div v-if="heroStore.hero && heroStore.companions.length" class="row q-col-gutter-md">
       <div v-for="comp in heroStore.companions" :key="comp.id" class="col-12 col-sm-6 col-md-4">
         <CombatNpcTile
           :npc="comp"
           :campaign-id="campaignId"
-          :hero-id="heroStore.hero!.id"
+          :hero-id="heroStore.hero.id"
           :saving="saving"
           :readonly="readonly"
           @update-hp="heroStore.patchCompanionHp(comp.id, $event)"
@@ -43,6 +43,7 @@ import { useHeroStore } from 'src/stores/hero';
 import CombatNpcTile from 'src/components/combat/CombatNpcTile.vue';
 import AddNpcDialog from 'src/components/combat/AddNpcDialog.vue';
 import npcInstanceService from 'src/services/npcInstanceService';
+import { handleError } from 'src/utils/errorHandling';
 
 defineProps<{
   readonly?: boolean;
@@ -51,6 +52,7 @@ defineProps<{
 const heroStore = useHeroStore();
 const saving = computed(() => heroStore.saving);
 const showAddDialog = ref(false);
+const error = ref<string | null>(null);
 
 const campaignId = computed(() => heroStore.hero?.campaignId ?? 0);
 
@@ -74,6 +76,15 @@ async function onEditCompanion(
   displayName: string | null,
   notes: string | null
 ) {
-  await npcInstanceService.patch(instanceId, { displayName, notes });
+  try {
+    await npcInstanceService.patch(instanceId, { displayName, notes });
+    const comp = heroStore.hero?.companions.find((c) => c.id === instanceId);
+    if (comp) {
+      comp.displayName = displayName;
+      comp.notes = notes;
+    }
+  } catch (err) {
+    handleError(err, { errorRef: error, message: 'Failed to update companion' });
+  }
 }
 </script>

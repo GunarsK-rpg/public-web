@@ -671,10 +671,13 @@ export const useHeroStore = defineStore('hero', () => {
     displayName?: string | null;
   }): Promise<NpcInstance | null> {
     if (!hero.value) return null;
+    const currentHeroId = hero.value.id;
     savingCount.value++;
     try {
       const response = await npcInstanceService.create(data);
-      hero.value.companions.push(response.data);
+      if (hero.value?.id === currentHeroId) {
+        hero.value.companions.push(response.data);
+      }
       logger.info('Companion added', { id: response.data.id });
       return response.data;
     } catch (err) {
@@ -687,10 +690,13 @@ export const useHeroStore = defineStore('hero', () => {
 
   async function removeCompanion(instanceId: number): Promise<boolean> {
     if (!hero.value) return false;
+    const currentHeroId = hero.value.id;
     savingCount.value++;
     try {
       await npcInstanceService.delete(instanceId);
-      hero.value.companions = hero.value.companions.filter((c) => c.id !== instanceId);
+      if (hero.value?.id === currentHeroId) {
+        hero.value.companions = hero.value.companions.filter((c) => c.id !== instanceId);
+      }
       logger.info('Companion removed', { id: instanceId });
       return true;
     } catch (err) {
@@ -709,6 +715,7 @@ export const useHeroStore = defineStore('hero', () => {
     errorMessage: string
   ): Promise<void> {
     if (!hero.value) return;
+    const currentHeroId = hero.value.id;
     savingCount.value++;
     try {
       const response = await npcInstanceService.patchResource(
@@ -716,6 +723,7 @@ export const useHeroStore = defineStore('hero', () => {
         field,
         Math.max(0, Math.floor(value))
       );
+      if (hero.value?.id !== currentHeroId) return;
       const comp = hero.value.companions.find((c) => c.id === instanceId);
       const newValue = response.data[field];
       if (comp && typeof newValue === 'number') comp[npcField] = newValue;

@@ -88,7 +88,11 @@
             dense
             label="Create NPC"
             color="primary"
-            :to="{ name: 'npc-create', params: { campaignId }, query: { combatId } }"
+            :to="{
+              name: 'npc-create',
+              params: { campaignId },
+              query: { combatId: String(combatId) },
+            }"
           />
           <q-toggle
             :model-value="combat.isActive"
