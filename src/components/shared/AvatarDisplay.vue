@@ -11,7 +11,7 @@
 
   <q-dialog v-if="expandable" v-model="showExpanded">
     <q-card class="avatar-expanded-card">
-      <img :src="src!" :alt="alt" class="avatar-expanded-img" />
+      <img v-if="src" :src="src" :alt="alt" class="avatar-expanded-img" />
       <q-btn
         flat
         dense

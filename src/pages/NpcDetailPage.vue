@@ -182,8 +182,8 @@ async function onAvatarUpload(file: File): Promise<void> {
     await combatService.setNpcAvatar(numCampaignId.value, editableNpc.value.id, key);
     editableNpc.value.avatarKey = key;
     if (npc.value) npc.value.avatarKey = key;
-  } catch (err) {
-    handleError(err, { errorRef: error, message: 'Failed to upload avatar' });
+  } catch {
+    $q.notify({ type: 'negative', message: 'Failed to upload avatar' });
   } finally {
     avatarSaving.value = false;
   }
@@ -196,8 +196,8 @@ async function onAvatarDelete(): Promise<void> {
     await combatService.deleteNpcAvatar(numCampaignId.value, editableNpc.value.id);
     editableNpc.value.avatarKey = null;
     if (npc.value) npc.value.avatarKey = null;
-  } catch (err) {
-    handleError(err, { errorRef: error, message: 'Failed to delete avatar' });
+  } catch {
+    $q.notify({ type: 'negative', message: 'Failed to delete avatar' });
   } finally {
     avatarSaving.value = false;
   }
