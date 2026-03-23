@@ -653,15 +653,18 @@ export const useHeroStore = defineStore('hero', () => {
 
   const companionNpcOptions = ref<NpcOption[]>([]);
 
-  async function fetchCompanionNpcOptions(): Promise<void> {
-    if (!hero.value) return;
+  async function fetchCompanionNpcOptions(): Promise<boolean> {
+    if (!hero.value) return false;
     const currentHeroId = hero.value.id;
+    companionNpcOptions.value = [];
     try {
       const response = await heroService.getCompanionNpcOptions(currentHeroId);
-      if (hero.value?.id !== currentHeroId) return;
+      if (hero.value?.id !== currentHeroId) return false;
       companionNpcOptions.value = response.data;
+      return true;
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to load companion options' });
+      return false;
     }
   }
 
@@ -674,7 +677,7 @@ export const useHeroStore = defineStore('hero', () => {
     const currentHeroId = hero.value.id;
     savingCount.value++;
     try {
-      const response = await npcInstanceService.create(data);
+      const response = await npcInstanceService.create({ ...data, heroId: currentHeroId });
       if (hero.value?.id === currentHeroId) {
         hero.value.companions.push(response.data);
       }

@@ -50,15 +50,17 @@ defineProps<{
 }>();
 
 const heroStore = useHeroStore();
-const saving = computed(() => heroStore.saving);
+const localSaving = ref(false);
+const saving = computed(() => heroStore.saving || localSaving.value);
 const showAddDialog = ref(false);
 const error = ref<string | null>(null);
 
 const campaignId = computed(() => heroStore.hero?.campaignId ?? 0);
 
 async function openAddDialog() {
-  await heroStore.fetchCompanionNpcOptions();
-  showAddDialog.value = true;
+  if (await heroStore.fetchCompanionNpcOptions()) {
+    showAddDialog.value = true;
+  }
 }
 
 async function onAddCompanion(npcId: number, displayName: string | null) {
@@ -76,15 +78,18 @@ async function onEditCompanion(
   displayName: string | null,
   notes: string | null
 ) {
+  localSaving.value = true;
   try {
-    await npcInstanceService.patch(instanceId, { displayName, notes });
+    const response = await npcInstanceService.patch(instanceId, { displayName, notes });
     const comp = heroStore.hero?.companions.find((c) => c.id === instanceId);
     if (comp) {
-      comp.displayName = displayName;
-      comp.notes = notes;
+      comp.displayName = response.data.displayName ?? null;
+      comp.notes = response.data.notes ?? null;
     }
   } catch (err) {
     handleError(err, { errorRef: error, message: 'Failed to update companion' });
+  } finally {
+    localSaving.value = false;
   }
 }
 </script>
