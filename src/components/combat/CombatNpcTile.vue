@@ -254,7 +254,7 @@ const statBlockRoute = computed(() => ({
         },
       }
     : props.heroId != null
-      ? { query: { heroId: String(props.heroId), instanceId: String(props.npc.id) } }
+      ? { query: { heroId: String(props.heroId), instanceId: String(props.npc.id), ...(props.readonly ? { readonly: '1' } : {}) } }
       : {}),
 }));
 

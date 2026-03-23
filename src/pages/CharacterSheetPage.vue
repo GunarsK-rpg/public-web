@@ -52,7 +52,6 @@ import { ref, computed, watch, onMounted, onUnmounted, type Component } from 'vu
 import { useRoute, useRouter } from 'vue-router';
 import { heroTabKey } from 'src/utils/routeUtils';
 import { useHeroStore } from 'stores/hero';
-import { useAuthStore } from 'stores/auth';
 import { useClassifierStore } from 'stores/classifiers';
 import { logger } from 'src/utils/logger';
 import { toError } from 'src/utils/errorHandling';
@@ -109,7 +108,6 @@ const props = defineProps<{
 }>();
 
 const heroStore = useHeroStore();
-const authStore = useAuthStore();
 const classifierStore = useClassifierStore();
 
 const tabIds = new Set(tabs.map((t) => t.id));
@@ -136,11 +134,7 @@ watch(activeTab, (tab) => {
 
 const initializing = ref(true);
 const isLoaded = computed(() => heroStore.isLoaded);
-const isReadonly = computed(() => {
-  const heroUsername = heroStore.hero?.user?.username?.trim().toLowerCase();
-  const authUsername = authStore.username?.trim().toLowerCase();
-  return !heroUsername || !authUsername || heroUsername !== authUsername;
-});
+const isReadonly = computed(() => !heroStore.isOwner);
 const loading = computed(() => initializing.value || heroStore.loading);
 const error = computed(() => heroStore.error);
 const classifierLoading = computed(() => classifierStore.loading);

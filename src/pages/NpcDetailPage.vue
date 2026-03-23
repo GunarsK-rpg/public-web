@@ -49,7 +49,7 @@
           :current-resources="currentResources"
           :notes="combatNpc?.notes"
           :saving="saving"
-          :readonly="!combatNpc || editing"
+          :readonly="resourcesReadonly"
           :editable="editing"
           :show-companion-toggle="editing"
           @resource-update="onResourceUpdate"
@@ -150,6 +150,8 @@ const heroId = computed(() => {
 
 const numCampaignId = computed(() => Number(props.campaignId));
 
+const isReadonlyQuery = computed(() => route.query.readonly === '1');
+
 const currentResources = computed(() => {
   if (!combatNpc.value) return null;
   return {
@@ -175,6 +177,10 @@ const {
   onStatUpdate,
   buildPayload,
 } = useNpcEditState(numCampaignId, isCreateMode);
+
+const resourcesReadonly = computed(
+  () => !combatNpc.value || editing.value || isReadonlyQuery.value
+);
 
 // Dialogs
 const {

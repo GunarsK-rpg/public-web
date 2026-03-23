@@ -13,6 +13,7 @@ import type { HeroGoal, HeroGoalBase, HeroConnectionBase, HeroConnection } from 
 import type { NpcOption, NpcInstance } from 'src/types';
 import type { HeroNote, HeroNoteBase } from 'src/types/notes';
 import type { CampaignRef, ClassifierRef, SpecialEntry } from 'src/types/shared';
+import { useAuthStore } from 'src/stores/auth';
 import { logger } from 'src/utils/logger';
 import filesApi, { FILE_TYPE_HERO_AVATAR } from 'src/services/filesApi';
 import heroService from 'src/services/heroService';
@@ -82,6 +83,13 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   const isLoaded = computed(() => !!hero.value);
   const isNew = computed(() => hero.value?.id === 0);
+
+  const isOwner = computed(() => {
+    const authStore = useAuthStore();
+    const heroUsername = hero.value?.user?.username?.trim().toLowerCase();
+    const authUsername = authStore.username?.trim().toLowerCase();
+    return !!heroUsername && !!authUsername && heroUsername === authUsername;
+  });
 
   // Array getters - avoid repeating `hero.value?.X ?? []` everywhere
   const talents = computed(() => hero.value?.talents ?? []);
@@ -786,6 +794,7 @@ export const useHeroStore = defineStore('hero', () => {
 
     // Computed
     isLoaded,
+    isOwner,
     isNew,
     talents,
     skills,
