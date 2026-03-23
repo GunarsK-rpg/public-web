@@ -22,21 +22,6 @@
           <q-btn flat dense round size="sm" aria-label="Back" @click="goBack">
             <ArrowLeft :size="20" />
           </q-btn>
-          <AvatarUpload
-            v-if="editing && editableNpc?.id"
-            :avatar-key="editableNpc?.avatarKey ?? null"
-            :loading="avatarSaving"
-            class="q-ml-sm"
-            @upload="onAvatarUpload"
-            @delete="onAvatarDelete"
-          />
-          <AvatarDisplay
-            v-else-if="editableNpc?.avatarKey"
-            :avatar-key="editableNpc.avatarKey"
-            size="44px"
-            expandable
-            class="q-ml-sm"
-          />
           <q-space />
           <template v-if="editing">
             <q-btn flat dense label="Cancel" class="q-mr-sm" @click="handleCancel" />
@@ -68,6 +53,7 @@
           :readonly="true"
           :editable="editing"
           :show-companion-toggle="editing"
+          :avatar-saving="avatarSaving"
           @field-update="onFieldUpdate"
           @stat-update="onStatUpdate"
           @stat-add="onStatAdd"
@@ -76,6 +62,8 @@
           @item-add="onItemAdd"
           @item-edit="onItemEdit"
           @item-remove="onItemRemove"
+          @avatar-upload="onAvatarUpload"
+          @avatar-delete="onAvatarDelete"
         />
 
         <!-- Item edit dialog -->
@@ -122,8 +110,6 @@ import combatService from 'src/services/combatService';
 import NpcStatBlock from 'src/components/combat/NpcStatBlock.vue';
 import NpcItemEditDialog from 'src/components/combat/NpcItemEditDialog.vue';
 import NpcStatPickerDialog from 'src/components/combat/NpcStatPickerDialog.vue';
-import AvatarDisplay from 'src/components/shared/AvatarDisplay.vue';
-import AvatarUpload from 'src/components/shared/AvatarUpload.vue';
 import filesApi, { FILE_TYPE_HERO_AVATAR } from 'src/services/filesApi';
 import { handleError } from 'src/utils/errorHandling';
 import type { NpcUpsert } from 'src/types';
