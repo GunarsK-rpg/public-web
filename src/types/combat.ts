@@ -90,6 +90,7 @@ export interface Combat extends CombatBase {
 export interface NpcInstance extends NpcTileData {
   combatId: number | null;
   heroId: number | null;
+  userId: number | null;
   sortOrder: number | null;
   side: 'ally' | 'enemy' | null;
   turnSpeed: 'fast' | 'slow' | null;
@@ -105,6 +106,17 @@ export interface EndRoundPayload {
   combatId: number;
   campaignId: number;
   round: number;
+}
+
+/** Patch payload for NPC instance updates */
+export interface NpcInstancePatch {
+  displayName?: string | null;
+  notes?: string | null;
+  turnSpeed?: 'fast' | 'slow' | null;
+  side?: 'ally' | 'enemy' | null;
+  sortOrder?: number | null;
+  combatId?: number | null;
+  heroId?: number | null;
 }
 
 /** NPC upsert payload — create/update custom NPC */

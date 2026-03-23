@@ -246,7 +246,6 @@ const statBlockRoute = computed(() => {
     return {
       name: 'npc-instance',
       params: { instanceId: String(props.npc.id) },
-      ...(props.readonly ? { query: { readonly: '1' } } : {}),
     };
   }
   if (props.campaignId) {

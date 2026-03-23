@@ -1,24 +1,38 @@
 <template>
   <div>
-    <div class="row items-center q-mb-md">
+    <div class="row items-center no-wrap q-mb-md">
       <div class="text-h6">NPCs</div>
       <q-space />
-      <q-input
-        v-if="npcs.length > 0"
-        v-model="search"
-        dense
-        outlined
-        placeholder="Search..."
-        class="q-mr-sm"
-        style="max-width: 200px"
-        clearable
-      />
       <q-btn
         color="primary"
         :to="{ name: 'npc-create', params: { campaignId: String(campaignId) } }"
         ><Plus :size="20" class="on-left" />Create NPC</q-btn
       >
     </div>
+
+    <template v-if="npcs.length > 0">
+      <q-input v-model="search" dense outlined placeholder="Search..." class="q-mb-sm" clearable />
+      <div class="row q-gutter-xs q-mb-sm">
+        <q-chip
+          v-for="f in filterOptions"
+          :key="f.key"
+          :selected="filters[f.key]"
+          dense
+          clickable
+          :color="filters[f.key] ? 'primary' : undefined"
+          :text-color="filters[f.key] ? 'white' : undefined"
+          @click="filters[f.key] = !filters[f.key]"
+          >{{ f.label }}</q-chip
+        >
+      </div>
+    </template>
+
+    <q-banner v-if="error" class="bg-negative text-white q-mb-md">
+      {{ error }}
+      <template v-slot:action>
+        <q-btn flat label="Dismiss" @click="error = null" />
+      </template>
+    </q-banner>
 
     <q-spinner-dots v-if="loading" size="40px" color="primary" />
 
@@ -28,9 +42,15 @@
       <div class="text-body2 text-grey-6">Create an NPC to add to your library.</div>
     </div>
 
-    <q-list v-else bordered separator class="rounded-borders">
+    <q-virtual-scroll
+      v-else
+      :items="filtered"
+      :virtual-scroll-item-size="48"
+      class="rounded-borders bordered-list"
+      style="max-height: 400px"
+      v-slot="{ item: npc }"
+    >
       <q-item
-        v-for="npc in filtered"
         :key="npc.id"
         clickable
         :to="{
@@ -45,6 +65,7 @@
         <q-item-section side>
           <div class="row items-center q-gutter-xs">
             <q-badge v-if="npc.deletedAt" label="Archived" color="grey" />
+            <q-badge v-if="npc.campaignId" label="Custom" color="teal" />
             <q-badge v-if="npc.isCompanion" label="Companion" color="blue-grey" />
             <q-badge :label="npc.tier.name" color="grey-7" />
             <q-badge
@@ -55,7 +76,7 @@
           </div>
         </q-item-section>
       </q-item>
-    </q-list>
+    </q-virtual-scroll>
   </div>
 </template>
 
@@ -75,15 +96,36 @@ const error = ref<string | null>(null);
 const npcs = ref<NpcOption[]>([]);
 const search = ref('');
 
+type FilterKey = 'custom' | 'companion' | 'archived';
+const filters = ref<Record<FilterKey, boolean>>({
+  custom: false,
+  companion: false,
+  archived: false,
+});
+const filterOptions: { key: FilterKey; label: string }[] = [
+  { key: 'custom', label: 'Custom' },
+  { key: 'companion', label: 'Companion' },
+  { key: 'archived', label: 'Archived' },
+];
+
 const filtered = computed(() => {
-  if (!search.value) return npcs.value;
-  const q = search.value.toLowerCase();
-  return npcs.value.filter(
-    (n) =>
-      n.name.toLowerCase().includes(q) ||
-      n.type.toLowerCase().includes(q) ||
-      n.tier.name.toLowerCase().includes(q)
-  );
+  let result = npcs.value;
+
+  if (filters.value.custom) result = result.filter((n) => !!n.campaignId);
+  if (filters.value.companion) result = result.filter((n) => n.isCompanion);
+  if (filters.value.archived) result = result.filter((n) => !!n.deletedAt);
+
+  if (search.value) {
+    const q = search.value.toLowerCase();
+    result = result.filter(
+      (n) =>
+        n.name.toLowerCase().includes(q) ||
+        n.type.toLowerCase().includes(q) ||
+        n.tier.name.toLowerCase().includes(q)
+    );
+  }
+
+  return result;
 });
 
 onMounted(async () => {
@@ -101,5 +143,9 @@ onMounted(async () => {
 <style scoped>
 .npc-archived {
   opacity: 0.5;
+}
+
+.bordered-list {
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 </style>

@@ -86,9 +86,7 @@ export const useHeroStore = defineStore('hero', () => {
 
   const isOwner = computed(() => {
     const authStore = useAuthStore();
-    const heroUsername = hero.value?.user?.username?.trim().toLowerCase();
-    const authUsername = authStore.username?.trim().toLowerCase();
-    return !!heroUsername && !!authUsername && heroUsername === authUsername;
+    return !!authStore.userId && !!hero.value?.userId && authStore.userId === hero.value.userId;
   });
 
   // Array getters - avoid repeating `hero.value?.X ?? []` everywhere
@@ -699,6 +697,30 @@ export const useHeroStore = defineStore('hero', () => {
     }
   }
 
+  async function patchCompanion(
+    instanceId: number,
+    data: { displayName?: string | null; notes?: string | null }
+  ): Promise<boolean> {
+    if (!hero.value) return false;
+    const currentHeroId = hero.value.id;
+    savingCount.value++;
+    try {
+      const response = await npcInstanceService.patch(instanceId, data);
+      if (hero.value?.id !== currentHeroId) return false;
+      const comp = hero.value.companions.find((c) => c.id === instanceId);
+      if (comp) {
+        comp.displayName = response.data.displayName ?? null;
+        comp.notes = response.data.notes ?? null;
+      }
+      return true;
+    } catch (err) {
+      handleError(err, { errorRef: error, message: 'Failed to update companion' });
+      return false;
+    } finally {
+      savingCount.value--;
+    }
+  }
+
   async function removeCompanion(instanceId: number): Promise<boolean> {
     if (!hero.value) return false;
     const currentHeroId = hero.value.id;
@@ -867,6 +889,7 @@ export const useHeroStore = defineStore('hero', () => {
     removeCompanion,
     companionNpcOptions,
     fetchCompanionNpcOptions,
+    patchCompanion,
     patchCompanionHp,
     patchCompanionFocus,
     patchCompanionInvestiture,

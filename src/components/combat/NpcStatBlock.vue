@@ -10,6 +10,7 @@
             dense
             borderless
             input-class="text-h5"
+            maxlength="100"
             @update:model-value="emitField('name', $event)"
           />
           <div class="row q-col-gutter-sm q-mt-xs">
@@ -135,6 +136,7 @@
 
     <ItemListSection
       title="Features"
+      singular-label="Feature"
       :items="featureItems"
       :editable="editable"
       @add="emit('itemAdd', 'features')"
@@ -143,6 +145,7 @@
     />
     <ItemListSection
       title="Actions"
+      singular-label="Action"
       :items="actionItems"
       :editable="editable"
       @add="emit('itemAdd', 'actions')"
@@ -150,8 +153,8 @@
       @remove="(i) => emit('itemRemove', 'actions', i)"
     />
     <ItemListSection
-      title="Opportunities"
-      singular-label="Opportunity"
+      title="Opportunities and Complications"
+      singular-label="Opportunity or Complication"
       :items="opportunityItems"
       :separator="false"
       :editable="editable"

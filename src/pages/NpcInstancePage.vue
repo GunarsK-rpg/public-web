@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { usePageTitle } from 'src/composables/usePageTitle';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { ArrowLeft, UserX } from 'lucide-vue-next';
@@ -48,14 +48,15 @@ import npcInstanceService from 'src/services/npcInstanceService';
 import npcService from 'src/services/npcService';
 import NpcStatBlock from 'src/components/combat/NpcStatBlock.vue';
 import { handleError } from 'src/utils/errorHandling';
+import { useAuthStore } from 'src/stores/auth';
 import type { Npc, NpcInstance } from 'src/types';
 
 const props = defineProps<{
   instanceId: string;
 }>();
 
-const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const classifiers = useClassifierStore();
 const { setPageTitle } = usePageTitle();
 
@@ -64,7 +65,12 @@ const saving = ref(false);
 const error = ref<string | null>(null);
 const npc = ref<Npc | null>(null);
 const instance = ref<NpcInstance | null>(null);
-const isReadonly = computed(() => route.query.readonly === '1');
+const isReadonly = computed(() => {
+  if (!instance.value) return true;
+  if (instance.value.combatId) return false;
+  if (!instance.value.userId) return true;
+  return instance.value.userId !== authStore.userId;
+});
 
 const currentResources = computed(() => {
   if (!instance.value) return null;

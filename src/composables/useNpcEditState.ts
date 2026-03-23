@@ -128,8 +128,10 @@ export function useNpcEditState(numCampaignId: Ref<number>, isCreateMode: Ref<bo
     }
   }
 
+  const statSections = new Set<string>(['attributes', 'defenses', 'skills']);
+
   function onStatUpdate(section: string, code: string, value: number) {
-    if (!editableNpc.value) return;
+    if (!editableNpc.value || !statSections.has(section)) return;
     const list = editableNpc.value[section as 'attributes' | 'defenses' | 'skills'] as TypedValue[];
     const entry = list.find((e) => e.type.code === code);
     if (entry) {

@@ -11,10 +11,12 @@
                 type="number"
                 dense
                 borderless
-                input-class="text-center defense-value"
+                input-style="text-align: center; font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums"
                 :min="0"
                 :aria-label="`Edit ${def.type.name} defense`"
-                @update:model-value="$emit('update', def.type.code, Number($event) || 0)"
+                @update:model-value="
+                  $emit('update', def.type.code, Math.max(0, Number($event) || 0))
+                "
               />
             </template>
             <template v-else>

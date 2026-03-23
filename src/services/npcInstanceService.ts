@@ -1,5 +1,5 @@
 import type { AxiosResponse } from 'axios';
-import type { NpcInstance } from 'src/types';
+import type { NpcInstance, NpcInstancePatch } from 'src/types';
 import { api } from './api';
 
 export default {
@@ -19,8 +19,8 @@ export default {
     return api.post('/npc-instances', data);
   },
 
-  patch(id: number, data: Record<string, unknown>): Promise<AxiosResponse<NpcInstance>> {
-    return api.patch(`/npc-instances/${id}`, { id, ...data });
+  patch(id: number, data: NpcInstancePatch): Promise<AxiosResponse<NpcInstance>> {
+    return api.patch(`/npc-instances/${id}`, { ...data, id });
   },
 
   patchResource(

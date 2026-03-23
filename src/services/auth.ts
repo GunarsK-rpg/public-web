@@ -23,6 +23,7 @@ export interface RegisterResponse {
 export interface TokenStatusResponse {
   valid: boolean;
   ttl_seconds: number;
+  user_id?: number;
   username?: string;
   email?: string;
   email_verified?: boolean;

@@ -14,10 +14,12 @@
                 type="number"
                 dense
                 borderless
-                input-class="text-center attribute-value"
+                input-style="text-align: center; font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums"
                 :min="0"
                 :aria-label="`Edit ${attr.type.name}`"
-                @update:model-value="$emit('update', attr.type.code, Number($event) || 0)"
+                @update:model-value="
+                  $emit('update', attr.type.code, Math.max(0, Number($event) || 0))
+                "
               />
             </template>
             <template v-else>

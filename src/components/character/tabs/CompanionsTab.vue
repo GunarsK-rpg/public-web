@@ -37,26 +37,26 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { UserPlus } from 'lucide-vue-next';
 import { useHeroStore } from 'src/stores/hero';
 import CombatNpcTile from 'src/components/combat/CombatNpcTile.vue';
 import AddNpcDialog from 'src/components/combat/AddNpcDialog.vue';
-import npcInstanceService from 'src/services/npcInstanceService';
-import { handleError } from 'src/utils/errorHandling';
 
 defineProps<{
   readonly?: boolean;
 }>();
 
+const $q = useQuasar();
 const heroStore = useHeroStore();
-const localSaving = ref(false);
-const saving = computed(() => heroStore.saving || localSaving.value);
+const saving = computed(() => heroStore.saving);
 const showAddDialog = ref(false);
-const error = ref<string | null>(null);
 
 async function openAddDialog() {
   if (await heroStore.fetchCompanionNpcOptions()) {
     showAddDialog.value = true;
+  } else {
+    $q.notify({ type: 'negative', message: 'Failed to load companion options' });
   }
 }
 
@@ -75,18 +75,6 @@ async function onEditCompanion(
   displayName: string | null,
   notes: string | null
 ) {
-  localSaving.value = true;
-  try {
-    const response = await npcInstanceService.patch(instanceId, { displayName, notes });
-    const comp = heroStore.hero?.companions.find((c) => c.id === instanceId);
-    if (comp) {
-      comp.displayName = response.data.displayName ?? null;
-      comp.notes = response.data.notes ?? null;
-    }
-  } catch (err) {
-    handleError(err, { errorRef: error, message: 'Failed to update companion' });
-  } finally {
-    localSaving.value = false;
-  }
+  await heroStore.patchCompanion(instanceId, { displayName, notes });
 }
 </script>

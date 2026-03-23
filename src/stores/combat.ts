@@ -6,6 +6,7 @@ import type {
   CombatBase,
   CombatDetail,
   NpcInstance,
+  NpcInstancePatch,
   Npc,
   NpcOption,
   NpcUpsert,
@@ -318,7 +319,7 @@ export const useCombatStore = defineStore('combat', () => {
 
   async function updateNpcInstance(
     id: number,
-    data: Record<string, unknown>
+    data: NpcInstancePatch
   ): Promise<NpcInstance | null> {
     if (!currentCombat.value) return null;
     savingCount.value++;
