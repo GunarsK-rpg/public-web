@@ -32,6 +32,7 @@ export interface NpcOption {
   tier: ClassifierRef;
   type: string;
   isCompanion?: boolean;
+  deletedAt?: string | null;
 }
 
 /** NPC feature or opportunity (JSONB — snake_case matches DB storage) */

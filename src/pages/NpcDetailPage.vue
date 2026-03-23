@@ -34,14 +34,18 @@
               @click="handleSave"
             />
           </template>
-          <template v-else>
+          <template v-else-if="!isArchived">
             <q-btn flat dense label="Clone" color="secondary" @click="cloneAsNew" />
             <template v-if="canEdit">
               <q-btn flat dense label="Edit" color="primary" @click="startEdit" />
-              <q-btn flat dense label="Delete" color="negative" @click="confirmDelete" />
+              <q-btn flat dense label="Archive" color="negative" @click="confirmDelete" />
             </template>
           </template>
         </div>
+
+        <q-banner v-if="isArchived" class="bg-grey-3 text-grey-8 q-mb-md">
+          This NPC has been archived. It remains visible in existing combats and companions.
+        </q-banner>
 
         <NpcStatBlock
           :npc="editableNpc"
@@ -145,6 +149,8 @@ const {
   buildPayload,
 } = useNpcEditState(numCampaignId, isCreateMode);
 
+const isArchived = computed(() => !!npc.value?.deletedAt);
+
 // Dialogs
 const {
   showItemDialog,
@@ -213,8 +219,8 @@ async function handleSave() {
 // Delete
 function confirmDelete() {
   $q.dialog({
-    title: 'Delete NPC',
-    message: `Delete "${npc.value?.name}"? This cannot be undone.`,
+    title: 'Archive NPC',
+    message: `Archive "${npc.value?.name}"? It will remain visible in existing combats and companions but cannot be added to new ones.`,
     cancel: true,
     persistent: true,
   }).onOk(() => {

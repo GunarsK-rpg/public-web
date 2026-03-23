@@ -15,6 +15,9 @@ export default {
   getNpcOptions(campaignId: number): Promise<AxiosResponse<NpcOption[]>> {
     return api.get(`/campaigns/${campaignId}/npcs`);
   },
+  getNpcLibrary(campaignId: number): Promise<AxiosResponse<NpcOption[]>> {
+    return api.get(`/campaigns/${campaignId}/npcs/library`);
+  },
   getNpc(campaignId: number, npcId: number): Promise<AxiosResponse<Npc>> {
     return api.get(`/campaigns/${campaignId}/npcs/${npcId}`);
   },
