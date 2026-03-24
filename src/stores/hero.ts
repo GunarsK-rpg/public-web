@@ -66,7 +66,7 @@ function createEmptyHero(): HeroSheet {
 export const useHeroStore = defineStore('hero', () => {
   const hero = ref<HeroSheet | null>(null);
   const loading = ref(false);
-  const { saving, startSaving, stopSaving } = useSavingState();
+  const { saving, startSaving, stopSaving, resetSaving } = useSavingState();
   const error = ref<string | null>(null);
 
   // Track pending load requests to handle race conditions
@@ -159,6 +159,7 @@ export const useHeroStore = defineStore('hero', () => {
     hero.value = null;
     error.value = null;
     tempIdCounter.value = -1;
+    resetSaving();
   }
 
   function setError(message: string): void {
