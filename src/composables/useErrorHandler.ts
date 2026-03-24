@@ -203,7 +203,7 @@ export function useErrorHandler() {
    */
   function handle401(skipLogout = false): void {
     if (!skipLogout) {
-      // Clear auth state before redirecting to prevent redirect loops
+      // Clear auth state and redirect to login (logout() handles navigation)
       authStore.logout().catch((err: unknown) => {
         logger.debug('Logout during 401 handling failed', { error: toError(err).message });
       });
@@ -214,7 +214,6 @@ export function useErrorHandler() {
         caption: 'Your session has expired. Please log in again.',
         timeout: 5000,
       });
-      void router.push('/login');
     }
   }
 

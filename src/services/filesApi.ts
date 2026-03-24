@@ -17,6 +17,7 @@ interface FileUploadResponse {
 const filesApi = axios.create({
   baseURL: env.filesApiUrl,
   withCredentials: true,
+  timeout: 60000,
 });
 
 add401Interceptor(filesApi);

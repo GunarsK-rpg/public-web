@@ -105,9 +105,8 @@ describe('useErrorHandler', () => {
       const { handleError } = useErrorHandler();
       handleError(createError(401));
 
-      // logout is async (fire-and-forget via void), check notification and direct redirect
+      // logout is async (fire-and-forget via void), check notification
       expect(mockNotify).toHaveBeenCalled();
-      expect(mockRouter.push).toHaveBeenCalledWith('/login');
     });
 
     it('shows session expired notification', () => {
@@ -138,7 +137,6 @@ describe('useErrorHandler', () => {
       const { handle401 } = useErrorHandler();
       handle401();
 
-      expect(mockRouter.push).toHaveBeenCalledWith('/login');
       expect(mockNotify).toHaveBeenCalled();
     });
   });

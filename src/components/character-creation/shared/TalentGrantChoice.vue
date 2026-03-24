@@ -38,7 +38,6 @@ const props = withDefaults(
   { sourceType: 'talent' }
 );
 
-const resolvedSourceType = computed(() => props.sourceType);
 const resolvedSourceId = computed(() => props.sourceId ?? props.talentId ?? 0);
 
 const classifierStore = useClassifierStore();
@@ -59,8 +58,7 @@ const choices = computed(() =>
 const selectedValues = computed(() => {
   const sourceExpertises = (heroStore.hero?.expertises ?? []).filter(
     (e) =>
-      e.source?.sourceType === resolvedSourceType.value &&
-      e.source?.sourceId === resolvedSourceId.value
+      e.source?.sourceType === props.sourceType && e.source?.sourceId === resolvedSourceId.value
   );
 
   return choices.value.map((choice) => {
@@ -133,7 +131,7 @@ function onSelectExpertise(choiceIndex: number, code: string | null) {
     const prevHeroExp = (heroStore.hero?.expertises ?? []).find(
       (e) =>
         e.expertise?.code === prevCode &&
-        e.source?.sourceType === resolvedSourceType.value &&
+        e.source?.sourceType === props.sourceType &&
         e.source?.sourceId === resolvedSourceId.value
     );
     if (prevHeroExp) {
@@ -145,7 +143,7 @@ function onSelectExpertise(choiceIndex: number, code: string | null) {
     const exp = classifierStore.expertises.find((e) => e.code === code);
     if (exp) {
       attrStore.addExpertise(exp.id, {
-        sourceType: resolvedSourceType.value,
+        sourceType: props.sourceType,
         sourceId: resolvedSourceId.value,
       });
     }
