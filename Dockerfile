@@ -33,8 +33,22 @@ RUN apk update && apk upgrade --no-cache
 # Copy built assets
 COPY --from=builder /app/dist/pwa /usr/share/nginx/html
 
-# Copy nginx config
+# Copy nginx config and update CSP origins from build args
+ARG VITE_API_URL
+ARG VITE_AUTH_URL
+ARG VITE_FILES_API_URL
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN set -e; \
+    ORIGINS=""; \
+    for url in "$VITE_API_URL" "$VITE_AUTH_URL" "$VITE_FILES_API_URL"; do \
+      origin=$(echo "$url" | sed 's|\(https\{0,1\}://[^/]*\).*|\1|'); \
+      case "$ORIGINS" in *"$origin"*) ;; *) ORIGINS="$ORIGINS $origin";; esac; \
+    done; \
+    ORIGINS=$(echo "$ORIGINS" | sed 's/^ //'); \
+    if [ -n "$ORIGINS" ]; then \
+      sed -i "s|https://localhost:\* https://\*\.localhost:\*|$ORIGINS|g" /etc/nginx/conf.d/default.conf; \
+      sed -i "s|https://localhost:\*|$ORIGINS|g" /etc/nginx/conf.d/default.conf; \
+    fi
 
 # Set ownership for nginx directories
 RUN chown -R nginx:nginx /usr/share/nginx/html && \

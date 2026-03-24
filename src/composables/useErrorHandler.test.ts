@@ -97,7 +97,7 @@ describe('useErrorHandler', () => {
   // 401 - Unauthorized
   // ========================================
   describe('handle401', () => {
-    it('clears auth and redirects to login', () => {
+    it('clears auth and redirects to login', async () => {
       const authStore = useAuthStore();
       authStore.isAuthenticated = true;
       authStore.username = 'test';
@@ -105,9 +105,25 @@ describe('useErrorHandler', () => {
       const { handleError } = useErrorHandler();
       handleError(createError(401));
 
-      // logout is async (fire-and-forget via void), check notification and direct redirect
+      // Wait for async logout to settle
+      await vi.advanceTimersByTimeAsync(0);
+
       expect(mockNotify).toHaveBeenCalled();
-      expect(mockRouter.push).toHaveBeenCalledWith('/login');
+      // logout() handles redirect when wasAuthenticated is true
+      expect(mockRouter.push).not.toHaveBeenCalled();
+    });
+
+    it('redirects to login as fallback when not previously authenticated', async () => {
+      const authStore = useAuthStore();
+      authStore.isAuthenticated = false;
+
+      const { handleError } = useErrorHandler();
+      handleError(createError(401));
+
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(mockNotify).toHaveBeenCalled();
+      expect(mockRouter.push).toHaveBeenCalledWith({ name: 'login' });
     });
 
     it('shows session expired notification', () => {
@@ -138,7 +154,6 @@ describe('useErrorHandler', () => {
       const { handle401 } = useErrorHandler();
       handle401();
 
-      expect(mockRouter.push).toHaveBeenCalledWith('/login');
       expect(mockNotify).toHaveBeenCalled();
     });
   });

@@ -199,7 +199,9 @@ async function handleSaveAndClose(): Promise<void> {
   }
 }
 
-function finishWizard() {
+async function finishWizard() {
+  const saved = await saveCurrentStep();
+  if (!saved) return;
   closeWizardAndNavigate();
 }
 

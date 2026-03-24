@@ -1,6 +1,6 @@
-import { boot } from 'quasar/wrappers';
+import { defineBoot } from '#q-app/wrappers';
 
-export default boot(({ app }) => {
+export default defineBoot(({ app }) => {
   const { $q } = app.config.globalProperties;
   try {
     const saved = localStorage.getItem('darkMode');
