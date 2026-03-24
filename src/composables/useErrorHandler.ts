@@ -203,10 +203,17 @@ export function useErrorHandler() {
    */
   function handle401(skipLogout = false): void {
     if (!skipLogout) {
-      // Clear auth state and redirect to login (logout() handles navigation)
-      authStore.logout().catch((err: unknown) => {
-        logger.debug('Logout during 401 handling failed', { error: toError(err).message });
-      });
+      const wasAuthenticated = authStore.isAuthenticated;
+      authStore
+        .logout()
+        .catch((err: unknown) => {
+          logger.debug('Logout during 401 handling failed', { error: toError(err).message });
+        })
+        .finally(() => {
+          if (!wasAuthenticated) {
+            void router.push({ name: 'login' });
+          }
+        });
 
       $q.notify({
         type: 'warning',
