@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { useSavingState } from 'src/composables/useSavingState';
 import axios from 'axios';
 import type {
   Combat,
@@ -23,14 +24,12 @@ export const useCombatStore = defineStore('combat', () => {
   const currentNpc = ref<Npc | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
-  const savingCount = ref(0);
+  const { saving, startSaving, stopSaving, resetSaving } = useSavingState();
   const turnDoneIds = ref(new Set<number>());
 
   let fetchRequestId = 0;
   let selectRequestId = 0;
   let fetchNpcRequestId = 0;
-
-  const saving = computed(() => savingCount.value > 0);
   const hasCombats = computed(() => combats.value.length > 0);
 
   const allies = computed(() => currentCombat.value?.npcs.filter((n) => n.side === 'ally') ?? []);
@@ -102,7 +101,7 @@ export const useCombatStore = defineStore('combat', () => {
   // ===================
 
   async function createCombat(data: CombatBase): Promise<Combat | null> {
-    savingCount.value++;
+    startSaving();
     error.value = null;
 
     try {
@@ -114,12 +113,12 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: 'Failed to create combat' });
       return null;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
   async function updateCombat(data: CombatBase & { id: number }): Promise<Combat | null> {
-    savingCount.value++;
+    startSaving();
     error.value = null;
 
     try {
@@ -141,12 +140,12 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: 'Failed to update combat' });
       return null;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
   async function deleteCombat(campaignId: number, combatId: number): Promise<boolean> {
-    savingCount.value++;
+    startSaving();
     error.value = null;
 
     try {
@@ -161,7 +160,7 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: 'Failed to delete combat' });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -204,7 +203,7 @@ export const useCombatStore = defineStore('combat', () => {
   }
 
   async function createNpc(data: NpcUpsert): Promise<Npc | null> {
-    savingCount.value++;
+    startSaving();
     error.value = null;
     try {
       const response = await combatService.createNpc(data);
@@ -226,12 +225,12 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: 'Failed to create NPC' });
       return null;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
   async function updateNpc(data: NpcUpsert & { id: number }): Promise<Npc | null> {
-    savingCount.value++;
+    startSaving();
     error.value = null;
     try {
       const response = await combatService.updateNpc(data);
@@ -253,12 +252,12 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: 'Failed to update NPC' });
       return null;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
   async function deleteNpc(campaignId: number, npcId: number): Promise<boolean> {
-    savingCount.value++;
+    startSaving();
     error.value = null;
     try {
       await combatService.deleteNpc(campaignId, npcId);
@@ -274,7 +273,7 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: apiMessage });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -289,7 +288,7 @@ export const useCombatStore = defineStore('combat', () => {
     side: 'ally' | 'enemy';
   }): Promise<NpcInstance | null> {
     if (!currentCombat.value) return null;
-    savingCount.value++;
+    startSaving();
 
     // Auto-number duplicates if no custom display name
     let displayName = data.displayName;
@@ -313,7 +312,7 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: 'Failed to add NPC' });
       return null;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -322,7 +321,7 @@ export const useCombatStore = defineStore('combat', () => {
     data: NpcInstancePatch
   ): Promise<NpcInstance | null> {
     if (!currentCombat.value) return null;
-    savingCount.value++;
+    startSaving();
 
     try {
       const response = await npcInstanceService.patch(id, data);
@@ -335,13 +334,13 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: 'Failed to update NPC' });
       return null;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
   async function removeNpcInstance(instanceId: number): Promise<boolean> {
     if (!currentCombat.value) return false;
-    savingCount.value++;
+    startSaving();
 
     try {
       await npcInstanceService.delete(instanceId);
@@ -352,7 +351,7 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: 'Failed to remove NPC' });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -368,7 +367,7 @@ export const useCombatStore = defineStore('combat', () => {
     errorMessage: string
   ): Promise<void> {
     if (!currentCombat.value) return;
-    savingCount.value++;
+    startSaving();
 
     try {
       const response = await npcInstanceService.patchResource(
@@ -386,7 +385,7 @@ export const useCombatStore = defineStore('combat', () => {
     } catch (err: unknown) {
       handleError(err, { errorRef: error, message: errorMessage });
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -416,7 +415,7 @@ export const useCombatStore = defineStore('combat', () => {
   // ===================
 
   async function endRound(campaignId: number, combatId: number, round: number): Promise<boolean> {
-    savingCount.value++;
+    startSaving();
 
     try {
       const response = await combatService.endRound({ campaignId, combatId, round });
@@ -443,7 +442,7 @@ export const useCombatStore = defineStore('combat', () => {
       handleError(err, { errorRef: error, message: 'Failed to end round' });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -487,7 +486,7 @@ export const useCombatStore = defineStore('combat', () => {
     npcOptions.value = [];
     loading.value = false;
     error.value = null;
-    savingCount.value = 0;
+    resetSaving();
     turnDoneIds.value = new Set();
     fetchRequestId = 0;
     selectRequestId = 0;

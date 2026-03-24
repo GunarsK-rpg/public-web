@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { useSavingState } from 'src/composables/useSavingState';
 import type {
   Hero,
   HeroSheet,
@@ -65,8 +66,7 @@ function createEmptyHero(): HeroSheet {
 export const useHeroStore = defineStore('hero', () => {
   const hero = ref<HeroSheet | null>(null);
   const loading = ref(false);
-  const savingCount = ref(0);
-  const saving = computed(() => savingCount.value > 0);
+  const { saving, startSaving, stopSaving, resetSaving } = useSavingState();
   const error = ref<string | null>(null);
 
   // Track pending load requests to handle race conditions
@@ -159,6 +159,7 @@ export const useHeroStore = defineStore('hero', () => {
     hero.value = null;
     error.value = null;
     tempIdCounter.value = -1;
+    resetSaving();
   }
 
   function setError(message: string): void {
@@ -236,14 +237,14 @@ export const useHeroStore = defineStore('hero', () => {
     errorMessage: string
   ): Promise<void> {
     if (!hero.value) return;
-    savingCount.value++;
+    startSaving();
     try {
       const response = await serviceFn(hero.value.id, Math.max(0, Math.floor(value)));
       hero.value[field] = response.data[field];
     } catch (err) {
       handleError(err, { errorRef: error, message: errorMessage });
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -284,7 +285,7 @@ export const useHeroStore = defineStore('hero', () => {
   // ===================
   async function uploadAvatar(file: File): Promise<boolean> {
     if (!hero.value) return false;
-    savingCount.value++;
+    startSaving();
     try {
       const uploadRes = await filesApi.upload(file, FILE_TYPE_HERO_AVATAR);
       // Extract S3 key from URL path (last segment: /api/v1/files/hero-avatar/{key})
@@ -297,13 +298,13 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err, { errorRef: error, message: 'Failed to upload avatar' });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
   async function deleteAvatar(): Promise<boolean> {
     if (!hero.value) return false;
-    savingCount.value++;
+    startSaving();
     try {
       await heroService.deleteAvatar(hero.value.id);
       if (hero.value) hero.value.avatarKey = null;
@@ -312,7 +313,7 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err, { errorRef: error, message: 'Failed to delete avatar' });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -325,7 +326,7 @@ export const useHeroStore = defineStore('hero', () => {
     maxCharges?: number | null
   ): Promise<boolean> {
     if (!hero.value) return false;
-    savingCount.value++;
+    startSaving();
     try {
       const existing = hero.value.equipment.find((e) => e.equipment?.code === equipmentCode);
       const payload: Record<string, unknown> = {
@@ -355,13 +356,13 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err, { errorRef: error, message: 'Failed to add equipment' });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
   async function removeEquipment(heroEquipmentId: number): Promise<void> {
     if (!hero.value) return;
-    savingCount.value++;
+    startSaving();
     try {
       await heroService.deleteSubResource(hero.value.id, 'equipment', heroEquipmentId);
       if (!hero.value) return;
@@ -372,7 +373,7 @@ export const useHeroStore = defineStore('hero', () => {
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to remove equipment' });
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -382,7 +383,7 @@ export const useHeroStore = defineStore('hero', () => {
     options?: { notes?: string; maxCharges?: number; specialOverrides?: SpecialEntry[] }
   ): Promise<boolean> {
     if (!hero.value) return false;
-    savingCount.value++;
+    startSaving();
     try {
       const payload: Record<string, unknown> = {
         heroId: hero.value.id,
@@ -411,7 +412,7 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err, { errorRef: error, message: 'Failed to add custom equipment' });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -433,7 +434,7 @@ export const useHeroStore = defineStore('hero', () => {
     if (!hero.value) return;
     const existing = hero.value.equipment.find((e) => e.id === heroEquipmentId);
     if (!existing) return;
-    savingCount.value++;
+    startSaving();
     try {
       const payload: Record<string, unknown> = {
         id: heroEquipmentId,
@@ -472,7 +473,7 @@ export const useHeroStore = defineStore('hero', () => {
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to update equipment' });
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -504,7 +505,7 @@ export const useHeroStore = defineStore('hero', () => {
     async function upsert(payload: TPayload): Promise<TResponse | null> {
       if (!hero.value) return null;
       const currentHeroId = hero.value.id;
-      savingCount.value++;
+      startSaving();
       try {
         const response = await heroService.upsertSubResource<TResponse>(
           currentHeroId,
@@ -524,14 +525,14 @@ export const useHeroStore = defineStore('hero', () => {
         handleError(err, { errorRef: error, message: `Failed to save ${label}` });
         return null;
       } finally {
-        savingCount.value--;
+        stopSaving();
       }
     }
 
     async function remove(itemId: number): Promise<void> {
       if (!hero.value) return;
       const currentHeroId = hero.value.id;
-      savingCount.value++;
+      startSaving();
       try {
         await heroService.deleteSubResource(currentHeroId, resource, itemId);
         if (!hero.value || hero.value.id !== currentHeroId) return;
@@ -541,7 +542,7 @@ export const useHeroStore = defineStore('hero', () => {
       } catch (err) {
         handleError(err, { errorRef: error, message: `Failed to remove ${label}` });
       } finally {
-        savingCount.value--;
+        stopSaving();
       }
     }
 
@@ -565,7 +566,7 @@ export const useHeroStore = defineStore('hero', () => {
   ): Promise<HeroInjury | null> {
     if (!hero.value) return null;
     const currentHeroId = hero.value.id;
-    savingCount.value++;
+    startSaving();
     try {
       const response = await heroService.upsertSubResource<HeroInjury>(
         currentHeroId,
@@ -596,14 +597,14 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err, { errorRef: error, message: 'Failed to save injury' });
       return null;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
   async function removeInjury(injuryId: number): Promise<void> {
     if (!hero.value) return;
     const currentHeroId = hero.value.id;
-    savingCount.value++;
+    startSaving();
     try {
       await heroService.deleteSubResource(currentHeroId, 'injuries', injuryId);
       if (!hero.value || hero.value.id !== currentHeroId) return;
@@ -614,7 +615,7 @@ export const useHeroStore = defineStore('hero', () => {
     } catch (err) {
       handleError(err, { errorRef: error, message: 'Failed to remove injury' });
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -627,7 +628,7 @@ export const useHeroStore = defineStore('hero', () => {
     const goal = hero.value.goals.find((g) => g.id === goalId);
     if (!goal) return null;
     const currentHeroId = hero.value.id;
-    savingCount.value++;
+    startSaving();
     try {
       const response = await heroService.upsertSubResource<HeroGoal>(currentHeroId, 'goals', {
         ...goal,
@@ -643,7 +644,7 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err, { errorRef: error, message: 'Failed to update goal' });
       return null;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -681,7 +682,7 @@ export const useHeroStore = defineStore('hero', () => {
   }): Promise<NpcInstance | null> {
     if (!hero.value) return null;
     const currentHeroId = hero.value.id;
-    savingCount.value++;
+    startSaving();
     try {
       const response = await npcInstanceService.create({ ...data, heroId: currentHeroId });
       if (hero.value?.id === currentHeroId) {
@@ -693,7 +694,7 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err, { errorRef: error, message: 'Failed to add companion' });
       return null;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -703,7 +704,7 @@ export const useHeroStore = defineStore('hero', () => {
   ): Promise<boolean> {
     if (!hero.value) return false;
     const currentHeroId = hero.value.id;
-    savingCount.value++;
+    startSaving();
     try {
       const response = await npcInstanceService.patch(instanceId, data);
       if (hero.value?.id !== currentHeroId) return false;
@@ -717,14 +718,14 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err, { errorRef: error, message: 'Failed to update companion' });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
   async function removeCompanion(instanceId: number): Promise<boolean> {
     if (!hero.value) return false;
     const currentHeroId = hero.value.id;
-    savingCount.value++;
+    startSaving();
     try {
       await npcInstanceService.delete(instanceId);
       if (hero.value?.id === currentHeroId) {
@@ -736,7 +737,7 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err, { errorRef: error, message: 'Failed to remove companion' });
       return false;
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
@@ -749,7 +750,7 @@ export const useHeroStore = defineStore('hero', () => {
   ): Promise<void> {
     if (!hero.value) return;
     const currentHeroId = hero.value.id;
-    savingCount.value++;
+    startSaving();
     try {
       const response = await npcInstanceService.patchResource(
         instanceId,
@@ -763,7 +764,7 @@ export const useHeroStore = defineStore('hero', () => {
     } catch (err) {
       handleError(err, { errorRef: error, message: errorMessage });
     } finally {
-      savingCount.value--;
+      stopSaving();
     }
   }
 
