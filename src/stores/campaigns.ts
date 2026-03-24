@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { useSavingState } from 'src/composables/useSavingState';
 import type { Campaign, CampaignBase, CampaignWithHeroes, Hero } from 'src/types';
 import { logger } from 'src/utils/logger';
 import campaignService from 'src/services/campaignService';
@@ -12,14 +13,13 @@ export const useCampaignStore = defineStore('campaigns', () => {
   const currentCampaign = ref<CampaignWithHeroes | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
-  const savingCount = ref(0);
+  const { saving, startSaving, stopSaving, resetSaving } = useSavingState();
 
   // Track pending requests to handle race conditions
   let fetchRequestId = 0;
   let selectRequestId = 0;
 
   const hasCampaigns = computed(() => campaigns.value.length > 0);
-  const saving = computed(() => savingCount.value > 0);
 
   const isOwner = computed(() => {
     if (!currentCampaign.value) return false;
@@ -106,7 +106,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
   }
 
   async function createCampaign(data: CampaignBase): Promise<Campaign | null> {
-    savingCount.value++;
+    startSaving();
     error.value = null;
 
     try {
@@ -118,12 +118,12 @@ export const useCampaignStore = defineStore('campaigns', () => {
       handleError(err, { errorRef: error, message: 'Failed to create campaign' });
       return null;
     } finally {
-      savingCount.value = Math.max(0, savingCount.value - 1);
+      stopSaving();
     }
   }
 
   async function updateCampaign(id: number, data: CampaignBase): Promise<Campaign | null> {
-    savingCount.value++;
+    startSaving();
     error.value = null;
 
     try {
@@ -147,12 +147,12 @@ export const useCampaignStore = defineStore('campaigns', () => {
       handleError(err, { errorRef: error, message: 'Failed to update campaign' });
       return null;
     } finally {
-      savingCount.value = Math.max(0, savingCount.value - 1);
+      stopSaving();
     }
   }
 
   async function deleteCampaign(id: number): Promise<boolean> {
-    savingCount.value++;
+    startSaving();
     error.value = null;
 
     try {
@@ -169,14 +169,14 @@ export const useCampaignStore = defineStore('campaigns', () => {
       handleError(err, { errorRef: error, message: 'Failed to delete campaign' });
       return false;
     } finally {
-      savingCount.value = Math.max(0, savingCount.value - 1);
+      stopSaving();
     }
   }
 
   async function removeHero(heroId: number): Promise<boolean> {
     if (!currentCampaign.value) return false;
     error.value = null;
-    savingCount.value++;
+    startSaving();
 
     try {
       await campaignService.removeHero(currentCampaign.value.id, heroId);
@@ -187,7 +187,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
       handleError(err, { errorRef: error, message: 'Failed to remove hero from campaign' });
       return false;
     } finally {
-      savingCount.value = Math.max(0, savingCount.value - 1);
+      stopSaving();
     }
   }
 
@@ -204,7 +204,7 @@ export const useCampaignStore = defineStore('campaigns', () => {
     currentCampaign.value = null;
     loading.value = false;
     error.value = null;
-    savingCount.value = 0;
+    resetSaving();
   }
 
   return {
