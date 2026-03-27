@@ -19,6 +19,7 @@ COPY . .
 ARG VITE_API_URL
 ARG VITE_AUTH_URL
 ARG VITE_FILES_API_URL
+ARG VITE_SENTRY_DSN
 
 # Build for production (Quasar PWA)
 RUN npm run build
