@@ -170,6 +170,28 @@ const stubs = {
   ModificationLabel: false,
 };
 
+// <script setup> does not expose internal refs on wrapper.vm.
+// This helper centralizes the type assertion for all internal state access.
+interface DialogVm {
+  selectedModification: ModificationClassifier | null;
+  availableModifications: ModificationClassifier[];
+  newModType: string;
+  newModValue: string;
+  statDamageValue: number | null;
+  statRange: string;
+  statDeflect: number | null;
+  mode: string;
+  customTypeId: number | null;
+  customName: string;
+  showDamage: boolean;
+  showRange: boolean;
+  onSave: () => Promise<void>;
+}
+
+function getVm(wrapper: ReturnType<typeof shallowMount>): DialogVm {
+  return wrapper.vm as unknown as DialogVm;
+}
+
 /** Mount with modelValue=false, then set props to trigger the watch. */
 async function mountInEditMode(editItem: HeroEquipment) {
   const wrapper = shallowMount(EquipmentAddDialog, {
@@ -291,8 +313,7 @@ describe('EquipmentAddDialog', () => {
 
       const wrapper = await mountInEditMode(createHeroEquipment());
 
-      const vm = wrapper.vm as unknown as { selectedModification: ModificationClassifier | null };
-      vm.selectedModification = mockModifications[0]!;
+      getVm(wrapper).selectedModification = mockModifications[0]!;
       await wrapper.vm.$nextTick();
 
       const addBtn = wrapper.find('button[aria-label="Add classifier modification"]');
@@ -319,8 +340,7 @@ describe('EquipmentAddDialog', () => {
       ];
       const wrapper = await mountInEditMode(createHeroEquipment({ modifications: mods }));
 
-      const vm = wrapper.vm as unknown as { availableModifications: ModificationClassifier[] };
-      const available = vm.availableModifications;
+      const available = getVm(wrapper).availableModifications;
       expect(available.find((m) => m.code === 'keen_edge')).toBeUndefined();
       expect(available.find((m) => m.code === 'heavy')).toBeDefined();
     });
@@ -344,7 +364,7 @@ describe('EquipmentAddDialog', () => {
 
       const wrapper = await mountInEditMode(createHeroEquipment());
 
-      const vm = wrapper.vm as unknown as { newModType: string; newModValue: string };
+      const vm = getVm(wrapper);
       vm.newModType = 'drawback';
       vm.newModValue = 'Cursed by GM';
       await wrapper.vm.$nextTick();
@@ -393,8 +413,7 @@ describe('EquipmentAddDialog', () => {
         })
       );
 
-      const vm = wrapper.vm as unknown as { statDamageValue: number | null };
-      expect(vm.statDamageValue).toBe(8);
+      expect(getVm(wrapper).statDamageValue).toBe(8);
     });
 
     it('pre-fills damage from specialOverrides when present', async () => {
@@ -405,8 +424,7 @@ describe('EquipmentAddDialog', () => {
         })
       );
 
-      const vm = wrapper.vm as unknown as { statDamageValue: number | null };
-      expect(vm.statDamageValue).toBe(10);
+      expect(getVm(wrapper).statDamageValue).toBe(10);
     });
 
     it('pre-fills range from effective special', async () => {
@@ -416,8 +434,7 @@ describe('EquipmentAddDialog', () => {
         })
       );
 
-      const vm = wrapper.vm as unknown as { statRange: string };
-      expect(vm.statRange).toBe('80/320');
+      expect(getVm(wrapper).statRange).toBe('80/320');
     });
 
     it('pre-fills deflect from effective special', async () => {
@@ -428,8 +445,7 @@ describe('EquipmentAddDialog', () => {
         })
       );
 
-      const vm = wrapper.vm as unknown as { statDeflect: number | null };
-      expect(vm.statDeflect).toBe(3);
+      expect(getVm(wrapper).statDeflect).toBe(3);
     });
   });
 
@@ -443,13 +459,11 @@ describe('EquipmentAddDialog', () => {
         })
       );
 
-      // Modify stat
-      const vm = wrapper.vm as unknown as { statDamageValue: number | null; onSave: () => void };
+      const vm = getVm(wrapper);
       vm.statDamageValue = 10;
       await wrapper.vm.$nextTick();
 
-      // Call save directly
-      await (wrapper.vm as unknown as { onSave: () => Promise<void> }).onSave();
+      await vm.onSave();
 
       expect(mockUpdateEquipment).toHaveBeenCalledWith(
         100,
@@ -476,7 +490,7 @@ describe('EquipmentAddDialog', () => {
       ];
       const wrapper = await mountInEditMode(createHeroEquipment({ modifications: mods }));
 
-      await (wrapper.vm as unknown as { onSave: () => Promise<void> }).onSave();
+      await getVm(wrapper).onSave();
 
       expect(mockUpdateEquipment).toHaveBeenCalledWith(
         100,
@@ -493,7 +507,7 @@ describe('EquipmentAddDialog', () => {
 
       const wrapper = await mountInEditMode(createHeroEquipment());
 
-      await (wrapper.vm as unknown as { onSave: () => Promise<void> }).onSave();
+      await getVm(wrapper).onSave();
 
       expect(mockUpdateEquipment).toHaveBeenCalledTimes(1);
       const payload = mockUpdateEquipment.mock.calls[0]![1] as Record<string, unknown>;
@@ -505,12 +519,7 @@ describe('EquipmentAddDialog', () => {
     it('shows stat inputs when type is weapon', async () => {
       const wrapper = await mountInAddMode();
 
-      const vm = wrapper.vm as unknown as {
-        mode: string;
-        customTypeId: number | null;
-        showDamage: boolean;
-        showRange: boolean;
-      };
+      const vm = getVm(wrapper);
       vm.mode = 'custom';
       vm.customTypeId = 1; // weapon
 
@@ -521,14 +530,7 @@ describe('EquipmentAddDialog', () => {
     it('includes specialOverrides in custom equipment payload', async () => {
       const wrapper = await mountInAddMode();
 
-      const vm = wrapper.vm as unknown as {
-        mode: string;
-        customTypeId: number | null;
-        customName: string;
-        statDamageValue: number | null;
-        statRange: string;
-        onSave: () => Promise<void>;
-      };
+      const vm = getVm(wrapper);
       vm.mode = 'custom';
       vm.customTypeId = 1;
       vm.customName = 'Custom Sword';
@@ -557,8 +559,7 @@ describe('EquipmentAddDialog', () => {
         createHeroEquipment({ equipType: { id: 1, code: 'weapon', name: 'Weapon' } })
       );
 
-      const vm = wrapper.vm as unknown as { availableModifications: ModificationClassifier[] };
-      const available = vm.availableModifications;
+      const available = getVm(wrapper).availableModifications;
       expect(available.find((m) => m.code === 'keen_edge')).toBeDefined();
       expect(available.find((m) => m.code === 'heavy')).toBeDefined();
       expect(available.find((m) => m.code === 'fabrial_boost')).toBeUndefined();
@@ -569,8 +570,7 @@ describe('EquipmentAddDialog', () => {
         createHeroEquipment({ equipType: { id: 3, code: 'fabrial', name: 'Fabrial' } })
       );
 
-      const vm = wrapper.vm as unknown as { availableModifications: ModificationClassifier[] };
-      const available = vm.availableModifications;
+      const available = getVm(wrapper).availableModifications;
       expect(available.find((m) => m.code === 'keen_edge')).toBeDefined();
       expect(available.find((m) => m.code === 'fabrial_boost')).toBeDefined();
     });
