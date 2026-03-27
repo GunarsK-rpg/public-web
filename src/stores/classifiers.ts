@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { logger } from 'src/utils/logger';
 import classifierService from 'src/services/classifierService';
-import { handleError } from 'src/utils/errorHandling';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 import type {
   Classifiers,
   AttributeType,
@@ -40,6 +40,7 @@ import type {
 } from 'src/types';
 
 export const useClassifierStore = defineStore('classifiers', () => {
+  const { handleError } = useErrorHandler();
   const data = ref<Classifiers | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -165,7 +166,8 @@ export const useClassifierStore = defineStore('classifiers', () => {
         initialized.value = true;
         logger.info('Classifiers loaded');
       } catch (err) {
-        handleError(err, { errorRef: error, message: 'Failed to load classifiers' });
+        handleError(err as Error, { retryKey: 'classifiers-load' });
+        error.value = 'Failed to load classifiers';
         // Reset promise on failure to allow retry
         initPromise = null;
       } finally {

@@ -47,7 +47,7 @@ import { ArrowLeft, UserX } from 'lucide-vue-next';
 import npcInstanceService from 'src/services/npcInstanceService';
 import npcService from 'src/services/npcService';
 import NpcStatBlock from 'src/components/combat/NpcStatBlock.vue';
-import { handleError } from 'src/utils/errorHandling';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { useAuthStore } from 'src/stores/auth';
 import type { Npc, NpcInstance } from 'src/types';
 
@@ -63,6 +63,7 @@ const { setPageTitle } = usePageTitle();
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
+const { handleError } = useErrorHandler();
 const npc = ref<Npc | null>(null);
 const instance = ref<NpcInstance | null>(null);
 const isReadonly = computed(() => {
@@ -122,7 +123,8 @@ async function onResourceUpdate(code: string, value: number) {
       instance.value[npcKey] = newValue;
     }
   } catch (err: unknown) {
-    handleError(err, { errorRef: error, message: 'Failed to update resource' });
+    handleError(err as Error, { retryKey: 'npc-instance-resource' });
+    error.value = 'Failed to update resource';
   } finally {
     saving.value = false;
   }
@@ -149,7 +151,8 @@ onMounted(async () => {
 
     setPageTitle(instance.value.displayName ?? npc.value.name);
   } catch (err: unknown) {
-    handleError(err, { errorRef: error, message: 'Failed to load NPC' });
+    handleError(err as Error, { retryKey: 'npc-instance-load', entityName: 'NPC' });
+    error.value = 'Failed to load NPC';
   } finally {
     loading.value = false;
   }

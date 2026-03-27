@@ -19,7 +19,7 @@ import { logger } from 'src/utils/logger';
 import filesApi, { FILE_TYPE_HERO_AVATAR } from 'src/services/filesApi';
 import heroService from 'src/services/heroService';
 import npcInstanceService from 'src/services/npcInstanceService';
-import { handleError } from 'src/utils/errorHandling';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { MAX_EQUIPMENT_STACK } from 'src/constants';
 import { clamp } from 'src/utils/numberUtils';
 
@@ -64,6 +64,7 @@ function createEmptyHero(): HeroSheet {
 }
 
 export const useHeroStore = defineStore('hero', () => {
+  const { handleError } = useErrorHandler();
   const hero = ref<HeroSheet | null>(null);
   const loading = ref(false);
   const { saving, startSaving, stopSaving, resetSaving } = useSavingState();
@@ -132,12 +133,11 @@ export const useHeroStore = defineStore('hero', () => {
         });
         return;
       }
-      handleError(err, {
-        errorRef: error,
-        message: 'Failed to load hero',
-        notFoundMessage: 'Hero not found',
-        context: { id },
-      });
+      handleError(err as Error, { retryKey: 'hero-load', entityName: 'Hero' });
+      error.value =
+        (err as { response?: { status?: number } }).response?.status === 404
+          ? 'Hero not found'
+          : 'Failed to load hero';
     } finally {
       if (requestId === loadRequestId) {
         loading.value = false;
@@ -242,7 +242,8 @@ export const useHeroStore = defineStore('hero', () => {
       const response = await serviceFn(hero.value.id, Math.max(0, Math.floor(value)));
       hero.value[field] = response.data[field];
     } catch (err) {
-      handleError(err, { errorRef: error, message: errorMessage });
+      handleError(err as Error, { retryKey: 'hero-patch-resource' });
+      error.value = errorMessage;
     } finally {
       stopSaving();
     }
@@ -295,7 +296,8 @@ export const useHeroStore = defineStore('hero', () => {
       if (hero.value) hero.value.avatarKey = key;
       return true;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to upload avatar' });
+      handleError(err as Error, { retryKey: 'hero-upload-avatar' });
+      error.value = 'Failed to upload avatar';
       return false;
     } finally {
       stopSaving();
@@ -310,7 +312,8 @@ export const useHeroStore = defineStore('hero', () => {
       if (hero.value) hero.value.avatarKey = null;
       return true;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to delete avatar' });
+      handleError(err as Error, { retryKey: 'hero-delete-avatar' });
+      error.value = 'Failed to delete avatar';
       return false;
     } finally {
       stopSaving();
@@ -353,7 +356,8 @@ export const useHeroStore = defineStore('hero', () => {
       }
       return true;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to add equipment' });
+      handleError(err as Error, { retryKey: 'hero-add-equipment' });
+      error.value = 'Failed to add equipment';
       return false;
     } finally {
       stopSaving();
@@ -371,7 +375,8 @@ export const useHeroStore = defineStore('hero', () => {
         (f) => f.heroEquipmentId !== heroEquipmentId
       );
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to remove equipment' });
+      handleError(err as Error, { retryKey: 'hero-remove-equipment' });
+      error.value = 'Failed to remove equipment';
     } finally {
       stopSaving();
     }
@@ -409,7 +414,8 @@ export const useHeroStore = defineStore('hero', () => {
       hero.value.equipment.push(response.data);
       return true;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to add custom equipment' });
+      handleError(err as Error, { retryKey: 'hero-add-custom-equipment' });
+      error.value = 'Failed to add custom equipment';
       return false;
     } finally {
       stopSaving();
@@ -471,7 +477,8 @@ export const useHeroStore = defineStore('hero', () => {
       const idx = hero.value.equipment.findIndex((e) => e.id === heroEquipmentId);
       if (idx !== -1) hero.value.equipment[idx] = response.data;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to update equipment' });
+      handleError(err as Error, { retryKey: 'hero-update-equipment' });
+      error.value = 'Failed to update equipment';
     } finally {
       stopSaving();
     }
@@ -522,7 +529,8 @@ export const useHeroStore = defineStore('hero', () => {
         }
         return response.data;
       } catch (err) {
-        handleError(err, { errorRef: error, message: `Failed to save ${label}` });
+        handleError(err as Error, { retryKey: `hero-save-${label}` });
+        error.value = `Failed to save ${label}`;
         return null;
       } finally {
         stopSaving();
@@ -540,7 +548,8 @@ export const useHeroStore = defineStore('hero', () => {
         const idx = arr.findIndex((item) => item.id === itemId);
         if (idx !== -1) arr.splice(idx, 1);
       } catch (err) {
-        handleError(err, { errorRef: error, message: `Failed to remove ${label}` });
+        handleError(err as Error, { retryKey: `hero-remove-${label}` });
+        error.value = `Failed to remove ${label}`;
       } finally {
         stopSaving();
       }
@@ -594,7 +603,8 @@ export const useHeroStore = defineStore('hero', () => {
 
       return response.data;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to save injury' });
+      handleError(err as Error, { retryKey: 'hero-save-injury' });
+      error.value = 'Failed to save injury';
       return null;
     } finally {
       stopSaving();
@@ -613,7 +623,8 @@ export const useHeroStore = defineStore('hero', () => {
       // DB CASCADE removes linked condition — sync local state
       hero.value.conditions = hero.value.conditions.filter((c) => c.sourceInjuryId !== injuryId);
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to remove injury' });
+      handleError(err as Error, { retryKey: 'hero-remove-injury' });
+      error.value = 'Failed to remove injury';
     } finally {
       stopSaving();
     }
@@ -641,7 +652,8 @@ export const useHeroStore = defineStore('hero', () => {
       if (idx !== -1) hero.value.goals[idx] = response.data;
       return response.data;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to update goal' });
+      handleError(err as Error, { retryKey: 'hero-update-goal' });
+      error.value = 'Failed to update goal';
       return null;
     } finally {
       stopSaving();
@@ -670,7 +682,8 @@ export const useHeroStore = defineStore('hero', () => {
       companionNpcOptions.value = response.data;
       return true;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to load companion options' });
+      handleError(err as Error, { retryKey: 'hero-companion-options' });
+      error.value = 'Failed to load companion options';
       return false;
     }
   }
@@ -691,7 +704,8 @@ export const useHeroStore = defineStore('hero', () => {
       logger.info('Companion added', { id: response.data.id });
       return response.data;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to add companion' });
+      handleError(err as Error, { retryKey: 'hero-add-companion' });
+      error.value = 'Failed to add companion';
       return null;
     } finally {
       stopSaving();
@@ -715,7 +729,8 @@ export const useHeroStore = defineStore('hero', () => {
       }
       return true;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to update companion' });
+      handleError(err as Error, { retryKey: 'hero-update-companion' });
+      error.value = 'Failed to update companion';
       return false;
     } finally {
       stopSaving();
@@ -734,7 +749,8 @@ export const useHeroStore = defineStore('hero', () => {
       logger.info('Companion removed', { id: instanceId });
       return true;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to remove companion' });
+      handleError(err as Error, { retryKey: 'hero-remove-companion' });
+      error.value = 'Failed to remove companion';
       return false;
     } finally {
       stopSaving();
@@ -762,7 +778,8 @@ export const useHeroStore = defineStore('hero', () => {
       const newValue = response.data[field];
       if (comp && typeof newValue === 'number') comp[npcField] = newValue;
     } catch (err) {
-      handleError(err, { errorRef: error, message: errorMessage });
+      handleError(err as Error, { retryKey: 'hero-patch-companion' });
+      error.value = errorMessage;
     } finally {
       stopSaving();
     }
@@ -800,7 +817,8 @@ export const useHeroStore = defineStore('hero', () => {
       clearHero();
       return true;
     } catch (err) {
-      handleError(err, { errorRef: error, message: 'Failed to delete character' });
+      handleError(err as Error, { retryKey: 'hero-delete' });
+      error.value = 'Failed to delete character';
       return false;
     }
   }

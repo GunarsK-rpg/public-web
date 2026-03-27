@@ -15,9 +15,10 @@ import type {
 import { logger } from 'src/utils/logger';
 import combatService from 'src/services/combatService';
 import npcInstanceService from 'src/services/npcInstanceService';
-import { handleError } from 'src/utils/errorHandling';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 
 export const useCombatStore = defineStore('combat', () => {
+  const { handleError } = useErrorHandler();
   const combats = ref<Combat[]>([]);
   const currentCombat = ref<CombatDetail | null>(null);
   const npcOptions = ref<NpcOption[]>([]);
@@ -52,7 +53,8 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('Combats loaded', { count: response.data.length });
     } catch (err: unknown) {
       if (requestId === fetchRequestId) {
-        handleError(err, { errorRef: error, message: 'Failed to load combats' });
+        handleError(err as Error, { retryKey: 'combat-load' });
+        error.value = 'Failed to load combats';
       }
     } finally {
       if (requestId === fetchRequestId) {
@@ -79,15 +81,11 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('Combat selected', { id: combatId });
     } catch (err: unknown) {
       if (requestId === selectRequestId) {
-        handleError(err, {
-          errorRef: error,
-          message: 'Failed to load combat',
-          notFoundMessage: 'Combat not found',
-          context: { combatId },
-          onNotFound: () => {
-            currentCombat.value = null;
-          },
-        });
+        handleError(err as Error, { retryKey: 'combat-select', entityName: 'Combat' });
+        error.value = 'Failed to load combat';
+        if ((err as { response?: { status?: number } }).response?.status === 404) {
+          currentCombat.value = null;
+        }
       }
     } finally {
       if (requestId === selectRequestId) {
@@ -110,7 +108,8 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('Combat created', { id: response.data.id, name: response.data.name });
       return response.data;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to create combat' });
+      handleError(err as Error, { retryKey: 'combat-create' });
+      error.value = 'Failed to create combat';
       return null;
     } finally {
       stopSaving();
@@ -137,7 +136,8 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('Combat updated', { id: data.id });
       return updated;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to update combat' });
+      handleError(err as Error, { retryKey: 'combat-update' });
+      error.value = 'Failed to update combat';
       return null;
     } finally {
       stopSaving();
@@ -157,7 +157,8 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('Combat deleted', { id: combatId });
       return true;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to delete combat' });
+      handleError(err as Error, { retryKey: 'combat-delete' });
+      error.value = 'Failed to delete combat';
       return false;
     } finally {
       stopSaving();
@@ -173,7 +174,8 @@ export const useCombatStore = defineStore('combat', () => {
       const response = await combatService.getNpcOptions(campaignId);
       npcOptions.value = response.data;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to load NPC options' });
+      handleError(err as Error, { retryKey: 'combat-npc-options' });
+      error.value = 'Failed to load NPC options';
     }
   }
 
@@ -192,7 +194,8 @@ export const useCombatStore = defineStore('combat', () => {
       return response.data;
     } catch (err: unknown) {
       if (requestId === fetchNpcRequestId) {
-        handleError(err, { errorRef: error, message: 'Failed to load NPC' });
+        handleError(err as Error, { retryKey: 'combat-npc-load', entityName: 'NPC' });
+        error.value = 'Failed to load NPC';
       }
       return null;
     } finally {
@@ -222,7 +225,8 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('NPC created', { id: response.data.id, name: response.data.name });
       return response.data;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to create NPC' });
+      handleError(err as Error, { retryKey: 'combat-npc-create' });
+      error.value = 'Failed to create NPC';
       return null;
     } finally {
       stopSaving();
@@ -249,7 +253,8 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('NPC updated', { id: data.id });
       return response.data;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to update NPC' });
+      handleError(err as Error, { retryKey: 'combat-npc-update' });
+      error.value = 'Failed to update NPC';
       return null;
     } finally {
       stopSaving();
@@ -270,7 +275,8 @@ export const useCombatStore = defineStore('combat', () => {
         axios.isAxiosError(err) && typeof err.response?.data?.error === 'string'
           ? err.response.data.error
           : 'Failed to delete NPC';
-      handleError(err, { errorRef: error, message: apiMessage });
+      handleError(err as Error, { retryKey: 'combat-npc-delete' });
+      error.value = apiMessage;
       return false;
     } finally {
       stopSaving();
@@ -309,7 +315,8 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('Combat NPC added', { id: response.data.id, npcId: data.npcId });
       return response.data;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to add NPC' });
+      handleError(err as Error, { retryKey: 'combat-instance-add' });
+      error.value = 'Failed to add NPC';
       return null;
     } finally {
       stopSaving();
@@ -331,7 +338,8 @@ export const useCombatStore = defineStore('combat', () => {
       }
       return response.data;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to update NPC' });
+      handleError(err as Error, { retryKey: 'combat-npc-update' });
+      error.value = 'Failed to update NPC';
       return null;
     } finally {
       stopSaving();
@@ -348,7 +356,8 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('Combat NPC removed', { id: instanceId });
       return true;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to remove NPC' });
+      handleError(err as Error, { retryKey: 'combat-instance-remove' });
+      error.value = 'Failed to remove NPC';
       return false;
     } finally {
       stopSaving();
@@ -383,7 +392,8 @@ export const useCombatStore = defineStore('combat', () => {
         }
       }
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: errorMessage });
+      handleError(err as Error, { retryKey: 'combat-instance-patch' });
+      error.value = errorMessage;
     } finally {
       stopSaving();
     }
@@ -439,7 +449,8 @@ export const useCombatStore = defineStore('combat', () => {
       logger.info('Round ended', { combatId, round: response.data.round });
       return true;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to end round' });
+      handleError(err as Error, { retryKey: 'combat-end-round' });
+      error.value = 'Failed to end round';
       return false;
     } finally {
       stopSaving();

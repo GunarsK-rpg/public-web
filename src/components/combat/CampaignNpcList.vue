@@ -93,13 +93,14 @@ import { ref, computed, onMounted } from 'vue';
 import { Plus, UserX } from 'lucide-vue-next';
 import AvatarDisplay from 'src/components/shared/AvatarDisplay.vue';
 import combatService from 'src/services/combatService';
-import { handleError } from 'src/utils/errorHandling';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 import type { NpcOption } from 'src/types';
 
 const props = defineProps<{
   campaignId: number;
 }>();
 
+const { handleError } = useErrorHandler();
 const loading = ref(true);
 const error = ref<string | null>(null);
 const npcs = ref<NpcOption[]>([]);
@@ -142,7 +143,8 @@ onMounted(async () => {
     const response = await combatService.getNpcLibrary(props.campaignId);
     npcs.value = response.data;
   } catch (err: unknown) {
-    handleError(err, { errorRef: error, message: 'Failed to load NPCs' });
+    handleError(err as Error, { retryKey: 'campaign-npc-list', entityName: 'NPC' });
+    error.value = 'Failed to load NPCs';
   } finally {
     loading.value = false;
   }
