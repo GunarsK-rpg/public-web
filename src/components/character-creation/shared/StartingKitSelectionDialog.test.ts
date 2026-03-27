@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import StartingKitSelectionDialog from './StartingKitSelectionDialog.vue';
 import type { StartingKit, Expertise } from 'src/types';
+import { classifierStore } from 'src/__tests__/mockStores';
 
 const mockExpertises: Expertise[] = [
   {
@@ -36,10 +37,7 @@ const mockKits: StartingKit[] = [
 ];
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    startingKits: mockKits,
-    expertises: mockExpertises,
-  }),
+  useClassifierStore: () => classifierStore({ startingKits: mockKits, expertises: mockExpertises }),
 }));
 
 vi.mock('src/utils/arrayUtils', () => ({

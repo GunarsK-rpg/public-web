@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import EquipmentStep from './EquipmentStep.vue';
 import type { ClassifierRef } from 'src/types';
+import { heroStore, heroEquipmentStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockSetCurrency = vi.fn();
@@ -39,6 +40,7 @@ const mockEquipment = {
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore(),
     get hero() {
       if (!mockHero.value) return null;
       return {
@@ -53,11 +55,12 @@ vi.mock('src/stores/hero', () => ({
 }));
 
 vi.mock('src/stores/heroEquipment', () => ({
-  useHeroEquipmentStore: () => ({
-    setCurrency: mockSetCurrency,
-    addEquipment: mockAddEquipment,
-    removeEquipment: mockRemoveEquipment,
-  }),
+  useHeroEquipmentStore: () =>
+    heroEquipmentStore({
+      setCurrency: mockSetCurrency,
+      addEquipment: mockAddEquipment,
+      removeEquipment: mockRemoveEquipment,
+    }),
 }));
 
 const createDefaultClassifierData = () => ({
@@ -124,6 +127,7 @@ const mockClassifierData = {
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    ...classifierStore(),
     get startingKits() {
       return mockClassifierData.value.startingKits;
     },

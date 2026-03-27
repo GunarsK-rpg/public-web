@@ -491,7 +491,7 @@ $touch-target-min: 44px;
   width: clamp(60px, 15vw, 80px);
   max-width: 80px;
 
-  :deep(.q-field__native) {
+  .q-field__native {
     text-align: center;
   }
 }

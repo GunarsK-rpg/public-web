@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import ExpertisesTab from './ExpertisesTab.vue';
 import type { HeroExpertise } from 'src/types';
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockExpertises = ref<HeroExpertise[]>([]);
 
@@ -12,6 +13,7 @@ const mockHero = {
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore(),
     get expertises() {
       return mockExpertises.value;
     },
@@ -22,54 +24,55 @@ vi.mock('src/stores/hero', () => ({
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    expertiseTypes: [
-      { id: 1, code: 'weapon', name: 'Weapon' },
-      { id: 2, code: 'armor', name: 'Armor' },
-      { id: 3, code: 'tool', name: 'Tool' },
-      { id: 4, code: 'culture', name: 'Culture' },
-    ],
-    cultures: [{ id: 1, code: 'alethi', name: 'Alethi' }],
-    singerForms: [],
-    expertises: [
-      {
-        id: 1,
-        code: 'swords',
-        name: 'Swords',
-        expertiseType: { id: 1, code: 'weapon', name: 'Weapon' },
-      },
-      {
-        id: 2,
-        code: 'bows',
-        name: 'Bows',
-        expertiseType: { id: 1, code: 'weapon', name: 'Weapon' },
-      },
-      {
-        id: 3,
-        code: 'light_armor',
-        name: 'Light Armor',
-        expertiseType: { id: 2, code: 'armor', name: 'Armor' },
-      },
-      {
-        id: 4,
-        code: 'heavy_armor',
-        name: 'Heavy Armor',
-        expertiseType: { id: 2, code: 'armor', name: 'Armor' },
-      },
-      {
-        id: 5,
-        code: 'smithing',
-        name: 'Smithing',
-        expertiseType: { id: 3, code: 'tool', name: 'Tool' },
-      },
-      {
-        id: 6,
-        code: 'alethi_culture',
-        name: 'Alethi Culture',
-        expertiseType: { id: 4, code: 'culture', name: 'Culture' },
-      },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      expertiseTypes: [
+        { id: 1, code: 'weapon', name: 'Weapon' },
+        { id: 2, code: 'armor', name: 'Armor' },
+        { id: 3, code: 'tool', name: 'Tool' },
+        { id: 4, code: 'culture', name: 'Culture' },
+      ],
+      cultures: [{ id: 1, code: 'alethi', name: 'Alethi' }],
+      singerForms: [],
+      expertises: [
+        {
+          id: 1,
+          code: 'swords',
+          name: 'Swords',
+          expertiseType: { id: 1, code: 'weapon', name: 'Weapon' },
+        },
+        {
+          id: 2,
+          code: 'bows',
+          name: 'Bows',
+          expertiseType: { id: 1, code: 'weapon', name: 'Weapon' },
+        },
+        {
+          id: 3,
+          code: 'light_armor',
+          name: 'Light Armor',
+          expertiseType: { id: 2, code: 'armor', name: 'Armor' },
+        },
+        {
+          id: 4,
+          code: 'heavy_armor',
+          name: 'Heavy Armor',
+          expertiseType: { id: 2, code: 'armor', name: 'Armor' },
+        },
+        {
+          id: 5,
+          code: 'smithing',
+          name: 'Smithing',
+          expertiseType: { id: 3, code: 'tool', name: 'Tool' },
+        },
+        {
+          id: 6,
+          code: 'alethi_culture',
+          name: 'Alethi Culture',
+          expertiseType: { id: 4, code: 'culture', name: 'Culture' },
+        },
+      ],
+    }),
 }));
 
 function createHeroExpertise(overrides: Partial<HeroExpertise> = {}): HeroExpertise {

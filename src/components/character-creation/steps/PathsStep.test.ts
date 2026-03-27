@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import PathsStep from './PathsStep.vue';
+import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockAddKeyTalentForPath = vi.fn();
@@ -22,6 +23,7 @@ const mockHero: {
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore(),
     get hero() {
       return mockHero;
     },
@@ -33,6 +35,12 @@ vi.mock('src/stores/hero', () => ({
 
 vi.mock('src/stores/heroTalents', () => ({
   useHeroTalentsStore: () => ({
+    ...heroTalentsStore({
+      addKeyTalentForPath: mockAddKeyTalentForPath,
+      removeTalent: mockRemoveTalent,
+      setRadiantOrder: mockSetRadiantOrder,
+      setRadiantIdeal: mockSetRadiantIdeal,
+    }),
     get isSinger() {
       return mockIsSinger.value;
     },
@@ -45,10 +53,6 @@ vi.mock('src/stores/heroTalents', () => ({
     get radiantIdeal() {
       return mockRadiantIdeal.value;
     },
-    addKeyTalentForPath: mockAddKeyTalentForPath,
-    removeTalent: mockRemoveTalent,
-    setRadiantOrder: mockSetRadiantOrder,
-    setRadiantIdeal: mockSetRadiantIdeal,
   }),
 }));
 
@@ -88,6 +92,7 @@ const mockClassifiersData = {
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    ...classifierStore(),
     get paths() {
       return mockClassifiersData.value.paths;
     },

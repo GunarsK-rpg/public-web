@@ -3,6 +3,12 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import { createPinia, setActivePinia } from 'pinia';
 import SkillsStep from './SkillsStep.vue';
+import {
+  heroStore,
+  heroAttributesStore,
+  classifierStore,
+  heroTalentsStore,
+} from 'src/__tests__/mockStores';
 
 type MockHeroSkill = {
   skill: { id: number; code: string; name: string };
@@ -51,6 +57,7 @@ const mockNormalizeModifier = {
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore(),
     get hero() {
       return mockHeroData.value.hero;
     },
@@ -61,11 +68,12 @@ vi.mock('src/stores/hero', () => ({
 }));
 
 vi.mock('src/stores/heroAttributes', () => ({
-  useHeroAttributesStore: () => ({
-    getSkillRank: mockGetSkillRank,
-    setSkillRank: mockSetSkillRank,
-    setSkillModifier: mockSetSkillModifier,
-  }),
+  useHeroAttributesStore: () =>
+    heroAttributesStore({
+      getSkillRank: mockGetSkillRank,
+      setSkillRank: mockSetSkillRank,
+      setSkillModifier: mockSetSkillModifier,
+    }),
 }));
 
 function createDefaultClassifierData() {
@@ -114,6 +122,7 @@ const mockClassifierData = {
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    ...classifierStore(),
     get skills() {
       return mockClassifierData.value.skills;
     },
@@ -123,7 +132,6 @@ vi.mock('src/stores/classifiers', () => ({
     get attributeTypes() {
       return mockClassifierData.value.attributeTypes;
     },
-    radiantOrders: [],
   }),
 }));
 
@@ -143,9 +151,7 @@ vi.mock('src/composables/useStepValidation', () => ({
 }));
 
 vi.mock('src/stores/heroTalents', () => ({
-  useHeroTalentsStore: () => ({
-    radiantOrderId: null,
-  }),
+  useHeroTalentsStore: () => heroTalentsStore(),
 }));
 
 vi.mock('src/utils/arrayUtils', () => ({

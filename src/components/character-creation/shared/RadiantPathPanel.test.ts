@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import RadiantPathPanel from './RadiantPathPanel.vue';
 import type { Talent } from 'src/types';
+import { classifierStore } from 'src/__tests__/mockStores';
 
 // Mock classifiers store
 const mockRadiantOrders = [
@@ -30,10 +31,8 @@ const mockSurges = [
 ];
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    radiantOrders: mockRadiantOrders,
-    surges: mockSurges,
-  }),
+  useClassifierStore: () =>
+    classifierStore({ radiantOrders: mockRadiantOrders, surges: mockSurges }),
 }));
 
 // Mock talent prerequisites composable

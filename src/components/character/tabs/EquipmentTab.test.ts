@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import EquipmentTab from './EquipmentTab.vue';
 import type { HeroEquipment } from 'src/types';
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockHero = ref<{
   currency: number;
@@ -17,6 +18,7 @@ const mockEquipmentTypes = ref([
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore(),
     get hero() {
       return mockHero.value;
     },
@@ -25,15 +27,17 @@ vi.mock('src/stores/hero', () => ({
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    ...classifierStore({
+      equipment: [
+        { id: 1, name: 'Longsword', equipType: { id: 1, code: 'weapon', name: 'Weapon' } },
+        { id: 2, name: 'Longbow', equipType: { id: 1, code: 'weapon', name: 'Weapon' } },
+        { id: 3, name: 'Chain Mail', equipType: { id: 2, code: 'armor', name: 'Armor' } },
+        { id: 4, name: 'Backpack', equipType: { id: 3, code: 'gear', name: 'Gear' } },
+      ],
+    }),
     get equipmentTypes() {
       return mockEquipmentTypes.value;
     },
-    equipment: [
-      { id: 1, name: 'Longsword', equipType: { id: 1, code: 'weapon', name: 'Weapon' } },
-      { id: 2, name: 'Longbow', equipType: { id: 1, code: 'weapon', name: 'Weapon' } },
-      { id: 3, name: 'Chain Mail', equipType: { id: 2, code: 'armor', name: 'Armor' } },
-      { id: 4, name: 'Backpack', equipType: { id: 3, code: 'gear', name: 'Gear' } },
-    ],
   }),
 }));
 

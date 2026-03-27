@@ -11,6 +11,7 @@ import type {
   HeroInjury,
   HeroNote,
 } from 'src/types';
+import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockHero = ref<{
   id: number;
@@ -40,6 +41,13 @@ const mockUpdateGoalValue = vi.fn();
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore({
+      upsertNote: mockUpsertNote,
+      removeNote: mockRemoveNote,
+      upsertInjury: mockUpsertInjury,
+      removeInjury: mockRemoveInjury,
+      updateGoalValue: mockUpdateGoalValue,
+    }),
     get hero() {
       return mockHero.value;
     },
@@ -64,16 +72,12 @@ vi.mock('src/stores/hero', () => ({
     get conditions() {
       return mockConditions.value;
     },
-    upsertNote: mockUpsertNote,
-    removeNote: mockRemoveNote,
-    upsertInjury: mockUpsertInjury,
-    removeInjury: mockRemoveInjury,
-    updateGoalValue: mockUpdateGoalValue,
   }),
 }));
 
 vi.mock('src/stores/heroTalents', () => ({
   useHeroTalentsStore: () => ({
+    ...heroTalentsStore(),
     get isSinger() {
       return mockIsSinger.value;
     },
@@ -81,32 +85,33 @@ vi.mock('src/stores/heroTalents', () => ({
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    ancestries: [
-      { id: 1, code: 'human', name: 'Human', description: 'Humans are adaptable' },
-      { id: 2, code: 'singer', name: 'Singer', description: 'Singers can change forms' },
-    ],
-    singerForms: [
-      { id: 1, code: 'workform', name: 'Workform', description: 'For labor' },
-      { id: 2, code: 'warform', name: 'Warform', description: 'For battle' },
-    ],
-    cultures: [
-      { id: 1, code: 'alethi', name: 'Alethi' },
-      { id: 2, code: 'thaylen', name: 'Thaylen' },
-    ],
-    goalStatuses: [
-      { id: 1, code: 'active', name: 'Active' },
-      { id: 2, code: 'completed', name: 'Completed' },
-    ],
-    connectionTypes: [
-      { id: 1, code: 'ally', name: 'Ally' },
-      { id: 2, code: 'enemy', name: 'Enemy' },
-    ],
-    injuries: [
-      { id: 1, code: 'broken-arm', name: 'Broken Arm' },
-      { id: 2, code: 'concussion', name: 'Concussion' },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      ancestries: [
+        { id: 1, code: 'human', name: 'Human', description: 'Humans are adaptable' },
+        { id: 2, code: 'singer', name: 'Singer', description: 'Singers can change forms' },
+      ],
+      singerForms: [
+        { id: 1, code: 'workform', name: 'Workform', description: 'For labor' },
+        { id: 2, code: 'warform', name: 'Warform', description: 'For battle' },
+      ],
+      cultures: [
+        { id: 1, code: 'alethi', name: 'Alethi' },
+        { id: 2, code: 'thaylen', name: 'Thaylen' },
+      ],
+      goalStatuses: [
+        { id: 1, code: 'active', name: 'Active' },
+        { id: 2, code: 'completed', name: 'Completed' },
+      ],
+      connectionTypes: [
+        { id: 1, code: 'ally', name: 'Ally' },
+        { id: 2, code: 'enemy', name: 'Enemy' },
+      ],
+      injuries: [
+        { id: 1, code: 'broken-arm', name: 'Broken Arm' },
+        { id: 2, code: 'concussion', name: 'Concussion' },
+      ],
+    }),
 }));
 
 vi.mock('src/constants/theme', () => ({

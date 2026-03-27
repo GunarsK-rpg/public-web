@@ -4,15 +4,17 @@ import { createPinia, setActivePinia } from 'pinia';
 import SingerAncestryPanel from './SingerAncestryPanel.vue';
 import type { Talent } from 'src/types';
 
-// Mock classifiers store
+import { classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    ancestries: [
-      { id: 1, code: 'human', name: 'Human' },
-      { id: 2, code: 'singer', name: 'Singer' },
-      { id: 3, code: 'elf', name: 'Elf' },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      ancestries: [
+        { id: 1, code: 'human', name: 'Human' },
+        { id: 2, code: 'singer', name: 'Singer' },
+        { id: 3, code: 'elf', name: 'Elf' },
+      ],
+    }),
 }));
 
 // Mock talent prerequisites composable

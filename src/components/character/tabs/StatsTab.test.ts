@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { Info } from 'lucide-vue-next';
 import StatsTab from './StatsTab.vue';
+import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockGetDefenseValue = vi.fn();
 const mockAttributeValues: Record<string, number> = {
@@ -14,52 +15,52 @@ const mockAttributeValues: Record<string, number> = {
 };
 
 vi.mock('src/stores/hero', () => ({
-  useHeroStore: () => ({
-    conditions: [],
-  }),
+  useHeroStore: () => heroStore(),
 }));
 
 vi.mock('src/stores/heroAttributes', () => ({
-  useHeroAttributesStore: () => ({
-    attributeValues: mockAttributeValues,
-    baseAttributeValues: mockAttributeValues,
-    getDefenseValue: mockGetDefenseValue,
-    levelData: { level: 5, tier: 2 },
-    tierData: { tier: 2, name: 'Journeyman' },
-  }),
+  useHeroAttributesStore: () =>
+    heroAttributesStore({
+      attributeValues: mockAttributeValues,
+      baseAttributeValues: mockAttributeValues,
+      getDefenseValue: mockGetDefenseValue,
+      levelData: { level: 5, tier: 2 },
+      tierData: { tier: 2, name: 'Journeyman' },
+    }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    attributes: [
-      { id: 1, code: 'str', name: 'Strength' },
-      { id: 2, code: 'spd', name: 'Speed' },
-      { id: 3, code: 'int', name: 'Intellect' },
-      { id: 4, code: 'wil', name: 'Willpower' },
-      { id: 5, code: 'awa', name: 'Awareness' },
-      { id: 6, code: 'pre', name: 'Presence' },
-    ],
-    attributeTypes: [
-      { id: 1, code: 'physical', name: 'Physical' },
-      { id: 2, code: 'cognitive', name: 'Cognitive' },
-      { id: 3, code: 'spiritual', name: 'Spiritual' },
-    ],
-    derivedStats: [
-      { id: 1, code: 'max_health', name: 'Max Health', formula: 'base' },
-      { id: 2, code: 'movement', name: 'Movement', formula: 'spd' },
-      {
-        id: 3,
-        code: 'deflect',
-        name: 'Deflect',
-        description:
-          'Reduces impact, keen, and energy damage by this amount. Does not reduce spirit or vital damage.',
-      },
-    ],
-    derivedStatValues: [
-      { derivedStatId: 1, tier: 2, baseValue: 30 },
-      { derivedStatId: 2, tier: 2, baseValue: 5 },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      attributes: [
+        { id: 1, code: 'str', name: 'Strength' },
+        { id: 2, code: 'spd', name: 'Speed' },
+        { id: 3, code: 'int', name: 'Intellect' },
+        { id: 4, code: 'wil', name: 'Willpower' },
+        { id: 5, code: 'awa', name: 'Awareness' },
+        { id: 6, code: 'pre', name: 'Presence' },
+      ],
+      attributeTypes: [
+        { id: 1, code: 'physical', name: 'Physical' },
+        { id: 2, code: 'cognitive', name: 'Cognitive' },
+        { id: 3, code: 'spiritual', name: 'Spiritual' },
+      ],
+      derivedStats: [
+        { id: 1, code: 'max_health', name: 'Max Health', formula: 'base' },
+        { id: 2, code: 'movement', name: 'Movement', formula: 'spd' },
+        {
+          id: 3,
+          code: 'deflect',
+          name: 'Deflect',
+          description:
+            'Reduces impact, keen, and energy damage by this amount. Does not reduce spirit or vital damage.',
+        },
+      ],
+      derivedStatValues: [
+        { derivedStatId: 1, tier: 2, baseValue: 30 },
+        { derivedStatId: 2, tier: 2, baseValue: 5 },
+      ],
+    }),
 }));
 
 vi.mock('src/utils/derivedStats', () => ({

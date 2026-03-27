@@ -4,10 +4,10 @@ import { defineComponent, h } from 'vue';
 import ModificationLabel from './ModificationLabel.vue';
 import type { AppliedModification } from 'src/types';
 
+import { classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    modifications: [],
-  }),
+  useClassifierStore: () => classifierStore(),
 }));
 
 const QBadgeStub = defineComponent({

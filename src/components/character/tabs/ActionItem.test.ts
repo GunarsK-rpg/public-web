@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { Star } from 'lucide-vue-next';
 import ActionItem from './ActionItem.vue';
 import type { Action, ClassifierRef } from 'src/types';
+import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Hero store mock
 const mockPatchFocus = vi.fn().mockResolvedValue(undefined);
@@ -17,12 +18,10 @@ const mockHeroData = {
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore({ patchFocus: mockPatchFocus, patchInvestiture: mockPatchInvestiture }),
     get hero() {
       return mockHeroData.value;
     },
-    conditions: [],
-    patchFocus: mockPatchFocus,
-    patchInvestiture: mockPatchInvestiture,
   }),
 }));
 
@@ -43,28 +42,27 @@ const mockGetSkillRank = vi.fn().mockReturnValue(0);
 const mockGetSkillModifier = vi.fn().mockReturnValue(0);
 
 vi.mock('src/stores/heroAttributes', () => ({
-  useHeroAttributesStore: () => ({
-    getSkillRank: mockGetSkillRank,
-    getSkillModifier: mockGetSkillModifier,
-  }),
+  useHeroAttributesStore: () =>
+    heroAttributesStore({ getSkillRank: mockGetSkillRank, getSkillModifier: mockGetSkillModifier }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    activationTypes: [
-      { id: 1, code: 'action', name: 'Action', icon: 'action.svg' },
-      { id: 2, code: 'reaction', name: 'Reaction', icon: 'reaction.svg' },
-      { id: 3, code: 'free', name: 'Free Action', icon: 'free.svg' },
-      { id: 4, code: 'no-icon', name: 'No Icon', icon: null },
-    ],
-    skills: [
-      { id: 10, code: 'division', name: 'Division' },
-      { id: 11, code: 'cohesion', name: 'Cohesion' },
-      { id: 12, code: 'light_weaponry', name: 'Light Weaponry' },
-      { id: 13, code: 'heavy_weaponry', name: 'Heavy Weaponry' },
-      { id: 14, code: 'athletics', name: 'Athletics' },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      activationTypes: [
+        { id: 1, code: 'action', name: 'Action', icon: 'action.svg' },
+        { id: 2, code: 'reaction', name: 'Reaction', icon: 'reaction.svg' },
+        { id: 3, code: 'free', name: 'Free Action', icon: 'free.svg' },
+        { id: 4, code: 'no-icon', name: 'No Icon', icon: null },
+      ],
+      skills: [
+        { id: 10, code: 'division', name: 'Division' },
+        { id: 11, code: 'cohesion', name: 'Cohesion' },
+        { id: 12, code: 'light_weaponry', name: 'Light Weaponry' },
+        { id: 13, code: 'heavy_weaponry', name: 'Heavy Weaponry' },
+        { id: 14, code: 'athletics', name: 'Athletics' },
+      ],
+    }),
 }));
 
 vi.mock('src/composables/useEntityIcon', () => ({

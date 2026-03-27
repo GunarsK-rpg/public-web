@@ -3,6 +3,7 @@ import { shallowMount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import PersonalDetailsStep from './PersonalDetailsStep.vue';
 import EditableItemList from 'src/components/shared/EditableItemList.vue';
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 function findDialogByTestId(wrapper: VueWrapper, testId: string): VueWrapper {
   const dialogs = wrapper.findAllComponents({ name: 'AddOtherDialog' });
@@ -48,6 +49,7 @@ const mockTrackDeletion = vi.fn();
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore({ nextTempId: mockNextTempId }),
     get hero() {
       return mockHero.value;
     },
@@ -60,21 +62,21 @@ vi.mock('src/stores/hero', () => ({
     get companions() {
       return mockHero.value?.companions ?? [];
     },
-    nextTempId: mockNextTempId,
   }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    goalStatuses: [
-      { id: 1, code: 'active', name: 'Active' },
-      { id: 2, code: 'completed', name: 'Completed' },
-    ],
-    connectionTypes: [
-      { id: 1, code: 'ally', name: 'Ally' },
-      { id: 2, code: 'rival', name: 'Rival' },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      goalStatuses: [
+        { id: 1, code: 'active', name: 'Active' },
+        { id: 2, code: 'completed', name: 'Completed' },
+      ],
+      connectionTypes: [
+        { id: 1, code: 'ally', name: 'Ally' },
+        { id: 2, code: 'rival', name: 'Rival' },
+      ],
+    }),
 }));
 
 const debounceCancelSpies: ReturnType<typeof vi.fn>[] = [];

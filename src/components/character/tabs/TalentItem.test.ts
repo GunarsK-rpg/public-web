@@ -3,10 +3,10 @@ import { shallowMount } from '@vue/test-utils';
 import TalentItem from './TalentItem.vue';
 import type { Talent } from 'src/types';
 
+import { heroStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
-  useHeroStore: () => ({
-    hero: { expertises: [], talents: [] },
-  }),
+  useHeroStore: () => heroStore({ hero: { expertises: [], talents: [] } }),
 }));
 
 const mockLoggerWarn = vi.fn();

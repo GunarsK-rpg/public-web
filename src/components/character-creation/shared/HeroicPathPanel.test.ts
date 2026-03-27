@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import HeroicPathPanel from './HeroicPathPanel.vue';
 import type { Talent } from 'src/types';
+import { classifierStore } from 'src/__tests__/mockStores';
 
 // Mock classifiers store
 const mockPaths = [
@@ -27,10 +28,7 @@ const mockSpecialties = [
 ];
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    paths: mockPaths,
-    specialties: mockSpecialties,
-  }),
+  useClassifierStore: () => classifierStore({ paths: mockPaths, specialties: mockSpecialties }),
 }));
 
 // Mock talent prerequisites composable

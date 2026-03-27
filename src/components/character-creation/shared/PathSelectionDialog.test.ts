@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import PathSelectionDialog from './PathSelectionDialog.vue';
 import type { Path } from 'src/types';
+import { classifierStore } from 'src/__tests__/mockStores';
 
 const mockPaths: Path[] = [
   { id: 1, code: 'warrior', name: 'Warrior', description: 'A skilled fighter' },
@@ -10,9 +11,7 @@ const mockPaths: Path[] = [
 ];
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    paths: mockPaths,
-  }),
+  useClassifierStore: () => classifierStore({ paths: mockPaths }),
 }));
 
 function createWrapper(props: { modelValue: boolean; selectedPathIds: number[] }) {

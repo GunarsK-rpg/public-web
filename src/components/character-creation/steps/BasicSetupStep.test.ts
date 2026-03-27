@@ -2,6 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import BasicSetupStep from './BasicSetupStep.vue';
+import {
+  heroStore,
+  heroAttributesStore,
+  campaignStore,
+  heroTalentsStore,
+  classifierStore,
+  wizardStore,
+} from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockSetName = vi.fn();
@@ -21,6 +29,7 @@ const mockIsSinger = { value: false };
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore({ setName: mockSetName, setLevel: mockSetLevel }),
     get hero() {
       return {
         name: mockHeroName.value,
@@ -34,8 +43,6 @@ vi.mock('src/stores/hero', () => ({
     get talents() {
       return mockHeroTalents.value;
     },
-    setName: mockSetName,
-    setLevel: mockSetLevel,
   }),
 }));
 
@@ -50,6 +57,7 @@ const mockLevelData = {
 
 vi.mock('src/stores/heroAttributes', () => ({
   useHeroAttributesStore: () => ({
+    ...heroAttributesStore(),
     get levelData() {
       return mockLevelData.value;
     },
@@ -57,12 +65,13 @@ vi.mock('src/stores/heroAttributes', () => ({
 }));
 
 vi.mock('src/stores/campaigns', () => ({
-  useCampaignStore: () => ({
-    campaigns: [
-      { id: 1, code: 'campaign-1', name: 'Campaign 1' },
-      { id: 2, code: 'campaign-2', name: 'Campaign 2' },
-    ],
-  }),
+  useCampaignStore: () =>
+    campaignStore({
+      campaigns: [
+        { id: 1, code: 'campaign-1', name: 'Campaign 1' },
+        { id: 2, code: 'campaign-2', name: 'Campaign 2' },
+      ],
+    }),
 }));
 
 const mockClassifierData = {
@@ -92,31 +101,27 @@ const mockClassifierData = {
 
 vi.mock('src/stores/heroTalents', () => ({
   useHeroTalentsStore: () => ({
+    ...heroTalentsStore({ setAncestry: mockSetAncestry, setSingerForm: mockSetSingerForm }),
     get isSinger() {
       return mockIsSinger.value;
     },
-    setAncestry: mockSetAncestry,
-    setSingerForm: mockSetSingerForm,
   }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    ...classifierStore(),
     get ancestries() {
       return mockClassifierData.value.ancestries;
     },
     get singerForms() {
       return mockClassifierData.value.singerForms;
     },
-    talents: [],
-    levels: [],
   }),
 }));
 
 vi.mock('src/stores/wizard', () => ({
-  useWizardStore: () => ({
-    mode: 'create',
-  }),
+  useWizardStore: () => wizardStore({ mode: 'create' }),
 }));
 
 vi.mock('src/utils/arrayUtils', () => ({

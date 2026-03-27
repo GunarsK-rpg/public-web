@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import ExpertisesStep from './ExpertisesStep.vue';
+import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockAddExpertise = vi.fn();
@@ -25,6 +26,7 @@ const mockSlotsRemaining = { value: 2 };
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore(),
     get hero() {
       return { expertises: mockExpertises.value };
     },
@@ -35,46 +37,48 @@ vi.mock('src/stores/hero', () => ({
 }));
 
 vi.mock('src/stores/heroAttributes', () => ({
-  useHeroAttributesStore: () => ({
-    getAttributeValue: mockGetAttributeValue,
-    addExpertise: mockAddExpertise,
-    removeExpertise: mockRemoveExpertise,
-    addCustomExpertise: mockAddCustomExpertise,
-    removeCustomExpertise: mockRemoveCustomExpertise,
-  }),
+  useHeroAttributesStore: () =>
+    heroAttributesStore({
+      getAttributeValue: mockGetAttributeValue,
+      addExpertise: mockAddExpertise,
+      removeExpertise: mockRemoveExpertise,
+      addCustomExpertise: mockAddCustomExpertise,
+      removeCustomExpertise: mockRemoveCustomExpertise,
+    }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    expertises: [
-      {
-        id: 1,
-        code: 'lockpicking',
-        name: 'Lockpicking',
-        description: 'Pick locks',
-        expertiseType: { id: 1, code: 'general', name: 'General' },
-      },
-      {
-        id: 2,
-        code: 'vorin',
-        name: 'Vorin Customs',
-        description: 'Vorin knowledge',
-        expertiseType: { id: 2, code: 'cultural', name: 'Cultural' },
-      },
-      {
-        id: 3,
-        code: 'surgery',
-        name: 'Surgery',
-        description: 'Medical expertise',
-        expertiseType: { id: 3, code: 'specialist', name: 'Specialist' },
-      },
-    ],
-    expertiseTypes: [
-      { id: 1, code: 'general', name: 'General' },
-      { id: 2, code: 'cultural', name: 'Cultural' },
-      { id: 3, code: 'specialist', name: 'Specialist' },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      expertises: [
+        {
+          id: 1,
+          code: 'lockpicking',
+          name: 'Lockpicking',
+          description: 'Pick locks',
+          expertiseType: { id: 1, code: 'general', name: 'General' },
+        },
+        {
+          id: 2,
+          code: 'vorin',
+          name: 'Vorin Customs',
+          description: 'Vorin knowledge',
+          expertiseType: { id: 2, code: 'cultural', name: 'Cultural' },
+        },
+        {
+          id: 3,
+          code: 'surgery',
+          name: 'Surgery',
+          description: 'Medical expertise',
+          expertiseType: { id: 3, code: 'specialist', name: 'Specialist' },
+        },
+      ],
+      expertiseTypes: [
+        { id: 1, code: 'general', name: 'General' },
+        { id: 2, code: 'cultural', name: 'Cultural' },
+        { id: 3, code: 'specialist', name: 'Specialist' },
+      ],
+    }),
 }));
 
 vi.mock('src/composables/useStepValidation', () => ({

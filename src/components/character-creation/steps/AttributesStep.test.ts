@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AttributesStep from './AttributesStep.vue';
+import { heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockSetAttribute = vi.fn();
@@ -63,20 +64,23 @@ const mockNormalizeModifier = {
 
 vi.mock('src/stores/heroAttributes', () => ({
   useHeroAttributesStore: () => ({
+    ...heroAttributesStore({
+      getAttributeValue: vi.fn().mockReturnValue(2),
+      setAttribute: mockSetAttribute,
+      setDerivedStatModifier: mockSetDerivedStatModifier,
+      getDerivedStatModifier: vi.fn().mockReturnValue(0),
+      levelData: { level: 1 },
+      tierData: { tier: 1 },
+    }),
     get getAttributeValueById() {
       return mockGetAttributeValueById;
     },
-    getAttributeValue: vi.fn().mockReturnValue(2),
-    setAttribute: mockSetAttribute,
-    setDerivedStatModifier: mockSetDerivedStatModifier,
-    getDerivedStatModifier: vi.fn().mockReturnValue(0),
-    levelData: { level: 1 },
-    tierData: { tier: 1 },
   }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    ...classifierStore(),
     get attributes() {
       return mockClassifierData.value.attributes;
     },
