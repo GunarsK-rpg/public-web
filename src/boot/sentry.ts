@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/vue';
 import { defineBoot } from '#q-app/wrappers';
 
 export default defineBoot(({ app, router }) => {
-  const dsn = import.meta.env.VITE_SENTRY_DSN;
+  const dsn = (import.meta.env.VITE_SENTRY_DSN || '').trim();
   if (!dsn) return;
 
   Sentry.init({

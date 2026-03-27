@@ -101,7 +101,7 @@ export default defineBoot(({ app }) => {
       },
     });
 
-    Sentry.captureException(new Error(event.message), {
+    Sentry.captureException(event.error || new Error(event.message), {
       extra: { filename: event.filename, lineno: event.lineno, colno: event.colno },
     });
   });
