@@ -46,6 +46,7 @@
             dense
             borderless
             input-class="text-h5"
+            aria-label="Combat name"
             :disable="saving"
             @blur="saveName"
           />
@@ -55,6 +56,7 @@
           dense
           borderless
           placeholder="Description (optional)"
+          aria-label="Description"
           type="textarea"
           autogrow
           class="q-mb-xs text-body2 text-grey"
@@ -166,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Swords, ArrowLeft } from 'lucide-vue-next';
 import { useCombatStore } from 'src/stores/combat';
 import { TURN_PHASES } from 'src/constants/combat';
@@ -200,12 +202,21 @@ const notesEditing = ref(false);
 const showAddNpc = ref(false);
 const addNpcSide = ref<'ally' | 'enemy'>('enemy');
 
-// Sync inputs when combat loads (skip notes if user is editing)
+// Sync inputs once when combat first loads
+const initialized = ref(false);
+
 watch(combat, (c) => {
-  if (!c) return;
-  nameInput.value = c.name;
-  descriptionInput.value = c.description ?? '';
-  if (!notesEditing.value) notesInput.value = c.notes ?? '';
+  if (c && !initialized.value) {
+    nameInput.value = c.name;
+    descriptionInput.value = c.description ?? '';
+    notesInput.value = c.notes ?? '';
+    initialized.value = true;
+  }
+});
+
+onUnmounted(() => {
+  combatStore.currentCombat = null;
+  initialized.value = false;
 });
 
 onMounted(async () => {

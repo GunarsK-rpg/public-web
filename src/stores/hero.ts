@@ -811,6 +811,7 @@ export const useHeroStore = defineStore('hero', () => {
 
   async function deleteHero(): Promise<boolean> {
     if (!hero.value || hero.value.id === 0) return false;
+    startSaving();
     try {
       await heroService.delete(hero.value.id);
       loadRequestId++;
@@ -818,8 +819,9 @@ export const useHeroStore = defineStore('hero', () => {
       return true;
     } catch (err) {
       handleError(err as Error, { retryKey: 'hero-delete' });
-      error.value = 'Failed to delete character';
       return false;
+    } finally {
+      stopSaving();
     }
   }
 

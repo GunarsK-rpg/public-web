@@ -19,6 +19,8 @@
           :selected="filters[f.key]"
           dense
           clickable
+          role="switch"
+          :aria-checked="filters[f.key]"
           :color="filters[f.key] ? 'primary' : undefined"
           :text-color="filters[f.key] ? 'white' : undefined"
           @click="filters[f.key] = !filters[f.key]"

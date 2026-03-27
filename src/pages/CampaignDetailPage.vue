@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { FolderX, Pencil, Trash2, Copy, UserPlus, UserX, Swords } from 'lucide-vue-next';
 import { useQuasar, copyToClipboard } from 'quasar';
 import { useRouter } from 'vue-router';
@@ -226,6 +226,10 @@ const loading = computed(() => initializing.value || campaignStore.loading);
 const error = computed(() => campaignStore.error);
 const isOwner = computed(() => campaignStore.isOwner);
 const saving = computed(() => campaignStore.saving);
+
+onUnmounted(() => {
+  campaignStore.currentCampaign = null;
+});
 
 onMounted(async () => {
   const campaignId = Number(props.campaignId);

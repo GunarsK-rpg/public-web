@@ -153,6 +153,7 @@ import authService from 'src/services/auth';
 import { refreshToken } from 'src/services/tokenRefresh';
 import axios from 'axios';
 import PasswordForm from 'src/components/auth/PasswordForm.vue';
+import { extractApiError } from 'src/utils/apiError';
 
 const authStore = useAuthStore();
 
@@ -190,12 +191,7 @@ async function handleSendVerification(): Promise<void> {
     verifyMessage.value = 'Verification email sent. Check your inbox.';
   } catch (err) {
     verifyError.value = true;
-    if (axios.isAxiosError(err) && err.response) {
-      const msg = (err.response.data as { error?: string })?.error;
-      verifyMessage.value = msg || 'Failed to send verification email.';
-    } else {
-      verifyMessage.value = 'Unable to connect. Please try again.';
-    }
+    verifyMessage.value = extractApiError(err, 'Failed to send verification email.');
   } finally {
     verifyLoading.value = false;
   }
@@ -310,12 +306,7 @@ async function handleSetPassword(payload: {
       hasPassword.value = true;
     }, 3000);
   } catch (err) {
-    if (axios.isAxiosError(err) && err.response) {
-      const msg = (err.response.data as { error?: string })?.error;
-      form.setResult(msg || 'Failed to set password.', true);
-    } else {
-      form.setResult('Unable to connect. Please try again.', true);
-    }
+    form.setResult(extractApiError(err, 'Failed to set password.'), true);
   } finally {
     form.setLoading(false);
   }

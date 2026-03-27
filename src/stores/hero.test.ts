@@ -822,7 +822,7 @@ describe('useHeroStore', () => {
       expect(result).toBe(false);
     });
 
-    it('returns false and sets error on API failure', async () => {
+    it('returns false on API failure', async () => {
       const store = useHeroStore();
       await store.loadHero(1);
       mockDeleteHero.mockRejectedValueOnce(axiosError(500));
@@ -830,7 +830,6 @@ describe('useHeroStore', () => {
       const result = await store.deleteHero();
 
       expect(result).toBe(false);
-      expect(store.error).toBeTruthy();
     });
 
     it('does not clear hero on API failure', async () => {

@@ -33,6 +33,7 @@
           type="number"
           min="0"
           :max="max"
+          :aria-label="label"
           class="resource-input"
           @blur="commitEdit"
           @keyup.enter="commitEdit"

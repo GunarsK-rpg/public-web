@@ -42,7 +42,7 @@ import authService from 'src/services/auth';
 import { refreshToken } from 'src/services/tokenRefresh';
 import { useAuthStore } from 'stores/auth';
 import { extractQueryParam, removeQueryParam } from 'src/utils/routeUtils';
-import axios from 'axios';
+import { extractApiError } from 'src/utils/apiError';
 
 const route = useRoute();
 const router = useRouter();
@@ -82,12 +82,7 @@ onMounted(async () => {
       await authStore.checkAuthStatus();
     }
   } catch (err) {
-    if (axios.isAxiosError(err) && err.response) {
-      const msg = (err.response.data as { error?: string })?.error;
-      errorMessage.value = msg || 'Invalid or expired verification token.';
-    } else {
-      errorMessage.value = 'Unable to connect. Please try again.';
-    }
+    errorMessage.value = extractApiError(err, 'Invalid or expired verification token.');
   } finally {
     loading.value = false;
   }

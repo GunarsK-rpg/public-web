@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { usePageTitle } from 'src/composables/usePageTitle';
@@ -277,6 +277,10 @@ function confirmDelete() {
       });
   });
 }
+
+onUnmounted(() => {
+  combatStore.currentNpc = null;
+});
 
 // Init
 onMounted(async () => {
