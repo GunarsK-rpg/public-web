@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import ActionsTab from './ActionsTab.vue';
 import type { HeroEquipment, HeroFavoriteAction, HeroTalent } from 'src/types';
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockHero = ref<{
   id: number;
@@ -16,8 +17,6 @@ const mockFavoriteActions = ref<HeroFavoriteAction[]>([]);
 const mockUpsertFavoriteAction = vi.fn();
 const mockRemoveFavoriteAction = vi.fn();
 const mockFindFavoriteAction = vi.fn().mockReturnValue(undefined);
-
-import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

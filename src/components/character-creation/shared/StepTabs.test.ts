@@ -3,13 +3,12 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent, ref } from 'vue';
 import StepTabs from './StepTabs.vue';
+import { wizardStore } from 'src/__tests__/mockStores';
 
 // Mock the wizard store
 const mockIsStepCompleted = vi.fn();
 const mockCurrentStep = ref(1);
 const mockMode = ref('create');
-
-import { wizardStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/wizard', () => ({
   useWizardStore: () => ({

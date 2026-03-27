@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { useWizardSave } from './useWizardSave';
 import { useDeletionTracker } from './useDeletionTracker';
+import { heroStore, wizardStore, heroAttributesStore } from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockHero = ref<Record<string, unknown> | null>(null);
@@ -10,8 +11,6 @@ const mockUpdateFromResponse = vi.fn();
 const mockCurrentStepCode = ref('basic-setup');
 
 const mockValidation = ref({ isValid: true, errors: [] as string[], warnings: [] as string[] });
-
-import { heroStore, wizardStore, heroAttributesStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

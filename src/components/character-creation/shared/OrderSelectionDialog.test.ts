@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import OrderSelectionDialog from './OrderSelectionDialog.vue';
 import type { RadiantOrder, Surge } from 'src/types';
+import { classifierStore } from 'src/__tests__/mockStores';
 
 const mockSurges: Surge[] = [
   {
@@ -35,8 +36,6 @@ const mockOrders: RadiantOrder[] = [
     surge2: { id: 2, code: 'adhesion', name: 'Adhesion' },
   },
 ];
-
-import { classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => classifierStore({ radiantOrders: mockOrders, surges: mockSurges }),

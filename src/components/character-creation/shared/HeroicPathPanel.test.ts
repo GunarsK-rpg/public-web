@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import HeroicPathPanel from './HeroicPathPanel.vue';
 import type { Talent } from 'src/types';
+import { classifierStore } from 'src/__tests__/mockStores';
 
 // Mock classifiers store
 const mockPaths = [
@@ -25,8 +26,6 @@ const mockSpecialties = [
     path: { id: 2, code: 'mage', name: 'Mage' },
   },
 ];
-
-import { classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => classifierStore({ paths: mockPaths, specialties: mockSpecialties }),

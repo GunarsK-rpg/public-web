@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import ExpertisesStep from './ExpertisesStep.vue';
+import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockAddExpertise = vi.fn();
@@ -22,8 +23,6 @@ const mockExpertises = {
 };
 
 const mockSlotsRemaining = { value: 2 };
-
-import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

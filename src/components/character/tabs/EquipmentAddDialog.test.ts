@@ -3,6 +3,7 @@ import { shallowMount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import EquipmentAddDialog from './EquipmentAddDialog.vue';
 import type { HeroEquipment, AppliedModification, ModificationClassifier } from 'src/types';
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 // =============================================================================
 // Mocks
@@ -13,8 +14,6 @@ const mockAddEquipment = vi.fn().mockResolvedValue(true);
 const mockAddCustomEquipment = vi.fn().mockResolvedValue(true);
 const mockSaving = ref(false);
 const mockHero = ref<{ id: number } | null>({ id: 1 });
-
-import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

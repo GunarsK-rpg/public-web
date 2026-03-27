@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import RadiantPathPanel from './RadiantPathPanel.vue';
 import type { Talent } from 'src/types';
+import { classifierStore } from 'src/__tests__/mockStores';
 
 // Mock classifiers store
 const mockRadiantOrders = [
@@ -28,8 +29,6 @@ const mockSurges = [
   { id: 20, code: 'surge-dark', name: 'Dark Surge' },
   { id: 21, code: 'surge-void', name: 'Void Surge' },
 ];
-
-import { classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () =>

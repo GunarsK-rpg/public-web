@@ -3,6 +3,7 @@ import { shallowMount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import PersonalDetailsStep from './PersonalDetailsStep.vue';
 import EditableItemList from 'src/components/shared/EditableItemList.vue';
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 function findDialogByTestId(wrapper: VueWrapper, testId: string): VueWrapper {
   const dialogs = wrapper.findAllComponents({ name: 'AddOtherDialog' });
@@ -45,8 +46,6 @@ const mockHero = {
 let tempIdCounter = -100;
 const mockNextTempId = vi.fn(() => tempIdCounter--);
 const mockTrackDeletion = vi.fn();
-
-import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

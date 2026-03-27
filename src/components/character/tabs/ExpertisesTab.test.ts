@@ -3,14 +3,13 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import ExpertisesTab from './ExpertisesTab.vue';
 import type { HeroExpertise } from 'src/types';
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockExpertises = ref<HeroExpertise[]>([]);
 
 const mockHero = {
   talents: [] as { talent: { id: number; name: string } }[],
 };
-
-import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

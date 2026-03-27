@@ -2,14 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import PathSelectionDialog from './PathSelectionDialog.vue';
 import type { Path } from 'src/types';
+import { classifierStore } from 'src/__tests__/mockStores';
 
 const mockPaths: Path[] = [
   { id: 1, code: 'warrior', name: 'Warrior', description: 'A skilled fighter' },
   { id: 2, code: 'scholar', name: 'Scholar', description: 'A learned sage' },
   { id: 3, code: 'rogue', name: 'Rogue', description: 'A stealthy operative' },
 ];
-
-import { classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => classifierStore({ paths: mockPaths }),

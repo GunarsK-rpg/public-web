@@ -11,6 +11,7 @@ import type {
   HeroInjury,
   HeroNote,
 } from 'src/types';
+import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockHero = ref<{
   id: number;
@@ -37,8 +38,6 @@ const mockRemoveNote = vi.fn();
 const mockUpsertInjury = vi.fn();
 const mockRemoveInjury = vi.fn();
 const mockUpdateGoalValue = vi.fn();
-
-import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

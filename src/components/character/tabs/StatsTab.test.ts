@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { Info } from 'lucide-vue-next';
 import StatsTab from './StatsTab.vue';
+import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockGetDefenseValue = vi.fn();
 const mockAttributeValues: Record<string, number> = {
@@ -12,8 +13,6 @@ const mockAttributeValues: Record<string, number> = {
   awa: 2,
   pre: 1,
 };
-
-import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => heroStore(),

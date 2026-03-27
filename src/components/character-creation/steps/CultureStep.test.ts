@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import CultureStep from './CultureStep.vue';
+import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockAddCulture = vi.fn();
@@ -20,8 +21,6 @@ const mockHeroExpertises = {
     source?: { sourceType: string; sourceId: number };
   }[],
 };
-
-import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

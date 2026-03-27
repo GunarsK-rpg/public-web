@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import AttributesStep from './AttributesStep.vue';
+import { heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockSetAttribute = vi.fn();
@@ -60,8 +61,6 @@ const mockDerivedStatsListResult = {
 const mockNormalizeModifier = {
   value: (val: unknown): number | null => (typeof val === 'number' ? val : Number(val) || 0),
 };
-
-import { heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/heroAttributes', () => ({
   useHeroAttributesStore: () => ({

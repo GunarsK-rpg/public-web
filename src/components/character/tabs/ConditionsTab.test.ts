@@ -3,13 +3,12 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import ConditionsTab from './ConditionsTab.vue';
 import type { HeroCondition } from 'src/types';
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockHero = ref<{ id: number; conditions: HeroCondition[] } | null>(null);
 const mockConditions = ref<HeroCondition[]>([]);
 const mockUpsertCondition = vi.fn();
 const mockRemoveCondition = vi.fn();
-
-import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

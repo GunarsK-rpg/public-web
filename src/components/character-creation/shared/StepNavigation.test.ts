@@ -3,11 +3,10 @@ import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { ref, computed } from 'vue';
 import StepNavigation from './StepNavigation.vue';
+import { wizardStore } from 'src/__tests__/mockStores';
 
 // Mock values that can be changed per test
 const mockCurrentStep = ref(1);
-
-import { wizardStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/wizard', () => ({
   useWizardStore: () => ({

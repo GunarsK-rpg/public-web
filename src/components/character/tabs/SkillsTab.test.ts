@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import SkillsTab from './SkillsTab.vue';
+import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockGetSkillModifier = vi.fn();
 const mockGetSkillRank = vi.fn();
@@ -11,8 +12,6 @@ const mockConditions = ref<
 const mockHero = ref<{ radiantOrder: { id: number; code: string; name: string } | null }>({
   radiantOrder: null,
 });
-
-import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => heroStore({ hero: mockHero.value, conditions: mockConditions.value }),

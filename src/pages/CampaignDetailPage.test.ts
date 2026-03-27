@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import CampaignDetailPage from './CampaignDetailPage.vue';
+import { campaignStore, combatStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Use refs for reactive mock values
 const mockCampaign = ref({
@@ -26,8 +27,6 @@ const mockError = ref<string | null>(null);
 const mockIsOwner = ref(false);
 const mockSaving = ref(false);
 const mockRemoveHero = vi.fn();
-
-import { campaignStore, combatStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/campaigns', () => ({
   useCampaignStore: () => ({

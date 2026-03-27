@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { Star } from 'lucide-vue-next';
 import ActionItem from './ActionItem.vue';
 import type { Action, ClassifierRef } from 'src/types';
+import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Hero store mock
 const mockPatchFocus = vi.fn().mockResolvedValue(undefined);
@@ -14,8 +15,6 @@ const mockHeroData = {
     currentInvestiture: 5,
   } as { id: number; currentFocus: number; currentInvestiture: number } | null,
 };
-
-import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

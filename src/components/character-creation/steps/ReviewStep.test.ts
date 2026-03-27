@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import ReviewStep from './ReviewStep.vue';
+import {
+  heroStore,
+  heroAttributesStore,
+  heroTalentsStore,
+  classifierStore,
+  wizardStore,
+} from 'src/__tests__/mockStores';
 
 // Reactive mock data
 const mockDeleteHero = vi.fn();
@@ -100,14 +107,6 @@ vi.mock('src/services/heroService', () => ({
 vi.mock('src/services/heroPayloads', () => ({
   buildHeroCorePayload: vi.fn(() => ({})),
 }));
-
-import {
-  heroStore,
-  heroAttributesStore,
-  heroTalentsStore,
-  classifierStore,
-  wizardStore,
-} from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

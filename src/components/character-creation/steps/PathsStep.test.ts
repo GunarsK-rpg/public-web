@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import PathsStep from './PathsStep.vue';
+import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockAddKeyTalentForPath = vi.fn();
@@ -19,8 +20,6 @@ const mockRadiantIdeal = { value: 1 };
 const mockHero: {
   talents: { id: number; heroId: number; talent: { id: number; code: string; name: string } }[];
 } = { talents: [] };
-
-import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import CharacterHeader from './CharacterHeader.vue';
+import {
+  heroStore,
+  heroAttributesStore,
+  heroTalentsStore,
+  classifierStore,
+} from 'src/__tests__/mockStores';
 
 const mockHero = ref<{
   id: number;
@@ -24,13 +30,6 @@ const mockMaxFocus = ref(10);
 const mockMaxInvestiture = ref(20);
 const mockSaving = ref(false);
 const mockInjuries = ref<{ id: number; injury: { code: string } }[]>([]);
-
-import {
-  heroStore,
-  heroAttributesStore,
-  heroTalentsStore,
-  classifierStore,
-} from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

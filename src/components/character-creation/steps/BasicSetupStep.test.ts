@@ -2,6 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import BasicSetupStep from './BasicSetupStep.vue';
+import {
+  heroStore,
+  heroAttributesStore,
+  campaignStore,
+  heroTalentsStore,
+  classifierStore,
+  wizardStore,
+} from 'src/__tests__/mockStores';
 
 // Mock stores
 const mockSetName = vi.fn();
@@ -18,15 +26,6 @@ const mockHeroAncestry = {
 const mockActiveSingerForm = { value: null as { id: number; code: string; name: string } | null };
 const mockHeroTalents = { value: [] as { talent: { id: number; code: string; name: string } }[] };
 const mockIsSinger = { value: false };
-
-import {
-  heroStore,
-  heroAttributesStore,
-  campaignStore,
-  heroTalentsStore,
-  classifierStore,
-  wizardStore,
-} from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
@@ -122,7 +121,7 @@ vi.mock('src/stores/classifiers', () => ({
 }));
 
 vi.mock('src/stores/wizard', () => ({
-  useWizardStore: () => wizardStore(),
+  useWizardStore: () => wizardStore({ mode: 'create' }),
 }));
 
 vi.mock('src/utils/arrayUtils', () => ({

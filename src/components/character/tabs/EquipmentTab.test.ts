@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import EquipmentTab from './EquipmentTab.vue';
 import type { HeroEquipment } from 'src/types';
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockHero = ref<{
   currency: number;
@@ -14,8 +15,6 @@ const mockEquipmentTypes = ref([
   { id: 2, code: 'armor', name: 'Armor' },
   { id: 3, code: 'gear', name: 'Gear' },
 ]);
-
-import { heroStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

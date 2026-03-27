@@ -3,6 +3,12 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import { createPinia, setActivePinia } from 'pinia';
 import SkillsStep from './SkillsStep.vue';
+import {
+  heroStore,
+  heroAttributesStore,
+  classifierStore,
+  heroTalentsStore,
+} from 'src/__tests__/mockStores';
 
 type MockHeroSkill = {
   skill: { id: number; code: string; name: string };
@@ -48,13 +54,6 @@ const mockAttributeCodeMap = {
 const mockNormalizeModifier = {
   value: (val: unknown) => (typeof val === 'number' ? val : Number(val) || 0) as number | null,
 };
-
-import {
-  heroStore,
-  heroAttributesStore,
-  classifierStore,
-  heroTalentsStore,
-} from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({

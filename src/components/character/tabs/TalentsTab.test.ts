@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { ref } from 'vue';
 import TalentsTab from './TalentsTab.vue';
 import type { ClassifierRef, HeroTalent } from 'src/types';
+import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 const mockHeroTalents = ref<HeroTalent[]>([]);
 const mockIsRadiant = ref(false);
@@ -10,8 +11,6 @@ const mockHero = ref<{
   radiantOrder: ClassifierRef | null;
   radiantIdeal: number;
 } | null>(null);
-
-import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
 
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => heroStore({ talents: mockHeroTalents.value, hero: mockHero.value }),
