@@ -1,0 +1,13 @@
+codecov:
+  branch: develop
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 5%
+    patch:
+      default:
+        target: auto
+        threshold: 5%
