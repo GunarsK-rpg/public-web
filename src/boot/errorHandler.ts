@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/vue';
 import { defineBoot } from '#q-app/wrappers';
 import { Notify } from 'quasar';
 import { logger } from 'src/utils/logger';
@@ -21,6 +22,10 @@ export default defineBoot(({ app }) => {
       },
       component: componentName,
       info,
+    });
+
+    Sentry.captureException(error, {
+      extra: { component: componentName, info },
     });
 
     // Show user-friendly notification
@@ -63,6 +68,8 @@ export default defineBoot(({ app }) => {
       },
     });
 
+    Sentry.captureException(error);
+
     // Show user-friendly notification for unhandled promises
     Notify.create({
       type: 'negative',
@@ -92,6 +99,10 @@ export default defineBoot(({ app }) => {
         lineno: event.lineno,
         colno: event.colno,
       },
+    });
+
+    Sentry.captureException(new Error(event.message), {
+      extra: { filename: event.filename, lineno: event.lineno, colno: event.colno },
     });
   });
 });
