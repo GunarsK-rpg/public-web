@@ -46,8 +46,11 @@ let tempIdCounter = -100;
 const mockNextTempId = vi.fn(() => tempIdCounter--);
 const mockTrackDeletion = vi.fn();
 
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore({ nextTempId: mockNextTempId }),
     get hero() {
       return mockHero.value;
     },
@@ -60,21 +63,21 @@ vi.mock('src/stores/hero', () => ({
     get companions() {
       return mockHero.value?.companions ?? [];
     },
-    nextTempId: mockNextTempId,
   }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    goalStatuses: [
-      { id: 1, code: 'active', name: 'Active' },
-      { id: 2, code: 'completed', name: 'Completed' },
-    ],
-    connectionTypes: [
-      { id: 1, code: 'ally', name: 'Ally' },
-      { id: 2, code: 'rival', name: 'Rival' },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      goalStatuses: [
+        { id: 1, code: 'active', name: 'Active' },
+        { id: 2, code: 'completed', name: 'Completed' },
+      ],
+      connectionTypes: [
+        { id: 1, code: 'ally', name: 'Ally' },
+        { id: 2, code: 'rival', name: 'Rival' },
+      ],
+    }),
 }));
 
 const debounceCancelSpies: ReturnType<typeof vi.fn>[] = [];

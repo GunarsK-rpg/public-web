@@ -36,11 +36,10 @@ const mockOrders: RadiantOrder[] = [
   },
 ];
 
+import { classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    radiantOrders: mockOrders,
-    surges: mockSurges,
-  }),
+  useClassifierStore: () => classifierStore({ radiantOrders: mockOrders, surges: mockSurges }),
 }));
 
 vi.mock('src/utils/arrayUtils', () => ({

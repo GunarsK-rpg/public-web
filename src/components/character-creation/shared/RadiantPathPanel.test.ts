@@ -29,11 +29,11 @@ const mockSurges = [
   { id: 21, code: 'surge-void', name: 'Void Surge' },
 ];
 
+import { classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    radiantOrders: mockRadiantOrders,
-    surges: mockSurges,
-  }),
+  useClassifierStore: () =>
+    classifierStore({ radiantOrders: mockRadiantOrders, surges: mockSurges }),
 }));
 
 // Mock talent prerequisites composable

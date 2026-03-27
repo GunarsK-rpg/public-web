@@ -26,11 +26,10 @@ const mockSpecialties = [
   },
 ];
 
+import { classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    paths: mockPaths,
-    specialties: mockSpecialties,
-  }),
+  useClassifierStore: () => classifierStore({ paths: mockPaths, specialties: mockSpecialties }),
 }));
 
 // Mock talent prerequisites composable

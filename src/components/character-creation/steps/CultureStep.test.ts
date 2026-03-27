@@ -21,8 +21,11 @@ const mockHeroExpertises = {
   }[],
 };
 
+import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore(),
     get hero() {
       return {
         cultures: mockHeroCultures.value,
@@ -33,10 +36,8 @@ vi.mock('src/stores/hero', () => ({
 }));
 
 vi.mock('src/stores/heroTalents', () => ({
-  useHeroTalentsStore: () => ({
-    addCulture: mockAddCulture,
-    removeCulture: mockRemoveCulture,
-  }),
+  useHeroTalentsStore: () =>
+    heroTalentsStore({ addCulture: mockAddCulture, removeCulture: mockRemoveCulture }),
 }));
 
 const mockClassifierData = {
@@ -80,6 +81,7 @@ const mockClassifierData = {
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    ...classifierStore(),
     get cultures() {
       return mockClassifierData.value.cultures;
     },

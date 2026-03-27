@@ -9,140 +9,142 @@ const mockConditions = ref<HeroCondition[]>([]);
 const mockUpsertCondition = vi.fn();
 const mockRemoveCondition = vi.fn();
 
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore({ upsertCondition: mockUpsertCondition, removeCondition: mockRemoveCondition }),
     get hero() {
       return mockHero.value;
     },
     get conditions() {
       return mockConditions.value;
     },
-    upsertCondition: mockUpsertCondition,
-    removeCondition: mockRemoveCondition,
   }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    conditions: [
-      {
-        id: 1,
-        code: 'afflicted',
-        name: 'Afflicted',
-        description: 'Takes damage over time',
-        isPositive: false,
-        isParameterized: true,
-      },
-      {
-        id: 2,
-        code: 'determined',
-        name: 'Determined',
-        description: 'Add Opportunity',
-        isPositive: true,
-        isParameterized: false,
-      },
-      {
-        id: 3,
-        code: 'disoriented',
-        name: 'Disoriented',
-        description: 'Senses disrupted',
-        isPositive: false,
-        isParameterized: false,
-      },
-      {
-        id: 4,
-        code: 'empowered',
-        name: 'Empowered',
-        description: 'Advantage on all tests',
-        isPositive: true,
-        isParameterized: false,
-      },
-      {
-        id: 5,
-        code: 'enhanced',
-        name: 'Enhanced',
-        description: 'Attribute bonus',
-        isPositive: true,
-        isParameterized: true,
-      },
-      {
-        id: 6,
-        code: 'exhausted',
-        name: 'Exhausted',
-        description: 'Penalty to tests',
-        isPositive: false,
-        isParameterized: true,
-      },
-      {
-        id: 7,
-        code: 'focused',
-        name: 'Focused',
-        description: 'Focus costs -1',
-        isPositive: true,
-        isParameterized: false,
-      },
-      {
-        id: 8,
-        code: 'immobilized',
-        name: 'Immobilized',
-        description: 'Movement = 0',
-        isPositive: false,
-        isParameterized: false,
-      },
-      {
-        id: 9,
-        code: 'prone',
-        name: 'Prone',
-        description: 'Lying flat',
-        isPositive: false,
-        isParameterized: false,
-      },
-      {
-        id: 10,
-        code: 'restrained',
-        name: 'Restrained',
-        description: 'Movement = 0',
-        isPositive: false,
-        isParameterized: false,
-      },
-      {
-        id: 11,
-        code: 'slowed',
-        name: 'Slowed',
-        description: 'Movement halved',
-        isPositive: false,
-        isParameterized: false,
-      },
-      {
-        id: 12,
-        code: 'stunned',
-        name: 'Stunned',
-        description: 'Lose actions',
-        isPositive: false,
-        isParameterized: false,
-      },
-      {
-        id: 13,
-        code: 'surprised',
-        name: 'Surprised',
-        description: 'Lose reactions',
-        isPositive: false,
-        isParameterized: false,
-      },
-      {
-        id: 14,
-        code: 'unconscious',
-        name: 'Unconscious',
-        description: 'Movement = 0',
-        isPositive: false,
-        isParameterized: false,
-      },
-    ],
-    attributes: [
-      { id: 1, code: 'str', name: 'Strength' },
-      { id: 2, code: 'spd', name: 'Speed' },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      conditions: [
+        {
+          id: 1,
+          code: 'afflicted',
+          name: 'Afflicted',
+          description: 'Takes damage over time',
+          isPositive: false,
+          isParameterized: true,
+        },
+        {
+          id: 2,
+          code: 'determined',
+          name: 'Determined',
+          description: 'Add Opportunity',
+          isPositive: true,
+          isParameterized: false,
+        },
+        {
+          id: 3,
+          code: 'disoriented',
+          name: 'Disoriented',
+          description: 'Senses disrupted',
+          isPositive: false,
+          isParameterized: false,
+        },
+        {
+          id: 4,
+          code: 'empowered',
+          name: 'Empowered',
+          description: 'Advantage on all tests',
+          isPositive: true,
+          isParameterized: false,
+        },
+        {
+          id: 5,
+          code: 'enhanced',
+          name: 'Enhanced',
+          description: 'Attribute bonus',
+          isPositive: true,
+          isParameterized: true,
+        },
+        {
+          id: 6,
+          code: 'exhausted',
+          name: 'Exhausted',
+          description: 'Penalty to tests',
+          isPositive: false,
+          isParameterized: true,
+        },
+        {
+          id: 7,
+          code: 'focused',
+          name: 'Focused',
+          description: 'Focus costs -1',
+          isPositive: true,
+          isParameterized: false,
+        },
+        {
+          id: 8,
+          code: 'immobilized',
+          name: 'Immobilized',
+          description: 'Movement = 0',
+          isPositive: false,
+          isParameterized: false,
+        },
+        {
+          id: 9,
+          code: 'prone',
+          name: 'Prone',
+          description: 'Lying flat',
+          isPositive: false,
+          isParameterized: false,
+        },
+        {
+          id: 10,
+          code: 'restrained',
+          name: 'Restrained',
+          description: 'Movement = 0',
+          isPositive: false,
+          isParameterized: false,
+        },
+        {
+          id: 11,
+          code: 'slowed',
+          name: 'Slowed',
+          description: 'Movement halved',
+          isPositive: false,
+          isParameterized: false,
+        },
+        {
+          id: 12,
+          code: 'stunned',
+          name: 'Stunned',
+          description: 'Lose actions',
+          isPositive: false,
+          isParameterized: false,
+        },
+        {
+          id: 13,
+          code: 'surprised',
+          name: 'Surprised',
+          description: 'Lose reactions',
+          isPositive: false,
+          isParameterized: false,
+        },
+        {
+          id: 14,
+          code: 'unconscious',
+          name: 'Unconscious',
+          description: 'Movement = 0',
+          isPositive: false,
+          isParameterized: false,
+        },
+      ],
+      attributes: [
+        { id: 1, code: 'str', name: 'Strength' },
+        { id: 2, code: 'spd', name: 'Speed' },
+      ],
+    }),
 }));
 
 function createWrapper(readonly = false) {

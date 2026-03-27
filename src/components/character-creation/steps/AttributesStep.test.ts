@@ -61,22 +61,27 @@ const mockNormalizeModifier = {
   value: (val: unknown): number | null => (typeof val === 'number' ? val : Number(val) || 0),
 };
 
+import { heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/heroAttributes', () => ({
   useHeroAttributesStore: () => ({
+    ...heroAttributesStore({
+      getAttributeValue: vi.fn().mockReturnValue(2),
+      setAttribute: mockSetAttribute,
+      setDerivedStatModifier: mockSetDerivedStatModifier,
+      getDerivedStatModifier: vi.fn().mockReturnValue(0),
+      levelData: { level: 1 },
+      tierData: { tier: 1 },
+    }),
     get getAttributeValueById() {
       return mockGetAttributeValueById;
     },
-    getAttributeValue: vi.fn().mockReturnValue(2),
-    setAttribute: mockSetAttribute,
-    setDerivedStatModifier: mockSetDerivedStatModifier,
-    getDerivedStatModifier: vi.fn().mockReturnValue(0),
-    levelData: { level: 1 },
-    tierData: { tier: 1 },
   }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    ...classifierStore(),
     get attributes() {
       return mockClassifierData.value.attributes;
     },

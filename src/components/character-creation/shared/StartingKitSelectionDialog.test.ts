@@ -35,11 +35,10 @@ const mockKits: StartingKit[] = [
   },
 ];
 
+import { classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    startingKits: mockKits,
-    expertises: mockExpertises,
-  }),
+  useClassifierStore: () => classifierStore({ startingKits: mockKits, expertises: mockExpertises }),
 }));
 
 vi.mock('src/utils/arrayUtils', () => ({

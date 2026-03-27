@@ -9,16 +9,17 @@ const mockIsStepCompleted = vi.fn();
 const mockCurrentStep = ref(1);
 const mockMode = ref('create');
 
+import { wizardStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/wizard', () => ({
   useWizardStore: () => ({
+    ...wizardStore({ isStepCompleted: mockIsStepCompleted, isStepVisited: () => false }),
     get currentStep() {
       return mockCurrentStep.value;
     },
     get mode() {
       return mockMode.value;
     },
-    isStepCompleted: mockIsStepCompleted,
-    isStepVisited: () => false,
   }),
 }));
 

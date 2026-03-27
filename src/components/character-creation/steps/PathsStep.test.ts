@@ -20,8 +20,11 @@ const mockHero: {
   talents: { id: number; heroId: number; talent: { id: number; code: string; name: string } }[];
 } = { talents: [] };
 
+import { heroStore, heroTalentsStore, classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore(),
     get hero() {
       return mockHero;
     },
@@ -33,6 +36,12 @@ vi.mock('src/stores/hero', () => ({
 
 vi.mock('src/stores/heroTalents', () => ({
   useHeroTalentsStore: () => ({
+    ...heroTalentsStore({
+      addKeyTalentForPath: mockAddKeyTalentForPath,
+      removeTalent: mockRemoveTalent,
+      setRadiantOrder: mockSetRadiantOrder,
+      setRadiantIdeal: mockSetRadiantIdeal,
+    }),
     get isSinger() {
       return mockIsSinger.value;
     },
@@ -45,10 +54,6 @@ vi.mock('src/stores/heroTalents', () => ({
     get radiantIdeal() {
       return mockRadiantIdeal.value;
     },
-    addKeyTalentForPath: mockAddKeyTalentForPath,
-    removeTalent: mockRemoveTalent,
-    setRadiantOrder: mockSetRadiantOrder,
-    setRadiantIdeal: mockSetRadiantIdeal,
   }),
 }));
 
@@ -88,6 +93,7 @@ const mockClassifiersData = {
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
+    ...classifierStore(),
     get paths() {
       return mockClassifiersData.value.paths;
     },

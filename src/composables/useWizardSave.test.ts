@@ -11,20 +11,19 @@ const mockCurrentStepCode = ref('basic-setup');
 
 const mockValidation = ref({ isValid: true, errors: [] as string[], warnings: [] as string[] });
 
+import { heroStore, wizardStore, heroAttributesStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore({ updateFromResponse: mockUpdateFromResponse }),
     get hero() {
       return mockHero.value;
     },
-    updateFromResponse: mockUpdateFromResponse,
   }),
 }));
 
 vi.mock('src/stores/wizard', () => ({
-  useWizardStore: () => ({
-    currentStep: 1,
-    currentStepConfig: { code: 'basic-setup' },
-  }),
+  useWizardStore: () => wizardStore({ currentStepConfig: { code: 'basic-setup' } }),
 }));
 
 vi.mock('src/composables/useStepValidation', () => ({
@@ -53,10 +52,7 @@ vi.mock('src/utils/logger', () => ({
 }));
 
 vi.mock('src/stores/heroAttributes', () => ({
-  useHeroAttributesStore: () => ({
-    levelData: null,
-    getAttributeValue: () => 0,
-  }),
+  useHeroAttributesStore: () => heroAttributesStore({ getAttributeValue: () => 0 }),
 }));
 
 function makeHero(overrides: Record<string, unknown> = {}): Record<string, unknown> {

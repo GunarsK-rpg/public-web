@@ -14,17 +14,21 @@ const mockAddCustomEquipment = vi.fn().mockResolvedValue(true);
 const mockSaving = ref(false);
 const mockHero = ref<{ id: number } | null>({ id: 1 });
 
+import { heroStore, classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore({
+      updateEquipment: mockUpdateEquipment,
+      addEquipment: mockAddEquipment,
+      addCustomEquipment: mockAddCustomEquipment,
+    }),
     get saving() {
       return mockSaving.value;
     },
     get hero() {
       return mockHero.value;
     },
-    updateEquipment: mockUpdateEquipment,
-    addEquipment: mockAddEquipment,
-    addCustomEquipment: mockAddCustomEquipment,
   }),
 }));
 
@@ -69,21 +73,22 @@ const mockModifications: ModificationClassifier[] = [
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
-    initialized: true,
-    equipment: [
-      {
-        id: 1,
-        code: 'longsword',
-        name: 'Longsword',
-        equipType: { id: 1, code: 'weapon', name: 'Weapon' },
-        maxCharges: null,
-      },
-    ],
-    equipmentTypes: [
-      { id: 1, code: 'weapon', name: 'Weapon' },
-      { id: 2, code: 'armor', name: 'Armor' },
-      { id: 3, code: 'fabrial', name: 'Fabrial' },
-    ],
+    ...classifierStore({
+      equipment: [
+        {
+          id: 1,
+          code: 'longsword',
+          name: 'Longsword',
+          equipType: { id: 1, code: 'weapon', name: 'Weapon' },
+          maxCharges: null,
+        },
+      ],
+      equipmentTypes: [
+        { id: 1, code: 'weapon', name: 'Weapon' },
+        { id: 2, code: 'armor', name: 'Armor' },
+        { id: 3, code: 'fabrial', name: 'Fabrial' },
+      ],
+    }),
     get modifications() {
       return mockModifications;
     },

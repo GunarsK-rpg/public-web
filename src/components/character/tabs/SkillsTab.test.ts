@@ -12,143 +12,149 @@ const mockHero = ref<{ radiantOrder: { id: number; code: string; name: string } 
   radiantOrder: null,
 });
 
+import { heroStore, heroAttributesStore, classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
-  useHeroStore: () => ({
-    hero: mockHero.value,
-    conditions: mockConditions.value,
-  }),
+  useHeroStore: () => heroStore({ hero: mockHero.value, conditions: mockConditions.value }),
 }));
 
 vi.mock('src/stores/heroAttributes', () => ({
-  useHeroAttributesStore: () => ({
-    getSkillModifier: mockGetSkillModifier,
-    getSkillRank: mockGetSkillRank,
-  }),
+  useHeroAttributesStore: () =>
+    heroAttributesStore({
+      getSkillModifier: mockGetSkillModifier,
+      getSkillRank: mockGetSkillRank,
+    }),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    attributeTypes: [
-      { id: 1, code: 'physical', name: 'Physical' },
-      { id: 2, code: 'cognitive', name: 'Cognitive' },
-      { id: 3, code: 'spiritual', name: 'Spiritual' },
-    ],
-    attributes: [
-      {
-        id: 1,
-        code: 'str',
-        name: 'Strength',
-        attrType: { id: 1, code: 'physical', name: 'Physical' },
-      },
-      {
-        id: 2,
-        code: 'spd',
-        name: 'Speed',
-        attrType: { id: 1, code: 'physical', name: 'Physical' },
-      },
-      {
-        id: 3,
-        code: 'int',
-        name: 'Intellect',
-        attrType: { id: 2, code: 'cognitive', name: 'Cognitive' },
-      },
-      {
-        id: 4,
-        code: 'wil',
-        name: 'Willpower',
-        attrType: { id: 2, code: 'cognitive', name: 'Cognitive' },
-      },
-      {
-        id: 5,
-        code: 'awa',
-        name: 'Awareness',
-        attrType: { id: 3, code: 'spiritual', name: 'Spiritual' },
-      },
-      {
-        id: 6,
-        code: 'pre',
-        name: 'Presence',
-        attrType: { id: 3, code: 'spiritual', name: 'Spiritual' },
-      },
-    ],
-    skills: [
-      {
-        id: 1,
-        code: 'athletics',
-        name: 'Athletics',
-        attr: { id: 1, code: 'str', name: 'Strength' },
-      },
-      {
-        id: 2,
-        code: 'heavy_weapons',
-        name: 'Heavy Weapons',
-        attr: { id: 1, code: 'str', name: 'Strength' },
-      },
-      { id: 3, code: 'agility', name: 'Agility', attr: { id: 2, code: 'spd', name: 'Speed' } },
-      { id: 4, code: 'stealth', name: 'Stealth', attr: { id: 2, code: 'spd', name: 'Speed' } },
-      { id: 5, code: 'lore', name: 'Lore', attr: { id: 3, code: 'int', name: 'Intellect' } },
-      {
-        id: 6,
-        code: 'medicine',
-        name: 'Medicine',
-        attr: { id: 3, code: 'int', name: 'Intellect' },
-      },
-      {
-        id: 7,
-        code: 'discipline',
-        name: 'Discipline',
-        attr: { id: 4, code: 'wil', name: 'Willpower' },
-      },
-      {
-        id: 8,
-        code: 'intimidation',
-        name: 'Intimidation',
-        attr: { id: 4, code: 'wil', name: 'Willpower' },
-      },
-      { id: 9, code: 'insight', name: 'Insight', attr: { id: 5, code: 'awa', name: 'Awareness' } },
-      {
-        id: 10,
-        code: 'perception',
-        name: 'Perception',
-        attr: { id: 5, code: 'awa', name: 'Awareness' },
-      },
-      {
-        id: 11,
-        code: 'deception',
-        name: 'Deception',
-        attr: { id: 6, code: 'pre', name: 'Presence' },
-      },
-      {
-        id: 12,
-        code: 'persuasion',
-        name: 'Persuasion',
-        attr: { id: 6, code: 'pre', name: 'Presence' },
-      },
-      {
-        id: 101,
-        code: 'gravitation',
-        name: 'Gravitation',
-        attr: { id: 5, code: 'awa', name: 'Awareness' },
-        surge: { id: 1, code: 'gravitation', name: 'Gravitation' },
-      },
-      {
-        id: 102,
-        code: 'adhesion',
-        name: 'Adhesion',
-        attr: { id: 6, code: 'pre', name: 'Presence' },
-        surge: { id: 2, code: 'adhesion', name: 'Adhesion' },
-      },
-    ],
-    radiantOrders: [
-      {
-        id: 1,
-        code: 'windrunner',
-        name: 'Windrunner',
-        surge1: { id: 1, code: 'gravitation', name: 'Gravitation' },
-        surge2: { id: 2, code: 'adhesion', name: 'Adhesion' },
-      },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      attributeTypes: [
+        { id: 1, code: 'physical', name: 'Physical' },
+        { id: 2, code: 'cognitive', name: 'Cognitive' },
+        { id: 3, code: 'spiritual', name: 'Spiritual' },
+      ],
+      attributes: [
+        {
+          id: 1,
+          code: 'str',
+          name: 'Strength',
+          attrType: { id: 1, code: 'physical', name: 'Physical' },
+        },
+        {
+          id: 2,
+          code: 'spd',
+          name: 'Speed',
+          attrType: { id: 1, code: 'physical', name: 'Physical' },
+        },
+        {
+          id: 3,
+          code: 'int',
+          name: 'Intellect',
+          attrType: { id: 2, code: 'cognitive', name: 'Cognitive' },
+        },
+        {
+          id: 4,
+          code: 'wil',
+          name: 'Willpower',
+          attrType: { id: 2, code: 'cognitive', name: 'Cognitive' },
+        },
+        {
+          id: 5,
+          code: 'awa',
+          name: 'Awareness',
+          attrType: { id: 3, code: 'spiritual', name: 'Spiritual' },
+        },
+        {
+          id: 6,
+          code: 'pre',
+          name: 'Presence',
+          attrType: { id: 3, code: 'spiritual', name: 'Spiritual' },
+        },
+      ],
+      skills: [
+        {
+          id: 1,
+          code: 'athletics',
+          name: 'Athletics',
+          attr: { id: 1, code: 'str', name: 'Strength' },
+        },
+        {
+          id: 2,
+          code: 'heavy_weapons',
+          name: 'Heavy Weapons',
+          attr: { id: 1, code: 'str', name: 'Strength' },
+        },
+        { id: 3, code: 'agility', name: 'Agility', attr: { id: 2, code: 'spd', name: 'Speed' } },
+        { id: 4, code: 'stealth', name: 'Stealth', attr: { id: 2, code: 'spd', name: 'Speed' } },
+        { id: 5, code: 'lore', name: 'Lore', attr: { id: 3, code: 'int', name: 'Intellect' } },
+        {
+          id: 6,
+          code: 'medicine',
+          name: 'Medicine',
+          attr: { id: 3, code: 'int', name: 'Intellect' },
+        },
+        {
+          id: 7,
+          code: 'discipline',
+          name: 'Discipline',
+          attr: { id: 4, code: 'wil', name: 'Willpower' },
+        },
+        {
+          id: 8,
+          code: 'intimidation',
+          name: 'Intimidation',
+          attr: { id: 4, code: 'wil', name: 'Willpower' },
+        },
+        {
+          id: 9,
+          code: 'insight',
+          name: 'Insight',
+          attr: { id: 5, code: 'awa', name: 'Awareness' },
+        },
+        {
+          id: 10,
+          code: 'perception',
+          name: 'Perception',
+          attr: { id: 5, code: 'awa', name: 'Awareness' },
+        },
+        {
+          id: 11,
+          code: 'deception',
+          name: 'Deception',
+          attr: { id: 6, code: 'pre', name: 'Presence' },
+        },
+        {
+          id: 12,
+          code: 'persuasion',
+          name: 'Persuasion',
+          attr: { id: 6, code: 'pre', name: 'Presence' },
+        },
+        {
+          id: 101,
+          code: 'gravitation',
+          name: 'Gravitation',
+          attr: { id: 5, code: 'awa', name: 'Awareness' },
+          surge: { id: 1, code: 'gravitation', name: 'Gravitation' },
+        },
+        {
+          id: 102,
+          code: 'adhesion',
+          name: 'Adhesion',
+          attr: { id: 6, code: 'pre', name: 'Presence' },
+          surge: { id: 2, code: 'adhesion', name: 'Adhesion' },
+        },
+      ],
+      radiantOrders: [
+        {
+          id: 1,
+          code: 'windrunner',
+          name: 'Windrunner',
+          surge1: { id: 1, code: 'gravitation', name: 'Gravitation' },
+          surge2: { id: 2, code: 'adhesion', name: 'Adhesion' },
+        },
+      ],
+    }),
 }));
 
 vi.mock('src/constants/theme', () => ({

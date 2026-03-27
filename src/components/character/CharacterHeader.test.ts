@@ -25,38 +25,43 @@ const mockMaxInvestiture = ref(20);
 const mockSaving = ref(false);
 const mockInjuries = ref<{ id: number; injury: { code: string } }[]>([]);
 
+import {
+  heroStore,
+  heroAttributesStore,
+  heroTalentsStore,
+  classifierStore,
+} from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore(),
     get hero() {
       return mockHero.value;
     },
     get saving() {
       return mockSaving.value;
     },
-    conditions: [],
     get injuries() {
       return mockInjuries.value;
     },
-    patchHealth: vi.fn(),
-    patchFocus: vi.fn(),
-    patchInvestiture: vi.fn(),
-    patchCurrency: vi.fn(),
   }),
 }));
 
 vi.mock('src/stores/heroAttributes', () => ({
-  useHeroAttributesStore: () => ({
-    getDerivedStatTotal: vi.fn((stat: string) => {
-      if (stat === 'max_health') return mockMaxHealth.value;
-      if (stat === 'max_focus') return mockMaxFocus.value;
-      if (stat === 'max_investiture') return mockMaxInvestiture.value;
-      return 0;
+  useHeroAttributesStore: () =>
+    heroAttributesStore({
+      getDerivedStatTotal: vi.fn((stat: string) => {
+        if (stat === 'max_health') return mockMaxHealth.value;
+        if (stat === 'max_focus') return mockMaxFocus.value;
+        if (stat === 'max_investiture') return mockMaxInvestiture.value;
+        return 0;
+      }),
     }),
-  }),
 }));
 
 vi.mock('src/stores/heroTalents', () => ({
   useHeroTalentsStore: () => ({
+    ...heroTalentsStore(),
     get isRadiant() {
       return mockIsRadiant.value;
     },
@@ -64,9 +69,7 @@ vi.mock('src/stores/heroTalents', () => ({
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    conditions: [],
-  }),
+  useClassifierStore: () => classifierStore(),
 }));
 
 vi.mock('src/constants/theme', () => ({

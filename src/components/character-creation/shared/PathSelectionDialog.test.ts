@@ -9,10 +9,10 @@ const mockPaths: Path[] = [
   { id: 3, code: 'rogue', name: 'Rogue', description: 'A stealthy operative' },
 ];
 
+import { classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    paths: mockPaths,
-  }),
+  useClassifierStore: () => classifierStore({ paths: mockPaths }),
 }));
 
 function createWrapper(props: { modelValue: boolean; selectedPathIds: number[] }) {

@@ -27,8 +27,11 @@ const mockIsOwner = ref(false);
 const mockSaving = ref(false);
 const mockRemoveHero = vi.fn();
 
+import { campaignStore, combatStore, classifierStore } from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/campaigns', () => ({
   useCampaignStore: () => ({
+    ...campaignStore({ removeHero: mockRemoveHero }),
     get currentCampaign() {
       return mockCampaign.value;
     },
@@ -44,28 +47,19 @@ vi.mock('src/stores/campaigns', () => ({
     get saving() {
       return mockSaving.value;
     },
-    selectCampaign: vi.fn().mockResolvedValue(undefined),
-    deleteCampaign: vi.fn().mockResolvedValue(true),
-    removeHero: mockRemoveHero,
-    setError: vi.fn(),
   }),
 }));
 
 vi.mock('src/stores/combat', () => ({
-  useCombatStore: () => ({
-    combats: [],
-    saving: false,
-    fetchCombats: vi.fn().mockResolvedValue(undefined),
-    createCombat: vi.fn().mockResolvedValue(null),
-  }),
+  useCombatStore: () => combatStore(),
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    initialized: true,
-    initialize: vi.fn().mockResolvedValue(undefined),
-    radiantOrders: [{ id: 1, code: 'windrunner', name: 'Windrunner' }],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      initialize: vi.fn().mockResolvedValue(undefined),
+      radiantOrders: [{ id: 1, code: 'windrunner', name: 'Windrunner' }],
+    }),
 }));
 
 vi.mock('src/composables/useErrorHandler', () => ({

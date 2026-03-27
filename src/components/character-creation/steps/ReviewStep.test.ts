@@ -101,8 +101,21 @@ vi.mock('src/services/heroPayloads', () => ({
   buildHeroCorePayload: vi.fn(() => ({})),
 }));
 
+import {
+  heroStore,
+  heroAttributesStore,
+  heroTalentsStore,
+  classifierStore,
+  wizardStore,
+} from 'src/__tests__/mockStores';
+
 vi.mock('src/stores/hero', () => ({
   useHeroStore: () => ({
+    ...heroStore({
+      deleteHero: mockDeleteHero,
+      setCampaign: mockSetCampaign,
+      updateFromResponse: vi.fn(),
+    }),
     get hero() {
       return mockHeroData.value.hero;
     },
@@ -121,26 +134,25 @@ vi.mock('src/stores/hero', () => ({
     get equipment() {
       return mockHeroData.value.equipment;
     },
-    deleteHero: mockDeleteHero,
-    setCampaign: mockSetCampaign,
-    updateFromResponse: vi.fn(),
   }),
 }));
 
 vi.mock('src/stores/heroAttributes', () => ({
-  useHeroAttributesStore: () => ({
-    getAttributeValue: vi.fn().mockReturnValue(3),
-    getDerivedStatModifier: vi.fn().mockReturnValue(0),
-    getDefenseValue: vi.fn().mockReturnValue(13),
-    getStatBonus: vi.fn().mockReturnValue(0),
-    baseAttributeValues: { str: 3, dex: 3 },
-    levelData: { level: 3 },
-    tierData: { tier: 1 },
-  }),
+  useHeroAttributesStore: () =>
+    heroAttributesStore({
+      getAttributeValue: vi.fn().mockReturnValue(3),
+      getDerivedStatModifier: vi.fn().mockReturnValue(0),
+      getDefenseValue: vi.fn().mockReturnValue(13),
+      getStatBonus: vi.fn().mockReturnValue(0),
+      baseAttributeValues: { str: 3, dex: 3 },
+      levelData: { level: 3 },
+      tierData: { tier: 1 },
+    }),
 }));
 
 vi.mock('src/stores/heroTalents', () => ({
   useHeroTalentsStore: () => ({
+    ...heroTalentsStore(),
     get isRadiant() {
       return mockTalentStoreData.value.isRadiant;
     },
@@ -148,58 +160,57 @@ vi.mock('src/stores/heroTalents', () => ({
 }));
 
 vi.mock('src/stores/classifiers', () => ({
-  useClassifierStore: () => ({
-    ancestries: [{ id: 1, code: 'human', name: 'Human' }],
-    cultures: [{ id: 1, code: 'vorin', name: 'Vorin' }],
-    startingKits: [{ id: 1, code: 'adventurer', name: 'Adventurer' }],
-    radiantOrders: [{ id: 1, code: 'windrunner', name: 'Windrunner' }],
-    attributeTypes: [
-      { id: 1, code: 'physical', name: 'Physical' },
-      { id: 2, code: 'cognitive', name: 'Cognitive' },
-      { id: 3, code: 'spiritual', name: 'Spiritual' },
-    ],
-    attributes: [
-      { id: 1, code: 'str', name: 'Strength' },
-      { id: 2, code: 'dex', name: 'Dexterity' },
-    ],
-    derivedStats: [],
-    derivedStatValues: [],
-    skills: [{ id: 1, code: 'athletics', name: 'Athletics' }],
-    expertises: [{ id: 1, code: 'lockpicking', name: 'Lockpicking' }],
-    talents: [
-      {
-        id: 1,
-        code: 'power-attack',
-        name: 'Power Attack',
-        path: { id: 1, code: 'warrior', name: 'Warrior' },
-        specialties: [],
-        radiantOrder: null,
-        surge: null,
-        ancestry: null,
-        isKey: false,
-        special: [],
-      },
-    ],
-    equipment: [
-      {
-        id: 1,
-        code: 'sword',
-        name: 'Sword',
-        equipType: { id: 1, code: 'weapons', name: 'Weapons' },
-      },
-      { id: 2, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
-    ],
-    paths: [{ id: 1, code: 'warrior', name: 'Warrior' }],
-    specialties: [],
-    equipmentTypes: [
-      { id: 1, code: 'weapons', name: 'Weapons' },
-      { id: 2, code: 'gear', name: 'Gear' },
-    ],
-  }),
+  useClassifierStore: () =>
+    classifierStore({
+      ancestries: [{ id: 1, code: 'human', name: 'Human' }],
+      cultures: [{ id: 1, code: 'vorin', name: 'Vorin' }],
+      startingKits: [{ id: 1, code: 'adventurer', name: 'Adventurer' }],
+      radiantOrders: [{ id: 1, code: 'windrunner', name: 'Windrunner' }],
+      attributeTypes: [
+        { id: 1, code: 'physical', name: 'Physical' },
+        { id: 2, code: 'cognitive', name: 'Cognitive' },
+        { id: 3, code: 'spiritual', name: 'Spiritual' },
+      ],
+      attributes: [
+        { id: 1, code: 'str', name: 'Strength' },
+        { id: 2, code: 'dex', name: 'Dexterity' },
+      ],
+      skills: [{ id: 1, code: 'athletics', name: 'Athletics' }],
+      expertises: [{ id: 1, code: 'lockpicking', name: 'Lockpicking' }],
+      talents: [
+        {
+          id: 1,
+          code: 'power-attack',
+          name: 'Power Attack',
+          path: { id: 1, code: 'warrior', name: 'Warrior' },
+          specialties: [],
+          radiantOrder: null,
+          surge: null,
+          ancestry: null,
+          isKey: false,
+          special: [],
+        },
+      ],
+      equipment: [
+        {
+          id: 1,
+          code: 'sword',
+          name: 'Sword',
+          equipType: { id: 1, code: 'weapons', name: 'Weapons' },
+        },
+        { id: 2, code: 'rope', name: 'Rope', equipType: { id: 2, code: 'gear', name: 'Gear' } },
+      ],
+      paths: [{ id: 1, code: 'warrior', name: 'Warrior' }],
+      equipmentTypes: [
+        { id: 1, code: 'weapons', name: 'Weapons' },
+        { id: 2, code: 'gear', name: 'Gear' },
+      ],
+    }),
 }));
 
 vi.mock('src/stores/wizard', () => ({
   useWizardStore: () => ({
+    ...wizardStore(),
     get mode() {
       return mockWizardMode.value;
     },
