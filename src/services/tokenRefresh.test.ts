@@ -121,18 +121,22 @@ describe('tokenRefresh', () => {
   // scheduleProactiveRefresh
   // ========================================
   describe('scheduleProactiveRefresh', () => {
-    it('schedules refresh before token expiry', () => {
+    it('schedules refresh before token expiry with deterministic jitter', () => {
       mockAuthApiPost.mockResolvedValue({ data: { expires_in: 3600 } });
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
 
       scheduleProactiveRefresh(3600);
 
-      // Should not have called yet
+      // delay = max(3600 - 60 + floor(0.5 * 15), 10) = 3547 seconds
+      const expectedDelayMs = 3547 * 1000;
+
       expect(mockAuthApiPost).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(expectedDelayMs - 1);
+      expect(mockAuthApiPost).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(1);
+      expect(mockAuthApiPost).toHaveBeenCalledTimes(1);
 
-      // Advance past the scheduled time (3600 - 60 buffer + jitter, min 10s)
-      vi.advanceTimersByTime(3600 * 1000);
-
-      expect(mockAuthApiPost).toHaveBeenCalled();
+      vi.mocked(Math.random).mockRestore();
     });
 
     it('enforces minimum delay of 10 seconds', () => {
@@ -209,6 +213,78 @@ describe('tokenRefresh', () => {
       add401Interceptor(instance);
 
       expect(mockUse).toHaveBeenCalledTimes(1);
+    });
+
+    function setupInterceptor() {
+      let errorHandler: (error: unknown) => Promise<unknown>;
+      const mockRetry = vi.fn().mockResolvedValue({ data: 'retried' });
+      const instance = {
+        interceptors: {
+          response: {
+            use: (_onSuccess: unknown, onError: (error: unknown) => Promise<unknown>) => {
+              errorHandler = onError;
+            },
+          },
+        },
+      } as unknown as AxiosInstance;
+
+      // Wrap instance as callable for retry
+      const callableInstance = Object.assign(mockRetry, instance);
+      add401Interceptor(callableInstance);
+
+      return { errorHandler: errorHandler!, mockRetry };
+    }
+
+    it('retries original request after successful refresh', async () => {
+      mockAuthApiPost.mockResolvedValue({ data: { expires_in: 3600 } });
+      const { errorHandler, mockRetry } = setupInterceptor();
+
+      const error = {
+        response: { status: 401 },
+        config: { headers: {} },
+      };
+
+      const result = await errorHandler(error);
+
+      expect(mockAuthApiPost).toHaveBeenCalledWith('/refresh');
+      expect(mockRetry).toHaveBeenCalledWith(expect.objectContaining({ _retry: true }));
+      expect(result).toEqual({ data: 'retried' });
+    });
+
+    it('rejects when refresh fails', async () => {
+      mockAuthApiPost.mockRejectedValue(new Error('refresh failed'));
+      const { errorHandler } = setupInterceptor();
+
+      const error = {
+        response: { status: 401 },
+        config: { headers: {} },
+      };
+
+      await expect(errorHandler(error)).rejects.toBe(error);
+    });
+
+    it('does not retry when _retry flag is already set', async () => {
+      const { errorHandler } = setupInterceptor();
+
+      const error = {
+        response: { status: 401 },
+        config: { headers: {}, _retry: true },
+      };
+
+      await expect(errorHandler(error)).rejects.toBe(error);
+      expect(mockAuthApiPost).not.toHaveBeenCalled();
+    });
+
+    it('passes through non-401 errors', async () => {
+      const { errorHandler } = setupInterceptor();
+
+      const error = {
+        response: { status: 500 },
+        config: { headers: {} },
+      };
+
+      await expect(errorHandler(error)).rejects.toBe(error);
+      expect(mockAuthApiPost).not.toHaveBeenCalled();
     });
   });
 });

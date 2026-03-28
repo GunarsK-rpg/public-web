@@ -11,9 +11,9 @@ const mockAttrType = { id: 20, code: 'physical', name: 'Physical' };
 
 vi.mock('src/stores/classifiers', () => ({
   useClassifierStore: () => ({
-    tiers: [mockTier, mockTier2],
-    attributes: [mockAttr],
-    attributeTypes: [mockAttrType],
+    tiers: [{ ...mockTier }, { ...mockTier2 }],
+    attributes: [{ ...mockAttr }],
+    attributeTypes: [{ ...mockAttrType }],
   }),
 }));
 
@@ -270,8 +270,8 @@ describe('useNpcEditState', () => {
 
     it('does nothing when editableNpc is null', () => {
       const state = setup();
-      state.onFieldUpdate('name', 'Test');
-      // No error thrown
+      expect(() => state.onFieldUpdate('name', 'Test')).not.toThrow();
+      expect(state.editableNpc.value).toBeNull();
     });
   });
 
@@ -292,15 +292,16 @@ describe('useNpcEditState', () => {
       const state = setup();
       state.npc.value = makeMockNpc();
       state.startEdit();
+      const before = state.editableNpc.value!.attributes[0]!.value;
 
-      state.onStatUpdate('features', 'str', 5);
-      // No error, features are not stat sections
+      expect(() => state.onStatUpdate('features', 'str', 5)).not.toThrow();
+      expect(state.editableNpc.value!.attributes[0]!.value).toBe(before);
     });
 
     it('does nothing when editableNpc is null', () => {
       const state = setup();
-      state.onStatUpdate('attributes', 'str', 5);
-      // No error thrown
+      expect(() => state.onStatUpdate('attributes', 'str', 5)).not.toThrow();
+      expect(state.editableNpc.value).toBeNull();
     });
   });
 

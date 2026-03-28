@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   extractQueryParam,
   removeQueryParam,
@@ -60,6 +60,10 @@ describe('heroTabKey', () => {
 describe('clearHeroTab', () => {
   beforeEach(() => {
     vi.stubGlobal('sessionStorage', { removeItem: vi.fn() });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('removes the hero tab key from sessionStorage', () => {

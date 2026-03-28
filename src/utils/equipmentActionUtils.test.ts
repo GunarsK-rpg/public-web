@@ -193,6 +193,10 @@ describe('getModRollModifiers', () => {
 
     const result = getModRollModifiers(instance);
     expect(result).toHaveLength(2);
+    expect(result[0]!.type).toBe('roll_modifier');
+    expect(result[0]!.display_value).toBe('Advantage');
+    expect(result[1]!.type).toBe('roll_modifier');
+    expect(result[1]!.display_value).toBe('Disadvantage');
   });
 });
 
@@ -233,15 +237,25 @@ describe('createCustomEquipmentAction', () => {
     expect(result.code).toBe('custom-42');
     expect(result.name).toBe('Mystic Blade');
     expect(result.description).toBe('Glows blue');
+    expect(result.actionType).toEqual(ref('attack'));
+    expect(result.activationType).toEqual(ref('fast'));
     expect(result.special).toEqual([]);
     expect(result.dice).toBeNull();
+    expect(result.focusCost).toBe(0);
+    expect(result.investitureCost).toBe(0);
   });
 
   it('defaults name to Attack when no customName', () => {
     const equip = makeHeroEquipment({ customName: null, notes: null });
-    const result = createCustomEquipmentAction(equip, ref('attack'), ref('fast'));
+    const actionRef = ref('attack');
+    const activationRef = ref('fast');
+    const result = createCustomEquipmentAction(equip, actionRef, activationRef);
 
     expect(result.name).toBe('Attack');
     expect(result.description).toBe('');
+    expect(result.actionType).toEqual(actionRef);
+    expect(result.activationType).toEqual(activationRef);
+    expect(result.focusCost).toBe(0);
+    expect(result.investitureCost).toBe(0);
   });
 });
