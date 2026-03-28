@@ -9,7 +9,7 @@
     <q-card class="crop-card">
       <q-card-section class="text-h6">Crop Avatar</q-card-section>
 
-      <div class="crop-container">
+      <div ref="containerEl" class="crop-container">
         <img ref="imageEl" :src="imageSrc" alt="Crop preview" />
       </div>
 
@@ -25,7 +25,7 @@
 import { ref, onBeforeUnmount } from 'vue';
 import { useQuasar } from 'quasar';
 import Cropper from 'cropperjs';
-import 'cropperjs/dist/cropper.css';
+import { logger } from 'src/utils/logger';
 
 const $q = useQuasar();
 
@@ -47,33 +47,60 @@ let cropper: Cropper | null = null;
 
 onBeforeUnmount(() => destroyCropper());
 
+function onKeyDown(event: KeyboardEvent): void {
+  if (!cropper) return;
+  if (event.key === 'Delete' || (event.key === 'Backspace' && event.metaKey)) {
+    event.preventDefault();
+    return;
+  }
+  if (event.key === '+' || event.key === '=') {
+    event.preventDefault();
+    cropper.getCropperImage()?.$zoom(0.1);
+  } else if (event.key === '-') {
+    event.preventDefault();
+    cropper.getCropperImage()?.$zoom(-0.1);
+  }
+}
+
 function initCropper(): void {
   if (!imageEl.value) return;
   destroyCropper();
+  document.addEventListener('keydown', onKeyDown, true);
   cropper = new Cropper(imageEl.value, {
-    aspectRatio: 1,
-    viewMode: 3,
-    dragMode: 'move',
-    autoCropArea: 0.8,
-    cropBoxResizable: true,
-    cropBoxMovable: true,
-    guides: false,
-    center: false,
-    highlight: false,
-    background: false,
-    responsive: true,
-    ready() {
-      // Apply circular mask via CSS — use cropper's wrapper element (cropper.cropper)
-      const wrapper = (cropper as Cropper & { cropper?: HTMLElement }).cropper;
-      const cropBox = wrapper?.querySelector('.cropper-crop-box');
-      if (cropBox) {
-        cropBox.classList.add('cropper-circle');
-      }
-    },
+    template: `
+      <cropper-canvas background>
+        <cropper-image
+          translatable
+          scalable
+          initial-center-size="contain"
+        ></cropper-image>
+        <cropper-shade hidden></cropper-shade>
+        <cropper-handle action="move" plain></cropper-handle>
+        <cropper-selection
+          initial-coverage="0.8"
+          aspect-ratio="1"
+          movable
+          resizable
+          outlined
+          keyboard
+        >
+          <cropper-handle action="move" plain></cropper-handle>
+          <cropper-handle action="n-resize"></cropper-handle>
+          <cropper-handle action="e-resize"></cropper-handle>
+          <cropper-handle action="s-resize"></cropper-handle>
+          <cropper-handle action="w-resize"></cropper-handle>
+          <cropper-handle action="ne-resize"></cropper-handle>
+          <cropper-handle action="nw-resize"></cropper-handle>
+          <cropper-handle action="se-resize"></cropper-handle>
+          <cropper-handle action="sw-resize"></cropper-handle>
+        </cropper-selection>
+      </cropper-canvas>
+    `,
   });
 }
 
 function destroyCropper(): void {
+  document.removeEventListener('keydown', onKeyDown, true);
   if (cropper) {
     cropper.destroy();
     cropper = null;
@@ -85,17 +112,21 @@ function onCancel(): void {
 }
 
 async function onConfirm(): Promise<void> {
-  if (!cropper) return;
+  if (!cropper || saving.value) return;
+  const active = cropper;
   saving.value = true;
   try {
-    const canvas = cropper.getCroppedCanvas({
+    const selection = active.getCropperSelection();
+    if (!selection) return;
+    const canvas = await selection.$toCanvas({
       width: CROP_SIZE,
       height: CROP_SIZE,
-      imageSmoothingQuality: 'high',
     });
+    if (cropper !== active) return;
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, 'image/webp', 0.85)
     );
+    if (cropper !== active) return;
     if (!blob) {
       $q.notify({ message: 'Failed to create avatar image', type: 'negative', timeout: 2000 });
       return;
@@ -103,6 +134,9 @@ async function onConfirm(): Promise<void> {
     const file = new File([blob], 'avatar.webp', { type: 'image/webp' });
     emit('confirm', file);
     emit('update:modelValue', false);
+  } catch (err) {
+    logger.error('Avatar crop failed', err instanceof Error ? err : undefined);
+    $q.notify({ message: 'Failed to create avatar image', type: 'negative', timeout: 2000 });
   } finally {
     saving.value = false;
   }
@@ -126,12 +160,16 @@ async function onConfirm(): Promise<void> {
   display: block;
   max-width: 100%;
 }
-</style>
 
-<style>
-/* Circular crop mask - unscoped to target cropperjs elements */
-.cropper-circle .cropper-view-box,
-.cropper-circle .cropper-face {
+/* Force cropper canvas to fill the container */
+.crop-container :deep(cropper-canvas) {
+  width: 100%;
+  height: 300px;
+}
+
+/* Circular crop mask on the selection */
+.crop-container :deep(cropper-selection[outlined]) {
   border-radius: 50%;
+  overflow: hidden;
 }
 </style>

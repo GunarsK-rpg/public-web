@@ -20,7 +20,7 @@
     "@quasar/extras": "^1.17.0",
     "@sentry/vue": "^10.46.0",
     "axios": "^1.14.0",
-    "cropperjs": "^1.6.2",
+    "cropperjs": "^2.1.0",
     "lucide-vue-next": "^1.0.0",
     "pinia": "^3.0.4",
     "pino": "^10.3.1",
