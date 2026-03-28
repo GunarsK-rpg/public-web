@@ -25,7 +25,7 @@ ARG VITE_SENTRY_DSN
 RUN npm run build
 
 # Production stage
-FROM nginx:1.29.6-alpine
+FROM nginx:1.29.7-alpine
 
 # Security update - CACHE_BUST is set by CI to force fresh apk upgrade
 ARG CACHE_BUST
