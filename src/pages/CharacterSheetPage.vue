@@ -1,22 +1,15 @@
 <template>
   <q-page>
-    <q-spinner-dots
-      v-if="loading || classifierLoading"
-      size="50px"
-      color="primary"
-      class="absolute-center"
-    />
-
-    <q-banner v-else-if="error || classifierError" class="bg-negative text-white">
+    <q-banner v-if="error || classifierError" class="bg-negative text-white">
       {{ error || classifierError }}
       <template v-slot:action>
         <q-btn flat label="Go Back" :to="backRoute" />
       </template>
     </q-banner>
 
-    <template v-else-if="isLoaded">
+    <template v-else>
       <!-- Character Header -->
-      <CharacterHeader :character-id="characterId" :readonly="isReadonly" />
+      <CharacterHeader :character-id="characterId" :readonly="isReadonly" :loading="isLoading" />
 
       <!-- Tab Navigation -->
       <q-tabs
@@ -40,7 +33,11 @@
       <!-- Tab Panels -->
       <q-tab-panels v-model="activeTab" animated>
         <q-tab-panel v-for="tab in tabs" :key="tab.id" :name="tab.id">
-          <component :is="tabComponents[tab.id]" :readonly="isReadonly" />
+          <component
+            :is="tabComponents[tab.id]"
+            :readonly="isReadonly"
+            v-bind="tab.id === 'stats' ? { loading: isLoading } : {}"
+          />
         </q-tab-panel>
       </q-tab-panels>
     </template>
@@ -133,11 +130,11 @@ watch(activeTab, (tab) => {
 });
 
 const initializing = ref(true);
-const isLoaded = computed(() => heroStore.isLoaded);
 const isReadonly = computed(() => !heroStore.isOwner);
-const loading = computed(() => initializing.value || heroStore.loading);
+const isLoading = computed(
+  () => initializing.value || heroStore.loading || classifierStore.loading
+);
 const error = computed(() => heroStore.error);
-const classifierLoading = computed(() => classifierStore.loading);
 const classifierError = computed(() => classifierStore.error);
 
 onMounted(async () => {

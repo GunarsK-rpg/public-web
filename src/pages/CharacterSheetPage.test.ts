@@ -103,8 +103,9 @@ describe('CharacterSheetPage', () => {
             emits: ['click'],
           },
           CharacterHeader: {
-            template: '<div class="character-header" :data-readonly="readonly" />',
-            props: ['characterId', 'readonly'],
+            template:
+              '<div class="character-header" :data-readonly="readonly" :data-loading="loading" />',
+            props: ['characterId', 'readonly', 'loading'],
           },
           QTabs: {
             name: 'QTabs',
@@ -222,22 +223,24 @@ describe('CharacterSheetPage', () => {
   // Loading State
   // ========================================
   describe('loading state', () => {
-    it('shows spinner when loading', () => {
+    it('renders page structure instead of spinner when hero loading', () => {
       mockLoading.value = true;
       mockIsLoaded.value = false;
 
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.q-spinner-dots').exists()).toBe(true);
+      expect(wrapper.find('.q-spinner-dots').exists()).toBe(false);
+      expect(wrapper.find('.character-header').exists()).toBe(true);
     });
 
-    it('shows spinner when classifiers loading', () => {
+    it('renders page structure instead of spinner when classifiers loading', () => {
       mockClassifierLoading.value = true;
       mockIsLoaded.value = false;
 
       const wrapper = createWrapper();
 
-      expect(wrapper.find('.q-spinner-dots').exists()).toBe(true);
+      expect(wrapper.find('.q-spinner-dots').exists()).toBe(false);
+      expect(wrapper.find('.character-header').exists()).toBe(true);
     });
   });
 

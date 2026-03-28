@@ -46,6 +46,18 @@
         @click="$emit('add')"
       />
     </template>
+    <template v-else-if="loading">
+      <div class="row q-col-gutter-sm q-mb-md">
+        <div v-for="n in 8" :key="n" class="col-6 col-sm-3">
+          <q-card flat bordered>
+            <q-card-section class="q-pa-sm">
+              <q-skeleton type="text" width="70px" height="12px" />
+              <q-skeleton type="text" width="40px" height="18px" class="q-mt-xs" />
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
+    </template>
     <template v-else>
       <div class="row q-col-gutter-sm q-mb-md">
         <div v-for="stat in stats" :key="stat.type.code" class="col-6 col-sm-3">
@@ -73,8 +85,9 @@ withDefaults(
     title?: string;
     stats: StatValue[];
     editable?: boolean;
+    loading?: boolean;
   }>(),
-  { title: 'Other Stats', editable: false }
+  { title: 'Other Stats', editable: false, loading: false }
 );
 
 defineEmits<{

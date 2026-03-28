@@ -1,21 +1,28 @@
 <template>
   <div class="row q-col-gutter-sm">
-    <div v-for="res in visibleResources" :key="res.code" :class="colClass">
-      <ResourceBox
-        :label="res.label"
-        :current="res.current"
-        :color="res.color"
-        v-bind="{
-          ...(res.max ? { max: res.max } : {}),
-          ...(res.suffix ? { suffix: res.suffix } : {}),
-        }"
-        :saving="saving"
-        :readonly="readonly"
-        :use-dialog="!readonly && res.code === 'max_health'"
-        @update="$emit('update', res.code, $event)"
-        @open-dialog="showHpDialog = true"
-      />
-    </div>
+    <template v-if="loading">
+      <div v-for="n in 3" :key="n" class="col-4">
+        <q-skeleton height="52px" />
+      </div>
+    </template>
+    <template v-else>
+      <div v-for="res in visibleResources" :key="res.code" :class="colClass">
+        <ResourceBox
+          :label="res.label"
+          :current="res.current"
+          :color="res.color"
+          v-bind="{
+            ...(res.max ? { max: res.max } : {}),
+            ...(res.suffix ? { suffix: res.suffix } : {}),
+          }"
+          :saving="saving"
+          :readonly="readonly"
+          :use-dialog="!readonly && res.code === 'max_health'"
+          @update="$emit('update', res.code, $event)"
+          @open-dialog="showHpDialog = true"
+        />
+      </div>
+    </template>
   </div>
 
   <HpManagementDialog
@@ -41,8 +48,9 @@ const props = withDefaults(
     current?: ResourceValues | null | undefined;
     saving?: boolean;
     readonly?: boolean;
+    loading?: boolean;
   }>(),
-  { saving: false, readonly: false }
+  { saving: false, readonly: false, loading: false }
 );
 
 defineEmits<{

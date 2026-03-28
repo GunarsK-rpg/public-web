@@ -3,54 +3,63 @@
     <div class="q-pa-md row items-center q-col-gutter-md">
       <!-- Avatar + Name -->
       <div class="col-12 col-sm-6 row items-start no-wrap q-gutter-x-sm">
-        <AvatarDisplay :avatar-key="hero?.avatarKey" size="48px" alt="Hero avatar" expandable />
-        <div>
-          <div class="row items-center no-wrap">
-            <div class="text-h5 text-heading">{{ hero?.name }}</div>
-            <q-btn
-              v-if="!readonly"
-              flat
-              dense
-              round
-              size="sm"
-              class="q-ml-sm"
-              aria-label="Edit character"
-              :to="{ name: 'character-edit', params: { characterId } }"
-              ><Pencil :size="20"
-            /></q-btn>
+        <template v-if="loading">
+          <q-skeleton type="QAvatar" size="48px" />
+          <div class="col">
+            <q-skeleton type="text" width="180px" height="28px" />
+            <q-skeleton type="text" width="260px" height="18px" class="q-mt-xs" />
           </div>
-          <div class="text-subtitle1 text-muted">
-            Level {{ hero?.level }}
-            {{ ancestryName }}
-            <span v-if="cultureName"> · {{ cultureName }}</span>
-            <span v-if="orderName"> · {{ orderName }} ({{ hero?.radiantIdeal ?? 0 }})</span>
-            <span v-if="campaignName"> · {{ campaignName }}</span>
-          </div>
-          <div v-if="activeSingerFormName" :class="`text-caption text-${RPG_COLORS.singerForm}`">
-            {{ activeSingerFormName }}
-          </div>
-          <!-- Death Indicator -->
-          <div v-if="isDead" class="q-mt-xs" role="status">
-            <q-badge color="negative" class="text-bold">DEAD</q-badge>
-          </div>
-          <!-- Active Condition Badges -->
-          <div
-            v-if="activeConditionBadges.length"
-            class="row items-center q-gutter-xs q-mt-xs"
-            style="flex-wrap: wrap"
-          >
-            <q-badge
-              v-for="badge in activeConditionBadges"
-              :key="badge.id"
-              :color="badge.positive ? 'positive' : 'warning'"
-              outline
-              class="cursor-pointer"
+        </template>
+        <template v-else>
+          <AvatarDisplay :avatar-key="hero?.avatarKey" size="48px" alt="Hero avatar" expandable />
+          <div>
+            <div class="row items-center no-wrap">
+              <div class="text-h5 text-heading">{{ hero?.name }}</div>
+              <q-btn
+                v-if="!readonly"
+                flat
+                dense
+                round
+                size="sm"
+                class="q-ml-sm"
+                aria-label="Edit character"
+                :to="{ name: 'character-edit', params: { characterId } }"
+                ><Pencil :size="20"
+              /></q-btn>
+            </div>
+            <div class="text-subtitle1 text-muted">
+              Level {{ hero?.level }}
+              {{ ancestryName }}
+              <span v-if="cultureName"> · {{ cultureName }}</span>
+              <span v-if="orderName"> · {{ orderName }} ({{ hero?.radiantIdeal ?? 0 }})</span>
+              <span v-if="campaignName"> · {{ campaignName }}</span>
+            </div>
+            <div v-if="activeSingerFormName" :class="`text-caption text-${RPG_COLORS.singerForm}`">
+              {{ activeSingerFormName }}
+            </div>
+            <!-- Death Indicator -->
+            <div v-if="isDead" class="q-mt-xs" role="status">
+              <q-badge color="negative" class="text-bold">DEAD</q-badge>
+            </div>
+            <!-- Active Condition Badges -->
+            <div
+              v-if="activeConditionBadges.length"
+              class="row items-center q-gutter-xs q-mt-xs"
+              style="flex-wrap: wrap"
             >
-              {{ badge.label }}
-              <InfoPopup>{{ badge.description }}</InfoPopup>
-            </q-badge>
+              <q-badge
+                v-for="badge in activeConditionBadges"
+                :key="badge.id"
+                :color="badge.positive ? 'positive' : 'warning'"
+                outline
+                class="cursor-pointer"
+              >
+                {{ badge.label }}
+                <InfoPopup>{{ badge.description }}</InfoPopup>
+              </q-badge>
+            </div>
           </div>
-        </div>
+        </template>
       </div>
 
       <!-- Resources -->
@@ -60,6 +69,7 @@
           :current="resourceCurrent"
           :saving="saving"
           :readonly="readonly"
+          :loading="loading"
           @update="onResourceUpdate"
         />
       </div>
@@ -81,10 +91,14 @@ import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import AvatarDisplay from 'src/components/shared/AvatarDisplay.vue';
 import type { TypedValue, ResourceValues } from 'src/types/shared';
 
-defineProps<{
-  characterId: string;
-  readonly?: boolean;
-}>();
+withDefaults(
+  defineProps<{
+    characterId: string;
+    readonly?: boolean;
+    loading?: boolean;
+  }>(),
+  { readonly: false, loading: false }
+);
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
