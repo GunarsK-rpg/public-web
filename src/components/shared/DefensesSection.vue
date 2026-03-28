@@ -2,7 +2,13 @@
   <div>
     <div class="section-title section-title--lg">Defenses</div>
     <div class="row q-col-gutter-sm q-mb-md">
-      <template v-if="loading">
+      <div
+        v-if="loading"
+        aria-busy="true"
+        role="status"
+        class="row q-col-gutter-sm"
+        style="width: 100%"
+      >
         <div v-for="n in 4" :key="n" class="col-3">
           <q-card class="defense-card">
             <q-card-section class="text-center q-pa-sm">
@@ -11,7 +17,7 @@
             </q-card-section>
           </q-card>
         </div>
-      </template>
+      </div>
       <template v-else>
         <div v-for="def in defenses" :key="def.type.code" class="col-3">
           <q-card class="defense-card">

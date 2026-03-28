@@ -33,7 +33,11 @@
       <!-- Tab Panels -->
       <q-tab-panels v-model="activeTab" animated>
         <q-tab-panel v-for="tab in tabs" :key="tab.id" :name="tab.id">
-          <component :is="tabComponents[tab.id]" :readonly="isReadonly" :loading="isLoading" />
+          <component
+            :is="tabComponents[tab.id]"
+            :readonly="isReadonly"
+            v-bind="tab.id === 'stats' ? { loading: isLoading } : {}"
+          />
         </q-tab-panel>
       </q-tab-panels>
     </template>

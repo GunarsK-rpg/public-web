@@ -21,9 +21,8 @@ import type { StatValue } from 'src/types/shared';
 withDefaults(
   defineProps<{
     loading?: boolean;
-    readonly?: boolean;
   }>(),
-  { loading: false, readonly: false }
+  { loading: false }
 );
 
 const heroStore = useHeroStore();

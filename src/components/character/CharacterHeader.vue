@@ -91,11 +91,14 @@ import InfoPopup from 'src/components/shared/InfoPopup.vue';
 import AvatarDisplay from 'src/components/shared/AvatarDisplay.vue';
 import type { TypedValue, ResourceValues } from 'src/types/shared';
 
-defineProps<{
-  characterId: string;
-  readonly?: boolean;
-  loading?: boolean;
-}>();
+withDefaults(
+  defineProps<{
+    characterId: string;
+    readonly?: boolean;
+    loading?: boolean;
+  }>(),
+  { readonly: false, loading: false }
+);
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
