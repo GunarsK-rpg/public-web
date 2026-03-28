@@ -202,15 +202,18 @@ const notesEditing = ref(false);
 const showAddNpc = ref(false);
 const addNpcSide = ref<'ally' | 'enemy'>('enemy');
 
-// Sync inputs once when combat first loads
+// Sync inputs when combat loads or updates
 const initialized = ref(false);
 
 watch(combat, (c) => {
-  if (c && !initialized.value) {
+  if (!c) return;
+  if (!initialized.value) {
     nameInput.value = c.name;
     descriptionInput.value = c.description ?? '';
     notesInput.value = c.notes ?? '';
     initialized.value = true;
+  } else if (!notesEditing.value) {
+    notesInput.value = c.notes ?? '';
   }
 });
 

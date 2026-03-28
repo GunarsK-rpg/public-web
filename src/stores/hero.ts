@@ -676,6 +676,7 @@ export const useHeroStore = defineStore('hero', () => {
     if (!hero.value) return false;
     const currentHeroId = hero.value.id;
     companionNpcOptions.value = [];
+    loading.value = true;
     try {
       const response = await heroService.getCompanionNpcOptions(currentHeroId);
       if (hero.value?.id !== currentHeroId) return false;
@@ -685,6 +686,8 @@ export const useHeroStore = defineStore('hero', () => {
       handleError(err as Error, { retryKey: 'hero-companion-options' });
       error.value = 'Failed to load companion options';
       return false;
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -819,6 +822,7 @@ export const useHeroStore = defineStore('hero', () => {
       return true;
     } catch (err) {
       handleError(err as Error, { retryKey: 'hero-delete' });
+      error.value = 'Failed to delete hero';
       return false;
     } finally {
       stopSaving();

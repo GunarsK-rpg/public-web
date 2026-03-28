@@ -170,12 +170,15 @@ export const useCombatStore = defineStore('combat', () => {
   // ===================
 
   async function fetchNpcOptions(campaignId: number): Promise<void> {
+    loading.value = true;
     try {
       const response = await combatService.getNpcOptions(campaignId);
       npcOptions.value = response.data;
     } catch (err: unknown) {
       handleError(err as Error, { retryKey: 'combat-npc-options' });
       error.value = 'Failed to load NPC options';
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -338,7 +341,7 @@ export const useCombatStore = defineStore('combat', () => {
       }
       return response.data;
     } catch (err: unknown) {
-      handleError(err as Error, { retryKey: 'combat-npc-update' });
+      handleError(err as Error, { retryKey: 'combat-npc-instance-update' });
       error.value = 'Failed to update NPC';
       return null;
     } finally {
