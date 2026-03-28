@@ -48,9 +48,21 @@ let cropper: Cropper | null = null;
 
 onBeforeUnmount(() => destroyCropper());
 
+function onKeyDown(event: KeyboardEvent): void {
+  if (!cropper) return;
+  if (event.key === '+' || event.key === '=') {
+    event.preventDefault();
+    cropper.getCropperImage()?.$zoom(0.1);
+  } else if (event.key === '-') {
+    event.preventDefault();
+    cropper.getCropperImage()?.$zoom(-0.1);
+  }
+}
+
 function initCropper(): void {
   if (!imageEl.value) return;
   destroyCropper();
+  document.addEventListener('keydown', onKeyDown);
   cropper = new Cropper(imageEl.value, {
     template: `
       <cropper-canvas background>
@@ -85,6 +97,7 @@ function initCropper(): void {
 }
 
 function destroyCropper(): void {
+  document.removeEventListener('keydown', onKeyDown);
   if (cropper) {
     cropper.destroy();
     cropper = null;
