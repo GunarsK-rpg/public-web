@@ -59,6 +59,6 @@
   "overrides": {
     "lodash": "4.17.23",
     "serialize-javascript": "^7.0.4",
-    "smol-toml": ">=1.6.1"
+    "smol-toml": "^1.6.1"
   }
 }
