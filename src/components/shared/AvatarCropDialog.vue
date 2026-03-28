@@ -25,10 +25,9 @@
 import { ref, onBeforeUnmount } from 'vue';
 import { useQuasar } from 'quasar';
 import Cropper from 'cropperjs';
-import { useErrorHandler } from 'src/composables/useErrorHandler';
+import { logger } from 'src/utils/logger';
 
 const $q = useQuasar();
-const { handleError } = useErrorHandler();
 
 const CROP_SIZE = 256;
 
@@ -50,6 +49,10 @@ onBeforeUnmount(() => destroyCropper());
 
 function onKeyDown(event: KeyboardEvent): void {
   if (!cropper) return;
+  if (event.key === 'Delete' || (event.key === 'Backspace' && event.metaKey)) {
+    event.preventDefault();
+    return;
+  }
   if (event.key === '+' || event.key === '=') {
     event.preventDefault();
     cropper.getCropperImage()?.$zoom(0.1);
@@ -62,7 +65,7 @@ function onKeyDown(event: KeyboardEvent): void {
 function initCropper(): void {
   if (!imageEl.value) return;
   destroyCropper();
-  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('keydown', onKeyDown, true);
   cropper = new Cropper(imageEl.value, {
     template: `
       <cropper-canvas background>
@@ -97,7 +100,7 @@ function initCropper(): void {
 }
 
 function destroyCropper(): void {
-  document.removeEventListener('keydown', onKeyDown);
+  document.removeEventListener('keydown', onKeyDown, true);
   if (cropper) {
     cropper.destroy();
     cropper = null;
@@ -119,11 +122,11 @@ async function onConfirm(): Promise<void> {
       width: CROP_SIZE,
       height: CROP_SIZE,
     });
-    if (!cropper) return;
+    if (cropper !== active) return;
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, 'image/webp', 0.85)
     );
-    if (!cropper) return;
+    if (cropper !== active) return;
     if (!blob) {
       $q.notify({ message: 'Failed to create avatar image', type: 'negative', timeout: 2000 });
       return;
@@ -132,7 +135,8 @@ async function onConfirm(): Promise<void> {
     emit('confirm', file);
     emit('update:modelValue', false);
   } catch (err) {
-    handleError(err as Error, { message: 'Failed to create avatar image' });
+    logger.error('Avatar crop failed', err instanceof Error ? err : undefined);
+    $q.notify({ message: 'Failed to create avatar image', type: 'negative', timeout: 2000 });
   } finally {
     saving.value = false;
   }
