@@ -25,8 +25,10 @@
 import { ref, onBeforeUnmount } from 'vue';
 import { useQuasar } from 'quasar';
 import Cropper from 'cropperjs';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 
 const $q = useQuasar();
+const { handleError } = useErrorHandler();
 
 const CROP_SIZE = 256;
 
@@ -65,6 +67,7 @@ function initCropper(): void {
           movable
           resizable
           outlined
+          keyboard
         >
           <cropper-handle action="move" plain></cropper-handle>
           <cropper-handle action="n-resize"></cropper-handle>
@@ -93,18 +96,21 @@ function onCancel(): void {
 }
 
 async function onConfirm(): Promise<void> {
-  if (!cropper) return;
+  if (!cropper || saving.value) return;
+  const active = cropper;
   saving.value = true;
   try {
-    const selection = cropper.getCropperSelection();
+    const selection = active.getCropperSelection();
     if (!selection) return;
     const canvas = await selection.$toCanvas({
       width: CROP_SIZE,
       height: CROP_SIZE,
     });
+    if (!cropper) return;
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, 'image/webp', 0.85)
     );
+    if (!cropper) return;
     if (!blob) {
       $q.notify({ message: 'Failed to create avatar image', type: 'negative', timeout: 2000 });
       return;
@@ -112,6 +118,8 @@ async function onConfirm(): Promise<void> {
     const file = new File([blob], 'avatar.webp', { type: 'image/webp' });
     emit('confirm', file);
     emit('update:modelValue', false);
+  } catch (err) {
+    handleError(err as Error, { message: 'Failed to create avatar image' });
   } finally {
     saving.value = false;
   }
@@ -135,17 +143,15 @@ async function onConfirm(): Promise<void> {
   display: block;
   max-width: 100%;
 }
-</style>
 
-<style>
 /* Force cropper canvas to fill the container */
-.crop-container cropper-canvas {
+.crop-container :deep(cropper-canvas) {
   width: 100%;
   height: 300px;
 }
 
 /* Circular crop mask on the selection */
-cropper-selection[outlined] {
+.crop-container :deep(cropper-selection[outlined]) {
   border-radius: 50%;
   overflow: hidden;
 }
