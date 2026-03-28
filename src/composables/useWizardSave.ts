@@ -198,8 +198,8 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
   async function saveHeroCore(hero: HeroSheet): Promise<void> {
     const isCreate = hero.id === 0;
 
-    // During creation, set current resources to their calculated max values
-    if (wizardStore.mode === 'create' && hero.id > 0) {
+    // During creation (after first persist), set current resources to calculated max
+    if (wizardStore.mode === 'create' && !isCreate) {
       hero.currentHealth = heroAttributesStore.getDerivedStatTotal('max_health');
       hero.currentFocus = heroAttributesStore.getDerivedStatTotal('max_focus');
       hero.currentInvestiture = heroAttributesStore.getDerivedStatTotal('max_investiture');
@@ -211,8 +211,13 @@ export function useWizardSave(deletionTracker: DeletionTracker) {
       : await heroService.update(hero.id, payload);
     heroStore.updateFromResponse(response.data);
 
-    // After first create, update URL so browser refresh resumes via edit route
+    // After first create, set resources to max and update URL
     if (isCreate && heroStore.hero && heroStore.hero.id > 0) {
+      heroStore.hero.currentHealth = heroAttributesStore.getDerivedStatTotal('max_health');
+      heroStore.hero.currentFocus = heroAttributesStore.getDerivedStatTotal('max_focus');
+      heroStore.hero.currentInvestiture =
+        heroAttributesStore.getDerivedStatTotal('max_investiture');
+
       const heroId = heroStore.hero.id;
       void router.replace({
         name: 'character-edit',

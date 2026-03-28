@@ -5,10 +5,11 @@ import type { Campaign, CampaignBase, CampaignWithHeroes, Hero } from 'src/types
 import { logger } from 'src/utils/logger';
 import campaignService from 'src/services/campaignService';
 import heroService from 'src/services/heroService';
-import { handleError } from 'src/utils/errorHandling';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 import { useAuthStore } from './auth';
 
 export const useCampaignStore = defineStore('campaigns', () => {
+  const { handleError } = useErrorHandler();
   const campaigns = ref<Campaign[]>([]);
   const currentCampaign = ref<CampaignWithHeroes | null>(null);
   const loading = ref(false);
@@ -48,7 +49,8 @@ export const useCampaignStore = defineStore('campaigns', () => {
       logger.info('Campaigns loaded', { count: response.data.length });
     } catch (err: unknown) {
       if (requestId === fetchRequestId) {
-        handleError(err, { errorRef: error, message: 'Failed to load campaigns' });
+        handleError(err as Error, { retryKey: 'campaigns-load' });
+        error.value = 'Failed to load campaigns';
       }
     } finally {
       if (requestId === fetchRequestId) {
@@ -88,15 +90,12 @@ export const useCampaignStore = defineStore('campaigns', () => {
       logger.info('Campaign selected', { id, name: campaignResponse.data.name });
     } catch (err: unknown) {
       if (requestId === selectRequestId) {
-        handleError(err, {
-          errorRef: error,
-          message: 'Failed to load campaign',
-          notFoundMessage: 'Campaign not found',
-          context: { id },
-          onNotFound: () => {
-            currentCampaign.value = null;
-          },
-        });
+        handleError(err as Error, { retryKey: 'campaign-select', entityName: 'Campaign' });
+        const is404 = (err as { response?: { status?: number } }).response?.status === 404;
+        error.value = is404 ? 'Campaign not found' : 'Failed to load campaign';
+        if (is404) {
+          currentCampaign.value = null;
+        }
       }
     } finally {
       if (requestId === selectRequestId) {
@@ -115,7 +114,8 @@ export const useCampaignStore = defineStore('campaigns', () => {
       logger.info('Campaign created', { id: response.data.id, name: response.data.name });
       return response.data;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to create campaign' });
+      handleError(err as Error, { retryKey: 'campaign-create' });
+      error.value = 'Failed to create campaign';
       return null;
     } finally {
       stopSaving();
@@ -144,7 +144,8 @@ export const useCampaignStore = defineStore('campaigns', () => {
       logger.info('Campaign updated', { id, name: updated.name });
       return updated;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to update campaign' });
+      handleError(err as Error, { retryKey: 'campaign-update' });
+      error.value = 'Failed to update campaign';
       return null;
     } finally {
       stopSaving();
@@ -166,7 +167,8 @@ export const useCampaignStore = defineStore('campaigns', () => {
       logger.info('Campaign deleted', { id });
       return true;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to delete campaign' });
+      handleError(err as Error, { retryKey: 'campaign-delete' });
+      error.value = 'Failed to delete campaign';
       return false;
     } finally {
       stopSaving();
@@ -184,7 +186,8 @@ export const useCampaignStore = defineStore('campaigns', () => {
       logger.info('Hero removed from campaign', { heroId });
       return true;
     } catch (err: unknown) {
-      handleError(err, { errorRef: error, message: 'Failed to remove hero from campaign' });
+      handleError(err as Error, { retryKey: 'campaign-remove-hero' });
+      error.value = 'Failed to remove hero from campaign';
       return false;
     } finally {
       stopSaving();

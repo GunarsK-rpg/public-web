@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { usePageTitle } from 'src/composables/usePageTitle';
@@ -111,7 +111,7 @@ import NpcStatBlock from 'src/components/combat/NpcStatBlock.vue';
 import NpcItemEditDialog from 'src/components/combat/NpcItemEditDialog.vue';
 import NpcStatPickerDialog from 'src/components/combat/NpcStatPickerDialog.vue';
 import filesApi, { FILE_TYPE_HERO_AVATAR } from 'src/services/filesApi';
-import { handleError } from 'src/utils/errorHandling';
+import { useErrorHandler } from 'src/composables/useErrorHandler';
 import type { NpcUpsert } from 'src/types';
 
 const props = defineProps<{
@@ -125,6 +125,7 @@ const $q = useQuasar();
 const combatStore = useCombatStore();
 const classifiers = useClassifierStore();
 const { setPageTitle } = usePageTitle();
+const { handleError } = useErrorHandler();
 
 const loadingInit = ref(true);
 const error = ref<string | null>(null);
@@ -277,6 +278,10 @@ function confirmDelete() {
   });
 }
 
+onUnmounted(() => {
+  combatStore.currentNpc = null;
+});
+
 // Init
 onMounted(async () => {
   const campaignId = numCampaignId.value;
@@ -313,7 +318,8 @@ onMounted(async () => {
       startEdit();
     }
   } catch (err: unknown) {
-    handleError(err, { errorRef: error, message: 'Failed to load NPC' });
+    handleError(err as Error, { retryKey: 'npc-detail-load', entityName: 'NPC' });
+    error.value = 'Failed to load NPC';
   } finally {
     loadingInit.value = false;
   }

@@ -76,7 +76,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import authService from 'src/services/auth';
 import { extractQueryParam, removeQueryParam } from 'src/utils/routeUtils';
-import axios from 'axios';
+import { extractApiError } from 'src/utils/apiError';
 
 const route = useRoute();
 const router = useRouter();
@@ -114,12 +114,7 @@ async function handleSubmit(): Promise<void> {
     await authService.resetPassword(resetToken, newPassword.value);
     success.value = true;
   } catch (err) {
-    if (axios.isAxiosError(err) && err.response) {
-      const msg = (err.response.data as { error?: string })?.error;
-      error.value = msg || 'Password reset failed. The link may have expired.';
-    } else {
-      error.value = 'Unable to connect. Please check your connection and try again.';
-    }
+    error.value = extractApiError(err, 'Password reset failed. The link may have expired.');
   } finally {
     loading.value = false;
   }

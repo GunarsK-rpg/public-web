@@ -830,7 +830,7 @@ describe('useHeroStore', () => {
       const result = await store.deleteHero();
 
       expect(result).toBe(false);
-      expect(store.error).toBeTruthy();
+      expect(store.error).toBe('Failed to delete hero');
     });
 
     it('does not clear hero on API failure', async () => {

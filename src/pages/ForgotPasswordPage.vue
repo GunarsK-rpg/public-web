@@ -56,6 +56,7 @@
 import { ref } from 'vue';
 import authService from 'src/services/auth';
 import axios from 'axios';
+import { extractApiError } from 'src/utils/apiError';
 
 const email = ref('');
 const loading = ref(false);
@@ -70,16 +71,10 @@ async function handleSubmit(): Promise<void> {
     await authService.forgotPassword(email.value);
     submitted.value = true;
   } catch (err) {
-    if (axios.isAxiosError(err) && err.response) {
-      const status = err.response.status;
-      if (status === 429) {
-        error.value = 'Too many requests. Please try again later.';
-      } else {
-        const msg = (err.response.data as { error?: string })?.error;
-        error.value = msg || 'Something went wrong. Please try again.';
-      }
+    if (axios.isAxiosError(err) && err.response?.status === 429) {
+      error.value = 'Too many requests. Please try again later.';
     } else {
-      error.value = 'Unable to connect. Please check your connection and try again.';
+      error.value = extractApiError(err, 'Something went wrong. Please try again.');
     }
   } finally {
     loading.value = false;
