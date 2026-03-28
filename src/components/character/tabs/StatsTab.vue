@@ -1,8 +1,8 @@
 <template>
   <div class="stats-tab" aria-live="polite" aria-atomic="false">
-    <DefensesSection :defenses="defenseValues" :deflect="deflectValue" />
-    <AttributesSection :attributes="attributeValues" />
-    <DerivedStatsSection :stats="derivedStatValues" />
+    <DefensesSection :defenses="defenseValues" :deflect="deflectValue" :loading="loading" />
+    <AttributesSection :attributes="attributeValues" :loading="loading" />
+    <DerivedStatsSection :stats="derivedStatValues" :loading="loading" />
   </div>
 </template>
 
@@ -17,6 +17,14 @@ import DefensesSection from 'src/components/shared/DefensesSection.vue';
 import AttributesSection from 'src/components/shared/AttributesSection.vue';
 import DerivedStatsSection from 'src/components/shared/DerivedStatsSection.vue';
 import type { StatValue } from 'src/types/shared';
+
+withDefaults(
+  defineProps<{
+    loading?: boolean;
+    readonly?: boolean;
+  }>(),
+  { loading: false, readonly: false }
+);
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
