@@ -46,9 +46,8 @@
     {
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions",
-      "automerge": false,
-      "dependencyDashboardApproval": true,
-      "labels": ["ci", "security-review"]
+      "automerge": true,
+      "labels": ["ci"]
     }
   ],
   "rangeStrategy": "bump",
