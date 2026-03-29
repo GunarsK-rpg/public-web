@@ -79,6 +79,7 @@
                 (val) => !!val || 'Username is required',
                 (val) => val.length >= 3 || 'Username must be at least 3 characters',
                 (val) => val.length <= 50 || 'Username must be at most 50 characters',
+                (val) => !/\s/.test(val) || 'Username cannot contain spaces',
               ]"
             />
 

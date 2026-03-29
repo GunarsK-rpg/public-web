@@ -125,8 +125,9 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true;
     try {
       const response = await authService.login(identifier, password, rememberMe);
-      hydrateLoginResponse(response.data, identifier);
-      logger.info('User logged in', { identifier });
+      const fallback = identifier.includes('@') ? '' : identifier;
+      hydrateLoginResponse(response.data, fallback);
+      logger.info('User logged in');
       return true;
     } catch (error) {
       logger.error('Login failed', toError(error));
