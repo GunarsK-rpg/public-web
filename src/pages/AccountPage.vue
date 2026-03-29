@@ -12,11 +12,6 @@
         <q-card-section>
           <div class="q-gutter-y-md">
             <div>
-              <div class="text-caption text-grey">Username</div>
-              <div class="text-body1">{{ authStore.username }}</div>
-            </div>
-
-            <div>
               <div class="text-caption text-grey">Email</div>
               <div class="row items-center q-gutter-x-sm">
                 <span class="text-body1">{{ authStore.email }}</span>
@@ -76,6 +71,17 @@
 
         <q-card-section>
           <q-form @submit.prevent="handleUpdateProfile" class="q-gutter-y-md">
+            <q-input
+              v-model="profileUsername"
+              label="Username"
+              outlined
+              :rules="[
+                (val) => !!val || 'Username is required',
+                (val) => val.length >= 3 || 'Username must be at least 3 characters',
+                (val) => val.length <= 50 || 'Username must be at most 50 characters',
+              ]"
+            />
+
             <q-input
               v-if="authMethodsLoaded && hasPassword"
               v-model="profileEmail"
@@ -198,11 +204,14 @@ async function handleSendVerification(): Promise<void> {
 }
 
 // Profile update
+const profileUsername = ref(authStore.username);
 const profileEmail = ref(authStore.email);
 const profileDisplayName = ref(authStore.displayName);
+const trimmedUsername = computed(() => profileUsername.value.trim());
 const trimmedEmail = computed(() => profileEmail.value.trim());
 const trimmedDisplayName = computed(() => profileDisplayName.value.trim());
 const profileHasChanges = computed(() => {
+  if (trimmedUsername.value !== authStore.username) return true;
   if (hasPassword.value && trimmedEmail.value !== authStore.email) return true;
   return trimmedDisplayName.value !== authStore.displayName;
 });
@@ -215,7 +224,8 @@ async function handleUpdateProfile(): Promise<void> {
   profileMessage.value = '';
   profileError.value = false;
 
-  const data: { email?: string; display_name?: string } = {};
+  const data: { username?: string; email?: string; display_name?: string } = {};
+  if (trimmedUsername.value !== authStore.username) data.username = trimmedUsername.value;
   if (hasPassword.value && trimmedEmail.value !== authStore.email) data.email = trimmedEmail.value;
   if (trimmedDisplayName.value !== authStore.displayName)
     data.display_name = trimmedDisplayName.value;
@@ -235,6 +245,7 @@ async function handleUpdateProfile(): Promise<void> {
     const refreshed = await refreshToken();
     if (refreshed) {
       await authStore.checkAuthStatus();
+      profileUsername.value = authStore.username;
       profileEmail.value = authStore.email;
       profileDisplayName.value = authStore.displayName;
     }
@@ -244,7 +255,7 @@ async function handleUpdateProfile(): Promise<void> {
       const status = err.response.status;
       const msg = (err.response.data as { error?: string })?.error;
       if (status === 409) {
-        profileMessage.value = 'Email is already in use.';
+        profileMessage.value = msg || 'Username or email is already in use.';
       } else {
         profileMessage.value = msg || 'Failed to update profile.';
       }

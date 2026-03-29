@@ -13,11 +13,11 @@
       <q-card-section>
         <q-form @submit="handleLogin" class="q-gutter-y-md">
           <q-input
-            v-model="username"
-            label="Username"
+            v-model="identifier"
+            label="Username or Email"
             outlined
             autocomplete="username"
-            :rules="[(val) => !!val || 'Username is required']"
+            :rules="[(val) => !!val || 'Username or email is required']"
           />
 
           <q-input
@@ -85,7 +85,7 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
-const username = ref('');
+const identifier = ref('');
 const password = ref('');
 const rememberMe = ref(false);
 const loading = ref(false);
@@ -98,14 +98,14 @@ async function handleLogin(): Promise<void> {
   error.value = null;
 
   try {
-    const success = await authStore.login(username.value, password.value, rememberMe.value);
+    const success = await authStore.login(identifier.value, password.value, rememberMe.value);
 
     if (success) {
       const safeRedirect =
         redirectParam.value && isValidRedirect(redirectParam.value) ? redirectParam.value : '/';
       void router.push(safeRedirect);
     } else {
-      error.value = 'Invalid username or password';
+      error.value = 'Invalid credentials';
     }
   } catch {
     // Handle network errors or unexpected failures (don't log error object in production)

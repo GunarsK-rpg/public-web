@@ -49,8 +49,8 @@ export interface AuthMethodsResponse {
 }
 
 export default {
-  login(username: string, password: string, rememberMe: boolean) {
-    return authApi.post<LoginResponse>('/login', { username, password, remember_me: rememberMe });
+  login(identifier: string, password: string, rememberMe: boolean) {
+    return authApi.post<LoginResponse>('/login', { identifier, password, remember_me: rememberMe });
   },
   logout() {
     return authApi.post('/logout');
@@ -70,7 +70,7 @@ export default {
   verifyEmail(token: string) {
     return authApi.post('/verify-email', { token });
   },
-  updateProfile(data: { email?: string; display_name?: string }) {
+  updateProfile(data: { username?: string; email?: string; display_name?: string }) {
     return authApi.patch<ProfileResponse>('/profile', data);
   },
   changePassword(currentPassword: string, newPassword: string) {
