@@ -121,16 +121,13 @@ export const useAuthStore = defineStore('auth', () => {
     broadcastLogin();
   }
 
-  async function login(
-    loginUsername: string,
-    password: string,
-    rememberMe = false
-  ): Promise<boolean> {
+  async function login(identifier: string, password: string, rememberMe = false): Promise<boolean> {
     loading.value = true;
     try {
-      const response = await authService.login(loginUsername, password, rememberMe);
-      hydrateLoginResponse(response.data, loginUsername);
-      logger.info('User logged in', { username: loginUsername });
+      const response = await authService.login(identifier, password, rememberMe);
+      const fallback = identifier.includes('@') ? '' : identifier;
+      hydrateLoginResponse(response.data, fallback);
+      logger.info('User logged in');
       return true;
     } catch (error) {
       logger.error('Login failed', toError(error));
