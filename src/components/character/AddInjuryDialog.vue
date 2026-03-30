@@ -7,7 +7,7 @@
   >
     <q-card class="injury-dialog-card" role="dialog">
       <q-card-section>
-        <div id="injury-dialog-title" class="text-h6">Add Injury</div>
+        <div id="injury-dialog-title" class="text-h6">Add test Injury</div>
       </q-card-section>
 
       <q-separator />
