@@ -81,7 +81,7 @@ describe('VerifyEmailPage', () => {
     it('shows success message on valid token', async () => {
       mockVerifyEmail.mockResolvedValue({});
       mockRefreshToken.mockResolvedValue(true);
-      mockCheckAuthStatus.mockResolvedValue(undefined);
+      mockCheckAuthStatus.mockResolvedValue(true);
       const wrapper = createWrapper();
       await flushPromises();
 
@@ -95,7 +95,7 @@ describe('VerifyEmailPage', () => {
     it('shows Continue button on success', async () => {
       mockVerifyEmail.mockResolvedValue({});
       mockRefreshToken.mockResolvedValue(true);
-      mockCheckAuthStatus.mockResolvedValue(undefined);
+      mockCheckAuthStatus.mockResolvedValue(true);
       const wrapper = createWrapper();
       await flushPromises();
 

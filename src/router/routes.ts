@@ -208,20 +208,38 @@ const routes: RouteRecordRaw[] = [
   // Error pages
   {
     path: '/forbidden',
-    name: 'forbidden',
-    component: () => import('pages/ErrorForbidden.vue'),
-    meta: { title: 'Access Forbidden', public: true },
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'forbidden',
+        component: () => import('pages/ErrorForbidden.vue'),
+        meta: { title: 'Access Forbidden', public: true },
+      },
+    ],
   },
   {
     path: '/error',
-    name: 'server-error',
-    component: () => import('pages/ErrorServer.vue'),
-    meta: { title: 'Server Error', public: true },
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'server-error',
+        component: () => import('pages/ErrorServer.vue'),
+        meta: { title: 'Server Error', public: true },
+      },
+    ],
   },
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
-    meta: { title: 'Not Found', public: true },
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/ErrorNotFound.vue'),
+        meta: { title: 'Not Found', public: true },
+      },
+    ],
   },
 ];
 
