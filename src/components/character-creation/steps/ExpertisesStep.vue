@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-sm">Select your expertises</div>
     <BudgetDisplay
       label="Slots remaining"
@@ -145,11 +145,12 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue';
+import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -159,6 +160,8 @@ import { Crown, Backpack, X, Plus } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 import InfoBanner from '../shared/InfoBanner.vue';
+
+const formRef = ref<QForm | null>(null);
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
@@ -303,6 +306,12 @@ function removeCustom(id: number) {
   }
   attrStore.removeCustomExpertise(id);
 }
+
+async function validate(): Promise<boolean> {
+  return (await formRef.value?.validate()) ?? true;
+}
+
+defineExpose({ validate });
 </script>
 
 <style scoped>

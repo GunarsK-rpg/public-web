@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-md">Customize your equipment and currency</div>
 
     <!-- Starting Kit Summary -->
@@ -90,11 +90,12 @@
         /></q-btn>
       </div>
     </div>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, inject } from 'vue';
+import { computed, reactive, inject, ref } from 'vue';
+import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -104,6 +105,8 @@ import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 
 const heroStore = useHeroStore();
+const formRef = ref<QForm | null>(null);
+
 const equipStore = useHeroEquipmentStore();
 const classifiers = useClassifierStore();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
@@ -190,6 +193,12 @@ function removeItem(rowId: number) {
   deletionTracker?.trackDeletion('equipment', rowId);
   equipStore.removeEquipment(rowId);
 }
+
+async function validate(): Promise<boolean> {
+  return (await formRef.value?.validate()) ?? true;
+}
+
+defineExpose({ validate });
 </script>
 
 <style scoped>

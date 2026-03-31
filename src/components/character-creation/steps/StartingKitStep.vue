@@ -1,5 +1,5 @@
 <template>
-  <div class="starting-kit-step">
+  <q-form ref="formRef" greedy class="starting-kit-step">
     <div class="text-h6 q-mb-md">Choose Starting Kit</div>
     <p class="text-caption text-muted q-mb-lg">
       Your starting kit determines your initial equipment, currency, and may grant an expertise.
@@ -83,11 +83,12 @@
         will select your Radiant Order in the Paths step.
       </div>
     </q-banner>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, inject } from 'vue';
+import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -105,6 +106,8 @@ import { clamp } from 'src/utils/numberUtils';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import type { StartingKit } from 'src/types';
 import StartingKitSelectionDialog from '../shared/StartingKitSelectionDialog.vue';
+
+const formRef = ref<QForm | null>(null);
 
 const heroStore = useHeroStore();
 const equipStore = useHeroEquipmentStore();
@@ -167,6 +170,12 @@ function getEquipmentSummary(kit: StartingKit): string {
 
   return names.length > 0 ? names.join(', ') : 'No equipment';
 }
+
+async function validate(): Promise<boolean> {
+  return (await formRef.value?.validate()) ?? true;
+}
+
+defineExpose({ validate });
 </script>
 
 <style scoped lang="scss">

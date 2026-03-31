@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-sm">Choose your heroic paths and talents</div>
     <BudgetDisplay
       label="Talent slots remaining"
@@ -109,11 +109,12 @@
       @select="setRadiantOrder"
     />
     <TalentDetailDialog v-model="talentDialogOpen" :talent="selectedTalentForDetails" />
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, inject, onMounted, watch } from 'vue';
+import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -137,6 +138,8 @@ interface PathSelection {
   pathId: number;
   specialtyId: number | undefined;
 }
+
+const formRef = ref<QForm | null>(null);
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
@@ -336,4 +339,10 @@ function showTalentDetails(talent: Talent) {
   selectedTalentForDetails.value = talent;
   talentDialogOpen.value = true;
 }
+
+async function validate(): Promise<boolean> {
+  return (await formRef.value?.validate()) ?? true;
+}
+
+defineExpose({ validate });
 </script>

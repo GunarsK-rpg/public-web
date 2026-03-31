@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-sm">Allocate skill ranks</div>
     <BudgetDisplay
       label="Points remaining"
@@ -72,11 +72,12 @@
         </q-item>
       </q-list>
     </div>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -87,6 +88,8 @@ import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import { MIN_SKILL_MODIFIER, MAX_SKILL_MODIFIER } from 'src/constants';
 import { Minus, Plus } from 'lucide-vue-next';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
+
+const formRef = ref<QForm | null>(null);
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
@@ -167,4 +170,10 @@ function decrementSkill(skillId: number, minRank = 0) {
     attrStore.setSkillRank(skillId, current - 1);
   }
 }
+
+async function validate(): Promise<boolean> {
+  return (await formRef.value?.validate()) ?? true;
+}
+
+defineExpose({ validate });
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-md">Choose your cultural background</div>
 
     <!-- Primary Culture Selection -->
@@ -46,11 +46,12 @@
       :content="culturalExpertiseNames.join(', ')"
       class="q-mt-md"
     />
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue';
+import { computed, inject, ref } from 'vue';
+import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -58,6 +59,8 @@ import { findById } from 'src/utils/arrayUtils';
 import { Languages } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import InfoBanner from '../shared/InfoBanner.vue';
+
+const formRef = ref<QForm | null>(null);
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
@@ -146,4 +149,10 @@ function setPrimaryCulture(val: number | null) {
 function setSecondaryCulture(val: number | null) {
   setCulture(secondaryCultureId.value, val, false);
 }
+
+async function validate(): Promise<boolean> {
+  return (await formRef.value?.validate()) ?? true;
+}
+
+defineExpose({ validate });
 </script>

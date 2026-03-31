@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-sm">Allocate your attribute points</div>
     <BudgetDisplay
       label="Points remaining"
@@ -94,11 +94,12 @@
         </q-card>
       </div>
     </div>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import type { QForm } from 'quasar';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { useStepValidation } from 'src/composables/useStepValidation';
@@ -108,6 +109,8 @@ import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import { clamp } from 'src/utils/numberUtils';
 import { Minus, Plus } from 'lucide-vue-next';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
+
+const formRef = ref<QForm | null>(null);
 
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
@@ -192,4 +195,10 @@ function decrementAttr(attrId: number) {
     setAttrValue(attrId, current - 1);
   }
 }
+
+async function validate(): Promise<boolean> {
+  return (await formRef.value?.validate()) ?? true;
+}
+
+defineExpose({ validate });
 </script>

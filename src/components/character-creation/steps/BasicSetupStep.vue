@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-md">Name your character and set their starting level</div>
 
     <q-input
@@ -105,11 +105,12 @@
         </q-card-section>
       </q-card>
     </template>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue';
+import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
@@ -124,6 +125,8 @@ import { SPECIAL } from 'src/utils/specialUtils';
 import SelectableCard from '../shared/SelectableCard.vue';
 import SingerFormSelectionDialog from '../shared/SingerFormSelectionDialog.vue';
 import TalentGrantChoice from '../shared/TalentGrantChoice.vue';
+
+const formRef = ref<QForm | null>(null);
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
@@ -223,4 +226,10 @@ function selectAncestry(id: number) {
 function selectForm(id: number) {
   talentStore.setSingerForm(id);
 }
+
+async function validate(): Promise<boolean> {
+  return (await formRef.value?.validate()) ?? true;
+}
+
+defineExpose({ validate });
 </script>
