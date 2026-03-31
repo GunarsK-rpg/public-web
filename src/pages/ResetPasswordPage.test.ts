@@ -57,6 +57,7 @@ describe('ResetPasswordPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockQuery.token = 'reset-token';
+    mockQuery.next = '/dashboard';
   });
 
   describe('basic rendering', () => {
@@ -80,7 +81,7 @@ describe('ResetPasswordPage', () => {
       createWrapper();
       await flushPromises();
 
-      expect(mockReplace).toHaveBeenCalledWith({ query: {} });
+      expect(mockReplace).toHaveBeenCalledWith({ query: { next: '/dashboard' } });
     });
   });
 

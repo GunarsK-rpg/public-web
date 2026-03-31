@@ -65,6 +65,7 @@ describe('VerifyEmailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockQuery.token = 'verify-token';
+    mockQuery.next = '/account';
     mockIsAuthenticated.value = false;
   });
 
@@ -87,7 +88,7 @@ describe('VerifyEmailPage', () => {
       expect(wrapper.text()).toContain('Email verified');
       expect(mockRefreshToken).toHaveBeenCalled();
       expect(mockCheckAuthStatus).toHaveBeenCalled();
-      expect(mockReplace).toHaveBeenCalledWith({ query: {} });
+      expect(mockReplace).toHaveBeenCalledWith({ query: { next: '/account' } });
     });
 
     it('shows Continue button on success', async () => {
