@@ -66,7 +66,7 @@ config.global.stubs = {
   QForm: {
     template: '<form><slot /></form>',
     methods: {
-      validate: () => Promise.resolve(true),
+      validate: vi.fn(() => Promise.resolve(true)),
     },
   },
   QDialog: true,
