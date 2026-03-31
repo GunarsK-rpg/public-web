@@ -93,6 +93,8 @@ describe('ResetPasswordPage', () => {
 
       expect(wrapper.text()).toContain('Invalid link');
       expect(wrapper.text()).toContain('No reset token provided');
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(mockResetPassword).not.toHaveBeenCalled();
     });
 
     it('shows request new link button', async () => {
@@ -117,6 +119,7 @@ describe('ResetPasswordPage', () => {
 
       expect(wrapper.text()).toContain('Password reset');
       expect(wrapper.text()).toContain('Go to Login');
+      expect(mockResetPassword).toHaveBeenCalledWith('reset-token', 'newpass123');
     });
 
     it('shows error on failed reset', async () => {
@@ -130,6 +133,7 @@ describe('ResetPasswordPage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('Password reset failed');
+      expect(mockResetPassword).toHaveBeenCalledWith('reset-token', 'newpass123');
     });
   });
 });

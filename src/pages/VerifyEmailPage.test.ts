@@ -86,6 +86,7 @@ describe('VerifyEmailPage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('Email verified');
+      expect(mockVerifyEmail).toHaveBeenCalledWith('verify-token');
       expect(mockRefreshToken).toHaveBeenCalled();
       expect(mockCheckAuthStatus).toHaveBeenCalled();
       expect(mockReplace).toHaveBeenCalledWith({ query: { next: '/account' } });
@@ -117,6 +118,10 @@ describe('VerifyEmailPage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('No verification token provided');
+      expect(mockVerifyEmail).not.toHaveBeenCalled();
+      expect(mockRefreshToken).not.toHaveBeenCalled();
+      expect(mockCheckAuthStatus).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
     });
 
     it('shows Go to Login for unauthenticated users on failure', async () => {
