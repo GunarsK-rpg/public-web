@@ -19,7 +19,7 @@ vi.mock('stores/auth', () => ({
 
 vi.mock('src/utils/routeUtils', () => ({
   extractQueryParam: (query: Record<string, string>, key: string) => query[key] ?? null,
-  isValidRedirect: (path: string) => path.startsWith('/'),
+  isValidRedirect: (path: string) => path.startsWith('/') && !path.startsWith('//'),
 }));
 
 vi.mock('src/services/auth', () => ({
@@ -70,6 +70,15 @@ describe('GoogleCallbackPage', () => {
       await flushPromises();
 
       expect(mockPush).toHaveBeenCalledWith('/campaigns');
+    });
+
+    it('rejects protocol-relative redirect and falls back to /', async () => {
+      sessionStorage.setItem('oauth_redirect', '//evil.com');
+      mockGoogleCallback.mockResolvedValue(true);
+      createWrapper();
+      await flushPromises();
+
+      expect(mockPush).toHaveBeenCalledWith('/');
     });
 
     it('passes remember me from session storage', async () => {

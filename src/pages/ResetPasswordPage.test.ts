@@ -75,6 +75,13 @@ describe('ResetPasswordPage', () => {
       const inputs = wrapper.findAll('.q-input[type="password"]');
       expect(inputs.length).toBe(2);
     });
+
+    it('strips token from URL on mount', async () => {
+      createWrapper();
+      await flushPromises();
+
+      expect(mockReplace).toHaveBeenCalledWith({ query: {} });
+    });
   });
 
   describe('missing token', () => {

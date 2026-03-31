@@ -3,6 +3,12 @@ import { shallowMount, flushPromises } from '@vue/test-utils';
 import ForgotPasswordPage from './ForgotPasswordPage.vue';
 
 const mockForgotPassword = vi.fn();
+const mockIsAxiosError = vi.fn();
+
+vi.mock('axios', () => ({
+  default: { isAxiosError: (...args: unknown[]) => mockIsAxiosError(...args) },
+  isAxiosError: (...args: unknown[]) => mockIsAxiosError(...args),
+}));
 
 vi.mock('src/services/auth', () => ({
   default: {
@@ -46,6 +52,7 @@ describe('ForgotPasswordPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockIsAxiosError.mockReturnValue(false);
   });
 
   describe('basic rendering', () => {
@@ -99,23 +106,14 @@ describe('ForgotPasswordPage', () => {
         response: { status: 429 },
       });
       mockForgotPassword.mockRejectedValue(axiosError);
-
-      // Mock axios.isAxiosError
-      vi.doMock('axios', () => ({
-        default: {
-          isAxiosError: (e: unknown) => (e as { isAxiosError?: boolean }).isAxiosError === true,
-        },
-        isAxiosError: (e: unknown) => (e as { isAxiosError?: boolean }).isAxiosError === true,
-      }));
+      mockIsAxiosError.mockReturnValue(true);
 
       const wrapper = createWrapper();
       await wrapper.find('.q-input').setValue('test@example.com');
       await wrapper.find('.q-form').trigger('submit');
       await flushPromises();
 
-      // The component checks axios.isAxiosError internally
-      // Since we can't easily mock the imported axios, the fallback error will show
-      expect(wrapper.find('.q-card-section').exists()).toBe(true);
+      expect(wrapper.text()).toContain('Too many requests');
     });
   });
 });

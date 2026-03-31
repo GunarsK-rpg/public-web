@@ -127,7 +127,9 @@ describe('CampaignFormPage', () => {
       await createBtn!.trigger('click');
       await flushPromises();
 
-      expect(mockCreateCampaign).toHaveBeenCalled();
+      expect(mockCreateCampaign).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'New Campaign' })
+      );
     });
   });
 

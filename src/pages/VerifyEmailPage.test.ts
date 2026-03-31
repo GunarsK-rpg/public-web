@@ -85,6 +85,9 @@ describe('VerifyEmailPage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('Email verified');
+      expect(mockRefreshToken).toHaveBeenCalled();
+      expect(mockCheckAuthStatus).toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith({ query: {} });
     });
 
     it('shows Continue button on success', async () => {

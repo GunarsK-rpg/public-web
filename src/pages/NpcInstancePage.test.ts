@@ -36,8 +36,9 @@ vi.mock('src/stores/auth', () => ({
   useAuthStore: () => ({ userId: 1 }),
 }));
 
+const mockHandleError = vi.fn();
 vi.mock('src/composables/useErrorHandler', () => ({
-  useErrorHandler: () => ({ handleError: vi.fn() }),
+  useErrorHandler: () => ({ handleError: mockHandleError }),
 }));
 
 const mockNpc = {
@@ -116,6 +117,10 @@ describe('NpcInstancePage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('Failed to load NPC');
+      expect(mockHandleError).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({ retryKey: 'npc-instance-load', entityName: 'NPC' })
+      );
     });
 
     it('shows error for invalid ID', async () => {
@@ -123,6 +128,8 @@ describe('NpcInstancePage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('Invalid instance ID');
+      expect(mockNpcInstanceGet).not.toHaveBeenCalled();
+      expect(mockNpcGet).not.toHaveBeenCalled();
     });
 
     it('shows error for zero ID', async () => {
@@ -130,6 +137,8 @@ describe('NpcInstancePage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('Invalid instance ID');
+      expect(mockNpcInstanceGet).not.toHaveBeenCalled();
+      expect(mockNpcGet).not.toHaveBeenCalled();
     });
   });
 
@@ -140,8 +149,8 @@ describe('NpcInstancePage', () => {
       const wrapper = createWrapper();
       await flushPromises();
 
-      // NPC loaded as null triggers the not-found branch
       expect(wrapper.find('.npc-stat-block').exists()).toBe(false);
+      expect(wrapper.text()).toContain('NPC not found');
     });
   });
 });

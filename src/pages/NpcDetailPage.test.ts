@@ -221,6 +221,7 @@ describe('NpcDetailPage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('Invalid campaign ID');
+      expect(mockGetNpc).not.toHaveBeenCalled();
     });
 
     it('shows error for invalid NPC ID', async () => {
@@ -228,6 +229,7 @@ describe('NpcDetailPage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('Invalid NPC ID');
+      expect(mockGetNpc).not.toHaveBeenCalled();
     });
   });
 

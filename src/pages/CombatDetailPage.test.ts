@@ -224,8 +224,15 @@ describe('CombatDetailPage', () => {
       expect(wrapper.text()).toContain('Something went wrong');
     });
 
-    it('shows error for invalid IDs', async () => {
+    it('shows error for invalid campaign ID', async () => {
       createWrapper('abc', '1');
+      await flushPromises();
+
+      expect(mockError.value).toBe('Invalid combat ID');
+    });
+
+    it('shows error for invalid combat ID', async () => {
+      createWrapper('1', 'abc');
       await flushPromises();
 
       expect(mockError.value).toBe('Invalid combat ID');
