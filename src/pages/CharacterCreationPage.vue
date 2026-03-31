@@ -34,7 +34,7 @@
       class="q-pa-md step-content"
       role="tabpanel"
     >
-      <component :is="currentStepComponent" />
+      <component :is="currentStepComponent" ref="currentStepRef" />
     </div>
 
     <!-- Bottom Navigation -->
@@ -131,6 +131,7 @@ const { saving, saveError, saveCurrentStep } = useWizardSave(deletionTracker);
 const showResetDialog = ref(false);
 const initializing = ref(true);
 const stepContentRef = ref<HTMLElement | null>(null);
+const currentStepRef = ref<{ validate?: () => Promise<boolean> } | null>(null);
 
 // Swipe navigation for mobile — only back (right swipe), not forward (left swipe)
 useSwipeNavigation(stepContentRef, {
@@ -170,6 +171,11 @@ const currentStepComponent = computed(() => {
 
 // Navigation — single save-before-navigate for all step changes
 async function navigateWithSave(targetStep: number): Promise<void> {
+  // Trigger field-level validation on forward navigation
+  if (targetStep > currentStep.value) {
+    const valid = await currentStepRef.value?.validate?.();
+    if (valid === false) return;
+  }
   const saved = await saveCurrentStep();
   if (!saved) return;
   if (targetStep > currentStep.value) {

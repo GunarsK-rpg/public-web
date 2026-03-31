@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-md">Add personal details (optional)</div>
 
     <!-- Avatar -->
@@ -95,7 +95,7 @@
       data-testid="add-other-connection"
       @add="handleAddConnection"
     />
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
@@ -109,6 +109,9 @@ import EditableItemList from 'src/components/shared/EditableItemList.vue';
 import AddOtherDialog from 'src/components/character/AddOtherDialog.vue';
 import AvatarUpload from 'src/components/shared/AvatarUpload.vue';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import { useFormValidation } from 'src/composables/useFormValidation';
+
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -226,4 +229,6 @@ function removeConnection(connectionId: number) {
   const removed = removeById(heroStore.hero?.connections, connectionId);
   if (removed && connectionId > 0) deletionTracker?.trackDeletion('connections', connectionId);
 }
+
+defineExpose({ validate });
 </script>

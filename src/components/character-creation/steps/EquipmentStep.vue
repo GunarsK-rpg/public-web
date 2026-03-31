@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-md">Customize your equipment and currency</div>
 
     <!-- Starting Kit Summary -->
@@ -30,6 +30,7 @@
           dense
           :min="0"
           :max="999999"
+          :rules="currencyRules"
           @update:model-value="setCurrencyAmount"
         />
       </div>
@@ -90,7 +91,7 @@
         /></q-btn>
       </div>
     </div>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
@@ -102,8 +103,11 @@ import { findById } from 'src/utils/arrayUtils';
 import { Backpack, Trash2, Plus } from 'lucide-vue-next';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import { useFormValidation } from 'src/composables/useFormValidation';
 
 const heroStore = useHeroStore();
+const { formRef, validate } = useFormValidation();
+
 const equipStore = useHeroEquipmentStore();
 const classifiers = useClassifierStore();
 const deletionTracker = inject<DeletionTracker>('deletionTracker');
@@ -171,6 +175,11 @@ function getAvailableByType(typeId: number) {
     .map((e) => ({ value: e.id, label: e.name }));
 }
 
+const currencyRules = [
+  (val: string | number | null) => val !== '' || 'Currency is required',
+  (val: string | number | null) => Number(val) >= 0 || 'Must be 0 or greater',
+];
+
 function setCurrencyAmount(val: string | number | null) {
   const normalized = normalizeModifierInput(val, 0, 999999);
   if (normalized !== null) {
@@ -190,6 +199,8 @@ function removeItem(rowId: number) {
   deletionTracker?.trackDeletion('equipment', rowId);
   equipStore.removeEquipment(rowId);
 }
+
+defineExpose({ validate });
 </script>
 
 <style scoped>

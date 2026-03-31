@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-md">Name your character and set their starting level</div>
 
     <q-input
@@ -105,7 +105,7 @@
         </q-card-section>
       </q-card>
     </template>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
@@ -121,9 +121,12 @@ import LevelDiffBanner from '../shared/LevelDiffBanner.vue';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import { filterSpecial } from 'src/utils/talentGrants';
 import { SPECIAL } from 'src/utils/specialUtils';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import SelectableCard from '../shared/SelectableCard.vue';
 import SingerFormSelectionDialog from '../shared/SingerFormSelectionDialog.vue';
 import TalentGrantChoice from '../shared/TalentGrantChoice.vue';
+
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
@@ -223,4 +226,6 @@ function selectAncestry(id: number) {
 function selectForm(id: number) {
   talentStore.setSingerForm(id);
 }
+
+defineExpose({ validate });
 </script>

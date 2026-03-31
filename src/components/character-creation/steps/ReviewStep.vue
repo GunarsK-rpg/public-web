@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-md">
       {{ isEditMode ? 'Review your changes' : 'Review your character before creation' }}
     </div>
@@ -248,7 +248,7 @@
         @confirm="confirmDelete"
       />
     </template>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
@@ -272,8 +272,11 @@ import type { StatValue } from 'src/types/shared';
 import heroService from 'src/services/heroService';
 import { buildHeroCorePayload } from 'src/services/heroPayloads';
 import { logger } from 'src/utils/logger';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import DeleteHeroDialog from '../../character/DeleteHeroDialog.vue';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
+
+const { formRef, validate } = useFormValidation();
 
 const router = useRouter();
 const $q = useQuasar();
@@ -507,4 +510,6 @@ async function confirmDelete(): Promise<void> {
     deleting.value = false;
   }
 }
+
+defineExpose({ validate });
 </script>

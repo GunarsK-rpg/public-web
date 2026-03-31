@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-sm">Allocate your attribute points</div>
     <BudgetDisplay
       label="Points remaining"
@@ -94,7 +94,7 @@
         </q-card>
       </div>
     </div>
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
@@ -107,7 +107,10 @@ import { findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import { clamp } from 'src/utils/numberUtils';
 import { Minus, Plus } from 'lucide-vue-next';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
+
+const { formRef, validate } = useFormValidation();
 
 const attrStore = useHeroAttributesStore();
 const classifiers = useClassifierStore();
@@ -192,4 +195,6 @@ function decrementAttr(attrId: number) {
     setAttrValue(attrId, current - 1);
   }
 }
+
+defineExpose({ validate });
 </script>

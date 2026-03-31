@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <q-form ref="formRef" greedy>
     <div class="text-subtitle1 q-mb-sm">Choose your heroic paths and talents</div>
     <BudgetDisplay
       label="Talent slots remaining"
@@ -109,7 +109,7 @@
       @select="setRadiantOrder"
     />
     <TalentDetailDialog v-model="talentDialogOpen" :talent="selectedTalentForDetails" />
-  </div>
+  </q-form>
 </template>
 
 <script setup lang="ts">
@@ -123,6 +123,7 @@ import { findById } from 'src/utils/arrayUtils';
 import { Plus, ArrowLeftRight } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import { SPECIAL } from 'src/utils/specialUtils';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 import HeroicPathPanel from '../shared/HeroicPathPanel.vue';
 import SingerAncestryPanel from '../shared/SingerAncestryPanel.vue';
@@ -137,6 +138,8 @@ interface PathSelection {
   pathId: number;
   specialtyId: number | undefined;
 }
+
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
@@ -336,4 +339,6 @@ function showTalentDetails(talent: Talent) {
   selectedTalentForDetails.value = talent;
   talentDialogOpen.value = true;
 }
+
+defineExpose({ validate });
 </script>

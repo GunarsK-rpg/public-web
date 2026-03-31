@@ -63,7 +63,12 @@ config.global.stubs = {
   QCardActions: true,
   QBtn: true,
   QInput: true,
-  QForm: true,
+  QForm: {
+    template: '<form><slot /></form>',
+    methods: {
+      validate: vi.fn(() => Promise.resolve(true)),
+    },
+  },
   QDialog: true,
   QList: true,
   QItem: true,
