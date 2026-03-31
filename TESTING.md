@@ -58,6 +58,10 @@ task test:coverage     # Run tests with coverage
 | `useStepValidation.test.ts`      | 31    | validate, budget, currentStepCode, currentValidation              |
 | `useSwipeNavigation.test.ts`     | 23    | touch event handling, swipe detection, threshold/direction        |
 | `useTalentPrerequisites.test.ts` | 39    | prerequisite checking, talent lookups, formatPrereq, toggleTalent |
+| `useNpcItemDialog.test.ts`       | 18    | add/edit/remove features, actions, opportunities, null guards     |
+| `useNpcEditState.test.ts`        | 25    | canEdit, isFormValid, startEdit, cloneAsNew, cancelEdit, payload  |
+| `useNpcItemDialog.test.ts`       | 18    | add/edit/remove features, actions, opportunities, null guards     |
+| `useNpcStatDialog.test.ts`       | 25    | add/edit/remove skills and derived stats, classifier lookup       |
 | `useWizardSave.test.ts`          | 24    | save orchestration, dirty detection, error handling               |
 
 ### Component Tests
@@ -135,17 +139,29 @@ task test:coverage     # Run tests with coverage
 
 #### Page Components
 
-| File                            | Tests | Coverage                                        |
-| ------------------------------- | ----- | ----------------------------------------------- |
-| `ErrorNotFound.test.ts`         | 7     | 404 display, navigation, accessibility          |
-| `ErrorForbidden.test.ts`        | 6     | 403 display, navigation, accessibility          |
-| `ErrorServer.test.ts`           | 7     | 500 display, retry button, accessibility        |
-| `LoginPage.test.ts`             | 15    | Form submission, redirect validation            |
-| `RegisterPage.test.ts`          | 15    | Registration form, validation, error handling   |
-| `CampaignsPage.test.ts`         | 9     | Campaign list, navigation, loading/error states |
-| `CampaignDetailPage.test.ts`    | 13    | Character cards, health bar, navigation         |
-| `CharacterSheetPage.test.ts`    | 14    | Tab navigation, loading/error states            |
-| `CharacterCreationPage.test.ts` | 15    | Step display, reset dialog, accessibility       |
+| File                            | Tests | Coverage                                               |
+| ------------------------------- | ----- | ------------------------------------------------------ |
+| `AccountPage.test.ts`           | 14    | Profile, verification, linked accounts, password forms |
+| `CampaignDetailPage.test.ts`    | 13    | Character cards, health bar, navigation                |
+| `CampaignFormPage.test.ts`      | 8     | Create/edit modes, form validation, submit             |
+| `CampaignsPage.test.ts`         | 9     | Campaign list, navigation, loading/error states        |
+| `CharacterCreationPage.test.ts` | 15    | Step display, reset dialog, accessibility              |
+| `CharacterSheetPage.test.ts`    | 14    | Tab navigation, loading/error states                   |
+| `CombatDetailPage.test.ts`      | 10    | Combat load, NPC sections, round counter, error/404    |
+| `ErrorForbidden.test.ts`        | 6     | 403 display, navigation, accessibility                 |
+| `ErrorNotFound.test.ts`         | 7     | 404 display, navigation, accessibility                 |
+| `ErrorServer.test.ts`           | 7     | 500 display, retry button, accessibility               |
+| `ForgotPasswordPage.test.ts`    | 7     | Form rendering, submit success/error, rate limit       |
+| `GoogleCallbackPage.test.ts`    | 7     | Loading, success redirect, error states, remember me   |
+| `JoinCampaignPage.test.ts`      | 7     | Campaign details, unassigned heroes, not found, error  |
+| `LoginPage.test.ts`             | 15    | Form submission, redirect validation                   |
+| `MyCharactersPage.test.ts`      | 5     | Hero cards, empty state, loading, error                |
+| `NpcDetailPage.test.ts`         | 7     | Load NPC, error/invalid IDs, create mode               |
+| `NpcInstancePage.test.ts`       | 7     | Load instance, error/invalid IDs, stat block render    |
+| `PrivacyPolicyPage.test.ts`     | 5     | Section headings, GDPR rights, contact, disclaimer     |
+| `RegisterPage.test.ts`          | 15    | Registration form, validation, error handling          |
+| `ResetPasswordPage.test.ts`     | 7     | Form render, missing token, submit success/error       |
+| `VerifyEmailPage.test.ts`       | 8     | Loading, success, error, missing token, CTA routing    |
 
 ### Service Tests
 
