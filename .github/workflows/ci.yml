@@ -84,7 +84,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: GunarsK-rpg/public-web
           files: ./coverage/clover.xml
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
 
   # Job 4: Build application
