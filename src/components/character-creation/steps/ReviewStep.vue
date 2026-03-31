@@ -254,7 +254,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useQuasar, type QForm } from 'quasar';
+import { useQuasar } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
@@ -272,10 +272,11 @@ import type { StatValue } from 'src/types/shared';
 import heroService from 'src/services/heroService';
 import { buildHeroCorePayload } from 'src/services/heroPayloads';
 import { logger } from 'src/utils/logger';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import DeleteHeroDialog from '../../character/DeleteHeroDialog.vue';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
-const formRef = ref<QForm | null>(null);
+const { formRef, validate } = useFormValidation();
 
 const router = useRouter();
 const $q = useQuasar();
@@ -508,10 +509,6 @@ async function confirmDelete(): Promise<void> {
   } finally {
     deleting.value = false;
   }
-}
-
-async function validate(): Promise<boolean> {
-  return (await formRef.value?.validate()) ?? true;
 }
 
 defineExpose({ validate });

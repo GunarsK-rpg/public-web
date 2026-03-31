@@ -87,8 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, inject } from 'vue';
-import type { QForm } from 'quasar';
+import { computed, inject, ref } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -105,9 +104,10 @@ import { RPG_COLORS } from 'src/constants/theme';
 import { clamp } from 'src/utils/numberUtils';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import type { StartingKit } from 'src/types';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import StartingKitSelectionDialog from '../shared/StartingKitSelectionDialog.vue';
 
-const formRef = ref<QForm | null>(null);
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const equipStore = useHeroEquipmentStore();
@@ -169,10 +169,6 @@ function getEquipmentSummary(kit: StartingKit): string {
     .filter((name): name is string => name !== null);
 
   return names.length > 0 ? names.join(', ') : 'No equipment';
-}
-
-async function validate(): Promise<boolean> {
-  return (await formRef.value?.validate()) ?? true;
 }
 
 defineExpose({ validate });

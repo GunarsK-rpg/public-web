@@ -114,7 +114,6 @@
 
 <script setup lang="ts">
 import { computed, ref, inject, onMounted, watch } from 'vue';
-import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -124,6 +123,7 @@ import { findById } from 'src/utils/arrayUtils';
 import { Plus, ArrowLeftRight } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import { SPECIAL } from 'src/utils/specialUtils';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 import HeroicPathPanel from '../shared/HeroicPathPanel.vue';
 import SingerAncestryPanel from '../shared/SingerAncestryPanel.vue';
@@ -139,7 +139,7 @@ interface PathSelection {
   specialtyId: number | undefined;
 }
 
-const formRef = ref<QForm | null>(null);
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
@@ -338,10 +338,6 @@ function handleToggleTalent(talentId: number, available: boolean) {
 function showTalentDetails(talent: Talent) {
   selectedTalentForDetails.value = talent;
   talentDialogOpen.value = true;
-}
-
-async function validate(): Promise<boolean> {
-  return (await formRef.value?.validate()) ?? true;
 }
 
 defineExpose({ validate });

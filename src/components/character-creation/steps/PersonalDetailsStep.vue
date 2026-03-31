@@ -100,7 +100,6 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, onUnmounted } from 'vue';
-import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { debounce } from 'src/utils/debounce';
@@ -110,8 +109,9 @@ import EditableItemList from 'src/components/shared/EditableItemList.vue';
 import AddOtherDialog from 'src/components/character/AddOtherDialog.vue';
 import AvatarUpload from 'src/components/shared/AvatarUpload.vue';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import { useFormValidation } from 'src/composables/useFormValidation';
 
-const formRef = ref<QForm | null>(null);
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const classifiers = useClassifierStore();
@@ -228,10 +228,6 @@ function handleAddConnection(name: string, description: string | null, typeCode:
 function removeConnection(connectionId: number) {
   const removed = removeById(heroStore.hero?.connections, connectionId);
   if (removed && connectionId > 0) deletionTracker?.trackDeletion('connections', connectionId);
-}
-
-async function validate(): Promise<boolean> {
-  return (await formRef.value?.validate()) ?? true;
 }
 
 defineExpose({ validate });

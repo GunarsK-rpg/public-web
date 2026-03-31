@@ -76,8 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import type { QForm } from 'quasar';
+import { computed } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -87,9 +86,10 @@ import { groupByKey, buildIdCodeMap, findById } from 'src/utils/arrayUtils';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import { MIN_SKILL_MODIFIER, MAX_SKILL_MODIFIER } from 'src/constants';
 import { Minus, Plus } from 'lucide-vue-next';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 
-const formRef = ref<QForm | null>(null);
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
@@ -169,10 +169,6 @@ function decrementSkill(skillId: number, minRank = 0) {
   if (current > minRank) {
     attrStore.setSkillRank(skillId, current - 1);
   }
-}
-
-async function validate(): Promise<boolean> {
-  return (await formRef.value?.validate()) ?? true;
 }
 
 defineExpose({ validate });

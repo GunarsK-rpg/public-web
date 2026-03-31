@@ -50,17 +50,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue';
-import type { QForm } from 'quasar';
+import { computed, inject } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
 import { useClassifierStore } from 'src/stores/classifiers';
 import { findById } from 'src/utils/arrayUtils';
 import { Languages } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import InfoBanner from '../shared/InfoBanner.vue';
 
-const formRef = ref<QForm | null>(null);
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const talentStore = useHeroTalentsStore();
@@ -148,10 +148,6 @@ function setPrimaryCulture(val: number | null) {
 
 function setSecondaryCulture(val: number | null) {
   setCulture(secondaryCultureId.value, val, false);
-}
-
-async function validate(): Promise<boolean> {
-  return (await formRef.value?.validate()) ?? true;
 }
 
 defineExpose({ validate });

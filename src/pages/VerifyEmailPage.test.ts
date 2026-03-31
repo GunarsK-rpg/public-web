@@ -110,6 +110,8 @@ describe('VerifyEmailPage', () => {
       await flushPromises();
 
       expect(wrapper.text()).toContain('Verification failed');
+      expect(mockRefreshToken).not.toHaveBeenCalled();
+      expect(mockCheckAuthStatus).not.toHaveBeenCalled();
     });
 
     it('shows error when no token provided', async () => {

@@ -30,6 +30,7 @@
           dense
           :min="0"
           :max="999999"
+          :rules="currencyRules"
           @update:model-value="setCurrencyAmount"
         />
       </div>
@@ -94,8 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, inject, ref } from 'vue';
-import type { QForm } from 'quasar';
+import { computed, reactive, inject } from 'vue';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroEquipmentStore } from 'src/stores/heroEquipment';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -103,9 +103,10 @@ import { findById } from 'src/utils/arrayUtils';
 import { Backpack, Trash2, Plus } from 'lucide-vue-next';
 import { normalizeModifierInput } from 'src/composables/useModifierInput';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import { useFormValidation } from 'src/composables/useFormValidation';
 
 const heroStore = useHeroStore();
-const formRef = ref<QForm | null>(null);
+const { formRef, validate } = useFormValidation();
 
 const equipStore = useHeroEquipmentStore();
 const classifiers = useClassifierStore();
@@ -174,6 +175,11 @@ function getAvailableByType(typeId: number) {
     .map((e) => ({ value: e.id, label: e.name }));
 }
 
+const currencyRules = [
+  (val: string | number | null) => val !== '' || 'Currency is required',
+  (val: string | number | null) => Number(val) >= 0 || 'Must be 0 or greater',
+];
+
 function setCurrencyAmount(val: string | number | null) {
   const normalized = normalizeModifierInput(val, 0, 999999);
   if (normalized !== null) {
@@ -192,10 +198,6 @@ function addItemOfType(typeId: number) {
 function removeItem(rowId: number) {
   deletionTracker?.trackDeletion('equipment', rowId);
   equipStore.removeEquipment(rowId);
-}
-
-async function validate(): Promise<boolean> {
-  return (await formRef.value?.validate()) ?? true;
 }
 
 defineExpose({ validate });

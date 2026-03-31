@@ -150,7 +150,6 @@
 
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue';
-import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useClassifierStore } from 'src/stores/classifiers';
@@ -158,10 +157,11 @@ import { useStepValidation } from 'src/composables/useStepValidation';
 import { findById, findByCode } from 'src/utils/arrayUtils';
 import { Crown, Backpack, X, Plus } from 'lucide-vue-next';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import BudgetDisplay from '../shared/BudgetDisplay.vue';
 import InfoBanner from '../shared/InfoBanner.vue';
 
-const formRef = ref<QForm | null>(null);
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
@@ -305,10 +305,6 @@ function removeCustom(id: number) {
     deletionTracker?.trackDeletion('expertises', id);
   }
   attrStore.removeCustomExpertise(id);
-}
-
-async function validate(): Promise<boolean> {
-  return (await formRef.value?.validate()) ?? true;
 }
 
 defineExpose({ validate });

@@ -110,7 +110,6 @@
 
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue';
-import type { QForm } from 'quasar';
 import { useHeroStore } from 'src/stores/hero';
 import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useHeroTalentsStore } from 'src/stores/heroTalents';
@@ -122,11 +121,12 @@ import LevelDiffBanner from '../shared/LevelDiffBanner.vue';
 import type { DeletionTracker } from 'src/composables/useDeletionTracker';
 import { filterSpecial } from 'src/utils/talentGrants';
 import { SPECIAL } from 'src/utils/specialUtils';
+import { useFormValidation } from 'src/composables/useFormValidation';
 import SelectableCard from '../shared/SelectableCard.vue';
 import SingerFormSelectionDialog from '../shared/SingerFormSelectionDialog.vue';
 import TalentGrantChoice from '../shared/TalentGrantChoice.vue';
 
-const formRef = ref<QForm | null>(null);
+const { formRef, validate } = useFormValidation();
 
 const heroStore = useHeroStore();
 const attrStore = useHeroAttributesStore();
@@ -225,10 +225,6 @@ function selectAncestry(id: number) {
 
 function selectForm(id: number) {
   talentStore.setSingerForm(id);
-}
-
-async function validate(): Promise<boolean> {
-  return (await formRef.value?.validate()) ?? true;
 }
 
 defineExpose({ validate });

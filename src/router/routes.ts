@@ -236,6 +236,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
+        name: 'not-found',
         component: () => import('pages/ErrorNotFound.vue'),
         meta: { title: 'Not Found', public: true },
       },
