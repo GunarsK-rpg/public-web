@@ -47,6 +47,7 @@
         </q-form>
       </q-card-section>
 
+      <!-- Google auth hidden while OAuth provider is disabled
       <q-card-section class="text-center q-pt-none">
         <q-separator class="q-mb-md" />
         <GoogleSignInButton
@@ -55,6 +56,7 @@
           @error="(msg) => (error = msg)"
         />
       </q-card-section>
+      -->
 
       <q-card-section v-if="error" class="text-negative" role="alert" aria-live="polite">
         {{ error }}
@@ -78,7 +80,7 @@
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from 'stores/auth';
-import GoogleSignInButton from 'src/components/auth/GoogleSignInButton.vue';
+// import GoogleSignInButton from 'src/components/auth/GoogleSignInButton.vue';
 import { extractQueryParam, isValidRedirect } from 'src/utils/routeUtils';
 
 const router = useRouter();
