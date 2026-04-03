@@ -7,6 +7,6 @@ const marked = new Marked({
 });
 
 export function renderMarkdown(text: string): string {
-  const raw = marked.parse(text) as string;
-  return DOMPurify.sanitize(raw);
+  const raw = marked.parse(text, { async: false });
+  return DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
 }

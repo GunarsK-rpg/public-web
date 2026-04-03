@@ -847,6 +847,8 @@ describe('AttributesStep', () => {
       const incrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Increase'));
+
+      expect(incrementBtns[0]!.attributes('disabled')).toBeUndefined();
       await incrementBtns[0]!.trigger('click');
 
       expect(mockSetAttribute).toHaveBeenCalledWith(1, 3);

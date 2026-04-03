@@ -82,7 +82,8 @@ const stepWarnings = computed(() => {
       const flexWarning = FLEX_STEP_CODES.has(step.code) && hasUnspentFlex;
       const overBudget =
         b.remaining < 0 && (!FLEX_STEP_CODES.has(step.code) || flexBudget.value.isOverBudget);
-      warnings[step.code] = b.remaining > 0 || flexWarning || overBudget;
+      warnings[step.code] =
+        b.remaining > 0 || flexWarning || overBudget || validate(step.code).warnings.length > 0;
     } else {
       warnings[step.code] = validate(step.code).warnings.length > 0;
     }
