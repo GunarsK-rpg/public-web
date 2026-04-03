@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useWizardStore } from 'src/stores/wizard';
+import { useHeroStore } from 'src/stores/hero';
 import { useStepValidation } from 'src/composables/useStepValidation';
 import { WIZARD_STEPS, STEP_CODES, type WizardStep } from 'src/types/wizard';
 
@@ -37,6 +38,7 @@ const emit = defineEmits<{
 }>();
 
 const wizardStore = useWizardStore();
+const heroStore = useHeroStore();
 const { validate, budget, flexBudget } = useStepValidation();
 
 const steps = WIZARD_STEPS;
@@ -66,17 +68,24 @@ const stepErrors = computed(() => {
 
 const FLEX_STEP_CODES: Set<string> = new Set([STEP_CODES.SKILLS, STEP_CODES.PATHS]);
 
-// Cache step warnings (unspent budget on visited tabs)
+// Cache step warnings (unspent budget on visited tabs + validation warnings)
 const stepWarnings = computed(() => {
   const warnings: Record<string, boolean> = {};
   const hasUnspentFlex = flexBudget.value.flex.remaining > 0;
   for (const step of steps) {
-    if (wizardStore.isStepVisited(step.id) && BUDGET_STEP_CODES.has(step.code)) {
+    if (!wizardStore.isStepVisited(step.id)) {
+      warnings[step.code] = false;
+      continue;
+    }
+    if (BUDGET_STEP_CODES.has(step.code)) {
       const b = budget(step.code as BudgetStepCode);
       const flexWarning = FLEX_STEP_CODES.has(step.code) && hasUnspentFlex;
-      warnings[step.code] = b.remaining > 0 || flexWarning;
+      const overBudget =
+        b.remaining < 0 && (!FLEX_STEP_CODES.has(step.code) || flexBudget.value.isOverBudget);
+      warnings[step.code] =
+        b.remaining > 0 || flexWarning || overBudget || validate(step.code).warnings.length > 0;
     } else {
-      warnings[step.code] = false;
+      warnings[step.code] = validate(step.code).warnings.length > 0;
     }
   }
   return warnings;
@@ -103,11 +112,11 @@ function stepAlertIcon(step: WizardStep): string | undefined {
 }
 
 function canNavigateTo(step: number): boolean {
-  // In create mode, only allow backward navigation or to completed steps
-  if (wizardStore.mode === 'create') {
+  if (wizardStore.mode === 'create' && heroStore.isNew) {
+    // Before hero is persisted, only allow sequential navigation
     return step <= currentStep.value || wizardStore.isStepCompleted(step);
   }
-  // In edit mode, all steps are accessible
+  // Once hero has an ID (or in edit mode), all steps are accessible
   return true;
 }
 

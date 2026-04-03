@@ -41,7 +41,7 @@
                 dense
                 flat
                 :aria-label="`Increase ${attr.name}`"
-                :disable="getAttrValue(attr.id) >= 5 || pointsRemaining <= 0"
+                :disable="getAttrValue(attr.id) >= 5"
                 @click="incrementAttr(attr.id)"
                 ><Plus :size="20"
               /></q-btn>
@@ -168,23 +168,12 @@ function getAttrValue(attrId: number): number {
 
 function setAttrValue(attrId: number, value: number | null) {
   if (value === null) return;
-  const currentValue = getAttrValue(attrId);
-  const clampedValue = clamp(value, 0, 5);
-  const pointsToSpend = clampedValue - currentValue;
-
-  // If increasing, check budget
-  if (pointsToSpend > 0 && pointsToSpend > pointsRemaining.value) {
-    // Only allow spending what's available
-    const maxAllowed = currentValue + pointsRemaining.value;
-    attrStore.setAttribute(attrId, Math.min(5, maxAllowed));
-  } else {
-    attrStore.setAttribute(attrId, clampedValue);
-  }
+  attrStore.setAttribute(attrId, clamp(value, 0, 5));
 }
 
 function incrementAttr(attrId: number) {
   const current = getAttrValue(attrId);
-  if (current < 5 && pointsRemaining.value > 0) {
+  if (current < 5) {
     setAttrValue(attrId, current + 1);
   }
 }

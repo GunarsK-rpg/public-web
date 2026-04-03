@@ -241,14 +241,14 @@ describe('getStepValidation', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('fails with no cultures', () => {
+    it('warns with no cultures', () => {
       const data = createValidationData({
         hero: createHero({ cultures: [] }),
       });
       const result = getStepValidation(STEP_CODES.CULTURE, data);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('At least one culture is required');
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('No culture selected');
     });
   });
 
@@ -673,7 +673,7 @@ describe('getStepValidation', () => {
       expect(result.errors).toContain('Name is required');
       expect(result.errors).toContain('Level must be between 1 and 40');
       expect(result.errors).toContain('Ancestry is required');
-      expect(result.errors).toContain('At least one culture is required');
+      expect(result.warnings).toContain('No culture selected');
     });
 
     it('collects warnings from all required steps', () => {

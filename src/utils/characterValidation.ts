@@ -197,14 +197,13 @@ function validateBasicSetup(
 }
 
 function validateCulture(cultures: HeroCulture[]): StepValidation {
-  const errors: string[] = [];
   const warnings: string[] = [];
 
   if (cultures.length === 0) {
-    errors.push('At least one culture is required');
+    warnings.push('No culture selected');
   }
 
-  return { isValid: errors.length === 0, errors, warnings };
+  return { isValid: true, errors: [], warnings };
 }
 
 function validatePaths(

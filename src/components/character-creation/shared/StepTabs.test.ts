@@ -22,6 +22,17 @@ vi.mock('src/stores/wizard', () => ({
   }),
 }));
 
+// Mock the hero store
+const mockIsNew = ref(true);
+
+vi.mock('src/stores/hero', () => ({
+  useHeroStore: () => ({
+    get isNew() {
+      return mockIsNew.value;
+    },
+  }),
+}));
+
 // Mock the validation composable
 const mockValidate = vi.fn();
 
@@ -118,6 +129,7 @@ describe('StepTabs', () => {
     vi.clearAllMocks();
     mockCurrentStep.value = 1;
     mockMode.value = 'create';
+    mockIsNew.value = true;
     mockIsStepCompleted.mockReturnValue(false);
     mockValidate.mockReturnValue({ isValid: true, errors: [], warnings: [] });
   });
@@ -185,6 +197,17 @@ describe('StepTabs', () => {
 
       expect(findTab(wrapper, 1).attributes('disabled')).toBeUndefined();
       expect(findTab(wrapper, 2).attributes('disabled')).toBeUndefined();
+    });
+
+    it('enables all steps in create mode after hero is persisted', () => {
+      mockMode.value = 'create';
+      mockIsNew.value = false;
+      const wrapper = createWrapper();
+
+      const tabs = findAllTabs(wrapper);
+      tabs.forEach((tab) => {
+        expect(tab.attributes('disabled')).toBeUndefined();
+      });
     });
 
     it('enables all steps in edit mode', () => {

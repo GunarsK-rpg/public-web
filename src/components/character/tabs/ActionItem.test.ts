@@ -724,4 +724,34 @@ describe('ActionItem', () => {
       expect(wrapper.emitted('toggle-favorite')).toBeFalsy();
     });
   });
+
+  // ========================================
+  // XSS Sanitization
+  // ========================================
+  describe('XSS sanitization', () => {
+    it('strips dangerous HTML from rendered description', () => {
+      const malicious =
+        '<script>alert("xss")</script>' +
+        '<img src=x onerror="alert(1)">' +
+        '<a href="javascript:void(0)" onclick="alert(1)">click</a>';
+      const wrapper = createWrapper({ description: malicious });
+
+      const descEl = wrapper.find('.action-description');
+      const html = descEl.html();
+
+      expect(html).not.toContain('<script');
+      expect(html).not.toContain('onerror');
+      expect(html).not.toContain('onclick');
+      expect(html).not.toContain('javascript:');
+    });
+
+    it('renders markdown as HTML in expanded description', () => {
+      const wrapper = createWrapper({ description: '**bold** and *italic*' });
+
+      const html = wrapper.find('.action-description').html();
+
+      expect(html).toContain('<strong>bold</strong>');
+      expect(html).toContain('<em>italic</em>');
+    });
+  });
 });

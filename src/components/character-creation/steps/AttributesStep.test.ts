@@ -554,7 +554,7 @@ describe('AttributesStep', () => {
       expect(mockSetAttribute).not.toHaveBeenCalled();
     });
 
-    it('limits attribute increase when budget exceeded', async () => {
+    it('allows attribute increase beyond budget', async () => {
       // Current value is 0, budget remaining is 2
       mockGetAttributeValueById.mockReturnValue(0);
       mockStoreData.value.budgetRemaining = 2;
@@ -562,11 +562,11 @@ describe('AttributesStep', () => {
       const wrapper = createWrapper();
 
       const slider = wrapper.find('.q-slider');
-      // Try to set to 5 but only 2 points remaining
+      // Set to 5 even though only 2 points remaining (soft control)
       await slider.setValue(5);
 
-      // Should set to max allowed (0 + 2 = 2)
-      expect(mockSetAttribute).toHaveBeenCalledWith(1, 2);
+      // Should allow setting to 5 (clamped to max attribute, not budget)
+      expect(mockSetAttribute).toHaveBeenCalledWith(1, 5);
     });
 
     it('clamps value to 5 even with sufficient budget', async () => {
@@ -838,7 +838,7 @@ describe('AttributesStep', () => {
   // Increment with no budget
   // ========================================
   describe('increment with no budget', () => {
-    it('does not increment when no points remaining', async () => {
+    it('allows increment when no points remaining (soft control)', async () => {
       mockGetAttributeValueById.mockReturnValue(2);
       mockStoreData.value.budgetRemaining = 0;
 
@@ -847,9 +847,11 @@ describe('AttributesStep', () => {
       const incrementBtns = wrapper
         .findAll('.q-btn')
         .filter((b) => b.attributes('aria-label')?.includes('Increase'));
+
+      expect(incrementBtns[0]!.attributes('disabled')).toBeUndefined();
       await incrementBtns[0]!.trigger('click');
 
-      expect(mockSetAttribute).not.toHaveBeenCalled();
+      expect(mockSetAttribute).toHaveBeenCalledWith(1, 3);
     });
   });
 });
