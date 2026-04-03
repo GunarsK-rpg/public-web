@@ -28,7 +28,7 @@
     "pino": "^10.3.1",
     "quasar": "^2.19.2",
     "register-service-worker": "^1.7.2",
-    "vue": "^3.5.31",
+    "vue": "^3.5.32",
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
