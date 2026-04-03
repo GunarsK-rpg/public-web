@@ -99,7 +99,7 @@ describe('useStepValidation', () => {
       expect(result.isValid).toBe(true);
     });
 
-    it('returns error for missing culture', () => {
+    it('returns warning for missing culture', () => {
       const heroStore = useHeroStore();
       heroStore.initNewHero();
       if (heroStore.hero) {
@@ -110,7 +110,8 @@ describe('useStepValidation', () => {
       const { validate } = useStepValidation();
       const result = validate(STEP_CODES.CULTURE);
 
-      expect(result.isValid).toBe(false);
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toContain('No culture selected');
     });
 
     it('validates starting-kit step', () => {

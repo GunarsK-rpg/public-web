@@ -72,7 +72,7 @@
 
     <q-card>
       <q-card-section class="q-pt-sm q-pb-sm">
-        <div class="text-body2">{{ action.description || 'No description available' }}</div>
+        <div class="text-body2 action-description" v-html="renderedDescription"></div>
         <div v-if="narrativeEntries.length" class="q-mt-xs">
           <span
             v-for="(entry, i) in narrativeEntries"
@@ -108,6 +108,7 @@ import { useHeroAttributesStore } from 'src/stores/heroAttributes';
 import { useEntityIcon } from 'src/composables/useEntityIcon';
 import { RPG_COLORS } from 'src/constants/theme';
 import { SPECIAL, resolveDamageScaling, resolveSkillModifier } from 'src/utils/specialUtils';
+import { renderMarkdown } from 'src/utils/markdown';
 import { findByCode } from 'src/utils/arrayUtils';
 import {
   getInstanceDice,
@@ -198,6 +199,10 @@ const typedEntries = computed(() =>
       }
       return s;
     })
+);
+
+const renderedDescription = computed(() =>
+  renderMarkdown(props.action.description || 'No description available')
 );
 
 const narrativeEntries = computed(() =>
@@ -321,5 +326,27 @@ const actionCosts = computed(() => {
 
 .action-expansion-item :deep(.q-expansion-item__container) {
   border-bottom: none;
+}
+
+.action-description :deep(table) {
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.85em;
+}
+
+.action-description :deep(th),
+.action-description :deep(td) {
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  padding: 4px 8px;
+  text-align: center;
+}
+
+.action-description :deep(th) {
+  font-weight: 600;
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.action-description :deep(p:last-child) {
+  margin-bottom: 0;
 }
 </style>

@@ -22,6 +22,17 @@ vi.mock('src/stores/wizard', () => ({
   }),
 }));
 
+// Mock the hero store
+const mockIsNew = ref(true);
+
+vi.mock('src/stores/hero', () => ({
+  useHeroStore: () => ({
+    get isNew() {
+      return mockIsNew.value;
+    },
+  }),
+}));
+
 // Mock the validation composable
 const mockValidate = vi.fn();
 
@@ -118,6 +129,7 @@ describe('StepTabs', () => {
     vi.clearAllMocks();
     mockCurrentStep.value = 1;
     mockMode.value = 'create';
+    mockIsNew.value = true;
     mockIsStepCompleted.mockReturnValue(false);
     mockValidate.mockReturnValue({ isValid: true, errors: [], warnings: [] });
   });

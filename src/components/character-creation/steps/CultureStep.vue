@@ -10,7 +10,7 @@
       outlined
       emit-value
       map-options
-      :rules="[(val) => !!val || 'Primary culture is required']"
+      clearable
       behavior="menu"
       class="q-mb-md"
       @update:model-value="setPrimaryCulture"
