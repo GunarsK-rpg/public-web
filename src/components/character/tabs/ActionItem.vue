@@ -37,11 +37,9 @@
               {{ cost.value }} {{ cost.label }}
             </q-badge>
           </div>
-          <div
-            v-if="action.descriptionShort || action.description"
-            class="text-caption text-muted action-summary"
-            v-html="renderedSummary"
-          ></div>
+          <div v-if="action.descriptionShort || action.description" class="text-caption text-muted">
+            {{ action.descriptionShort || action.description }}
+          </div>
           <q-btn
             v-if="hasDeductibleCost && !readonly"
             class="use-action-btn"
@@ -203,12 +201,10 @@ const typedEntries = computed(() =>
     })
 );
 
-const renderedSummary = computed(() =>
-  renderMarkdown(props.action.descriptionShort || props.action.description || '')
-);
-
 const renderedDescription = computed(() =>
-  renderMarkdown(props.action.description || 'No description available')
+  renderMarkdown(
+    props.action.description || props.action.descriptionShort || 'No description available'
+  )
 );
 
 const narrativeEntries = computed(() =>

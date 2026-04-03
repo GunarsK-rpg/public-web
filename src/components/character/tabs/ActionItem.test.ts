@@ -744,5 +744,14 @@ describe('ActionItem', () => {
       expect(html).not.toContain('onclick');
       expect(html).not.toContain('javascript:');
     });
+
+    it('renders markdown as HTML in expanded description', () => {
+      const wrapper = createWrapper({ description: '**bold** and *italic*' });
+
+      const html = wrapper.find('.action-description').html();
+
+      expect(html).toContain('<strong>bold</strong>');
+      expect(html).toContain('<em>italic</em>');
+    });
   });
 });
